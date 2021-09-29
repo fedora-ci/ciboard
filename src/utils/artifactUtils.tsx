@@ -155,6 +155,7 @@ export const transformArtifactStates = (
 const known_types = {
     'brew-build': 'nvr',
     'koji-build': 'nvr',
+    'koji-build-cs': 'nvr',
     'redhat-module': 'nsvc',
     'copr-build': 'component',
     'productmd-compose': 'aid',
@@ -163,6 +164,7 @@ const known_types = {
 const known_aid_meaning = {
     'brew-build': 'taskID',
     'koji-build': 'taskID',
+    'koji-build-cs': 'taskID',
     'redhat-module': 'mbsID',
     'copr-build': 'id',
     'productmd-compose': 'id',

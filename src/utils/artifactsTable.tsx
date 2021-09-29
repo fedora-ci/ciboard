@@ -69,6 +69,7 @@ const ArtifactName: React.FC<ArtifactNameProps> = (props) => {
     switch (artifact.type) {
         case 'brew-build':
         case 'koji-build':
+        case 'koji-build-cs':
         case 'copr-build':
             name = artifact.payload.nvr;
             break;
