@@ -1,0 +1,139 @@
+.helpSelect {
+    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth)
+        solid #f5f5f5 !important;
+}
+
+.helpSelect:hover {
+    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth)
+        solid var(--pf-global--active-color--100) !important;
+}
+
+.isHidden {
+    visibility: hidden;
+}
+
+.isRedBG {
+    background-color: var(--pf-global--danger-color--100);
+}
+
+.isInformation {
+    background: var(--pf-global--info-color--100);
+}
+
+.expandedResult {
+    background-color: floralwhite;
+}
+
+.expandedTestsuite {
+    background-color: oldlace;
+}
+
+.sstStatus {
+    width: fit-content;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sstNVR {
+    max-width: 25ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sstStatusPassed {
+    color: var(--pf-global--success-color--200);
+    background: var(--pf-global--success-color--100);
+}
+.sstStatusInfo {
+    color: var(--pf-global--warning-color--100);
+    background: var(--pf-global--warning-color--200);
+}
+.sstStatusFailed {
+    color: var(--pf-global--danger-color--300);
+    background: var(--pf-global--danger-color--100);
+}
+.sstStatusOther {
+    color: var(--pf-global--info-color--200);
+    background: var(--pf-global--info-color--100);
+}
+
+.statusPassed {
+    color: var(--pf-global--success-color--200);
+    background: var(--pf-global--success-color--100);
+    width: auto;
+}
+.statusInfo {
+    color: var(--pf-global--warning-color--100);
+    background: var(--pf-global--warning-color--200);
+    width: auto;
+}
+.statusFailed {
+    color: var(--pf-global--danger-color--300);
+    background: var(--pf-global--danger-color--100);
+    width: auto;
+}
+.statusOther {
+    color: var(--pf-global--info-color--200);
+    background: var(--pf-global--info-color--100);
+    width: auto;
+}
+
+.ciSystemsList {
+    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth)
+        solid #f5f5f5 !important;
+}
+
+.allCISystems {
+    border-top: var(--pf-c-data-list__item--BorderTopWidth) solid
+        #f5f5f5 !important;
+}
+
+.wDBConfig {
+    border-bottom: hidden;
+}
+
+/* that will remove the text from the button’s layout, and allow you to manually position the text somewhere
+ */
+.waive {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    line-height: 1;
+}
+
+/*
+ * https://github.com/patternfly/patternfly/issues/2177
+ */
+:global(.pf-c-data-list__item.pf-m-expanded
+        .issue_2177
+        .pf-c-data-list__toggle-icon) {
+    transform: none;
+}
+
+.giveHint {
+    border-bottom: var(--pf-c-table--border-width--base) solid
+        var(--pf-global--disabled-color--200) !important;
+}
+
+.noHint {
+    border-bottom: var(--pf-c-table--border-width--base) solid
+        var(--pf-global--BackgroundColor--200) !important;
+}
+
+.giveHint
+    :global(.pf-c-table__toggle
+        .pf-c-button:not(.pf-m-expanded)
+        svg) {
+    color: var(--pf-global--link--Color);
+    box-shadow: var(--pf-global--BoxShadow--lg);
+}
+
+:global(.example-border .pf-l-flex) {
+    border-style: dashed;
+    border-width: 2px;
+    padding: 1rem;
+}
