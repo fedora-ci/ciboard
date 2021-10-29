@@ -53,7 +53,7 @@ export const db_field_from_atype = {
 /**
  * Transforms state provided by kai to expected states in UI.
  *
- * For test events the complete state is split between passed and failed.
+ * For test events in the complete state is split between passed and failed.
  *
  * For build events the error is recognized as a failed state.
  *
@@ -76,58 +76,78 @@ export const transformArtifactStates = (
          * for complete test states, count failed, passed and other events
          */
         if (state_name === 'complete' && stage === 'test') {
+            /** XXX: simplify */
             Object.assign(artifactStates, {
                 /**
                  * passed tests
                  */
-                passed: current_state.complete?.filter((state: any) => {
-                    /**
-                     * v1
-                     */
-                    var test_result = state.status;
-                    if (state.test && state.test.result) {
-                        //
-                        /**
-                         * v2
-                         */
-                        test_result = state.test.result;
-                    }
-                    return (
-                        state.stage === stage &&
-                        _.includes(['pass', 'passed', 'PASSED'], test_result)
-                    );
-                }),
+                passed: current_state.complete?.filter(
+                    (state: DB.StateType) => {
+                        var test_result: string = '';
+                        if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
+                            const broker_msg =
+                                state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
+                            test_result = broker_msg.status;
+                        }
+                        if (MSG_V_1.isMsg(state.broker_msg_body)) {
+                            const broker_msg =
+                                state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
+                            test_result = broker_msg.test.result;
+                        }
+                        return (
+                            state.kai_state.stage === stage &&
+                            _.includes(
+                                ['pass', 'passed', 'PASSED'],
+                                test_result,
+                            )
+                        );
+                    },
+                ),
                 /**
                  * failed tests
                  */
-                failed: current_state.complete?.filter((state: any) => {
-                    /**
-                     * v1
-                     */
-                    var test_result = state.status;
-                    if (state.test && state.test.result) {
-                        /**
-                         * v2
-                         */
-                        test_result = state.test.result;
-                    }
-                    return (
-                        state.stage === stage &&
-                        _.includes(
-                            ['fail', 'failed', 'FAILED', 'needs_inspection'],
-                            test_result,
-                        )
-                    );
-                }),
+                failed: current_state.complete?.filter(
+                    (state: DB.StateType) => {
+                        var test_result: string = '';
+                        if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
+                            const broker_msg =
+                                state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
+                            test_result = broker_msg.status;
+                        }
+                        if (MSG_V_1.isMsg(state.broker_msg_body)) {
+                            const broker_msg =
+                                state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
+                            test_result = broker_msg.test.result;
+                        }
+                        return (
+                            state.kai_state.stage === stage &&
+                            _.includes(
+                                [
+                                    'fail',
+                                    'failed',
+                                    'FAILED',
+                                    'needs_inspection',
+                                ],
+                                test_result,
+                            )
+                        );
+                    },
+                ),
                 /** info tests */
-                info: current_state.complete?.filter((state: any) => {
-                    var test_result = state.status;
-                    if (state.test && state.test.result) {
-                        /** v2 */
-                        test_result = state.test.result;
+                info: current_state.complete?.filter((state: DB.StateType) => {
+                    var test_result: string = '';
+                    if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
+                        const broker_msg =
+                            state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
+                        test_result = broker_msg.status;
+                    }
+                    if (MSG_V_1.isMsg(state.broker_msg_body)) {
+                        const broker_msg =
+                            state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
+                        test_result = broker_msg.test.result;
                     }
                     return (
-                        state.stage === stage &&
+                        state.kai_state.stage === stage &&
                         _.includes(['info', 'INFO'], test_result)
                     );
                 }),

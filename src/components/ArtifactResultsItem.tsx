@@ -613,7 +613,6 @@ const FaceForResults: React.FC<FaceForResultsProps> = (props) => {
         </Badge>,
     );
     const isGatingResult = isResultGating(state, artifact);
-    console.log('Result gate: ', kai_state.test_case_name, isGatingResult);
     badgeClasses = classNames({
         [styles.isHidden]: !isGatingResult,
     });
@@ -731,7 +730,8 @@ const ArtifactResultsItem: React.FC<ArtifactResultsItemProps> = (props) => {
     let recipients = null;
     if (
         'notification' in broker_msg_body &&
-        broker_msg_body.notification?.recipients
+        broker_msg_body.notification?.recipients &&
+        _.size(broker_msg_body.notification?.recipients)
     ) {
         recipients = (
             <Label>
@@ -758,6 +758,7 @@ const ArtifactResultsItem: React.FC<ArtifactResultsItemProps> = (props) => {
     }
     let umb_msg = null;
     if (kai_state.msg_id) {
+        /** XXX: for Fedora Datagrepper add prefix: 2021- */
         umb_msg = (
             <>
                 {

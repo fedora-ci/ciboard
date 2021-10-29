@@ -55,10 +55,8 @@ import {
 import styles from '../custom.module.css';
 
 import ArtifactResultsList from '../components/ArtifactResultsList';
+import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
 import { DB } from '../types';
-// import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
-// const ArtifactResultsList = (...props: any) => <>ArtifactResultsList</>;
-const ArtifactDetailedInfo = (...props: any) => <>ArtifactDetailedInfo </>;
 
 interface ArtifactNameProps {
     artifact: DB.ArtifactType;
@@ -144,7 +142,12 @@ const TestResultInfo = ({ state, states }: any) => {
     );
 };
 
-const TestInfo = ({ artifact }: any) => {
+interface TestInfoProps {
+    artifact: DB.ArtifactType;
+}
+
+const TestInfo: React.FC<TestInfoProps> = (props) => {
+    const { artifact } = props;
     /**
      * testStates - is complete: [] ==> failed: [], info: [], passed: []
      * { error: [], queued: [], waived: [], running: [], complete: [] }
@@ -462,10 +465,7 @@ export const mkArtifactsRows = (args: InputArtifactRowType): TableRowsType => {
                 {
                     title: (
                         <>
-                            <ArtifactDetailedInfo
-                                artifact={artifacts[aOpen]}
-                                queryString={queryString}
-                            />
+                            <ArtifactDetailedInfo artifact={artifacts[aOpen]} />
                             <ArtifactResultsList artifact={artifacts[aOpen]} />
                         </>
                     ),

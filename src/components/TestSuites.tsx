@@ -135,7 +135,7 @@ const Testsuites: React.FC<TestsuitesProps> = (props) => {
             </div>,
         );
     }
-    return <>testsuites</>;
+    return <>{testsuites}</>;
 };
 
 const getProperty = (
@@ -532,15 +532,15 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
         }
         const current_state = _.findKey(artifact.current_state, (state) =>
             _.some(
-                _.map(state, (result) => result.kai_state.msg_id === msg_id),
+                _.map(state, (result) => result.kai_state?.msg_id === msg_id),
             ),
         );
         if (_.isNil(current_state)) return;
-        const state =
+        const state: DB.StateType[] =
             data.db_artifacts.artifacts[0].current_state[current_state];
         const xunitRaw = _.get(
-            _.find(state, (result) => result.msg_id === msg_id),
-            'xunit',
+            _.find(state, (result) => result.kai_state?.msg_id === msg_id),
+            'broker_msg_xunit',
         );
         if (_.isEmpty(xunitRaw)) {
             setXunitProcessed(true);

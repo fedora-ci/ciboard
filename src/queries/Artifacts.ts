@@ -22,94 +22,16 @@ import { gql } from '@apollo/client';
 
 const currentStateEntryFragment = gql`
     fragment CurrentStateEntryFragment on StateType {
-        note
-        docs
-        type
-        label
-        state
-        stage
-        msg_id
-        reason
-        status
-        string
-        version
-        category
-        issue_url
-        namespace
-        thread_id
-        processed
-        generated_at
-        recipients
-        test_case_name
-        error {
-            reason
-            issue_url
-        }
-        ci {
-            irc
-            url
-            name
-            team
-            email
-        }
-        run {
-            log
-            url
-            debug
-            rebuild
-            log_raw
-            log_stream
-            trigger_rebuild
-            additional_info {
-                module
-                actual_module
-                additional_info
-            }
-        }
-        test {
-            type
-            docs
-            note
-            result
-            category
-            namespace
-        }
-        origin {
-            reason
-            creator
-        }
-        contact {
-            irc
-            url
-            docs
-            name
-            team
-            email
-            version
-        }
-        artifact {
-            id
-            nvr
-            type
-            branch
-            issuer
-            source
-            scratch
-            component
-        }
-        pipeline {
-            id
-            name
-            build
+        broker_msg_body
+        kai_state {
             stage
+            state
+            msg_id
+            version
+            thread_id
+            timestamp
+            test_case_name
         }
-        system {
-            os
-            label
-            provider
-            architecture
-        }
-        timestamp
     }
 `;
 
@@ -250,6 +172,7 @@ const gatingDecisionFragment = gql`
     }
 `;
 
+/**
 export const ArtifactsQuery = gql`
     query Artifacts(
         $atype: String!
@@ -277,6 +200,7 @@ export const ArtifactsQuery = gql`
     }
     ${mainFragment}
 `;
+*/
 //                ...GatingDecisionFragment
 //    ${gatingDecisionFragment}
 
@@ -301,7 +225,7 @@ export const ArtifactsCurrentStateQuery = gql`
         ) {
             has_next
             artifacts {
-                ...CrentStateFragment
+                ...CurrentStateFragment
             }
         }
     }
@@ -374,15 +298,20 @@ export const ArtifactsCompleteQuery = gql`
             artifacts {
                 ...MainFragment
                 ...CurrentStateFragment
-                ...GatingDecisionFragment
             }
         }
     }
     ${mainFragment}
     ${currentStateFragment}
-    ${gatingDecisionFragment}
 `;
 
+/**
+    ...GatingDecisionFragment
+    ${gatingDecisionFragment}
+*/
+
+/**
+ * Can be removed
 const currentStateFragmentCut1 = gql`
     fragment CurrentStateFragmentCut1 on ArtifactType {
         _id
@@ -397,6 +326,7 @@ const currentStateFragmentCut1 = gql`
         }
     }
 `;
+*/
 
 /**
             complete {
@@ -432,18 +362,23 @@ export const ArtifactsListByFiltersQuery1 = gql`
             has_next
             artifacts {
                 ...MainFragment
-                ...CurrentStateFragmentCut1
+                ...CurrentStateFragment
             }
         }
     }
     ${mainFragment}
-    ${currentStateFragmentCut1}
+    ${currentStateFragment}
 `;
 //                ...GatingDecisionFragment
 //    ${gatingDecisionFragment}
+//                ...CurrentStateFragmentCut1
+//    ${currentStateFragmentCut1}
 
 // Refetch current state fragment. Need to find replaces, data, and write merge for it.
 // https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays-of-non-normalized-objects
+/**
+ * This query is used when need to fetch xunit for specific test-result.
+ */
 export const ArtifactsXunitQuery = gql`
     query ArtifactsXunitQuery(
         $atype: String!
@@ -469,24 +404,34 @@ export const ArtifactsXunitQuery = gql`
                 ...CurrentStateFragment
                 current_state {
                     error {
-                        msg_id
-                        xunit(msg_id: $msg_id)
+                        kai_state {
+                            msg_id
+                        }
+                        broker_msg_xunit(msg_id: $msg_id)
                     }
                     queued {
-                        msg_id
-                        xunit(msg_id: $msg_id)
+                        kai_state {
+                            msg_id
+                        }
+                        broker_msg_xunit(msg_id: $msg_id)
                     }
                     waived {
-                        msg_id
-                        xunit(msg_id: $msg_id)
+                        kai_state {
+                            msg_id
+                        }
+                        broker_msg_xunit(msg_id: $msg_id)
                     }
                     running {
-                        msg_id
-                        xunit(msg_id: $msg_id)
+                        kai_state {
+                            msg_id
+                        }
+                        broker_msg_xunit(msg_id: $msg_id)
                     }
                     complete {
-                        msg_id
-                        xunit(msg_id: $msg_id)
+                        kai_state {
+                            msg_id
+                        }
+                        broker_msg_xunit(msg_id: $msg_id)
                     }
                 }
             }

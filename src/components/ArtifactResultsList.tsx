@@ -228,7 +228,7 @@ const ArtifactResultsList: React.FC<ArtifactResultsListProps> = (props) => {
         }
     }, [expandedResult, canScroll]);
     const focusOn = _.get(queryString.queryString, 'focus', false);
-    var artifact;
+    var artifact: DB.ArtifactType | null = null;
     if (haveData) {
         /**
          * always read data from cache
@@ -246,13 +246,13 @@ const ArtifactResultsList: React.FC<ArtifactResultsListProps> = (props) => {
     }
     if (loadingCurrentState) {
         /**
-         * show nothing during load, usually this step is quick
+         * Show nothing during load, usually this step is quick
          * do not discrtuct user with jumping interface
          */
         return null;
     }
     if (!artifact) {
-        return <div>No test results available for this artifact.</div>;
+        return <div>Cannot fetch artifact info.</div>;
     }
     const stages_states = mk_stages_states(artifact);
     const stages_states_array = mk_stage_states_array(stages_states);

@@ -201,7 +201,6 @@ const ArtifactsTable: React.FC = () => {
         onClickLoadPrev,
         onClickLoadNext,
     };
-    console.log('known rows', known_rows);
     const results = (
         <>
             <Table

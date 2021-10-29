@@ -491,11 +491,15 @@ const ArtifactDetailedInfo: React.FC<ArtifactDetailedInfoProps> = (props) => {
     const { artifact } = props;
     if (artifact.type == 'brew-build') {
         return (
-            <ArtifactDetailedInfoBrewBuild
-                key={artifact.aid}
-                artifact={artifact}
-            />
+            <>
+                <ArtifactDetailedInfoBrewBuild
+                    key={artifact.aid}
+                    artifact={artifact}
+                />
+            </>
         );
+    } else if (artifact.type == 'koji-build') {
+        return <>Detailed info: XXX add me.</>;
     } else {
         return <></>;
     }
