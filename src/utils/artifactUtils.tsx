@@ -271,6 +271,7 @@ export const artifactUrl = (artifact: DB.ArtifactType) => {
     const urlMap = {
         'brew-build': `https://brewweb.engineering.redhat.com/brew/taskinfo?taskID=${artifact.aid}`,
         'koji-build': `https://koji.fedoraproject.org/koji/taskinfo?taskID=${artifact.aid}`,
+        'koji-build-cs': `https://kojihub.stream.centos.org/koji/taskinfo?taskID=${artifact.aid}`,
         'copr-build': (() => {
             // XXX: fixme
             // const component = artifact.payload.component;
@@ -282,7 +283,7 @@ export const artifactUrl = (artifact: DB.ArtifactType) => {
         'redhat-module': `https://mbsweb.engineering.redhat.com/module/${artifact.aid}`,
         'productmd-compose': '',
     };
-    return urlMap[artifact.type as DB.ArtifactNameType];
+    return urlMap[artifact.type];
 };
 
 export const resultColors = {

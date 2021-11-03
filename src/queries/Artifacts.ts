@@ -233,9 +233,12 @@ export const ArtifactsCurrentStateQuery = gql`
 `;
 
 export const ArtifactsDetailedInfoBrewTask = gql`
-    query ArtifactsDetailedInfoBrewBuild($task_id: Int!) {
-        brew_task(task_id: $task_id) {
-            builds {
+    query ArtifactsDetailedInfoBrewBuild(
+        $task_id: Int!
+        $instance: KojiInstanceInputType
+    ) {
+        koji_task(task_id: $task_id, instance: $instance) {
+            builds(task_id: $task_id, koji_instance: $instance) {
                 nvr
                 name
                 source

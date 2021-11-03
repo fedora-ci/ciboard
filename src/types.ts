@@ -20,6 +20,7 @@
 
 import _ from 'lodash';
 import { TabsProps } from '@patternfly/react-core';
+import { ArrayTypeNode } from 'typescript';
 
 export const known_states: Array<DB.StateNameType> = [
     'error',
@@ -29,12 +30,31 @@ export const known_states: Array<DB.StateNameType> = [
     'complete',
 ];
 
+/**
+ * GraphQL KojiInstanceInputType
+ */
+export type KojiInstanceType = 'fp' | 'cs' | 'rh';
+
+export const koji_instance = (type: DB.ArtifactNameType): KojiInstanceType => {
+    switch (type) {
+        case 'koji-build':
+            return 'fp';
+        case 'koji-build-cs':
+            return 'cs';
+        case 'brew-build':
+            return 'rh';
+        default:
+            throw new Error(`Unknown type: ${type}`);
+    }
+};
+
 export namespace DB {
     export type ArtifactNameType =
         | 'brew-build'
         | 'koji-build'
         | 'copr-build'
         | 'redhat-module'
+        | 'koji-build-cs'
         | 'productmd-compose';
 
     export type ArtifactType = {
@@ -42,7 +62,7 @@ export namespace DB {
         _updated: string;
         _version: string;
         aid: string;
-        type: string;
+        type: ArtifactNameType;
         payload: PayloadsType;
         states: Array<StateType>;
         current_state: {

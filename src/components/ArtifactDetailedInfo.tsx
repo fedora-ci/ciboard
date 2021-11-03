@@ -48,7 +48,7 @@ import {
 import styles from '../custom.module.css';
 
 import { ArtifactsDetailedInfoBrewTask } from '../queries/Artifacts';
-import { DB, TabClickHandlerType } from '../types';
+import { DB, koji_instance, TabClickHandlerType } from '../types';
 
 const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
     return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
@@ -60,7 +60,7 @@ const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
 interface ArtifactDetailedInfoBrewBuildProps {
     artifact: DB.ArtifactType;
 }
-const ArtifactDetailedInfoBrewBuild: React.FC<ArtifactDetailedInfoBrewBuildProps> =
+const ArtifactDetailedInfoKojiBuild: React.FC<ArtifactDetailedInfoBrewBuildProps> =
     (props) => {
         const { artifact } = props;
         const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
@@ -74,6 +74,7 @@ const ArtifactDetailedInfoBrewBuild: React.FC<ArtifactDetailedInfoBrewBuildProps
         } = useQuery(ArtifactsDetailedInfoBrewTask, {
             variables: {
                 task_id: _.toNumber(artifact.aid),
+                instance: koji_instance(artifact.type),
             },
             errorPolicy: 'all',
             notifyOnNetworkStatusChange: true,
@@ -489,17 +490,15 @@ interface ArtifactDetailedInfoProps {
 }
 const ArtifactDetailedInfo: React.FC<ArtifactDetailedInfoProps> = (props) => {
     const { artifact } = props;
-    if (artifact.type == 'brew-build') {
+    if (['brew-build', 'koji-build', 'koji-buil-cs'].includes(artifact.type)) {
         return (
             <>
-                <ArtifactDetailedInfoBrewBuild
+                <ArtifactDetailedInfoKojiBuild
                     key={artifact.aid}
                     artifact={artifact}
                 />
             </>
         );
-    } else if (artifact.type == 'koji-build') {
-        return <>Detailed info: XXX add me.</>;
     } else {
         return <></>;
     }
