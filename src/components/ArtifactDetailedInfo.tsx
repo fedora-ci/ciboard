@@ -39,15 +39,15 @@ import {
     ListComponent,
 } from '@patternfly/react-core';
 import {
-    mkLinkBrewWebTagId,
-    mkLinkBrewWebUserId,
-    mkLinkBrewWebBuildId,
+    mkLinkKojiWebTagId,
+    mkLinkKojiWebUserId,
+    mkLinkKojiWebBuildId,
     mkLinkPkgsDevelFromSource,
 } from '../utils/artifactUtils';
 
 import styles from '../custom.module.css';
 
-import { ArtifactsDetailedInfoBrewTask } from '../queries/Artifacts';
+import { ArtifactsDetailedInfoKojiTask } from '../queries/Artifacts';
 import { DB, koji_instance, TabClickHandlerType } from '../types';
 
 const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
@@ -57,325 +57,323 @@ const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
 /**
  * Different artifact types have different detailed info.
  */
-interface ArtifactDetailedInfoBrewBuildProps {
+interface ArtifactDetailedInfoKojiBuildProps {
     artifact: DB.ArtifactType;
 }
-const ArtifactDetailedInfoKojiBuild: React.FC<ArtifactDetailedInfoBrewBuildProps> =
-    (props) => {
-        const { artifact } = props;
-        const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
-        const handleTabClick: TabClickHandlerType = (_event, tabIndex) => {
-            setActiveTabKey(tabIndex);
-        };
-        const {
-            loading: loadingCurrentState,
-            error: errorCurrentState,
-            data: dataBrewTask,
-        } = useQuery(ArtifactsDetailedInfoBrewTask, {
-            variables: {
-                task_id: _.toNumber(artifact.aid),
-                instance: koji_instance(artifact.type),
-            },
-            errorPolicy: 'all',
-            notifyOnNetworkStatusChange: true,
-        });
-        if (loadingCurrentState) {
-            return (
-                <>
-                    Loading <Spinner size="md" />
-                </>
-            );
-        }
-        const haveData =
-            !loadingCurrentState &&
-            dataBrewTask &&
-            !_.isEmpty(dataBrewTask.brew_task.builds);
-        /** XXX: display errors */
-        const haveErrorNoData =
-            !loadingCurrentState && errorCurrentState && !haveData;
-        if (!haveData) {
-            /** No addititinal info */
-            return <></>;
-        }
-        const build = _.get(dataBrewTask, 'brew_task.builds.0');
-        /** build time */
-        const b_time = moment.unix(build.completion_ts).local();
-        const build_time = b_time.format('YYYY-MM-DD, HH:mm');
-        const build_zone_shift = b_time.format('ZZ');
-        /** commit time */
-        const c_time = moment
-            .unix(build.commit_obj?.committer_date_seconds)
-            .local();
-        var commit_time = 'n/a';
-        var commit_zone_shift = 'n/a';
-        if (c_time.isValid()) {
-            commit_time = c_time.format('YYYY-MM-DD, HH:mm');
-            commit_zone_shift = c_time.format('ZZ');
-        }
-        const element = (
-            <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
-                <Tab
-                    eventKey={0}
-                    title={<TabTitleText>BuildInfo</TabTitleText>}
-                >
-                    <div className="example-border1">
-                        <Flex className="pf-u-m-lg">
-                            <Flex
-                                flexWrap={{ default: 'nowrap' }}
-                                /** XXX was: inlineFlex */
-                                flex={{ default: 'flexNone' }}
-                            >
-                                <Flex
-                                    direction={{ default: 'column' }}
-                                    alignSelf={{
-                                        default: 'alignSelfStretch',
-                                    }}
-                                    spacer={{ default: 'spacer3xl' }}
-                                >
-                                    <Flex flexWrap={{ default: 'nowrap' }}>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                BuildID:
-                                            </FlexItem>
-                                        </Flex>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                <a
-                                                    href={mkLinkBrewWebBuildId(
-                                                        build.build_id,
-                                                    )}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    {build.build_id}
-                                                </a>
-                                            </FlexItem>
-                                        </Flex>
-                                    </Flex>
-                                    <Flex flexWrap={{ default: 'nowrap' }}>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                Build owner:
-                                            </FlexItem>
-                                        </Flex>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                <a
-                                                    href={mkLinkBrewWebUserId(
-                                                        build.owner_id,
-                                                    )}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    {build.owner_name}
-                                                </a>
-                                            </FlexItem>
-                                        </Flex>
-                                    </Flex>
-                                    <Flex flexWrap={{ default: 'nowrap' }}>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                Build completed:
-                                            </FlexItem>
-                                        </Flex>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                <Flex>
-                                                    <FlexItem className="pf-u-p-0 pf-u-m-0">
-                                                        <TextContent>
-                                                            <Text
-                                                                style={{
-                                                                    whiteSpace:
-                                                                        'nowrap',
-                                                                    fontFamily:
-                                                                        'var(--pf-global--FontFamily--monospace)',
-                                                                    fontSize:
-                                                                        'x-small',
-                                                                }}
-                                                                component="small"
-                                                            >
-                                                                {build_time}
-                                                            </Text>
-                                                        </TextContent>
-                                                    </FlexItem>
-                                                    <FlexItem className="pf-u-p-0 pf-u-m-0">
-                                                        <TextContent>
-                                                            <Text
-                                                                component="small"
-                                                                style={{
-                                                                    whiteSpace:
-                                                                        'nowrap',
-                                                                    fontFamily:
-                                                                        'var(--pf-global--FontFamily--monospace)',
-                                                                    fontSize:
-                                                                        '0.5em',
-                                                                }}
-                                                            >
-                                                                {
-                                                                    build_zone_shift
-                                                                }
-                                                            </Text>
-                                                        </TextContent>
-                                                    </FlexItem>
-                                                </Flex>
-                                            </FlexItem>
-                                        </Flex>
-                                    </Flex>
-                                </Flex>
-                                <Flex
-                                    direction={{ default: 'column' }}
-                                    alignSelf={{
-                                        default: 'alignSelfStretch',
-                                    }}
-                                >
-                                    <Flex flexWrap={{ default: 'nowrap' }}>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                Dist-git commit:
-                                            </FlexItem>
-                                        </Flex>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                <a
-                                                    href={mkLinkPkgsDevelFromSource(
-                                                        build.source,
-                                                    )}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    link
-                                                </a>
-                                            </FlexItem>
-                                        </Flex>
-                                    </Flex>
-                                    <Flex flexWrap={{ default: 'nowrap' }}>
-                                        <Flex>
-                                            <FlexItem>
-                                                <div className="pf-u-text-nowrap">
-                                                    Committer:
-                                                </div>
-                                            </FlexItem>
-                                        </Flex>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                {build.commit_obj
-                                                    ?.committer_name || 'n/a'}
-                                                &nbsp;&lt;
-                                                {build.commit_obj
-                                                    ?.committer_email || 'n/a'}
-                                                &gt;
-                                            </FlexItem>
-                                        </Flex>
-                                    </Flex>
-                                    <Flex flexWrap={{ default: 'nowrap' }}>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                Commit time:
-                                            </FlexItem>
-                                        </Flex>
-                                        <Flex>
-                                            <FlexItem className="pf-u-text-nowrap">
-                                                <Flex>
-                                                    <FlexItem className="pf-u-p-0 pf-u-m-0">
-                                                        <TextContent>
-                                                            <Text
-                                                                style={{
-                                                                    whiteSpace:
-                                                                        'nowrap',
-                                                                    fontFamily:
-                                                                        'var(--pf-global--FontFamily--monospace)',
-                                                                    fontSize:
-                                                                        'x-small',
-                                                                }}
-                                                                component="small"
-                                                            >
-                                                                {commit_time}
-                                                            </Text>
-                                                        </TextContent>
-                                                    </FlexItem>
-                                                    <FlexItem className="pf-u-p-0 pf-u-m-0">
-                                                        <TextContent>
-                                                            <Text
-                                                                component="small"
-                                                                style={{
-                                                                    whiteSpace:
-                                                                        'nowrap',
-                                                                    fontFamily:
-                                                                        'var(--pf-global--FontFamily--monospace)',
-                                                                    fontSize:
-                                                                        '0.5em',
-                                                                }}
-                                                            >
-                                                                {
-                                                                    commit_zone_shift
-                                                                }
-                                                            </Text>
-                                                        </TextContent>
-                                                    </FlexItem>
-                                                </Flex>
-                                            </FlexItem>
-                                        </Flex>
-                                    </Flex>
-                                </Flex>
-                            </Flex>
-                        </Flex>
-                    </div>
-                </Tab>
-                <Tab
-                    eventKey={1}
-                    title={<TabTitleText>Active Brew Tags</TabTitleText>}
-                >
-                    {/** XXX: Was: inlineFlex */}
-                    <Flex flex={{ default: 'flexNone' }}>
-                        <FlexItem
-                            style={{
-                                height: '143px',
-                                overflow: 'auto',
-                            }}
+const ArtifactDetailedInfoKojiBuild: React.FC<
+    ArtifactDetailedInfoKojiBuildProps
+> = (props) => {
+    const { artifact } = props;
+    const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
+    const handleTabClick: TabClickHandlerType = (_event, tabIndex) => {
+        setActiveTabKey(tabIndex);
+    };
+    const instance = koji_instance(artifact.type);
+    const {
+        loading: loadingCurrentState,
+        error: errorCurrentState,
+        data: dataKojiTask,
+    } = useQuery(ArtifactsDetailedInfoKojiTask, {
+        variables: {
+            task_id: _.toNumber(artifact.aid),
+            koji_instance: instance,
+            distgit_instance: instance,
+        },
+        errorPolicy: 'all',
+        notifyOnNetworkStatusChange: true,
+    });
+    if (loadingCurrentState) {
+        return (
+            <>
+                Loading build info
+                <Spinner size="md" />
+            </>
+        );
+    }
+    const haveData =
+        !loadingCurrentState &&
+        dataKojiTask &&
+        !_.isEmpty(dataKojiTask.koji_task?.builds);
+    /** XXX: display errors */
+    const haveErrorNoData =
+        !loadingCurrentState && errorCurrentState && !haveData;
+    if (!haveData) {
+        /** No additional info */
+        return <></>;
+    }
+    const build = _.get(dataKojiTask, 'koji_task.builds.0');
+    /** build time */
+    const b_time = moment.unix(build.completion_ts).local();
+    const build_time = b_time.format('YYYY-MM-DD, HH:mm');
+    const build_zone_shift = b_time.format('ZZ');
+    /** commit time */
+    const c_time = moment
+        .unix(build.commit_obj?.committer_date_seconds)
+        .local();
+    var commit_time = 'n/a';
+    var commit_zone_shift = 'n/a';
+    if (c_time.isValid()) {
+        commit_time = c_time.format('YYYY-MM-DD, HH:mm');
+        commit_zone_shift = c_time.format('ZZ');
+    }
+    const element = (
+        <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
+            <Tab eventKey={0} title={<TabTitleText>BuildInfo</TabTitleText>}>
+                <div className="example-border1">
+                    <Flex className="pf-u-m-lg">
+                        <Flex
+                            flexWrap={{ default: 'nowrap' }}
+                            /** XXX was: inlineFlex */
+                            flex={{ default: 'flexNone' }}
                         >
-                            <List
-                                component={ListComponent.ol}
-                                type={OrderType.number}
+                            <Flex
+                                direction={{ default: 'column' }}
+                                alignSelf={{
+                                    default: 'alignSelfStretch',
+                                }}
+                                spacer={{ default: 'spacer3xl' }}
                             >
-                                {_.map(build.tags, (tag) => {
-                                    return (
-                                        <ListItem>
+                                <Flex flexWrap={{ default: 'nowrap' }}>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            BuildID:
+                                        </FlexItem>
+                                    </Flex>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
                                             <a
-                                                href={mkLinkBrewWebTagId(
-                                                    tag.id,
+                                                href={mkLinkKojiWebBuildId(
+                                                    build.build_id,
+                                                    instance,
                                                 )}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
-                                                {tag.name}
+                                                {build.build_id}
                                             </a>
-                                        </ListItem>
-                                    );
-                                })}
-                            </List>
-                        </FlexItem>
+                                        </FlexItem>
+                                    </Flex>
+                                </Flex>
+                                <Flex flexWrap={{ default: 'nowrap' }}>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            Build owner:
+                                        </FlexItem>
+                                    </Flex>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            <a
+                                                href={mkLinkKojiWebUserId(
+                                                    build.owner_id,
+                                                    instance,
+                                                )}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {build.owner_name}
+                                            </a>
+                                        </FlexItem>
+                                    </Flex>
+                                </Flex>
+                                <Flex flexWrap={{ default: 'nowrap' }}>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            Build completed:
+                                        </FlexItem>
+                                    </Flex>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            <Flex>
+                                                <FlexItem className="pf-u-p-0 pf-u-m-0">
+                                                    <TextContent>
+                                                        <Text
+                                                            style={{
+                                                                whiteSpace:
+                                                                    'nowrap',
+                                                                fontFamily:
+                                                                    'var(--pf-global--FontFamily--monospace)',
+                                                                fontSize:
+                                                                    'x-small',
+                                                            }}
+                                                            component="small"
+                                                        >
+                                                            {build_time}
+                                                        </Text>
+                                                    </TextContent>
+                                                </FlexItem>
+                                                <FlexItem className="pf-u-p-0 pf-u-m-0">
+                                                    <TextContent>
+                                                        <Text
+                                                            component="small"
+                                                            style={{
+                                                                whiteSpace:
+                                                                    'nowrap',
+                                                                fontFamily:
+                                                                    'var(--pf-global--FontFamily--monospace)',
+                                                                fontSize:
+                                                                    '0.5em',
+                                                            }}
+                                                        >
+                                                            {build_zone_shift}
+                                                        </Text>
+                                                    </TextContent>
+                                                </FlexItem>
+                                            </Flex>
+                                        </FlexItem>
+                                    </Flex>
+                                </Flex>
+                            </Flex>
+                            <Flex
+                                direction={{ default: 'column' }}
+                                alignSelf={{
+                                    default: 'alignSelfStretch',
+                                }}
+                            >
+                                <Flex flexWrap={{ default: 'nowrap' }}>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            Dist-git commit:
+                                        </FlexItem>
+                                    </Flex>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            <a
+                                                href={mkLinkPkgsDevelFromSource(
+                                                    build.source,
+                                                    instance,
+                                                )}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                link
+                                            </a>
+                                        </FlexItem>
+                                    </Flex>
+                                </Flex>
+                                <Flex flexWrap={{ default: 'nowrap' }}>
+                                    <Flex>
+                                        <FlexItem>
+                                            <div className="pf-u-text-nowrap">
+                                                Committer:
+                                            </div>
+                                        </FlexItem>
+                                    </Flex>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            {build.commit_obj?.committer_name ||
+                                                'n/a'}
+                                            &nbsp;&lt;
+                                            {build.commit_obj
+                                                ?.committer_email || 'n/a'}
+                                            &gt;
+                                        </FlexItem>
+                                    </Flex>
+                                </Flex>
+                                <Flex flexWrap={{ default: 'nowrap' }}>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            Commit time:
+                                        </FlexItem>
+                                    </Flex>
+                                    <Flex>
+                                        <FlexItem className="pf-u-text-nowrap">
+                                            <Flex>
+                                                <FlexItem className="pf-u-p-0 pf-u-m-0">
+                                                    <TextContent>
+                                                        <Text
+                                                            style={{
+                                                                whiteSpace:
+                                                                    'nowrap',
+                                                                fontFamily:
+                                                                    'var(--pf-global--FontFamily--monospace)',
+                                                                fontSize:
+                                                                    'x-small',
+                                                            }}
+                                                            component="small"
+                                                        >
+                                                            {commit_time}
+                                                        </Text>
+                                                    </TextContent>
+                                                </FlexItem>
+                                                <FlexItem className="pf-u-p-0 pf-u-m-0">
+                                                    <TextContent>
+                                                        <Text
+                                                            component="small"
+                                                            style={{
+                                                                whiteSpace:
+                                                                    'nowrap',
+                                                                fontFamily:
+                                                                    'var(--pf-global--FontFamily--monospace)',
+                                                                fontSize:
+                                                                    '0.5em',
+                                                            }}
+                                                        >
+                                                            {commit_zone_shift}
+                                                        </Text>
+                                                    </TextContent>
+                                                </FlexItem>
+                                            </Flex>
+                                        </FlexItem>
+                                    </Flex>
+                                </Flex>
+                            </Flex>
+                        </Flex>
                     </Flex>
-                </Tab>
-                <Tab
-                    eventKey={2}
-                    title={<TabTitleText>Brew History</TabTitleText>}
-                >
-                    {/** XXX: Was: inlineFlex */}
-                    <Flex flex={{ default: 'flexNone' }}>
-                        <FlexItem
-                            style={{
-                                height: '143px',
-                                overflow: 'auto',
-                            }}
+                </div>
+            </Tab>
+            <Tab
+                eventKey={1}
+                title={<TabTitleText>Active Koji Tags</TabTitleText>}
+            >
+                {/** XXX: Was: inlineFlex */}
+                <Flex flex={{ default: 'flexNone' }}>
+                    <FlexItem
+                        style={{
+                            height: '143px',
+                            overflow: 'auto',
+                        }}
+                    >
+                        <List
+                            component={ListComponent.ol}
+                            type={OrderType.number}
                         >
-                            <HistoryList history={build.history} />
-                        </FlexItem>
-                    </Flex>
-                </Tab>
-            </Tabs>
-        );
-        return element;
-    };
+                            {_.map(build.tags, (tag) => {
+                                return (
+                                    <ListItem key={tag.id}>
+                                        <a
+                                            href={mkLinkKojiWebTagId(
+                                                tag.id,
+                                                instance,
+                                            )}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {tag.name}
+                                        </a>
+                                    </ListItem>
+                                );
+                            })}
+                        </List>
+                    </FlexItem>
+                </Flex>
+            </Tab>
+            <Tab eventKey={2} title={<TabTitleText>Koji History</TabTitleText>}>
+                {/** XXX: Was: inlineFlex */}
+                <Flex flex={{ default: 'flexNone' }}>
+                    <FlexItem
+                        style={{
+                            height: '143px',
+                            overflow: 'auto',
+                        }}
+                    >
+                        <HistoryList history={build.history} />
+                    </FlexItem>
+                </Flex>
+            </Tab>
+        </Tabs>
+    );
+    return element;
+};
 
 /**
  * "tag_name": "rhel-8.5.0-candidate",
@@ -478,10 +476,9 @@ const HistoryListEntry: React.FC<HistoryListEntryProps> = (props) => {
     const shift = event_time.format('ZZ');
     const flag = active ? '[still active]' : '';
     return (
-        <>
-            `${local_time} ${shift} ${action} ${tag_name} by ${person_name} $
-            {flag}`
-        </>
+        <div style={{ whiteSpace: 'nowrap' }}>
+            {local_time} {shift} {action} {tag_name} by {person_name} {flag}
+        </div>
     );
 };
 
@@ -490,7 +487,7 @@ interface ArtifactDetailedInfoProps {
 }
 const ArtifactDetailedInfo: React.FC<ArtifactDetailedInfoProps> = (props) => {
     const { artifact } = props;
-    if (['brew-build', 'koji-build', 'koji-buil-cs'].includes(artifact.type)) {
+    if (['brew-build', 'koji-build', 'koji-build-cs'].includes(artifact.type)) {
         return (
             <>
                 <ArtifactDetailedInfoKojiBuild

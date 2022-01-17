@@ -522,26 +522,20 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     });
     /** Even there is an error there could be data */
     const haveData =
-        !loading &&
-        data &&
-        _.has(data, 'db_artifacts.artifacts[0].current_state');
+        !loading && data && _.has(data, 'db_artifacts.artifacts[0].states');
     const haveErrorNoData = !loading && error && !haveData;
     useEffect(() => {
         if (!haveData) {
             return;
         }
-        const current_state = _.findKey(artifact.current_state, (state) =>
-            _.some(
-                _.map(state, (result) => result.kai_state?.msg_id === msg_id),
-            ),
+        const state = _.find(
+            /** this is a bit strange, that received data doesn't propage to original
+             * artifact object. Original artifact.states objects stays old */
+            _.get(data, 'db_artifacts.artifacts[0].states'),
+            (state) => state.kai_state?.msg_id === msg_id,
         );
-        if (_.isNil(current_state)) return;
-        const state: DB.StateType[] =
-            data.db_artifacts.artifacts[0].current_state[current_state];
-        const xunitRaw = _.get(
-            _.find(state, (result) => result.kai_state?.msg_id === msg_id),
-            'broker_msg_xunit',
-        );
+        if (_.isNil(state)) return;
+        const xunitRaw = _.get(state, 'broker_msg_xunit');
         if (_.isEmpty(xunitRaw)) {
             setXunitProcessed(true);
             return;
@@ -561,7 +555,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
             setError(error);
         }
         setXunitProcessed(true);
-    }, [data, msg_id, haveData, artifact.current_state]);
+    }, [data, msg_id, haveData, artifact.states]);
     const inflating = data && !xunitProcessed;
     if (loading || inflating) {
         const text = loading ? 'Fetching xunit' : 'Inflating';

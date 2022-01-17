@@ -150,13 +150,10 @@ const TestInfo: React.FC<TestInfoProps> = (props) => {
     const { artifact } = props;
     /**
      * testStates - is complete: [] ==> failed: [], info: [], passed: []
-     * { error: [], queued: [], waived: [], running: [], complete: [] }
-     * { error: [], queued: [], waived: [], running: [], failed: [], info: [], passed: [] }
+     * { error: [], queued: [], running: [], complete: [] }
+     * { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
      */
-    const testStates = transformArtifactStates(
-        artifact['current_state'],
-        'test',
-    );
+    const testStates = transformArtifactStates(artifact.states, 'test');
     if (!_.some(_.values(testStates), 'length')) {
         return null;
     }

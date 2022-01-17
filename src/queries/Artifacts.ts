@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@
 
 import { gql } from '@apollo/client';
 
-const currentStateEntryFragment = gql`
-    fragment CurrentStateEntryFragment on StateType {
+const stateEntryFragment = gql`
+    fragment StateEntryFragment on StateType {
         broker_msg_body
         kai_state {
             stage
@@ -70,106 +70,14 @@ const mainFragment = gql`
     }
 `;
 
-const currentStateFragment = gql`
-    fragment CurrentStateFragment on ArtifactType {
+const statesFragment = gql`
+    fragment StatesFragment on ArtifactType {
         _id
-        current_state {
-            error {
-                ...CurrentStateEntryFragment
-            }
-            queued {
-                ...CurrentStateEntryFragment
-            }
-            waived {
-                ...CurrentStateEntryFragment
-            }
-            running {
-                ...CurrentStateEntryFragment
-            }
-            complete {
-                ...CurrentStateEntryFragment
-            }
+        states(onlyactual: true) {
+            ...StateEntryFragment
         }
     }
-    ${currentStateEntryFragment}
-`;
-
-const gatingDecisionFragment = gql`
-    fragment GatingDecisionFragment on ArtifactType {
-        _id
-        gating_decision {
-            policies_satisfied
-            unsatisfied_requirements {
-                item {
-                    item
-                    type
-                }
-                type
-                testcase
-                scenario
-                subject_type
-                subject_identifier
-            }
-            satisfied_requirements {
-                type
-                result_id
-                testcase
-                subject_type
-                subject_identifier
-            }
-            results {
-                href
-                id
-                note
-                outcome
-                ref_url
-                submit_time
-                groups
-                testcase {
-                    href
-                    name
-                    ref_url
-                }
-                data {
-                    brew_task_id
-                    category
-                    ci_email
-                    ci_irc
-                    ci_name
-                    ci_team
-                    ci_url
-                    component
-                    issuer
-                    item
-                    log
-                    publisher_id
-                    rebuild
-                    recipients
-                    scratch
-                    system_os
-                    system_provider
-                    type
-                }
-            }
-            waivers {
-                id
-                comment
-                product_version
-                proxied_by
-                subject {
-                    item
-                    type
-                }
-                subject_identifier
-                subject_type
-                testcase
-                timestamp
-                username
-                waived
-            }
-            summary
-        }
-    }
+    ${stateEntryFragment}
 `;
 
 /**
@@ -201,11 +109,9 @@ export const ArtifactsQuery = gql`
     ${mainFragment}
 `;
 */
-//                ...GatingDecisionFragment
-//    ${gatingDecisionFragment}
 
-export const ArtifactsCurrentStateQuery = gql`
-    query ArtifactsCurrentState(
+export const ArtifactsStatesQuery = gql`
+    query ArtifactsStates(
         $atype: String!
         $limit: Int
         $aid_offset: String
@@ -225,20 +131,21 @@ export const ArtifactsCurrentStateQuery = gql`
         ) {
             has_next
             artifacts {
-                ...CurrentStateFragment
+                ...StatesFragment
             }
         }
     }
-    ${currentStateFragment}
+    ${statesFragment}
 `;
 
-export const ArtifactsDetailedInfoBrewTask = gql`
-    query ArtifactsDetailedInfoBrewBuild(
+export const ArtifactsDetailedInfoKojiTask = gql`
+    query ArtifactsDetailedInfoKojiBuild(
         $task_id: Int!
-        $instance: KojiInstanceInputType
+        $koji_instance: KojiInstanceInputType
+        $distgit_instance: DistGitInstanceInputType
     ) {
-        koji_task(task_id: $task_id, instance: $instance) {
-            builds(task_id: $task_id, koji_instance: $instance) {
+        koji_task(task_id: $task_id, instance: $koji_instance) {
+            builds(task_id: $task_id, instance: $koji_instance) {
                 nvr
                 name
                 source
@@ -250,11 +157,11 @@ export const ArtifactsDetailedInfoBrewTask = gql`
                 package_id
                 completion_time
                 completion_ts
-                tags {
+                tags(instance: $koji_instance) {
                     name
                     id
                 }
-                history {
+                history(instance: $koji_instance) {
                     tag_listing {
                         tag_name
                         tag_id
@@ -267,7 +174,7 @@ export const ArtifactsDetailedInfoBrewTask = gql`
                         revoker_name
                     }
                 }
-                commit_obj {
+                commit_obj(instance: $distgit_instance) {
                     committer_name
                     committer_email
                     committer_date_seconds
@@ -300,48 +207,13 @@ export const ArtifactsCompleteQuery = gql`
             has_next
             artifacts {
                 ...MainFragment
-                ...CurrentStateFragment
+                ...StatesFragment
             }
         }
     }
     ${mainFragment}
-    ${currentStateFragment}
+    ${statesFragment}
 `;
-
-/**
-    ...GatingDecisionFragment
-    ${gatingDecisionFragment}
-*/
-
-/**
- * Can be removed
-const currentStateFragmentCut1 = gql`
-    fragment CurrentStateFragmentCut1 on ArtifactType {
-        _id
-        current_state {
-            complete {
-                kai_state {
-                    stage
-                    msg_id
-                    version
-                }
-            }
-        }
-    }
-`;
-*/
-
-/**
-            complete {
-                stage
-                status
-                state
-                test {
-                    type
-                    result
-                }
-            }
-*/
 
 export const ArtifactsListByFiltersQuery1 = gql`
     query ArtifactsListByFiltersQuery1(
@@ -365,20 +237,18 @@ export const ArtifactsListByFiltersQuery1 = gql`
             has_next
             artifacts {
                 ...MainFragment
-                ...CurrentStateFragment
+                ...StatesFragment
             }
         }
     }
     ${mainFragment}
-    ${currentStateFragment}
+    ${statesFragment}
 `;
-//                ...GatingDecisionFragment
-//    ${gatingDecisionFragment}
-//                ...CurrentStateFragmentCut1
-//    ${currentStateFragmentCut1}
 
-// Refetch current state fragment. Need to find replaces, data, and write merge for it.
-// https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays-of-non-normalized-objects
+/**
+ *  Refetch states fragment. Need to find replaces, data, and write merge for it.
+ * https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays-of-non-normalized-objects
+ */
 /**
  * This query is used when need to fetch xunit for specific test-result.
  */
@@ -404,41 +274,15 @@ export const ArtifactsXunitQuery = gql`
         ) {
             has_next
             artifacts {
-                ...CurrentStateFragment
-                current_state {
-                    error {
-                        kai_state {
-                            msg_id
-                        }
-                        broker_msg_xunit(msg_id: $msg_id)
+                ...StatesFragment
+                states(onlyactual: true) {
+                    kai_state {
+                        msg_id
                     }
-                    queued {
-                        kai_state {
-                            msg_id
-                        }
-                        broker_msg_xunit(msg_id: $msg_id)
-                    }
-                    waived {
-                        kai_state {
-                            msg_id
-                        }
-                        broker_msg_xunit(msg_id: $msg_id)
-                    }
-                    running {
-                        kai_state {
-                            msg_id
-                        }
-                        broker_msg_xunit(msg_id: $msg_id)
-                    }
-                    complete {
-                        kai_state {
-                            msg_id
-                        }
-                        broker_msg_xunit(msg_id: $msg_id)
-                    }
+                    broker_msg_xunit(msg_id: $msg_id)
                 }
             }
         }
     }
-    ${currentStateFragment}
+    ${statesFragment}
 `;

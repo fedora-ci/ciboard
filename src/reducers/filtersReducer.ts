@@ -59,10 +59,19 @@ const filtersReducer = (
         case ADD_FILTER:
             let { newval, type } = action.payload;
             if (state.type !== type) {
-                return update(state, {
-                    type: { $set: type },
-                    active: { $set: [newval] },
-                });
+                if (!_.isEmpty(newval)) {
+                    return update(state, {
+                        type: { $set: type },
+                        active: { $set: [newval] },
+                    });
+                }
+                if (!_.isEmpty(state.active)) {
+                    return update(state, {
+                        type: { $set: type },
+                        /** keep old filters, just change their type */
+                    });
+                }
+                return state;
             }
             let present = state.active.includes(newval);
             if (present) return state;

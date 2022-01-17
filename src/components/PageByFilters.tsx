@@ -153,9 +153,13 @@ const SearchToolbar = () => {
         if (!statusSelected) {
             return;
         }
+        const atype = _.get(menuTypes, statusSelected);
         if (inputValue && _.size(inputValue)) {
             setInputValue('');
-            dispatch(addFilter(inputValue, _.get(menuTypes, statusSelected)));
+            dispatch(addFilter(inputValue, atype));
+        } else if (_.isEmpty(inputValue) && filters.type != atype) {
+            /** keep values, just change artifacts type */
+            dispatch(addFilter(inputValue, atype));
         }
     };
     const toggleGroupItems = (

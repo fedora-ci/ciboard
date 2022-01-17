@@ -39,6 +39,7 @@ import {
     MSG_V_0_1,
     known_states,
     BrokerMessagesType,
+    KojiInstanceType,
 } from '../types';
 
 /** Maps artifact type to DB field to use in next query */
@@ -58,118 +59,136 @@ export const db_field_from_atype = {
  * For build events the error is recognized as a failed state.
  *
  * for stage == 'test' replace complete: [] ==> failed: [], info: [], passed: []
- * From: { error: [], queued: [], waived: [], running: [], complete: [] }
- * To:   { error: [], queued: [], waived: [], running: [], failed: [], info: [], passed: [] }
+ * From: { error: [], queued: [], running: [], complete: [] }
+ * To:   { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
  */
 export const transformArtifactStates = (
-    current_state: DB.CurrentStateType,
+    states: Array<DB.StateType>,
     stage: DB.StageNameType,
-): DB.CurrentStateExtendedType => {
-    const artifactStates = {};
-    const current_state_names: Array<DB.StateNameType> =
+): DB.StatesByCategoryType => {
+    const states_by_category: DB.StatesByCategoryType = {};
+    const states_names: Array<DB.StateNameType> =
         _.intersection<DB.StateNameType>(
-            _.keys(current_state) as DB.StateNameType[],
+            _.map(
+                states,
+                _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),
+            ),
             known_states,
         );
-    _.forEach(current_state_names, (state_name) => {
+    _.forEach(states_names, (state_name) => {
         /**
          * for complete test states, count failed, passed and other events
          */
+        /**
+         * complete tests
+         */
         if (state_name === 'complete' && stage === 'test') {
-            /** XXX: simplify */
-            Object.assign(artifactStates, {
-                /**
-                 * passed tests
-                 */
-                passed: current_state.complete?.filter(
-                    (state: DB.StateType) => {
-                        var test_result: string = '';
-                        if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
-                            const broker_msg =
-                                state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
-                            test_result = broker_msg.status;
-                        }
-                        if (MSG_V_1.isMsg(state.broker_msg_body)) {
-                            const broker_msg =
-                                state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
-                            test_result = broker_msg.test.result;
-                        }
-                        return (
-                            state.kai_state.stage === stage &&
-                            _.includes(
-                                ['pass', 'passed', 'PASSED'],
-                                test_result,
-                            )
-                        );
-                    },
-                ),
-                /**
-                 * failed tests
-                 */
-                failed: current_state.complete?.filter(
-                    (state: DB.StateType) => {
-                        var test_result: string = '';
-                        if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
-                            const broker_msg =
-                                state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
-                            test_result = broker_msg.status;
-                        }
-                        if (MSG_V_1.isMsg(state.broker_msg_body)) {
-                            const broker_msg =
-                                state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
-                            test_result = broker_msg.test.result;
-                        }
-                        return (
-                            state.kai_state.stage === stage &&
-                            _.includes(
-                                [
-                                    'fail',
-                                    'failed',
-                                    'FAILED',
-                                    'needs_inspection',
-                                ],
-                                test_result,
-                            )
-                        );
-                    },
-                ),
-                /** info tests */
-                info: current_state.complete?.filter((state: DB.StateType) => {
-                    var test_result: string = '';
-                    if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
-                        const broker_msg =
-                            state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
-                        test_result = broker_msg.status;
-                    }
-                    if (MSG_V_1.isMsg(state.broker_msg_body)) {
-                        const broker_msg =
-                            state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
-                        test_result = broker_msg.test.result;
-                    }
-                    return (
-                        state.kai_state.stage === stage &&
-                        _.includes(['info', 'INFO'], test_result)
-                    );
-                }),
+            const category_passed = _.filter(states, (state: DB.StateType) => {
+                if (
+                    state.kai_state.stage !== stage ||
+                    state.kai_state.state !== state_name
+                ) {
+                    return false;
+                }
+                var test_result: string = '';
+                if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
+                    const broker_msg =
+                        state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
+                    test_result = broker_msg.status;
+                }
+                if (MSG_V_1.isMsg(state.broker_msg_body)) {
+                    const broker_msg =
+                        state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
+                    test_result = broker_msg.test.result;
+                }
+                return _.includes(['pass', 'passed', 'PASSED'], test_result);
             });
+            if (!_.isEmpty(category_passed)) {
+                states_by_category.passed = category_passed;
+            }
+            /**
+             * failed tests
+             */
+            const category_failed = _.filter(states, (state: DB.StateType) => {
+                if (
+                    state.kai_state.stage !== stage ||
+                    state.kai_state.state !== state_name
+                ) {
+                    return false;
+                }
+                var test_result: string = '';
+                if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
+                    const broker_msg =
+                        state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
+                    test_result = broker_msg.status;
+                }
+                if (MSG_V_1.isMsg(state.broker_msg_body)) {
+                    const broker_msg =
+                        state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
+                    test_result = broker_msg.test.result;
+                }
+                return _.includes(
+                    ['fail', 'failed', 'FAILED', 'needs_inspection'],
+                    test_result,
+                );
+            });
+            if (!_.isEmpty(category_failed)) {
+                states_by_category.failed = category_failed;
+            }
+            /**
+             * info tests
+             */
+            const category_info = _.filter((state: DB.StateType) => {
+                if (
+                    state.kai_state.stage !== stage ||
+                    state.kai_state.state !== state_name
+                ) {
+                    return false;
+                }
+                var test_result: string = '';
+                if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
+                    const broker_msg =
+                        state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
+                    test_result = broker_msg.status;
+                }
+                if (MSG_V_1.isMsg(state.broker_msg_body)) {
+                    const broker_msg =
+                        state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
+                    test_result = broker_msg.test.result;
+                }
+                return _.includes(['info', 'INFO'], test_result);
+            });
+            if (!_.isEmpty(category_info)) {
+                states_by_category.info = category_failed;
+            }
         } else if (state_name === 'error' && stage === 'build') {
-            Object.assign(artifactStates, {
-                /** failed build */
-                failed: current_state.error?.filter(
-                    (state: any) => state.stage === stage,
-                ),
+            const category_failed = _.filter(states, (state: DB.StateType) => {
+                if (
+                    state.kai_state.stage === stage ||
+                    state.kai_state.state === state_name
+                ) {
+                    return true;
+                }
+                return false;
             });
+            if (!_.isEmpty(category_failed)) {
+                states_by_category.failed = category_failed;
+            }
         } else {
-            /** states */
-            Object.assign(artifactStates, {
-                [state_name]: current_state[state_name]?.filter(
-                    (state: any) => state.stage === stage,
-                ),
+            /** other categories for asked stage */
+            const category_other = _.filter(states, (state: DB.StateType) => {
+                if (state.kai_state.stage === stage) {
+                    return true;
+                }
+                return false;
             });
+            if (!_.isEmpty(category_other)) {
+                states_by_category[state_name] = category_other;
+            }
         }
     });
 
-    return artifactStates;
+    return states_by_category;
 };
 
 const known_types = {
@@ -213,7 +232,7 @@ export const convertNsvcToNvr = (nsvc: string) => {
         return null;
     }
     /**
-     * Convert NSVC to Brew NVR
+     * Convert NSVC to Koji NVR
      */
     return `${splited[0]}-${splited[1].replace(/-/g, '_')}-${splited[2]}.${
         splited[3]
@@ -290,7 +309,6 @@ export const resultColors = {
     '--pf-global--success-color--100': [
         'complete',
         'passed',
-        'waived',
         'pass',
         'Pass',
         'PASS',
@@ -398,7 +416,6 @@ export const renderStatusIcon = (
             pick:
                 type === 'complete' ||
                 type === 'passed' ||
-                type === 'waived' ||
                 type === 'pass' ||
                 type === 'Pass' ||
                 type === 'PASS' ||
@@ -488,20 +505,72 @@ export const renderStatusIcon = (
  * to:
  * http://pkgs.devel.redhat.com/cgit/rpms/bash/commit/?id=13117b55f5246ecac677f8e64ea640d27a9a527d
  */
-export const mkLinkPkgsDevelFromSource = (source: string) => {
+export const mkLinkPkgsDevelFromSource = (
+    source: string,
+    instance: KojiInstanceType,
+) => {
     const name_sha1 = _.last(_.split(source, 'rpms/'));
     const [name, sha1] = _.split(name_sha1, '#');
-    return `http://pkgs.devel.redhat.com/cgit/rpms/${name}/commit/?id=${sha1}`;
+    switch (instance) {
+        case 'fp':
+            return `https://src.fedoraproject.org/rpms/${name}/c/${sha1}`;
+        case 'cs':
+            return `https://gitlab.com/redhat/centos-stream/rpms/${name}/-/commit/${sha1}`;
+        case 'rh':
+            return `http://pkgs.devel.redhat.com/cgit/rpms/${name}/commit/?id=${sha1}`;
+        default:
+            console.log(`Unknown koji instance: ${instance}`);
+            return '';
+    }
 };
 
-export const mkLinkBrewWebBuildId = (buildId: string) => {
-    return `https://brewweb.engineering.redhat.com/brew/buildinfo?buildID=${buildId}`;
+export const mkLinkKojiWebBuildId = (
+    buildId: string,
+    instance: KojiInstanceType,
+) => {
+    switch (instance) {
+        case 'fp':
+            return `https://koji.fedoraproject.org/koji/buildinfo?buildID=${buildId}`;
+        case 'cs':
+            return `https://kojihub.stream.centos.org/koji/buildinfo?buildID=${buildId}`;
+        case 'rh':
+            return `https://brewweb.engineering.redhat.com/brew/buildinfo?buildID=${buildId}`;
+        default:
+            console.log(`Unknown koji instance: ${instance}`);
+            return '';
+    }
 };
 
-export const mkLinkBrewWebUserId = (userId: string) => {
-    return `https://brewweb.engineering.redhat.com/brew/userinfo?userID=${userId}`;
+export const mkLinkKojiWebUserId = (
+    userId: string,
+    instance: KojiInstanceType,
+) => {
+    switch (instance) {
+        case 'fp':
+            return `https://koji.fedoraproject.org/koji/userinfo?userID=${userId}`;
+        case 'cs':
+            return `https://kojihub.stream.centos.org/koji/userinfo?userID=${userId}`;
+        case 'rh':
+            return `https://brewweb.engineering.redhat.com/brew/userinfo?userID=${userId}`;
+        default:
+            console.log(`Unknown koji instance: ${instance}`);
+            return '';
+    }
 };
 
-export const mkLinkBrewWebTagId = (tagId: string) => {
-    return `https://brewweb.engineering.redhat.com/brew/taginfo?tagID=${tagId}`;
+export const mkLinkKojiWebTagId = (
+    tagId: string,
+    instance: KojiInstanceType,
+) => {
+    switch (instance) {
+        case 'fp':
+            return `https://koji.fedoraproject.org/koji/taginfo?tagID=${tagId}`;
+        case 'cs':
+            return `https://kojihub.stream.centos.org/koji/taginfo?tagID=${tagId}`;
+        case 'rh':
+            return `https://brewweb.engineering.redhat.com/brew/taginfo?tagID=${tagId}`;
+        default:
+            console.log(`Unknown koji instance: ${instance}`);
+            return '';
+    }
 };

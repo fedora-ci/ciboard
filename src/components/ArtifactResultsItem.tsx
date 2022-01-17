@@ -394,7 +394,7 @@ const MsgQueued: React.FC = () => {
 
 interface WaiveButtonProps {
     artifact: DB.ArtifactType;
-    stateName: DB.CurrentStateExtendedNameType;
+    stateName: DB.StateExtendedNameType;
     broker_msg_body: BrokerMessagesType;
 }
 const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
@@ -504,7 +504,7 @@ const DebugLogLink: React.FC<DebugLogLinkProps> = (props) => {
 };
 
 interface DocsLinkProps {
-    stateName: DB.CurrentStateExtendedNameType;
+    stateName: DB.StateExtendedNameType;
     isGatingResult: boolean;
     broker_msg_body: BrokerMessagesType;
 }
@@ -521,12 +521,7 @@ const DocsLink: React.FC<DocsLinkProps> = (props) => {
         return null;
     }
     const isBold =
-        isGatingResult &&
-        !(
-            stateName === 'complete' ||
-            stateName === 'passed' ||
-            stateName === 'waived'
-        );
+        isGatingResult && !(stateName === 'complete' || stateName === 'passed');
     var style: React.CSSProperties = isBold
         ? { fontWeight: 'bolder' }
         : { fontWeight: 'lighter' };
@@ -672,7 +667,7 @@ const FaceForResults: React.FC<FaceForResultsProps> = (props) => {
 interface ArtifactResultsItemProps {
     state: DB.StateType;
     artifact: DB.ArtifactType;
-    stateName: DB.CurrentStateExtendedNameType;
+    stateName: DB.StateExtendedNameType;
     forceExpand: boolean;
     setExpandedResult: React.Dispatch<React.SetStateAction<string>>;
     artifactDashboardUrl: string;

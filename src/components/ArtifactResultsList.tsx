@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,7 @@ import {
 import { DB } from '../types';
 import {
     ArtifactsCompleteQuery,
-    ArtifactsCurrentStateQuery,
+    ArtifactsStatesQuery,
 } from '../queries/Artifacts';
 import { RootStateType } from '../reducers';
 import { IStateQueryString } from '../actions/types';
@@ -54,7 +54,7 @@ const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
 
 interface StageAndStateProps {
     stageName: DB.StageNameType;
-    stateName: DB.CurrentStateExtendedNameType;
+    stateName: DB.StateExtendedNameType;
 }
 
 const StageAndState: React.FC<StageAndStateProps> = (props) => {
@@ -111,9 +111,9 @@ mk_stages_states returns:
 */
 const mk_stages_states = (
     artifact: DB.ArtifactType,
-): Array<{ stage: DB.StageNameType; states: DB.CurrentStateExtendedType }> => {
+): Array<{ stage: DB.StageNameType; states: DB.StatesByCategoryType }> => {
     const stage_states = [];
-    var buildStates = transformArtifactStates(artifact.current_state, 'build');
+    var buildStates = transformArtifactStates(artifact.states, 'build');
     buildStates = _.omitBy(buildStates, (x) => _.isEmpty(x));
     if (_.some(_.values(buildStates), 'length')) {
         const stage: DB.StageNameType = 'build';
@@ -131,7 +131,7 @@ const mk_stages_states = (
             waived: []
         }
     */
-    var testStates = transformArtifactStates(artifact.current_state, 'test');
+    var testStates = transformArtifactStates(artifact.states, 'test');
     testStates = _.omitBy(testStates, (x) => _.isEmpty(x));
     if (_.some(_.values(testStates), 'length')) {
         const stage: DB.StageNameType = 'test';
@@ -150,20 +150,18 @@ stage_states_array is the second form:
 const mk_stage_states_array = (
     stage_states: Array<{
         stage: DB.StageNameType;
-        states: DB.CurrentStateExtendedType;
+        states: DB.StatesByCategoryType;
     }>,
-): Array<
-    [DB.StageNameType, DB.CurrentStateExtendedNameType, DB.StateType[]]
-> => {
+): Array<[DB.StageNameType, DB.StateExtendedNameType, DB.StateType[]]> => {
     const stage_states_array: Array<
-        [DB.StageNameType, DB.CurrentStateExtendedNameType, DB.StateType[]]
+        [DB.StageNameType, DB.StateExtendedNameType, DB.StateType[]]
     > = [];
     for (const { stage, states } of stage_states) {
         for (const [stateName, statesList] of _.toPairs(states)) {
             /** _.toPairs(obj) ===> [pair1, pair2, pair3] where pair == [key, value] */
             stage_states_array.push([
                 stage,
-                stateName as DB.CurrentStateExtendedNameType,
+                stateName as DB.StateExtendedNameType,
                 statesList,
             ]);
         }
@@ -182,7 +180,7 @@ const ArtifactResultsList: React.FC<ArtifactResultsListProps> = (props) => {
         loading: loadingCurrentState,
         error: errorCurrentState,
         data: dataCurrentState,
-    } = useQuery(ArtifactsCurrentStateQuery, {
+    } = useQuery(ArtifactsStatesQuery, {
         variables: {
             dbFieldName: 'aid',
             atype: artifactParent.type,

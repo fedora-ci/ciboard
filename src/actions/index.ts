@@ -113,9 +113,6 @@ export const addFilter = (newval = '', type = '') => {
             console.log('Ignoring filter with unsupported type:', type);
             return null;
         }
-        if (!newval) {
-            return null;
-        }
         console.log('Add new filter', type, newval);
         if (type !== cur_type) {
             /** new epoch */

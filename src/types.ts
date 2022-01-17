@@ -20,12 +20,10 @@
 
 import _ from 'lodash';
 import { TabsProps } from '@patternfly/react-core';
-import { ArrayTypeNode } from 'typescript';
 
 export const known_states: Array<DB.StateNameType> = [
     'error',
     'queued',
-    'waived',
     'running',
     'complete',
 ];
@@ -65,17 +63,11 @@ export namespace DB {
         type: ArtifactNameType;
         payload: PayloadsType;
         states: Array<StateType>;
-        current_state: {
-            error?: Array<StateType>;
-            queued?: Array<StateType>;
-            waived?: Array<StateType>;
-            running?: Array<StateType>;
-            complete?: Array<StateType>;
-        };
         gate_tag_name?: string;
         gating_decision?: GatingDecisionType;
         resultsdb_testscase: Array<number>;
-        current_state_lenghts: number;
+        /** XXX */
+        states_lenghts: number;
     };
 
     export type GatingDecisionType = {
@@ -94,26 +86,19 @@ export namespace DB {
         unsatisfied_requirements: Array<any>;
     };
 
-    export type CurrentStateType = ArtifactType['current_state'];
-
     export type StageNameType = 'test' | 'build' | 'dispatcher' | 'dispatch';
 
-    export type StateNameType =
-        | 'error'
-        | 'queued'
-        | 'waived'
-        | 'running'
-        | 'complete';
+    export type StateNameType = 'error' | 'queued' | 'running' | 'complete';
 
-    export type CurrentStateExtendedNameType =
+    export type StateExtendedNameType =
         | StateNameType
+        | 'info'
         | 'passed'
         | 'failed'
-        | 'info'
         | 'missing';
 
-    export type CurrentStateExtendedType = {
-        [key in CurrentStateExtendedNameType]?: Array<StateType>;
+    export type StatesByCategoryType = {
+        [key in StateExtendedNameType]?: Array<StateType>;
     };
 
     export type StateType = {
