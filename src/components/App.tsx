@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import url from 'url';
 import * as React from 'react';
 import { Route, Switch, Redirect, HashRouter } from 'react-router-dom';
 import {
@@ -31,6 +32,8 @@ import { onError } from '@apollo/client/link/error';
 import '@patternfly/react-core/dist/styles/base.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
+
+import { config } from '../config';
 import { menuRoutes, otherRoutes } from '../routes';
 
 /**
@@ -42,7 +45,7 @@ const httpLink = new HttpLink({
     /** Apollo client assumes that graphql on express side is listening on server /graphql */
     /** uri: '/graphql' */
     // uri: 'http://localhost:5000/graphql',
-    uri: 'https://dashboard-stage.ci.stream.centos.org/graphql',
+    uri: url.resolve(config.serverPrefix, 'graphql'),
     /** You a making request to the same url that browser is currently on. This will add existing cookies to requests! */
     credentials: 'same-origin',
 });

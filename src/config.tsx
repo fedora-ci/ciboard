@@ -21,6 +21,12 @@ export const config = {
     sst: {
         url: 'https://sst.osci.redhat.com',
     },
+    // URL prefix of the dashboard backend server. You can use this in case you run
+    // the backend in OpenShift and develop locally, for instance. Then the prefix
+    // might look like
+    //      serverPrefix: 'https://my-dashboard-server.example.com/',
+    // Empty string means the server is on the same host as the frontend is running.
+    serverPrefix: '',
 };
 
 export const kai = {
