@@ -46,7 +46,19 @@ import PageCommon, { ToastAlertGroup } from './PageCommon';
 import ArtifactsListByFilters from './ArtifactsListByFilters';
 import { addFilter, deleteFilter, setOptionsForFilters } from '../actions';
 
+/**
+ * These are default search-field for each artifact type
+ *
+ * List here all possible artifact-types:
+ *
+ * https://github.com/fedora-ci/kaijs/blob/main/src/dbInterface.ts#L24
+ * https://pagure.io/greenwave/blob/master/f/conf/subject_types
+ * https://gitlab.cee.redhat.com/gating/greenwave-playbooks/-/blob/master/roles/greenwave/files/subject_types.yaml
+ *
+ */
 const menuTypes = {
+    'Brew NVR': 'brew-build',
+    'Modularity NSVC': 'redhat-module',
     'CentOS Stream NVR': 'koji-build-cs',
     'Fedora NVR': 'koji-build',
 };

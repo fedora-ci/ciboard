@@ -515,7 +515,8 @@ export const mkLinkPkgsDevelFromSource = (
     instance: KojiInstanceType,
 ) => {
     const name_sha1 = _.last(_.split(source, 'rpms/'));
-    const [name, sha1] = _.split(name_sha1, '#');
+    const [name_dot_git, sha1] = _.split(name_sha1, '#');
+    const name = _.replace(name_dot_git, /.git$/, '');
     switch (instance) {
         case 'fp':
             return `https://src.fedoraproject.org/rpms/${name}/c/${sha1}`;
