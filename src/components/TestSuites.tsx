@@ -19,6 +19,7 @@
  */
 
 import _ from 'lodash';
+import { Buffer } from 'buffer';
 import * as React from 'react';
 import pako from 'pako';
 import moment from 'moment';
@@ -511,10 +512,10 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     const [msgError, setError] = useState<JSX.Element>();
     const { loading, error, data } = useQuery(ArtifactsXunitQuery, {
         variables: {
-            dbFieldName: 'aid',
-            atype: artifact.type,
-            dbFieldValues: [artifact.aid],
             msg_id,
+            dbFieldName1: 'aid',
+            atype: artifact.type,
+            dbFieldValues1: [artifact.aid],
         },
         fetchPolicy: 'cache-first',
         errorPolicy: 'all',
@@ -522,7 +523,9 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     });
     /** Even there is an error there could be data */
     const haveData =
-        !loading && data && _.has(data, 'db_artifacts.artifacts[0].states');
+        !loading &&
+        Boolean(data) &&
+        _.has(data, 'db_artifacts.artifacts[0].states');
     const haveErrorNoData = !loading && error && !haveData;
     useEffect(() => {
         if (!haveData) {
@@ -541,11 +544,12 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
             return;
         }
         try {
+            const encodedRawData = Buffer.from(xunitRaw, 'base64');
             /** Decode base64 encoded gzipped data */
-            var xunit = new TextDecoder('utf-16').decode(
-                new Uint16Array(pako.inflate(atob(xunitRaw))),
-            );
-            setXunit(xunit);
+            const decodedRawData = pako.inflate(encodedRawData);
+            const xunitUtf8Encoded =
+                Buffer.from(decodedRawData).toString('utf8');
+            setXunit(xunitUtf8Encoded);
         } catch (err) {
             const error = (
                 <Alert isInline title="Xunit error">
@@ -566,6 +570,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
             </>
         );
     }
+    if (msgError) return <>{msgError}</>;
     if (_.isEmpty(xunit)) {
         return null;
     }

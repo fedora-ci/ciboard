@@ -52,6 +52,59 @@ const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
     return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
 };
 
+/**
+ * Return a list of gating requirements of a specific type
+ * (e.g. missing, failed, etc.) for the given artifact and their
+ * waiving status. If the type is `test-result-missing`, for instance,
+ * the function returns all the tests that Greenwave considers missing,
+ * including those that were waived. Tests that are present in normal
+ * results are excluded, so that there are no duplicates with queued
+ * or running tests.
+ */
+const getGatingTests = (
+    type: string,
+    states: DB.StatesByCategoryType,
+    artifact: DB.ArtifactType,
+) => {
+    if (!artifact || !artifact.gating_decision) return [];
+    /**
+     * Names of test cases that we got from Kai, no matter the result.
+     */
+    const testcases = _.map(_.flatten(_.values(states)), (state) => {
+        return getTestcaseName({ kai_state: state.kai_state });
+    });
+    /**
+     * List of all gating requirements of the given type.
+     */
+    const allRequirements = (
+        artifact.gating_decision.unsatisfied_requirements || []
+    )
+        .concat(artifact.gating_decision.satisfied_requirements || [])
+        .filter(
+            (requirement) =>
+                requirement.type === type ||
+                requirement.type === `${type}-waived`,
+        )
+        .map((requirement) => ({
+            testcase: requirement.testcase.name || requirement.testcase,
+            waived: requirement.type.endsWith('-waived'),
+        }));
+    /**
+     * Discard requirements that already appear in Kai results, preventing
+     * duplicates in the UI.
+     */
+    const matchingTests = allRequirements
+        .filter(({ testcase }) => !testcases.includes(testcase))
+        .map(({ testcase, waived }) => ({
+            gating_test: true,
+            stage: 'gate',
+            status: waived ? 'waived' : null,
+            testcase,
+        }));
+
+    return matchingTests;
+};
+
 interface StageAndStateProps {
     stageName: DB.StageNameType;
     stateName: DB.StateExtendedNameType;
@@ -87,31 +140,52 @@ const StageAndState: React.FC<StageAndStateProps> = (props) => {
     );
 };
 
-/*
-mk_stages_states returns:
-[
-    {stage: 'test', states: {}}
-    {stage: 'build', states: {}}
-]
-    where states: {
-        passed: [result1, result2]
-        failed: [result3]
-        info: [...]
-
-        error: [...]
-        queued: [...]
-        running: [...]
-        waived: [...]
-
-        missing: [...]
-        "waived missing": [...]
-    }
-
-    + skip empty [...]
-*/
-const mk_stages_states = (
-    artifact: DB.ArtifactType,
-): Array<{ stage: DB.StageNameType; states: DB.StatesByCategoryType }> => {
+/**
+ * Return list of stages along with our current knowledge of the results
+ * in each stage.
+ *
+ * It might happen from time to time that we don't receive a message about
+ * a finished test while Greenwave does. In that case, Greenwave bases its
+ * gating decision on information we don't have and cannot display. This
+ * would also cause some important test suites to be omitted from the results
+ * list and thus make their status invisible to maintainers.
+ *
+ * This function collects all the artifact's results that we know about as
+ * well as those that only Greenwave knows (or does not know) about and
+ * packs them into a unified structure. In this process, at the moment the
+ * results we have (from Kai) have precendence over Greenwave's info.
+ *
+ * As an example, assume that the test `x.y.z` is required for gating.
+ * Until the test finishes (or the requirement is waived), it's missing
+ * from Greenwave's point of view. As long as it is so, we will display
+ * the test as such in the dashboard.
+ *
+ * Now image that Greenwave receives a message that `x.y.z` has failed but
+ * we receive no such message. Greenwave now changes its type to
+ * `test-result-failed`. At this point, the dashboard should display it as
+ * failed as well because Greenwave has just told us the result, even
+ * though we didn't get the original message.
+ *
+ * mk_stages_states() returns a list of the form
+ *     [
+ *         {stage: 'test', states: {}},
+ *         {stage: 'build', states: {}}
+ *     ]
+ * where each `states` key has the form
+ *     {
+ *         passed: [result1, result2]
+ *         failed: [result3]
+ *         info: [...]
+ *
+ *         error: [...]
+ *         queued: [...]
+ *         running: [...]
+ *         waived: [...]
+ *
+ *         missing: [...]
+ *     }
+ */
+const mk_stages_states = (artifact: DB.ArtifactType) => {
     const stage_states = [];
     var buildStates = transformArtifactStates(artifact.states, 'build');
     buildStates = _.omitBy(buildStates, (x) => _.isEmpty(x));
@@ -128,10 +202,37 @@ const mk_stages_states = (
             error: []
             queued: []
             running: []
-            waived: []
+            waived: [] // XXX do we have this ?
         }
     */
-    var testStates = transformArtifactStates(artifact.states, 'test');
+    let testStates = transformArtifactStates(artifact.states, 'test');
+    /**
+     * Collect tests that resulted in an error according to Greenwave.
+     * XXX: cannot be concatenated with kai-state
+    testStates['error'] = _.concat(
+        _.defaultTo(testStates['error'], []),
+        getGatingTests('test-result-errored', testStates, artifact),
+    );
+     */
+    /**
+     * Collect tests that failed according to Greenwave.
+     * XXX: cannot be concatenated with kai-state
+    testStates['failed'] = _.concat(
+        _.defaultTo(testStates['failed'], []),
+        getGatingTests('test-result-failed', testStates, artifact),
+    );
+     */
+    /**
+     * Collect missing tests that neither Greenwave nor us have any
+     * information about.
+     */
+    /** XXX: revisit missing states cannot be added here, since they are not present in DB in terms of Kai-state
+    testStates['missing'] = getGatingTests(
+        'test-result-missing',
+        testStates,
+        artifact,
+    );
+    */
     testStates = _.omitBy(testStates, (x) => _.isEmpty(x));
     if (_.some(_.values(testStates), 'length')) {
         const stage: DB.StageNameType = 'test';
@@ -182,17 +283,17 @@ const ArtifactResultsList: React.FC<ArtifactResultsListProps> = (props) => {
         data: dataCurrentState,
     } = useQuery(ArtifactsStatesQuery, {
         variables: {
-            dbFieldName: 'aid',
+            limit: 1,
+            dbFieldName1: 'aid',
             atype: artifactParent.type,
-            dbFieldValues: [artifactParent.aid],
+            dbFieldValues1: [artifactParent.aid],
         },
         errorPolicy: 'all',
         notifyOnNetworkStatusChange: true,
     });
     const haveData =
         !loadingCurrentState &&
-        dataCurrentState &&
-        !_.isEmpty(dataCurrentState.db_artifacts.artifacts);
+        _.has(dataCurrentState, 'db_artifacts.artifacts');
     // XXX: display errors
     const haveErrorNoData =
         !loadingCurrentState && errorCurrentState && !haveData;
@@ -229,18 +330,19 @@ const ArtifactResultsList: React.FC<ArtifactResultsListProps> = (props) => {
     var artifact: DB.ArtifactType | null = null;
     if (haveData) {
         /**
-         * always read data from cache
-         * create 1 object artifact that holds all data
+         * readQuery() - always read data from cache, never makes request to server.
+         * create 1 object artifact that holds all data.
          */
-        const { db_artifacts } = client.readQuery({
+        const reply = client.readQuery({
             query: ArtifactsCompleteQuery,
             variables: {
-                dbFieldName: 'aid',
+                limit: 1,
+                dbFieldName1: 'aid',
                 atype: artifactParent.type,
-                dbFieldValues: [artifactParent.aid],
+                dbFieldValues1: [artifactParent.aid],
             },
         });
-        artifact = db_artifacts.artifacts[0];
+        artifact = _.get(reply, 'db_artifacts.artifacts[0]');
     }
     if (loadingCurrentState) {
         /**

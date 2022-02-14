@@ -296,7 +296,10 @@ export namespace MSG_V_1 {
         | MsgRPMBuildTestRunning;
 
     export function isMsg(msg: BrokerMessagesType): msg is MessagesType {
-        return _.some(['0.2.', '1.'], _.partial(_.startsWith, msg.version));
+        return _.some(
+            ['0.2.', '1.'],
+            _.flow(_.identity, _.partial(_.startsWith, msg.version)),
+        );
     }
 }
 

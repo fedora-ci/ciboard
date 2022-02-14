@@ -26,10 +26,14 @@ import {
     DELETE_FILTER,
     SET_QUERY_STRING,
     SET_OPTIONS_FOR_FILTERS,
+    GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
+    GATE_ARTIFACTS_SET_SEARCH_OPTIONS,
     /** Alerts */
     POP_ALERT,
     PUSH_ALERT,
     ActionPopAlert,
+    ActionGASetSearchOptions,
+    ActionGABumpSearchEpoch,
 } from './types';
 import store from '../reduxStore';
 import { db_field_from_atype } from '../utils/artifactUtils';
@@ -41,6 +45,21 @@ export const popAlert = (key: number): ActionPopAlert => {
     return {
         type: POP_ALERT,
         payload: { key },
+    };
+};
+
+export const setGatingSearchOptions = (
+    gating_options: ActionGASetSearchOptions['payload'],
+): ActionGASetSearchOptions => {
+    return {
+        type: GATE_ARTIFACTS_SET_SEARCH_OPTIONS,
+        payload: gating_options,
+    };
+};
+
+export const bumpGatingSearchEpoch = (): ActionGABumpSearchEpoch => {
+    return {
+        type: GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
     };
 };
 

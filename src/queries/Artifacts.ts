@@ -40,33 +40,7 @@ const mainFragment = gql`
         _id
         aid
         type
-        payload {
-            ... on ArtifactRPMBuildType {
-                nvr
-                uid
-                branch
-                issuer
-                source
-                scratch
-                component
-                comment_id
-                repository
-                commit_hash
-                dependencies
-                gate_tag_name
-            }
-            ... on ArtifactMBSBuildType {
-                uid
-                name
-                nsvc
-                stream
-                context
-                version
-            }
-            ... on ArtifactComposeType {
-                compose_type
-            }
-        }
+        payload
     }
 `;
 
@@ -115,19 +89,21 @@ export const ArtifactsStatesQuery = gql`
         $atype: String!
         $limit: Int
         $aid_offset: String
-        $regexs: [String]
-        $dbFieldName: String
-        $dbFieldValues: [String]
+        $dbFieldName1: String
+        $dbFieldValues1: [String]
+        $dbFieldName2: String
+        $dbFieldValues2: [String]
         $options: ArtifactsOptionsInputType
     ) {
         db_artifacts(
             atype: $atype
             limit: $limit
-            regexs: $regexs
             options: $options
             aid_offset: $aid_offset
-            dbFieldName: $dbFieldName
-            dbFieldValues: $dbFieldValues
+            dbFieldName1: $dbFieldName1
+            dbFieldValues1: $dbFieldValues1
+            dbFieldName2: $dbFieldName2
+            dbFieldValues2: $dbFieldValues2
         ) {
             has_next
             artifacts {
@@ -190,19 +166,21 @@ export const ArtifactsCompleteQuery = gql`
         $limit: Int
         $atype: String!
         $aid_offset: String
-        $regexs: [String]
-        $dbFieldName: String
-        $dbFieldValues: [String]
+        $dbFieldName1: String
+        $dbFieldValues1: [String]
+        $dbFieldName2: String
+        $dbFieldValues2: [String]
         $options: ArtifactsOptionsInputType
     ) {
         db_artifacts(
             atype: $atype
             limit: $limit
-            regexs: $regexs
             options: $options
             aid_offset: $aid_offset
-            dbFieldName: $dbFieldName
-            dbFieldValues: $dbFieldValues
+            dbFieldName1: $dbFieldName1
+            dbFieldValues1: $dbFieldValues1
+            dbFieldName2: $dbFieldName2
+            dbFieldValues2: $dbFieldValues2
         ) {
             has_next
             artifacts {
@@ -220,19 +198,21 @@ export const ArtifactsListByFiltersQuery1 = gql`
         $limit: Int
         $atype: String!
         $aid_offset: String
-        $regexs: [String]
-        $dbFieldName: String
-        $dbFieldValues: [String]
+        $dbFieldName1: String
+        $dbFieldValues1: [String]
+        $dbFieldName2: String
+        $dbFieldValues2: [String]
         $options: ArtifactsOptionsInputType
     ) {
         db_artifacts(
             atype: $atype
             limit: $limit
-            regexs: $regexs
             options: $options
             aid_offset: $aid_offset
-            dbFieldName: $dbFieldName
-            dbFieldValues: $dbFieldValues
+            dbFieldName1: $dbFieldName1
+            dbFieldValues1: $dbFieldValues1
+            dbFieldName2: $dbFieldName2
+            dbFieldValues2: $dbFieldValues2
         ) {
             has_next
             artifacts {
@@ -257,20 +237,22 @@ export const ArtifactsXunitQuery = gql`
         $atype: String!
         $limit: Int
         $aid_offset: String
-        $regexs: [String]
         $msg_id: [String]
-        $dbFieldName: String
-        $dbFieldValues: [String]
+        $dbFieldName1: String
+        $dbFieldValues1: [String]
+        $dbFieldName2: String
+        $dbFieldValues2: [String]
         $options: ArtifactsOptionsInputType
     ) {
         db_artifacts(
             atype: $atype
             limit: $limit
-            regexs: $regexs
             options: $options
             aid_offset: $aid_offset
-            dbFieldName: $dbFieldName
-            dbFieldValues: $dbFieldValues
+            dbFieldName1: $dbFieldName1
+            dbFieldValues1: $dbFieldValues1
+            dbFieldName2: $dbFieldName2
+            dbFieldValues2: $dbFieldValues2
         ) {
             has_next
             artifacts {
@@ -285,4 +267,60 @@ export const ArtifactsXunitQuery = gql`
         }
     }
     ${statesFragment}
+`;
+
+export const PageGatingGetSSTTeams = gql`
+    query ArtifactsComplete($product_id: Int) {
+        db_sst_list(product_id: $product_id)
+    }
+`;
+
+export const PageGatingArtifacts = gql`
+    query ArtifactsComplete(
+        $limit: Int
+        $atype: String!
+        $aid_offset: String
+        $dbFieldName1: String
+        $dbFieldValues1: [String]
+        $dbFieldName2: String
+        $dbFieldValues2: [String]
+        $dbFieldName3: String
+        $dbFieldValues3: [String]
+        $dbFieldNameComponentMapping1: String
+        $dbFieldValuesComponentMapping1: [String]
+        $options: ArtifactsOptionsInputType
+    ) {
+        db_artifacts(
+            atype: $atype
+            limit: $limit
+            options: $options
+            aid_offset: $aid_offset
+            dbFieldName1: $dbFieldName1
+            dbFieldValues1: $dbFieldValues1
+            dbFieldName2: $dbFieldName2
+            dbFieldValues2: $dbFieldValues2
+            dbFieldName3: $dbFieldName3
+            dbFieldValues3: $dbFieldValues3
+            dbFieldNameComponentMapping1: $dbFieldNameComponentMapping1
+            dbFieldValuesComponentMapping1: $dbFieldValuesComponentMapping1
+        ) {
+            has_next
+            artifacts {
+                ...MainFragment
+                ...CurrentStateFragment
+                component_mapping {
+                    component_name
+                    product_id
+                    description
+                    def_assignee
+                    def_assignee_name
+                    qa_contact
+                    qa_contact_name
+                    sst_team_name
+                    _updated
+                }
+            }
+        }
+    }
+    ${mainFragment}
 `;

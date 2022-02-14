@@ -98,7 +98,7 @@ const ArtifactsTable: React.FC = () => {
         setAidOffset(undefined);
     }, [artifactsFilters, known_pages]);
     /** XXX */
-    const searchOptions: any = {};
+    const searchOptions: any = { valuesAreRegex1: true, reduced: true };
     if (skipScratch) {
         searchOptions.skipScratch = skipScratch;
     }
@@ -136,7 +136,7 @@ const ArtifactsTable: React.FC = () => {
         data,
     } = useQuery(ArtifactsListByFiltersQuery1, {
         variables: {
-            regexs,
+            dbFieldValues1: regexs,
             aid_offset,
             options: searchOptions,
             atype: artifactsType,

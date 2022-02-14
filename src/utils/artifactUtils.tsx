@@ -44,6 +44,7 @@ import {
 
 /** Maps artifact type to DB field to use in next query */
 export const db_field_from_atype = {
+    'brew-build': 'nvr',
     'koji-build': 'nvr',
     'copr-build': 'component',
     'koji-build-cs': 'nvr',
@@ -77,7 +78,7 @@ export const transformArtifactStates = (
         );
     _.forEach(states_names, (state_name) => {
         /**
-         * for complete test states, count failed, passed and other events
+         * For complete test states, count failed, passed and other events
          */
         /**
          * complete tests
@@ -177,7 +178,11 @@ export const transformArtifactStates = (
         } else {
             /** other categories for asked stage */
             const category_other = _.filter(states, (state: DB.StateType) => {
-                if (state.kai_state.stage === stage) {
+                const kai_state = state.kai_state;
+                if (
+                    kai_state.stage === stage &&
+                    kai_state.state === state_name
+                ) {
                     return true;
                 }
                 return false;
@@ -359,11 +364,11 @@ export const getTestcaseName = (args: {
     broker_msg_body?: BrokerMessagesType;
 }) => {
     const { kai_state, broker_msg_body } = args;
-    let test_case_name: string | null = null;
+    var test_case_name: string | null = null;
     if (kai_state?.test_case_name) {
         test_case_name = kai_state.test_case_name;
     }
-    if (broker_msg_body && !test_case_name) {
+    if (broker_msg_body && _.isEmpty(test_case_name)) {
         if (MSG_V_0_1.isMsg(broker_msg_body)) {
             if (
                 broker_msg_body.namespace &&
@@ -381,7 +386,7 @@ export const getTestcaseName = (args: {
                 return `${broker_msg_body.test.namespace}.${broker_msg_body.test.type}.${broker_msg_body.test.category}`;
         }
     }
-    if (!test_case_name) {
+    if (_.isEmpty(test_case_name)) {
         test_case_name = 'uknown testcase - please report an issue';
     }
 
