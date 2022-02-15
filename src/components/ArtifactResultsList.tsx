@@ -40,7 +40,13 @@ import {
     getTestcaseName,
     transformArtifactStates,
 } from '../utils/artifactUtils';
-import { DB } from '../types';
+import {
+    StateType,
+    ArtifactType,
+    StageNameType,
+    StatesByCategoryType,
+    StateExtendedNameType,
+} from '../artifact';
 import {
     ArtifactsCompleteQuery,
     ArtifactsStatesQuery,
@@ -48,7 +54,7 @@ import {
 import { RootStateType } from '../reducers';
 import { IStateQueryString } from '../actions/types';
 
-const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
+const artifactDashboardUrl = (artifact: ArtifactType) => {
     return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
 };
 
@@ -63,8 +69,8 @@ const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
  */
 const getGatingTests = (
     type: string,
-    states: DB.StatesByCategoryType,
-    artifact: DB.ArtifactType,
+    states: StatesByCategoryType,
+    artifact: ArtifactType,
 ) => {
     if (!artifact || !artifact.gating_decision) return [];
     /**
@@ -106,8 +112,8 @@ const getGatingTests = (
 };
 
 interface StageAndStateProps {
-    stageName: DB.StageNameType;
-    stateName: DB.StateExtendedNameType;
+    stageName: StageNameType;
+    stateName: StateExtendedNameType;
 }
 
 const StageAndState: React.FC<StageAndStateProps> = (props) => {
@@ -185,12 +191,12 @@ const StageAndState: React.FC<StageAndStateProps> = (props) => {
  *         missing: [...]
  *     }
  */
-const mk_stages_states = (artifact: DB.ArtifactType) => {
+const mk_stages_states = (artifact: ArtifactType) => {
     const stage_states = [];
     var buildStates = transformArtifactStates(artifact.states, 'build');
     buildStates = _.omitBy(buildStates, (x) => _.isEmpty(x));
     if (_.some(_.values(buildStates), 'length')) {
-        const stage: DB.StageNameType = 'build';
+        const stage: StageNameType = 'build';
         stage_states.push({ stage, states: buildStates });
     }
     /*
@@ -235,7 +241,7 @@ const mk_stages_states = (artifact: DB.ArtifactType) => {
     */
     testStates = _.omitBy(testStates, (x) => _.isEmpty(x));
     if (_.some(_.values(testStates), 'length')) {
-        const stage: DB.StageNameType = 'test';
+        const stage: StageNameType = 'test';
         stage_states.push({ stage, states: testStates });
     }
     return stage_states;
@@ -250,19 +256,19 @@ stage_states_array is the second form:
 */
 const mk_stage_states_array = (
     stage_states: Array<{
-        stage: DB.StageNameType;
-        states: DB.StatesByCategoryType;
+        stage: StageNameType;
+        states: StatesByCategoryType;
     }>,
-): Array<[DB.StageNameType, DB.StateExtendedNameType, DB.StateType[]]> => {
+): Array<[StageNameType, StateExtendedNameType, StateType[]]> => {
     const stage_states_array: Array<
-        [DB.StageNameType, DB.StateExtendedNameType, DB.StateType[]]
+        [StageNameType, StateExtendedNameType, StateType[]]
     > = [];
     for (const { stage, states } of stage_states) {
         for (const [stateName, statesList] of _.toPairs(states)) {
             /** _.toPairs(obj) ===> [pair1, pair2, pair3] where pair == [key, value] */
             stage_states_array.push([
                 stage,
-                stateName as DB.StateExtendedNameType,
+                stateName as StateExtendedNameType,
                 statesList,
             ]);
         }
@@ -271,7 +277,7 @@ const mk_stage_states_array = (
 };
 
 interface ArtifactResultsListProps {
-    artifact: DB.ArtifactType;
+    artifact: ArtifactType;
 }
 
 const ArtifactResultsList: React.FC<ArtifactResultsListProps> = (props) => {
@@ -327,7 +333,7 @@ const ArtifactResultsList: React.FC<ArtifactResultsListProps> = (props) => {
         }
     }, [expandedResult, canScroll]);
     const focusOn = _.get(queryString.queryString, 'focus', false);
-    var artifact: DB.ArtifactType | null = null;
+    var artifact: ArtifactType | null = null;
     if (haveData) {
         /**
          * readQuery() - always read data from cache, never makes request to server.

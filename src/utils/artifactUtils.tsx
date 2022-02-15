@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as React from 'react';
 import _ from 'lodash';
 import {
     OkIcon,
@@ -33,14 +32,18 @@ import {
     WarningTriangleIcon,
     OutlinedQuestionCircleIcon,
 } from '@patternfly/react-icons';
+import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
-    DB,
-    MSG_V_1,
-    MSG_V_0_1,
+    StateType,
     known_states,
-    BrokerMessagesType,
+    ArtifactType,
+    KaiStateType,
+    StageNameType,
+    StateNameType,
+    ArtifactNameType,
     KojiInstanceType,
-} from '../types';
+    StatesByCategoryType,
+} from '../artifact';
 
 /** Maps artifact type to DB field to use in next query */
 export const db_field_from_atype = {
@@ -64,18 +67,17 @@ export const db_field_from_atype = {
  * To:   { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
  */
 export const transformArtifactStates = (
-    states: Array<DB.StateType>,
-    stage: DB.StageNameType,
-): DB.StatesByCategoryType => {
-    const states_by_category: DB.StatesByCategoryType = {};
-    const states_names: Array<DB.StateNameType> =
-        _.intersection<DB.StateNameType>(
-            _.map(
-                states,
-                _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),
-            ),
-            known_states,
-        );
+    states: Array<StateType>,
+    stage: StageNameType,
+): StatesByCategoryType => {
+    const states_by_category: StatesByCategoryType = {};
+    const states_names: Array<StateNameType> = _.intersection<StateNameType>(
+        _.map(
+            states,
+            _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),
+        ),
+        known_states,
+    );
     _.forEach(states_names, (state_name) => {
         /**
          * For complete test states, count failed, passed and other events
@@ -84,7 +86,7 @@ export const transformArtifactStates = (
          * complete tests
          */
         if (state_name === 'complete' && stage === 'test') {
-            const category_passed = _.filter(states, (state: DB.StateType) => {
+            const category_passed = _.filter(states, (state: StateType) => {
                 if (
                     state.kai_state.stage !== stage ||
                     state.kai_state.state !== state_name
@@ -110,7 +112,7 @@ export const transformArtifactStates = (
             /**
              * failed tests
              */
-            const category_failed = _.filter(states, (state: DB.StateType) => {
+            const category_failed = _.filter(states, (state: StateType) => {
                 if (
                     state.kai_state.stage !== stage ||
                     state.kai_state.state !== state_name
@@ -139,7 +141,7 @@ export const transformArtifactStates = (
             /**
              * info tests
              */
-            const category_info = _.filter((state: DB.StateType) => {
+            const category_info = _.filter((state: StateType) => {
                 if (
                     state.kai_state.stage !== stage ||
                     state.kai_state.state !== state_name
@@ -163,7 +165,7 @@ export const transformArtifactStates = (
                 states_by_category.info = category_failed;
             }
         } else if (state_name === 'error' && stage === 'build') {
-            const category_failed = _.filter(states, (state: DB.StateType) => {
+            const category_failed = _.filter(states, (state: StateType) => {
                 if (
                     state.kai_state.stage === stage ||
                     state.kai_state.state === state_name
@@ -177,7 +179,7 @@ export const transformArtifactStates = (
             }
         } else {
             /** other categories for asked stage */
-            const category_other = _.filter(states, (state: DB.StateType) => {
+            const category_other = _.filter(states, (state: StateType) => {
                 const kai_state = state.kai_state;
                 if (
                     kai_state.stage === stage &&
@@ -214,7 +216,7 @@ const known_aid_meaning = {
     'productmd-compose': 'id',
 };
 
-export const nameFieldForType = (type: DB.ArtifactNameType) => {
+export const nameFieldForType = (type: ArtifactNameType) => {
     const includes = _.includes(_.keys(known_types), type);
     if (!includes) {
         return 'unknown type';
@@ -222,7 +224,7 @@ export const nameFieldForType = (type: DB.ArtifactNameType) => {
     return known_types[type];
 };
 
-export const aidMeaningForType = (type: DB.ArtifactNameType) => {
+export const aidMeaningForType = (type: ArtifactNameType) => {
     const includes = _.includes(_.keys(known_aid_meaning), type);
     if (!includes) {
         return 'id';
@@ -291,7 +293,7 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
     return os_version;
 };
 
-export const artifactUrl = (artifact: DB.ArtifactType) => {
+export const artifactUrl = (artifact: ArtifactType) => {
     const urlMap = {
         'brew-build': `https://brewweb.engineering.redhat.com/brew/taskinfo?taskID=${artifact.aid}`,
         'koji-build': `https://koji.fedoraproject.org/koji/taskinfo?taskID=${artifact.aid}`,
@@ -340,7 +342,7 @@ export const resultColor = (result: string) => {
 type modifyType = 'test' | 'gating';
 
 export const getThreadID = (args: {
-    kai_state?: DB.KaiStateType;
+    kai_state?: KaiStateType;
     broker_msg_body?: BrokerMessagesType;
 }) => {
     const { kai_state, broker_msg_body } = args;
@@ -360,7 +362,7 @@ export const getThreadID = (args: {
 };
 
 export const getTestcaseName = (args: {
-    kai_state?: DB.KaiStateType;
+    kai_state?: KaiStateType;
     broker_msg_body?: BrokerMessagesType;
 }) => {
     const { kai_state, broker_msg_body } = args;

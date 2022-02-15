@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,7 +57,8 @@ import {
     getTestcaseName,
     renderStatusIcon,
 } from '../utils/artifactUtils';
-import { DB, MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
+import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
+import { ArtifactType, StateType, StateExtendedNameType } from '../artifact';
 
 type ContactEntryNameType = 'email' | 'irc' | 'name';
 
@@ -102,7 +103,7 @@ const renderError = (broker_msg_body: BrokerMessagesType) => {
 };
 
 interface StageNameProps {
-    state: DB.StateType;
+    state: StateType;
 }
 
 const StageName: React.FC<StageNameProps> = (props) => {
@@ -124,10 +125,7 @@ const StageName: React.FC<StageNameProps> = (props) => {
 };
 
 /** Return true if result is gating, false otherwise */
-const isResultGating = (
-    state: DB.StateType,
-    artifact: DB.ArtifactType,
-): boolean => {
+const isResultGating = (state: StateType, artifact: ArtifactType): boolean => {
     const { broker_msg_body, kai_state } = state;
     const testcase = getTestcaseName({ broker_msg_body, kai_state });
     const decision = artifact.gating_decision;
@@ -207,10 +205,7 @@ const isResultGating = (
 };
 
 /** Return the waiver if present for the result, null otherwise */
-export const getResultWaiver = (
-    state: DB.StateType,
-    artifact: DB.ArtifactType,
-) => {
+export const getResultWaiver = (state: StateType, artifact: ArtifactType) => {
     const { broker_msg_body } = state;
     if (!artifact.gating_decision) return null;
     const { waivers } = artifact.gating_decision;
@@ -393,14 +388,14 @@ const MsgQueued: React.FC = () => {
 };
 
 interface WaiveButtonProps {
-    artifact: DB.ArtifactType;
-    stateName: DB.StateExtendedNameType;
+    artifact: ArtifactType;
+    stateName: StateExtendedNameType;
     broker_msg_body: BrokerMessagesType;
 }
 const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     const { artifact, stateName, broker_msg_body } = props;
     const dispatch = useDispatch();
-    if (!artifact.gate_tag_name) {
+    if (!artifact.payload.gate_tag_name) {
         /** XXX: https://projects.engineering.redhat.com/browse/OSCI-1384 */
         return null;
     }
@@ -425,7 +420,7 @@ const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
 };
 
 interface ReTestButtonProps {
-    state: DB.StateType;
+    state: StateType;
 }
 
 const ReTestButton: React.FC<ReTestButtonProps> = (props) => {
@@ -504,7 +499,7 @@ const DebugLogLink: React.FC<DebugLogLinkProps> = (props) => {
 };
 
 interface DocsLinkProps {
-    stateName: DB.StateExtendedNameType;
+    stateName: StateExtendedNameType;
     isGatingResult: boolean;
     broker_msg_body: BrokerMessagesType;
 }
@@ -589,9 +584,9 @@ const Wow: React.FC<WowProps> = (props) => {
 */
 
 interface FaceForResultsProps {
-    state: DB.StateType;
+    state: StateType;
     isWaived: boolean;
-    artifact: DB.ArtifactType;
+    artifact: ArtifactType;
     artifactDashboardUrl: string;
 }
 
@@ -665,9 +660,9 @@ const FaceForResults: React.FC<FaceForResultsProps> = (props) => {
 };
 
 interface ArtifactResultsItemProps {
-    state: DB.StateType;
-    artifact: DB.ArtifactType;
-    stateName: DB.StateExtendedNameType;
+    state: StateType;
+    artifact: ArtifactType;
+    stateName: StateExtendedNameType;
     forceExpand: boolean;
     setExpandedResult: React.Dispatch<React.SetStateAction<string>>;
     artifactDashboardUrl: string;

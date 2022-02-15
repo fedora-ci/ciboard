@@ -48,9 +48,10 @@ import {
 import styles from '../custom.module.css';
 
 import { ArtifactsDetailedInfoKojiTask } from '../queries/Artifacts';
-import { DB, koji_instance, TabClickHandlerType } from '../types';
+import { TabClickHandlerType } from '../types';
+import { koji_instance, ArtifactType } from '../artifact';
 
-const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
+const artifactDashboardUrl = (artifact: ArtifactType) => {
     return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
 };
 
@@ -58,7 +59,7 @@ const artifactDashboardUrl = (artifact: DB.ArtifactType) => {
  * Different artifact types have different detailed info.
  */
 interface ArtifactDetailedInfoKojiBuildProps {
-    artifact: DB.ArtifactType;
+    artifact: ArtifactType;
 }
 const ArtifactDetailedInfoKojiBuild: React.FC<
     ArtifactDetailedInfoKojiBuildProps
@@ -483,7 +484,7 @@ const HistoryListEntry: React.FC<HistoryListEntryProps> = (props) => {
 };
 
 interface ArtifactDetailedInfoProps {
-    artifact: DB.ArtifactType;
+    artifact: ArtifactType;
 }
 const ArtifactDetailedInfo: React.FC<ArtifactDetailedInfoProps> = (props) => {
     const { artifact } = props;

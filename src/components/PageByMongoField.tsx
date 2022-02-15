@@ -29,7 +29,7 @@ import {
     TableVariant,
 } from '@patternfly/react-table';
 
-import { DB } from '../types';
+import { ArtifactType } from '../artifact';
 import PageCommon, { ToastAlertGroup } from './PageCommon';
 import { ArtifactsCompleteQuery } from '../queries/Artifacts';
 import PaginationToolbar, { PaginationToolbarProps } from './PaginationToolbar';
@@ -59,7 +59,7 @@ import {
 
 const ArtifactsTable: React.FC<any> = (props) => {
     const scrollRef = useRef<HTMLTableRowElement>(null);
-    var artifacts: DB.ArtifactType[] = [];
+    var artifacts: ArtifactType[] = [];
     /**
      * Pagination vars
      */

@@ -19,10 +19,10 @@
  */
 
 import _ from 'lodash';
-import { Buffer } from 'buffer';
 import * as React from 'react';
 import pako from 'pako';
 import moment from 'moment';
+import { Buffer } from 'buffer';
 import 'moment-duration-format';
 import { useQuery } from '@apollo/client';
 import { useState, memo, useEffect } from 'react';
@@ -53,7 +53,7 @@ import {
     IRow,
 } from '@patternfly/react-table';
 
-import { DB } from '../types';
+import { ArtifactType, StateType } from '../artifact';
 import { renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 
@@ -499,8 +499,8 @@ const NoXunit = () => {
 };
 
 interface TestSuitesProps {
-    state: DB.StateType;
-    artifact: DB.ArtifactType;
+    state: StateType;
+    artifact: ArtifactType;
 }
 const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     const { state, artifact } = props;

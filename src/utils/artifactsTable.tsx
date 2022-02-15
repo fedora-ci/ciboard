@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,12 +54,12 @@ import {
 } from './artifactUtils';
 import styles from '../custom.module.css';
 
+import { ArtifactType } from '../artifact';
 import ArtifactResultsList from '../components/ArtifactResultsList';
 import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
-import { DB } from '../types';
 
 interface ArtifactNameProps {
-    artifact: DB.ArtifactType;
+    artifact: ArtifactType;
 }
 const ArtifactName: React.FC<ArtifactNameProps> = (props) => {
     const { artifact } = props;
@@ -90,14 +90,16 @@ const ArtifactName: React.FC<ArtifactNameProps> = (props) => {
 };
 
 interface ArtifactDestinationProps {
-    artifact: DB.ArtifactType;
+    artifact: ArtifactType;
 }
 const ArtifactDestination: React.FC<ArtifactDestinationProps> = (props) => {
     const { artifact } = props;
-    if (artifact.gate_tag_name) {
+    if (artifact.payload.gate_tag_name) {
         return (
             <TextContent>
-                <Text component={TextVariants.p}>{artifact.gate_tag_name}</Text>
+                <Text component={TextVariants.p}>
+                    {artifact.payload.gate_tag_name}
+                </Text>
             </TextContent>
         );
     }
@@ -112,7 +114,7 @@ const ArtifactDestination: React.FC<ArtifactDestinationProps> = (props) => {
 };
 
 interface ArtifactUrlProps {
-    artifact: DB.ArtifactType;
+    artifact: ArtifactType;
 }
 const ArtifactUrl: React.FC<ArtifactUrlProps> = (props) => {
     const { artifact } = props;
@@ -143,7 +145,7 @@ const TestResultInfo = ({ state, states }: any) => {
 };
 
 interface TestInfoProps {
-    artifact: DB.ArtifactType;
+    artifact: ArtifactType;
 }
 
 const TestInfo: React.FC<TestInfoProps> = (props) => {
@@ -375,7 +377,7 @@ export const mkSpecialRows = (args: InputRowType): TableRowsType => {
     ];
 };
 
-export const mkArtifactRow = (artifact: DB.ArtifactType): IRow => {
+export const mkArtifactRow = (artifact: ArtifactType): IRow => {
     const cells = [
         {
             title: <ArtifactUrl artifact={artifact} />,
@@ -417,7 +419,7 @@ export const mkArtifactRow = (artifact: DB.ArtifactType): IRow => {
 };
 
 export type InputArtifactRowType = {
-    artifacts: Array<DB.ArtifactType>;
+    artifacts: Array<ArtifactType>;
     opened: number | null;
     queryString?: string;
     body?: JSX.Element;
