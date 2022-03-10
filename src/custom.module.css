@@ -42,21 +42,22 @@
     white-space: nowrap;
 }
 
-.sstStatusPassed {
-    color: var(--pf-global--success-color--200);
-    background: var(--pf-global--success-color--100);
+.sstStatusPassed, .sstStatusFailed, .sstStatusInfo, .sstStatusOther {
+    padding: 0 .4em;
+    color: var(--pf-global--palette--black-100);
 }
-.sstStatusInfo {
-    color: var(--pf-global--warning-color--100);
-    background: var(--pf-global--warning-color--200);
+.sstStatusPassed {
+    background: var(--pf-global--palette--blue-400);
 }
 .sstStatusFailed {
-    color: var(--pf-global--danger-color--300);
-    background: var(--pf-global--danger-color--100);
+    background: var(--pf-global--palette--red-100);
+}
+.sstStatusInfo {
+    color: var(--pf-global--palette--black);
+    background: var(--pf-global--palette--blue-100);
 }
 .sstStatusOther {
-    color: var(--pf-global--info-color--200);
-    background: var(--pf-global--info-color--100);
+    background: var(--pf-global--palette--blue-600);
 }
 
 .statusPassed {

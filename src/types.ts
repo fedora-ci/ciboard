@@ -346,3 +346,35 @@ export namespace MSG_V_0_1 {
 export type BrokerMessagesType = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;
 
 export type TabClickHandlerType = Extract<TabsProps['onSelect'], Function>;
+
+export interface SSTItem {
+    display_name: string;
+    name: string;
+    releases: string[];
+}
+
+export interface SSTResult {
+	artifact: {
+        id: number;
+        url: string;
+    };
+	assignee: string;
+	gating_bug?: {
+        text: string;
+        url: string;
+    };
+	gating_yaml_url?: string;
+	log_urls?: string[];
+	metadata_url: string;
+	nvr: string;
+	rebuild_url?: string;
+	sortKey: string;
+    status: string;
+    tag: string;
+	testcase: {
+		category: string;
+		namespace: string;
+		type: string;
+	};
+	time: string;
+}

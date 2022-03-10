@@ -23,6 +23,7 @@ import PageHelp from './components/PageHelp';
 import PageNewIssue from './components/PageNewIssue';
 import PageByFilters from './components/PageByFilters';
 import PageByMongoField from './components/PageByMongoField';
+import { PageSST } from './components/PageSST';
 
 export type menuEntryType = {
     title: string;
@@ -38,6 +39,13 @@ const menuRoutes: menuEntryType[] = [
         key: 'artifact-search',
         to: '/search',
         render: (props) => <PageByFilters {...props} />,
+    },
+    {
+        title: 'Subsystems',
+        key: 'subsystems',
+        to: '/sst',
+        route: '/sst/:section?/:release?',
+        render: (props) => <PageSST {...props} />,
     },
     {
         title: 'Report issue',
