@@ -6,6 +6,7 @@ import { getOSVersionFromNvr } from './utils/artifactUtils';
  */
 
 export const config = {
+    defaultTitle: 'CI Dashboard',
     kai: {
         url: 'https://kai.osci.redhat.com',
     },

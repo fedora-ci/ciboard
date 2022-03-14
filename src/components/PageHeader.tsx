@@ -78,7 +78,7 @@ const Header = () => {
         <PageHeader
             logo={
                 <>
-                    <AutomationIcon size="lg" className="pf-u-mr-sm" /> CI board
+                    <AutomationIcon size="lg" className="pf-u-mr-sm" /> CI Dashboard
                 </>
             }
             logoComponent="div"
