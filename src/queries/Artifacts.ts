@@ -65,7 +65,7 @@ export const ArtifactsQuery = gql`
         $dbFieldValues: [String]
         $options: ArtifactsOptionsInputType
     ) {
-        db_artifacts(
+        artifacts(
             atype: $atype
             limit: $limit
             regexs: $regexs
@@ -84,34 +84,18 @@ export const ArtifactsQuery = gql`
 `;
 */
 
-export const ArtifactsStatesQuery = gql`
-    query ArtifactsStates(
-        $atype: String!
-        $limit: Int
-        $aid_offset: String
-        $dbFieldName1: String
-        $dbFieldValues1: [String]
-        $dbFieldName2: String
-        $dbFieldValues2: [String]
-        $options: ArtifactsOptionsInputType
-    ) {
-        db_artifacts(
-            atype: $atype
-            limit: $limit
-            options: $options
-            aid_offset: $aid_offset
-            dbFieldName1: $dbFieldName1
-            dbFieldValues1: $dbFieldValues1
-            dbFieldName2: $dbFieldName2
-            dbFieldValues2: $dbFieldValues2
-        ) {
-            has_next
-            artifacts {
-                ...StatesFragment
-            }
+const greenwaveDecisionFragment = gql`
+    fragment GreenwaveDecisionFragment on ArtifactType {
+        _id
+        greenwave_decision {
+            policies_satisfied
+            unsatisfied_requirements
+            satisfied_requirements
+            results
+            waivers
+            summary
         }
     }
-    ${statesFragment}
 `;
 
 export const ArtifactsDetailedInfoKojiTask = gql`
@@ -172,7 +156,7 @@ export const ArtifactsCompleteQuery = gql`
         $dbFieldValues2: [String]
         $options: ArtifactsOptionsInputType
     ) {
-        db_artifacts(
+        artifacts(
             atype: $atype
             limit: $limit
             options: $options
@@ -186,11 +170,13 @@ export const ArtifactsCompleteQuery = gql`
             artifacts {
                 ...MainFragment
                 ...StatesFragment
+                ...GreenwaveDecisionFragment
             }
         }
     }
     ${mainFragment}
     ${statesFragment}
+    ${greenwaveDecisionFragment}
 `;
 
 export const ArtifactsListByFiltersQuery1 = gql`
@@ -204,7 +190,7 @@ export const ArtifactsListByFiltersQuery1 = gql`
         $dbFieldValues2: [String]
         $options: ArtifactsOptionsInputType
     ) {
-        db_artifacts(
+        artifacts(
             atype: $atype
             limit: $limit
             options: $options
@@ -244,7 +230,7 @@ export const ArtifactsXunitQuery = gql`
         $dbFieldValues2: [String]
         $options: ArtifactsOptionsInputType
     ) {
-        db_artifacts(
+        artifacts(
             atype: $atype
             limit: $limit
             options: $options
@@ -271,7 +257,7 @@ export const ArtifactsXunitQuery = gql`
 
 export const PageGatingGetSSTTeams = gql`
     query ArtifactsComplete($product_id: Int) {
-        db_sst_list(product_id: $product_id)
+        sst_list(product_id: $product_id)
     }
 `;
 
@@ -290,7 +276,7 @@ export const PageGatingArtifacts = gql`
         $dbFieldValuesComponentMapping1: [String]
         $options: ArtifactsOptionsInputType
     ) {
-        db_artifacts(
+        artifacts(
             atype: $atype
             limit: $limit
             options: $options

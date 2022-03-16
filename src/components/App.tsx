@@ -41,8 +41,8 @@ import { menuRoutes, otherRoutes } from '../routes';
 const httpLink = new HttpLink({
     /** Apollo client assumes that graphql on express side is listening on server /graphql */
     /** uri: '/graphql' */
-    // uri: 'http://localhost:5000/graphql',
-    uri: 'https://dashboard-stage.ci.stream.centos.org/graphql',
+    uri: 'http://localhost:5000/graphql',
+    // uri: 'https://dashboard-stage.ci.stream.centos.org/graphql',
     /** You a making request to the same url that browser is currently on. This will add existing cookies to requests! */
     credentials: 'same-origin',
 });

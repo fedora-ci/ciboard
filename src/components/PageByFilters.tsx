@@ -61,6 +61,7 @@ const menuTypes = {
     'Modularity NSVC': 'redhat-module',
     'CentOS Stream NVR': 'koji-build-cs',
     'Fedora NVR': 'koji-build',
+    'Compose ID': 'productmd-compose',
 };
 
 const statusMenuItems = _.map(_.toPairs(menuTypes), ([menuName, key]) => (

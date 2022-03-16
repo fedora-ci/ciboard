@@ -35,43 +35,212 @@ export type ArtifactType = {
     aid: string;
     type: ArtifactNameType;
     payload: PayloadsType;
-    states: Array<StateType>;
-    gating_decision?: GatingDecisionType;
+    states: Array<StateKaiType>;
+    greenwave_decision?: GreenwaveDecisionReplyType;
     resultsdb_testscase: Array<number>;
 };
 
-export type GatingDecisionType = {
-    waivers: Array<{ testcase: string }>;
-    summary: string;
-    results: Array<{
-        id: string;
-        name: string;
-        ref_url: string;
-        result_id: string;
-    }>;
-    satisfied_requirements: Array<{
-        testcase: { name: string };
-        result_id: string;
-    }>;
-    unsatisfied_requirements: Array<any>;
+/**
+ * Decision requirements types
+ * https://pagure.io/greenwave/blob/master/f/docs/decision_requirements.rst
+ */
+export type GreenwaveRequirementTypesType =
+    | 'excluded'
+    | 'blacklisted'
+    | 'test-result-failed'
+    | 'test-result-passed'
+    | 'test-result-missing'
+    | 'test-result-errored'
+    | 'invalid-gating-yaml'
+    | 'fetched-gating-yaml'
+    | 'missing-gating-yaml'
+    | 'failed-fetch-gating-yaml'
+    | 'invalid-gating-yaml-waived'
+    | 'missing-gating-yaml-waived'
+    | 'test-result-failed-waived'
+    | 'test-result-missing-waived'
+    | 'test-result-errored-waived'
+    | 'failed-fetch-gating-yaml-waived';
+
+/**
+ * Opposite to Kai-db state, greenwave/resultsdb state
+ */
+export type GreenwaveRequirementType = {
+    type: GreenwaveRequirementTypesType;
+    testcase: string;
+    subject_type: string;
+    /* python2-flask-1.0.2-1.rawhide */
+    subject_identifier: string;
+    result_id: number;
+    error_reason: string;
+    source?: string;
+    scenario?: string | null;
+    item: { type: ArtifactNameType; identifier: string };
 };
 
-export type StageNameType = 'test' | 'build' | 'dispatcher' | 'dispatch';
+/**
+ * Based on documentation from:
+ * https://pagure.io/greenwave/blob/master/f/greenwave/api_v1.py
+ * 
+    "data": {
+        "arch": [ "armhfp" ],
+        "item": [ "bodhi-5.1.1-1.fc32" ],
+        "seconds_taken": [ "1" ],
+        "type": [ "koji_build" ]
+    },
+    "groups": [ "c038df76-47f5-11ea-839f-525400364adf" ],
+    "href": "https://taskotron.fedoraproject.org/resultsdb_api/api/v2.0/results/38088806",
+    "id": 38088806,
+    "note": "no binary RPMs",
+    "outcome": "PASSED",
+    "ref_url": "https://taskotron.fedoraproject.org/artifacts/all/c038df76-47f5-11ea-839f-525400364adf/tests.yml/bodhi-5.1.1-1.fc32.log",
+    "submit_time": "2020-02-07T03:14:43.076427",
+    "testcase": {
+        "href": "https://taskotron.fedoraproject.org/resultsdb_api/api/v2.0/testcases/dist.abicheck",
+        "name": "dist.abicheck",
+        "ref_url": "http://faketestcasesRus.com/scratch.abicheck"
+    }
+ * 
+ */
+export type GreenwaveResultType = {
+    data: {
+        brew_task_id: Array<string>;
+        category: Array<string>;
+        ci_email: Array<string>;
+        ci_irc: Array<string>;
+        ci_name: Array<string>;
+        ci_team: Array<string>;
+        ci_url: Array<string>;
+        component: Array<string>;
+        issuer: Array<string>;
+        item: Array<string>;
+        log: Array<string>;
+        publisher_id: Array<string>;
+        rebuild: Array<string>;
+        scratch: Array<string>;
+        system_os: Array<string>;
+        system_provider: Array<string>;
+        arch: Array<string>;
+        seconds_taken: Array<string>;
+        type: Array<ArtifactNameType>;
+    };
+    groups: Array<string>;
+    href: string;
+    id: number;
+    note: string;
+    /**
+     * Based on mapping at:
+     * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-complete.yaml#_8
+     * https://pagure.io/fedora-ci/messages/blob/master/f/mappings/results/brew-build.test.complete.yaml#_3
+     * https://pagure.io/fedora-ci/messages/blob/master/f/mappings/results/brew-build.test.error.yaml#_3
+     */
+    outcome:
+        | 'INFO'
+        | 'ERROR'
+        | 'PASSED'
+        | 'FAILED'
+        | 'RUNNING'
+        | 'NOT_APPLICABLE'
+        | 'NEEDS_INSPECTION';
+    /**
+     * ref_url - always run.url, for old and new mapping:
+     * https://github.com/release-engineering/resultsdb-updater/blob/master/resultsdbupdater/utils.py#L343
+     */
+    ref_url: string;
+    submit_time: string;
+    testcase: {
+        href: string;
+        name: string;
+        ref_url: string;
+    };
+};
+
+/**
+    "comment": "The tests were never even started.",
+    "id": 256,
+    "product_version": "fedora-32",
+    "proxied_by": "bodhi@service",
+    "subject": {
+        "item": "bodhi-5.1.1-1.fc32",
+        "type": "koji_build"
+    },
+    "subject_identifier": "bodhi-5.1.1-1.fc32",
+    "subject_type": "koji_build",
+    "testcase": "dist.rpmdeplint",
+    "timestamp": "2020-02-03T14:16:32.017146",
+    "username": "alice",
+    "waived": true
+*/
+export type GreenwaveWaiveType = {
+    comment: string;
+    id: number;
+    product_version: string;
+    proxied_by: string;
+    subject: {
+        item: string;
+        type: string;
+    };
+    subject_identifier: string;
+    subject_type: string;
+    testcase: string;
+    timestamp: string;
+    username: string;
+    waived: boolean;
+};
+
+export type GreenwaveDecisionReplyType = {
+    policies_satisfied: boolean;
+    summary: string;
+    applicable_policies: Array<string>;
+    waivers: Array<GreenwaveWaiveType>;
+    results: Array<GreenwaveResultType>;
+    satisfied_requirements: Array<GreenwaveRequirementType>;
+    unsatisfied_requirements: Array<GreenwaveRequirementType>;
+};
+
+export type StageNameType =
+    | 'test'
+    | 'build'
+    | 'dispatcher'
+    | 'dispatch'
+    | 'greenwave';
 
 export type StateNameType = 'error' | 'queued' | 'running' | 'complete';
 
 export type StateExtendedNameType =
-    | StateNameType
     | 'info'
     | 'passed'
     | 'failed'
-    | 'missing';
+    | 'missing'
+    /* greenwave result */
+    | 'result'
+    | StateNameType
+    | GreenwaveRequirementTypesType;
+
+export type StateGreenwaveKaiType = {
+    /* kai state */
+    ks: StateKaiType;
+    /* greenwave state */
+    gs: StateGreenwaveType;
+};
+
+export type StateType =
+    | StateKaiType
+    | StateGreenwaveType
+    | StateGreenwaveKaiType;
 
 export type StatesByCategoryType = {
     [key in StateExtendedNameType]?: Array<StateType>;
 };
 
-export type StateType = {
+export type StateGreenwaveType = {
+    testcase: string;
+    waiver?: GreenwaveWaiveType;
+    result?: GreenwaveResultType;
+    requirement?: GreenwaveRequirementType;
+};
+
+export type StateKaiType = {
     broker_msg_body: BrokerMessagesType;
     kai_state: {
         stage: StageNameType;
@@ -87,8 +256,7 @@ export type StateType = {
         test_case_name: string;
     };
 };
-export type KaiStateType = StateType['kai_state'];
-
+export type KaiStateType = StateKaiType['kai_state'];
 export type PayloadsType = PayloadRPMBuildType;
 
 export type PayloadRPMBuildType = {
@@ -102,7 +270,7 @@ export type PayloadRPMBuildType = {
     gate_tag_name: string;
 };
 
-export const known_states: Array<StateNameType> = [
+export const KnownKaiStates: Array<StateNameType> = [
     'error',
     'queued',
     'running',
