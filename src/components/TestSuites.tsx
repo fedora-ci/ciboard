@@ -53,7 +53,7 @@ import {
     IRow,
 } from '@patternfly/react-table';
 
-import { ArtifactType, StateType } from '../artifact';
+import { ArtifactType, StateKaiType, StateType } from '../artifact';
 import { renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 
@@ -125,15 +125,18 @@ const Testsuites: React.FC<TestsuitesProps> = (props) => {
     }
     for (const suite of xunit) {
         testsuites.push(
-            <div key={suite.name}>
-                <TextContent>
-                    <Title headingLevel="h4" size="lg">
-                        {suite.name}
-                    </Title>
-                    <p />
-                </TextContent>
-                <Testsuite suite={suite} />
-            </div>,
+            <Flex key={suite.name}>
+                <FlexItem>
+                    <TextContent>
+                        <Title headingLevel="h4" size="lg">
+                            {suite.name}
+                        </Title>
+                    </TextContent>
+                </FlexItem>
+                <FlexItem>
+                    <Testsuite suite={suite} />
+                </FlexItem>
+            </Flex>,
         );
     }
     return <>{testsuites}</>;
@@ -367,38 +370,36 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
     };
 
     return (
-        <div className={expanded ? '' : 'issue_2177'}>
-            <DataListItem isExpanded={expanded}>
-                <DataListItemRow>
-                    <DataListToggle
-                        onClick={toggle}
-                        isExpanded={expanded}
-                        id={test._uuid}
-                    />
-                    <DataListItemCells
-                        dataListCells={[
-                            <DataListCell isIcon key="icon">
-                                {renderStatusIcon(test.status)}
-                            </DataListCell>,
-                            <DataListCell key="test-name">
-                                {test.name}
-                            </DataListCell>,
-                            <DataListCell key="version">
-                                {version}
-                            </DataListCell>,
-                            <DataListCell key="duration">{time}</DataListCell>,
-                        ]}
-                    />
-                </DataListItemRow>
-                <DataListContent
-                    aria-label="Test case content"
+        <DataListItem isExpanded={expanded}>
+            <DataListItemRow>
+                <DataListToggle
+                    onClick={toggle}
+                    isExpanded={expanded}
                     id={test._uuid}
-                    isHidden={!expanded}
-                >
-                    <TestCaseContent test={test} />
-                </DataListContent>
-            </DataListItem>
-        </div>
+                />
+                <DataListItemCells
+                    dataListCells={[
+                        <DataListCell isIcon key="icon">
+                            {renderStatusIcon(test.status)}
+                        </DataListCell>,
+                        <DataListCell key="test-name" wrapModifier="nowrap">
+                            <TextContent>
+                                <Text>{test.name}</Text>
+                            </TextContent>
+                        </DataListCell>,
+                        <DataListCell key="version">{version}</DataListCell>,
+                        <DataListCell key="duration">{time}</DataListCell>,
+                    ]}
+                />
+            </DataListItemRow>
+            <DataListContent
+                aria-label="Test case content"
+                id={test._uuid}
+                isHidden={!expanded}
+            >
+                <TestCaseContent test={test} />
+            </DataListContent>
+        </DataListItem>
     );
 };
 
@@ -435,8 +436,8 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
 
     if (!suite.tests || suite.tests.length === 0) {
         return (
-            <Alert isInline type="warning" title="No xunit">
-                Test does net provide detailed results via xunit. Please go to
+            <Alert isInline isPlain variant="warning" title="No xunit">
+                Test does not provide detailed results via xunit. Please go to
                 the CI system log and investigate the produced test artifacts.
             </Alert>
         );
@@ -471,7 +472,6 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
                     );
                 })}
             </Flex>
-            <p />
 
             <DataList aria-label="Test suite items" isCompact>
                 {_.map(suite.tests, (test) => {
@@ -486,12 +486,7 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
 
 const NoXunit = () => {
     return (
-        <Alert
-            isInline
-            type="info"
-            className="margin-top-20"
-            title="No results in xunit"
-        >
+        <Alert isInline isPlain variant="info" title="No results in xunit">
             Test does not provide detailed results via xunit. Please go to the
             log and investigate the produced test artifacts.
         </Alert>
@@ -499,7 +494,7 @@ const NoXunit = () => {
 };
 
 interface TestSuitesProps {
-    state: StateType;
+    state: StateKaiType;
     artifact: ArtifactType;
 }
 const TestSuites_: React.FC<TestSuitesProps> = (props) => {
@@ -525,7 +520,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     const haveData =
         !loading &&
         Boolean(data) &&
-        _.has(data, 'db_artifacts.artifacts[0].states');
+        _.has(data, 'artifacts.artifacts[0].states');
     const haveErrorNoData = !loading && error && !haveData;
     useEffect(() => {
         if (!haveData) {
@@ -534,7 +529,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
         const state = _.find(
             /** this is a bit strange, that received data doesn't propage to original
              * artifact object. Original artifact.states objects stays old */
-            _.get(data, 'db_artifacts.artifacts[0].states'),
+            _.get(data, 'artifacts.artifacts[0].states'),
             (state) => state.kai_state?.msg_id === msg_id,
         );
         if (_.isNil(state)) return;
@@ -552,7 +547,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
             setXunit(xunitUtf8Encoded);
         } catch (err) {
             const error = (
-                <Alert isInline title="Xunit error">
+                <Alert isInline isPlain title="Xunit error">
                     Could not parse xunit: {err}
                 </Alert>
             );
@@ -572,7 +567,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     }
     if (msgError) return <>{msgError}</>;
     if (_.isEmpty(xunit)) {
-        return null;
+        return <NoXunit />;
     }
     const parsedXunit = xunitParser(xunit);
     if (_.isEmpty(parsedXunit)) {

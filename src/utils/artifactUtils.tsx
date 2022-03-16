@@ -35,15 +35,36 @@ import {
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     StateType,
-    known_states,
     ArtifactType,
     KaiStateType,
+    StateKaiType,
     StageNameType,
     StateNameType,
     ArtifactNameType,
     KojiInstanceType,
+    StateGreenwaveType,
     StatesByCategoryType,
+    KnownKaiStates,
+    StateGreenwaveKaiType,
 } from '../artifact';
+
+export function isKaiState(
+    state: StateType | undefined,
+): state is StateKaiType {
+    return _.has(state, 'kai_state');
+}
+
+export function isGreenwaveState(
+    state: StateType | undefined,
+): state is StateGreenwaveType {
+    return _.has(state, 'testcase');
+}
+
+export function isGreenwaveKaiState(
+    state: StateType | undefined,
+): state is StateGreenwaveKaiType {
+    return _.has(state, 'gs') && _.has(state, 'ks');
+}
 
 /** Maps artifact type to DB field to use in next query */
 export const db_field_from_atype = {
@@ -52,7 +73,7 @@ export const db_field_from_atype = {
     'copr-build': 'component',
     'koji-build-cs': 'nvr',
     'redhat-module': 'nsvc',
-    'productmd-compose': 'aid',
+    'productmd-compose': 'compose_id',
 };
 
 /**
@@ -63,11 +84,11 @@ export const db_field_from_atype = {
  * For build events the error is recognized as a failed state.
  *
  * for stage == 'test' replace complete: [] ==> failed: [], info: [], passed: []
- * From: { error: [], queued: [], running: [], complete: [] }
+ * From: [ state1, state2, state3, ...]
  * To:   { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
  */
-export const transformArtifactStates = (
-    states: Array<StateType>,
+export const transformKaiStates = (
+    states: Array<StateKaiType>,
     stage: StageNameType,
 ): StatesByCategoryType => {
     const states_by_category: StatesByCategoryType = {};
@@ -76,7 +97,7 @@ export const transformArtifactStates = (
             states,
             _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),
         ),
-        known_states,
+        KnownKaiStates,
     );
     _.forEach(states_names, (state_name) => {
         /**
@@ -86,7 +107,7 @@ export const transformArtifactStates = (
          * complete tests
          */
         if (state_name === 'complete' && stage === 'test') {
-            const category_passed = _.filter(states, (state: StateType) => {
+            const category_passed = _.filter(states, (state: StateKaiType) => {
                 if (
                     state.kai_state.stage !== stage ||
                     state.kai_state.state !== state_name
@@ -112,7 +133,7 @@ export const transformArtifactStates = (
             /**
              * failed tests
              */
-            const category_failed = _.filter(states, (state: StateType) => {
+            const category_failed = _.filter(states, (state: StateKaiType) => {
                 if (
                     state.kai_state.stage !== stage ||
                     state.kai_state.state !== state_name
@@ -141,7 +162,7 @@ export const transformArtifactStates = (
             /**
              * info tests
              */
-            const category_info = _.filter((state: StateType) => {
+            const category_info = _.filter((state: StateKaiType) => {
                 if (
                     state.kai_state.stage !== stage ||
                     state.kai_state.state !== state_name
@@ -165,9 +186,9 @@ export const transformArtifactStates = (
                 states_by_category.info = category_failed;
             }
         } else if (state_name === 'error' && stage === 'build') {
-            const category_failed = _.filter(states, (state: StateType) => {
+            const category_failed = _.filter(states, (state: StateKaiType) => {
                 if (
-                    state.kai_state.stage === stage ||
+                    state.kai_state.stage === stage &&
                     state.kai_state.state === state_name
                 ) {
                     return true;
@@ -179,7 +200,7 @@ export const transformArtifactStates = (
             }
         } else {
             /** other categories for asked stage */
-            const category_other = _.filter(states, (state: StateType) => {
+            const category_other = _.filter(states, (state: StateKaiType) => {
                 const kai_state = state.kai_state;
                 if (
                     kai_state.stage === stage &&
@@ -204,7 +225,7 @@ const known_types = {
     'koji-build-cs': 'nvr',
     'redhat-module': 'nsvc',
     'copr-build': 'component',
-    'productmd-compose': 'aid',
+    'productmd-compose': 'compose_id',
 };
 
 const known_aid_meaning = {
@@ -213,7 +234,7 @@ const known_aid_meaning = {
     'koji-build-cs': 'taskID',
     'redhat-module': 'mbsID',
     'copr-build': 'id',
-    'productmd-compose': 'id',
+    'productmd-compose': 'url',
 };
 
 export const nameFieldForType = (type: ArtifactNameType) => {
@@ -361,37 +382,46 @@ export const getThreadID = (args: {
     return null;
 };
 
-export const getTestcaseName = (args: {
-    kai_state?: KaiStateType;
-    broker_msg_body?: BrokerMessagesType;
-}) => {
-    const { kai_state, broker_msg_body } = args;
-    var test_case_name: string | null = null;
-    if (kai_state?.test_case_name) {
-        test_case_name = kai_state.test_case_name;
-    }
-    if (broker_msg_body && _.isEmpty(test_case_name)) {
-        if (MSG_V_0_1.isMsg(broker_msg_body)) {
-            if (
-                broker_msg_body.namespace &&
-                broker_msg_body.type &&
-                broker_msg_body.category
-            )
-                return `${broker_msg_body.namespace}.${broker_msg_body.type}.${broker_msg_body.category}`;
+export const getTestcaseName = (state: StateType): string => {
+    var test_case_name: string | undefined;
+    if (isKaiState(state)) {
+        const { kai_state } = state;
+        if (kai_state?.test_case_name) {
+            test_case_name = kai_state.test_case_name;
         }
-        if (MSG_V_1.isMsg(broker_msg_body)) {
-            if (
-                broker_msg_body.test.namespace &&
-                broker_msg_body.test.type &&
-                broker_msg_body.test.category
-            )
-                return `${broker_msg_body.test.namespace}.${broker_msg_body.test.type}.${broker_msg_body.test.category}`;
+        const broker_msg_body: BrokerMessagesType = state.broker_msg_body;
+        if (broker_msg_body && _.isEmpty(test_case_name)) {
+            if (MSG_V_0_1.isMsg(broker_msg_body)) {
+                if (
+                    broker_msg_body.namespace &&
+                    broker_msg_body.type &&
+                    broker_msg_body.category
+                )
+                    test_case_name = `${broker_msg_body.namespace}.${broker_msg_body.type}.${broker_msg_body.category}`;
+            }
+            if (MSG_V_1.isMsg(broker_msg_body)) {
+                if (
+                    broker_msg_body.test.namespace &&
+                    broker_msg_body.test.type &&
+                    broker_msg_body.test.category
+                )
+                    test_case_name = `${broker_msg_body.test.namespace}.${broker_msg_body.test.type}.${broker_msg_body.test.category}`;
+            }
         }
     }
-    if (_.isEmpty(test_case_name)) {
+    if (isGreenwaveState(state)) {
+        if (state.testcase) {
+            test_case_name = state.testcase;
+        }
+    }
+    if (isGreenwaveKaiState(state)) {
+        if (state.gs.testcase) {
+            test_case_name = state.gs.testcase;
+        }
+    }
+    if (_.isUndefined(test_case_name)) {
         test_case_name = 'uknown testcase - please report an issue';
     }
-
     return test_case_name;
 };
 
@@ -408,13 +438,14 @@ export const getXunit = (broker_msg_body: BrokerMessagesType) => {
 };
 
 export const renderStatusIcon = (
-    type: string,
+    type_: string,
     mod: modifyType = 'test',
     size = '0.75em',
 ) => {
+    const type = _.isString(type_) ? type_.toLocaleLowerCase() : type_;
     const icons = {
         missing: {
-            pick: type === 'missing',
+            pick: type === 'missing' || type === 'test-result-missing',
             color: '--pf-global--danger-color--100',
             icon: GhostIcon,
             aria: 'Result is missing.',
@@ -426,6 +457,8 @@ export const renderStatusIcon = (
                 type === 'pass' ||
                 type === 'Pass' ||
                 type === 'PASS' ||
+                type === 'test-result-passed' ||
+                type === 'fetched-gating-yaml' ||
                 type === 'true',
             color: '--pf-global--success-color--100',
             icon: OkIcon,
@@ -437,13 +470,25 @@ export const renderStatusIcon = (
                 type === 'fail' ||
                 type === 'Fail' ||
                 type === 'FAIL' ||
+                type === 'test-result-errored' ||
+                type === 'failed-fetch-gating-yaml' ||
+                type === 'test-result-failed' ||
+                type === 'invalid-gating-yaml' ||
+                type === 'missing-gating-yaml' ||
                 type === 'false',
             color: '--pf-global--danger-color--100',
             icon: ErrorCircleOIcon,
             aria: 'Result is error.',
         },
         warning: {
-            pick: type === 'error',
+            pick:
+                type === 'error' ||
+                type === 'invalid-gating-yaml-waived' ||
+                type === 'missing-gating-yaml-waived' ||
+                type === 'test-result-failed-waived' ||
+                type === 'test-result-missing-waived' ||
+                type === 'test-result-errored-waived' ||
+                type === 'failed-fetch-gating-yaml-waived',
             color: '--pf-global--warning-color--100',
             icon: WarningTriangleIcon,
             aria: 'Result is warning.',
@@ -461,7 +506,10 @@ export const renderStatusIcon = (
             aria: 'Result has some history.',
         },
         info: {
-            pick: type === 'info',
+            pick:
+                type === 'info' ||
+                type === 'excluded' ||
+                type === 'blacklisted',
             color: '--pf-global--info-color--100',
             icon: InfoIcon,
             aria: 'Result has additinal info.',

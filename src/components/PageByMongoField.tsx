@@ -137,12 +137,11 @@ const ArtifactsTable: React.FC<any> = (props) => {
         errorPolicy: 'all',
         skip: _.isEmpty(dbFieldValues),
     });
-    const haveData =
-        !isLoading && data && !_.isEmpty(data.db_artifacts.artifacts);
+    const haveData = !isLoading && data && !_.isEmpty(data.artifacts.artifacts);
     const haveErrorNoData = !isLoading && error && !haveData;
     if (haveData) {
-        artifacts = data.db_artifacts.artifacts;
-        has_next = data.db_artifacts.has_next;
+        artifacts = data.artifacts.artifacts;
+        has_next = data.artifacts.has_next;
         const aid_at_bottom = _.last(artifacts)?.aid;
         if (!_.includes(known_pages, aid_at_bottom) && aid_at_bottom) {
             known_pages.splice(

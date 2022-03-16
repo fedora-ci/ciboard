@@ -50,12 +50,12 @@ import {
     nameFieldForType,
     renderStatusIcon,
     aidMeaningForType,
-    transformArtifactStates,
+    transformKaiStates,
 } from './artifactUtils';
 import styles from '../custom.module.css';
 
 import { ArtifactType } from '../artifact';
-import ArtifactResultsList from '../components/ArtifactResultsList';
+import ArtifactStatesList from '../components/ArtifactStatesList';
 import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
 
 interface ArtifactNameProps {
@@ -152,10 +152,10 @@ const TestInfo: React.FC<TestInfoProps> = (props) => {
     const { artifact } = props;
     /**
      * testStates - is complete: [] ==> failed: [], info: [], passed: []
-     * { error: [], queued: [], running: [], complete: [] }
+     * [ state1, state2, state3, ... ]
      * { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
      */
-    const testStates = transformArtifactStates(artifact.states, 'test');
+    const testStates = transformKaiStates(artifact.states, 'test');
     if (!_.some(_.values(testStates), 'length')) {
         return null;
     }
@@ -172,7 +172,7 @@ const TestInfo: React.FC<TestInfoProps> = (props) => {
 };
 
 const GatingInfo = ({ artifact }: any) => {
-    const decision = artifact.gating_decision;
+    const decision = artifact.greenwave_decision;
     if (!decision?.summary) {
         return null;
     }
@@ -211,7 +211,7 @@ export const CustomRowWrapper = (
         throw new Error('Expect array of rows');
     }
     const [giveHint, setGiveHint] = useState(false);
-    const firstCell = children[0];
+    const firstCell: React.ReactNode = children[0];
     if (!React.isValidElement(firstCell)) {
         throw new Error('Child must be valid element');
     }
@@ -465,7 +465,7 @@ export const mkArtifactsRows = (args: InputArtifactRowType): TableRowsType => {
                     title: (
                         <>
                             <ArtifactDetailedInfo artifact={artifacts[aOpen]} />
-                            <ArtifactResultsList artifact={artifacts[aOpen]} />
+                            <ArtifactStatesList artifact={artifacts[aOpen]} />
                         </>
                     ),
                     transforms: [fitContent],
