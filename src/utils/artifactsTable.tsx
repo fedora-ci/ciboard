@@ -57,6 +57,7 @@ import styles from '../custom.module.css';
 import { ArtifactType } from '../artifact';
 import ArtifactStatesList from '../components/ArtifactStatesList';
 import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
+import { StageNameStateNameStatesType } from './stages_states';
 
 interface ArtifactNameProps {
     artifact: ArtifactType;
@@ -134,66 +135,6 @@ const ArtifactUrl: React.FC<ArtifactUrlProps> = (props) => {
     );
 };
 
-const TestResultInfo = ({ state, states }: any) => {
-    const color = resultColor(state);
-    const style = { color: `var(${color})` };
-    return (
-        <div style={style}>
-            {states[state].length} {state}
-        </div>
-    );
-};
-
-interface TestInfoProps {
-    artifact: ArtifactType;
-}
-
-const TestInfo: React.FC<TestInfoProps> = (props) => {
-    const { artifact } = props;
-    /**
-     * testStates - is complete: [] ==> failed: [], info: [], passed: []
-     * [ state1, state2, state3, ... ]
-     * { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
-     */
-    const testStates = transformKaiStates(artifact.states, 'test');
-    if (!_.some(_.values(testStates), 'length')) {
-        return null;
-    }
-    const statesNotEmpty = _.keys(_.pickBy(testStates, 'length'));
-    return (
-        <Flex grow={{ default: 'grow' }} flexWrap={{ default: 'nowrap' }}>
-            {_.map(statesNotEmpty, (state) => (
-                <FlexItem key={state} spacer={{ default: 'spacerXs' }}>
-                    <TestResultInfo state={state} states={testStates} />
-                </FlexItem>
-            ))}
-        </Flex>
-    );
-};
-
-const GatingInfo = ({ artifact }: any) => {
-    const decision = artifact.greenwave_decision;
-    if (!decision?.summary) {
-        return null;
-    }
-    return (
-        <Flex>
-            <FlexItem>
-                <TextContent>
-                    <Text component={TextVariants.small}>
-                        Gating:{' '}
-                        {renderStatusIcon(
-                            decision.policies_satisfied,
-                            'gating',
-                            '1.2em',
-                        )}
-                    </Text>
-                </TextContent>
-            </FlexItem>
-        </Flex>
-    );
-};
-
 const artifactDashboardUrl = (artifact: any) => {
     return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
 };
@@ -253,16 +194,6 @@ export const tableColumns = (buildType: any) => {
         },
         {
             title: 'gating-tag',
-            transforms: [fitContent],
-            cellTransforms: [nowrap],
-        },
-        {
-            title: 'tests',
-            transforms: [fitContent],
-            cellTransforms: [nowrap],
-        },
-        {
-            title: 'gating-result',
             transforms: [fitContent],
             cellTransforms: [nowrap],
         },
@@ -387,12 +318,6 @@ export const mkArtifactRow = (artifact: ArtifactType): IRow => {
         },
         {
             title: <ArtifactDestination artifact={artifact} />,
-        },
-        {
-            title: <TestInfo artifact={artifact} />,
-        },
-        {
-            title: <GatingInfo artifact={artifact} />,
         },
         {
             title: (

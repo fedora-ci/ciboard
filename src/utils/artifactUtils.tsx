@@ -341,6 +341,7 @@ export const resultColors = {
         'Pass',
         'PASS',
         true,
+        'satisfied',
     ],
     '--pf-global--danger-color--100': [
         'failed',
@@ -349,8 +350,9 @@ export const resultColors = {
         'FAIL',
         'missing',
         false,
+        'unsatisfied',
     ],
-    '--pf-global--warning-color--100': ['error'],
+    '--pf-global--warning-color--100': ['error', 'waived'],
     '--pf-global--link--Color': ['running'],
     '--pf-global--warning-color--200': ['queued', 'skip'],
     '--pf-global--info-color--100': ['info'],

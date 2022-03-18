@@ -41,11 +41,17 @@ import { menuRoutes, otherRoutes } from '../routes';
  * need to instruct Gragphql to send existing cookies along with each single request.
  */
 const httpLink = new HttpLink({
-    /** Apollo client assumes that graphql on express side is listening on server /graphql */
-    /** uri: '/graphql' */
+    /**
+     * prod instance: Apollo client assumes that graphql on express side is listening on server /graphql
+     */
+    uri: '/graphql',
+    /**
+     * local development and local server can be accessed with:
+     */
     // uri: 'http://localhost:5000/graphql',
-    uri: new URL('graphql', config.serverPrefix).toString(),
-    /** You a making request to the same url that browser is currently on. This will add existing cookies to requests! */
+    /**
+     * You a making request to the same url that browser is currently on. This will add existing cookies to requests!
+     */
     credentials: 'same-origin',
 });
 

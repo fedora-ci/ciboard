@@ -210,10 +210,11 @@ const mkReqStatesGreenwave = (
     decision: GreenwaveDecisionReplyType,
 ): StatesByCategoryType => {
     const { satisfied_requirements, unsatisfied_requirements } = decision;
-    const requirements: Array<GreenwaveRequirementType> = _.merge(
+    const requirements: Array<GreenwaveRequirementType> = _.concat(
         satisfied_requirements,
         unsatisfied_requirements,
     );
+    console.log('xxx1', decision.unsatisfied_requirements);
     /* {'test-result-passed' : [GreenwaveRequirementType], 'fetched-gating-yaml' : ... } */
     const requirementsByType = _.groupBy(requirements, 'type');
     /* {'test-result-passed' : [StateGreenWaveType], 'fetched-gating-yaml' : ... } */
@@ -241,7 +242,7 @@ const mkResultStatesGreenwave = (
 ): StatesByCategoryType => {
     const { satisfied_requirements, unsatisfied_requirements, results } =
         decision;
-    const requirements: Array<GreenwaveRequirementType> = _.merge(
+    const requirements: Array<GreenwaveRequirementType> = _.concat(
         satisfied_requirements,
         unsatisfied_requirements,
     );

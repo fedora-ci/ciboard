@@ -32,18 +32,27 @@ import {
     DataListItem,
     DataListItemCells,
     DataListCell,
+    Flex,
+    FlexItem,
+    Title,
+    TitleSizes,
 } from '@patternfly/react-core';
 import {
     isKaiState,
     getThreadID,
     getTestcaseName,
     isGreenwaveState,
+    renderStatusIcon,
+    transformKaiStates,
+    resultColor,
+    isGreenwaveKaiState,
 } from '../utils/artifactUtils';
 import {
     StateType,
     ArtifactType,
     StageNameType,
     StateExtendedNameType,
+    GreenwaveDecisionReplyType,
 } from '../artifact';
 import { RootStateType } from '../reducers';
 import { ArtifactState } from './ArtifactState';
@@ -257,6 +266,8 @@ const ArtifactStatesList: React.FC<ArtifactResultsListProps> = (props) => {
     }
     return (
         <>
+            <ArtifactStatesSummary1 artifact={artifact} />
+            <br />
             <DataList
                 aria-label="Expandable data list with artifacts"
                 style={{
@@ -271,3 +282,118 @@ const ArtifactStatesList: React.FC<ArtifactResultsListProps> = (props) => {
 };
 
 export default ArtifactStatesList;
+
+// ==========================================================================================
+
+const TestResultInfo = ({ state, states }: any) => {
+    const color = resultColor(state);
+    const style = { color: `var(${color})` };
+    return (
+        <Title style={style} headingLevel="h1" size={TitleSizes['md']}>
+            {states[state]} {state}
+        </Title>
+    );
+};
+interface ArtifactStatesSummaryProps1 {
+    artifact: ArtifactType;
+}
+export const ArtifactStatesSummary1: React.FC<ArtifactStatesSummaryProps1> = (
+    props,
+) => {
+    const decision: GreenwaveDecisionReplyType | undefined =
+        props.artifact.greenwave_decision;
+    if (_.isNil(decision)) {
+        return null;
+    }
+    const summary: { [name: string]: number } = {};
+    const satisfied = decision.satisfied_requirements.length;
+    const unSatisfied = decision.unsatisfied_requirements.length;
+    if (satisfied) {
+        summary['satisfied'] = satisfied;
+    }
+    if (unSatisfied) {
+        summary['unsatisfied'] = unSatisfied;
+    }
+    return (
+        <Flex>
+            <FlexItem spacer={{ default: 'spacerMd' }} key="1"></FlexItem>
+            <FlexItem spacer={{ default: 'spacerXl' }} key="2">
+                <Title headingLevel="h1" size={TitleSizes['md']}>
+                    Gating:
+                </Title>
+            </FlexItem>
+            {_.map(summary, (_len, state) => (
+                <FlexItem key={state} spacer={{ default: 'spacerXl' }}>
+                    <TestResultInfo state={state} states={summary} />
+                </FlexItem>
+            ))}
+        </Flex>
+    );
+};
+
+interface ArtifactStatesSummaryProps {
+    stageStatesArray: Array<StageNameStateNameStatesType>;
+}
+export const ArtifactStatesSummary: React.FC<ArtifactStatesSummaryProps> = (
+    props,
+) => {
+    const summary: { [name: string]: number } = {};
+    const { stageStatesArray } = props;
+    _.forEach(stageStatesArray, ([stageName, stateName, states]) => {
+        _.forEach(states, (state) => {
+            if (isKaiState(state)) {
+                const key = _.toLower(stateName);
+                const val = _.get(summary, key, 0);
+                summary[key] = val + 1;
+            } else if (isGreenwaveState(state)) {
+                const key = _.toLower(state.result?.outcome);
+                if (!_.isEmpty(key)) {
+                    const val = _.get(summary, key, 0);
+                    summary[key] = val + 1;
+                }
+            } else if (isGreenwaveKaiState(state)) {
+                const key = _.toLower(state.gs.result?.outcome);
+                if (!_.isEmpty(key)) {
+                    const val = _.get(summary, key, 0);
+                    summary[key] = val + 1;
+                }
+            }
+        });
+    });
+    if (_.isEmpty(summary)) {
+        return null;
+    }
+    return (
+        <Flex flexWrap={{ default: 'nowrap' }}>
+            <FlexItem spacer={{ default: 'spacerXl' }} key="1"></FlexItem>
+            {_.map(summary, (_len, state) => (
+                <FlexItem key={state} spacer={{ default: 'spacerXl' }}>
+                    <TestResultInfo state={state} states={summary} />
+                </FlexItem>
+            ))}
+        </Flex>
+    );
+};
+
+const GatingInfo = ({ artifact }: any) => {
+    const decision = artifact.greenwave_decision;
+    if (!decision?.summary) {
+        return null;
+    }
+    return (
+        <Flex>
+            <FlexItem>
+                <TextContent>
+                    <Text component={TextVariants.small}>
+                        Gating:{' '}
+                        {renderStatusIcon(
+                            decision.policies_satisfied,
+                            'gating',
+                            '1.2em',
+                        )}
+                    </Text>
+                </TextContent>
+            </FlexItem>
+        </Flex>
+    );
+};
