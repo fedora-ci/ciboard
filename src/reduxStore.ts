@@ -18,17 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import reducers from './reducers';
 import { createStore, applyMiddleware, compose } from 'redux';
 import reduxThunk from 'redux-thunk';
+
+import { rootReducer as reducers } from './reducers';
 
 /** https://github.com/zalmoxisus/redux-devtools-extension */
 const composeEnhancers =
     (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-const store = createStore(
+export const store = createStore(
     reducers,
     composeEnhancers(applyMiddleware(reduxThunk)),
 );
-
-export default store;

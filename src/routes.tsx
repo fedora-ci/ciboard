@@ -19,10 +19,10 @@
  */
 
 import * as React from 'react';
-import PageHelp from './components/PageHelp';
-import PageNewIssue from './components/PageNewIssue';
-import PageByFilters from './components/PageByFilters';
-import PageByMongoField from './components/PageByMongoField';
+import { PageByFilters } from './components/PageByFilters';
+import { PageByMongoField } from './components/PageByMongoField';
+import { PageHelp } from './components/PageHelp';
+import { PageNewIssue } from './components/PageNewIssue';
 import { PageSST } from './components/PageSST';
 
 export type menuEntryType = {

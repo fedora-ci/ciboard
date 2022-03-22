@@ -486,8 +486,8 @@ const HistoryListEntry: React.FC<HistoryListEntryProps> = (props) => {
 interface ArtifactDetailedInfoProps {
     artifact: ArtifactType;
 }
-const ArtifactDetailedInfo: React.FC<ArtifactDetailedInfoProps> = (props) => {
-    const { artifact } = props;
+
+export function ArtifactDetailedInfo({ artifact }: ArtifactDetailedInfoProps) {
     if (['brew-build', 'koji-build', 'koji-build-cs'].includes(artifact.type)) {
         return (
             <>
@@ -500,6 +500,4 @@ const ArtifactDetailedInfo: React.FC<ArtifactDetailedInfoProps> = (props) => {
     } else {
         return <></>;
     }
-};
-
-export default ArtifactDetailedInfo;
+}

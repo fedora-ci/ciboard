@@ -43,8 +43,7 @@ import {
 } from '../utils/artifactsTable';
 import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
-
-import PaginationToolbar from './PaginationToolbar';
+import { PaginationToolbar } from './PaginationToolbar';
 
 const ArtifactsTable: React.FC = () => {
     const queryString = ''; // XXX : delme
@@ -223,13 +222,6 @@ const ArtifactsTable: React.FC = () => {
     return results;
 };
 
-const ArtifactsListByFilters = () => {
-    const element = (
-        <>
-            <ArtifactsTable />
-        </>
-    );
-    return element;
-};
-
-export default ArtifactsListByFilters;
+export function ArtifactsListByFilters() {
+    return <ArtifactsTable />;
+}

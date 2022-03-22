@@ -44,7 +44,7 @@ import { config } from '../config';
 import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
-import ArtifactsListByFilters from './ArtifactsListByFilters';
+import { ArtifactsListByFilters } from './ArtifactsListByFilters';
 import { addFilter, deleteFilter, setOptionsForFilters } from '../actions';
 import WaiveForm from './WaiveForm';
 
@@ -289,7 +289,7 @@ const SearchToolbar = () => {
     return toolBar;
 };
 
-const PageByFilters = () => {
+export function PageByFilters() {
     const { active: activeFilters } = useSelector<RootStateType, IStateFilters>(
         (state) => state.filters
     );
@@ -316,6 +316,4 @@ const PageByFilters = () => {
             <WaiveForm />
         </PageCommon>
     );
-};
-
-export default PageByFilters;
+}

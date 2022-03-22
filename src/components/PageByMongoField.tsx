@@ -33,7 +33,7 @@ import { config } from '../config';
 import { ArtifactType } from '../artifact';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { ArtifactsCompleteQuery } from '../queries/Artifacts';
-import PaginationToolbar, { PaginationToolbarProps } from './PaginationToolbar';
+import { PaginationToolbar, PaginationToolbarProps } from './PaginationToolbar';
 import { getArtifactName } from '../utils/artifactUtils';
 import {
     ShowErrors,
@@ -268,7 +268,7 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
     return element;
 };
 
-const PageByMongoField = () => {
+export function PageByMongoField() {
     const [pageTitle, setPageTitle] = useState<string | undefined>();
     // Display the artifact's NVR/NVSC/whatever and gating status (if available) in
     // the page title once the artifact info is loaded.
@@ -298,5 +298,3 @@ const PageByMongoField = () => {
         </PageCommon>
     );
 };
-
-export default PageByMongoField;

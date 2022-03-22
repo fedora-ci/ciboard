@@ -144,7 +144,8 @@ const mkStateKey = (state: StateType): string => {
 interface ArtifactResultsListProps {
     artifact: ArtifactType;
 }
-const ArtifactStatesList: React.FC<ArtifactResultsListProps> = (props) => {
+
+export function ArtifactStatesList(props: ArtifactResultsListProps) {
     const client = useApolloClient();
     const { artifact: artifactParent } = props;
     const {
@@ -277,9 +278,7 @@ const ArtifactStatesList: React.FC<ArtifactResultsListProps> = (props) => {
             </DataList>
         </>
     );
-};
-
-export default ArtifactStatesList;
+}
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };

@@ -20,20 +20,18 @@
 
 import { combineReducers } from 'redux';
 
-import { authReducer } from './authReducer';
-import { waiveReducer } from './waiveReducer';
 import { alertsReducer } from './alertsReducer';
+import { authReducer } from './authReducer';
 import { filtersReducer } from './filtersReducer';
 import { queryStringReducer } from './queryStringReducer';
+import { waiveReducer } from './waiveReducer';
 
-const rootReducer = combineReducers({
-    auth: authReducer,
-    waive: waiveReducer,
+export const rootReducer = combineReducers({
     alerts: alertsReducer,
+    auth: authReducer,
     filters: filtersReducer,
     queryString: queryStringReducer,
+    waive: waiveReducer,
 });
-
-export default rootReducer;
 
 export type RootStateType = ReturnType<typeof rootReducer>;

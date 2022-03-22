@@ -111,7 +111,7 @@ const Content = () => {
     return <>{level1}</>;
 };
 
-const App = () => {
+export function App() {
     return (
         <ApolloProvider client={client}>
             <div className="pf-u-h-100vh">
@@ -124,6 +124,4 @@ const App = () => {
             </div>
         </ApolloProvider>
     );
-};
-
-export default App;
+}

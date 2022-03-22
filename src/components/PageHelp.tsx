@@ -260,7 +260,7 @@ const Help = () => (
     </TextContent>
 );
 
-const PageHelp = () => {
+export function PageHelp() {
     return (
         <PageCommon
             title={`Help | ${config.defaultTitle}`}
@@ -268,6 +268,4 @@ const PageHelp = () => {
             <Help />
         </PageCommon>
     );
-};
-
-export default PageHelp;
+}

@@ -232,7 +232,7 @@ const WaiverdbPermissions = () => {
     );
 };
 
-const PageNewIssue = () => {
+export function PageNewIssue() {
     return (
         <PageCommon
             title={`Report issue | ${config.defaultTitle}`}
@@ -240,6 +240,4 @@ const PageNewIssue = () => {
             <Help />
         </PageCommon>
     );
-};
-
-export default PageNewIssue;
+}

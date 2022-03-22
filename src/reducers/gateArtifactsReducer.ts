@@ -61,10 +61,10 @@ const INITIAL_STATE = {
     search_epoch: 1,
 };
 
-const gateArtifactsReducer = (
+export function gateArtifactsReducer(
     state = INITIAL_STATE,
     action: ActionsGateArtifactsType,
-) => {
+) {
     switch (action.type) {
         case GATE_ARTIFACTS_BUMP_SEARCH_EPOCH: {
             nstate = update(state, {
@@ -166,6 +166,4 @@ const gateArtifactsReducer = (
         default:
             return state;
     }
-};
-
-export default gateArtifactsReducer;
+}

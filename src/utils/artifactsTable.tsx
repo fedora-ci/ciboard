@@ -54,8 +54,8 @@ import {
 import styles from '../custom.module.css';
 
 import { ArtifactType } from '../artifact';
-import ArtifactStatesList from '../components/ArtifactStatesList';
-import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
+import { ArtifactStatesList } from '../components/ArtifactStatesList';
+import { ArtifactDetailedInfo } from '../components/ArtifactDetailedInfo';
 
 interface ArtifactNameProps {
     artifact: ArtifactType;

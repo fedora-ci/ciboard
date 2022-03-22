@@ -41,7 +41,7 @@ export interface PaginationToolbarProps {
     loadNextIsDisabled: boolean;
 }
 
-const PaginationToolbar: React.FC<PaginationToolbarProps> = (props) => {
+export function PaginationToolbar(props: PaginationToolbarProps) {
     const {
         isLoading,
         currentPage,
@@ -88,6 +88,4 @@ const PaginationToolbar: React.FC<PaginationToolbarProps> = (props) => {
             </ToolbarContent>
         </Toolbar>
     );
-};
-
-export default PaginationToolbar;
+}
