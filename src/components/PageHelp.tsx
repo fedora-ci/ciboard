@@ -19,7 +19,9 @@
  */
 import * as React from 'react';
 import { TextContent, Text } from '@patternfly/react-core';
-import PageCommon from './PageCommon';
+
+import { config } from '../config';
+import { PageCommon } from './PageCommon';
 
 const Help = () => (
     <TextContent>
@@ -260,7 +262,9 @@ const Help = () => (
 
 const PageHelp = () => {
     return (
-        <PageCommon>
+        <PageCommon
+            title={`Help | ${config.defaultTitle}`}
+        >
             <Help />
         </PageCommon>
     );

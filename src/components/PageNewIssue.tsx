@@ -33,7 +33,8 @@ import {
 } from '@patternfly/react-core';
 import { useQuery } from '@apollo/client';
 
-import PageCommon from './PageCommon';
+import { config } from '../config';
+import { PageCommon } from './PageCommon';
 import WaiverdbInfoQuery from '../queries/WaiverdbInfo';
 import WaiverdbPermissionsQuery from '../queries/WaiverdbPermissions';
 import {
@@ -233,7 +234,9 @@ const WaiverdbPermissions = () => {
 
 const PageNewIssue = () => {
     return (
-        <PageCommon>
+        <PageCommon
+            title={`Report issue | ${config.defaultTitle}`}
+        >
             <Help />
         </PageCommon>
     );

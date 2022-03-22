@@ -240,6 +240,23 @@ const known_aid_meaning = {
     'redhat-container': 'id',
 };
 
+export function getArtifactName(artifact: ArtifactType): string | undefined {
+    switch (artifact.type) {
+        case 'brew-build':
+        case 'copr-build':
+        case 'koji-build':
+            return artifact.payload.nvr;
+        // TODO: Modules are not yet fully supported. Uncomment this once we have
+        // the proper type for module build payloads.
+        // case 'redhat-module':
+        //     return artifact.payload.nsvc;
+        case 'productmd-compose':
+            return artifact.aid;
+        default:
+            return;
+    }
+}
+
 export const nameFieldForType = (type: ArtifactNameType) => {
     const includes = _.includes(_.keys(known_types), type);
     if (!includes) {

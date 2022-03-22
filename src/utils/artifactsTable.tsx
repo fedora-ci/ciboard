@@ -23,32 +23,33 @@ import * as React from 'react';
 import classNames from 'classnames';
 import { LegacyRef, useState } from 'react';
 import {
-    Text,
-    List,
-    Title,
-    Spinner,
     Bullseye,
-    ListItem,
-    OrderType,
-    EmptyState,
-    TextContent,
-    TextVariants,
-    ListComponent,
-    EmptyStateIcon,
-    EmptyStateBody,
-    EmptyStateVariant,
-    ExpandableSection,
     DropdownProps,
     DropdownToggleProps,
+    EmptyState,
+    EmptyStateBody,
+    EmptyStateIcon,
+    EmptyStateVariant,
+    ExpandableSection,
+    List,
+    ListComponent,
+    ListItem,
+    OrderType,
+    Spinner,
+    Text,
+    TextContent,
+    TextVariants,
+    Title,
 } from '@patternfly/react-core';
 import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
 import { nowrap, expandable, fitContent } from '@patternfly/react-table';
 import { ArrowIcon, ExclamationCircleIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 import {
-    artifactUrl,
-    nameFieldForType,
     aidMeaningForType,
+    artifactUrl,
+    getArtifactName,
+    nameFieldForType,
 } from './artifactUtils';
 import styles from '../custom.module.css';
 
@@ -59,29 +60,13 @@ import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
 interface ArtifactNameProps {
     artifact: ArtifactType;
 }
-const ArtifactName: React.FC<ArtifactNameProps> = (props) => {
-    const { artifact } = props;
-    let name;
-    switch (artifact.type) {
-        case 'brew-build':
-        case 'koji-build':
-        case 'koji-build-cs':
-        case 'copr-build':
-            name = artifact.payload.nvr;
-            break;
-        case 'redhat-module':
-            name = artifact.payload.nvr; // Fix me
-            break;
-        case 'productmd-compose':
-            name = artifact.aid;
-            break;
-        default:
-            name = <p>Unknown artifact, please file a bug</p>;
-    }
+const ArtifactName: React.FC<ArtifactNameProps> = ({ artifact }) => {
     return (
         <TextContent>
             <Title size="lg" headingLevel="h4" className="pf-u-m-0">
-                {name}
+                {getArtifactName(artifact) ||
+                    'Unknown artifact, please file a bug'
+                }
             </Title>
         </TextContent>
     );

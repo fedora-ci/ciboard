@@ -29,10 +29,12 @@ import {
     TableVariant,
 } from '@patternfly/react-table';
 
+import { config } from '../config';
 import { ArtifactType } from '../artifact';
-import PageCommon, { ToastAlertGroup } from './PageCommon';
+import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { ArtifactsCompleteQuery } from '../queries/Artifacts';
 import PaginationToolbar, { PaginationToolbarProps } from './PaginationToolbar';
+import { getArtifactName } from '../utils/artifactUtils';
 import {
     ShowErrors,
     InputRowType,
@@ -44,6 +46,10 @@ import {
     OnCollapseEventType,
 } from '../utils/artifactsTable';
 import WaiveForm from './WaiveForm';
+
+interface ArtifactsTableProps {
+    onArtifactsLoaded?(artifacts: ArtifactType[]): void;
+}
 
 /**
  * Displays artifacts based on current URL
@@ -58,7 +64,7 @@ import WaiveForm from './WaiveForm';
  * - focus - used to focus on a specific test for a single artifact view
  */
 
-const ArtifactsTable: React.FC<any> = (props) => {
+const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProps) => {
     const scrollRef = useRef<HTMLTableRowElement>(null);
     var artifacts: ArtifactType[] = [];
     /**
@@ -99,6 +105,7 @@ const ArtifactsTable: React.FC<any> = (props) => {
         value: dbFieldValuesString,
     } = useParams<MongoFieldsParams>();
     const dbFieldValues = dbFieldValuesString.split(',');
+    // Index of the currently expanded artifact row within the `artifacts` list.
     const [opened, setOpened] = useState<number | null>(null);
     /** page navigation */
     const onClickLoadNext = () => {
@@ -143,6 +150,9 @@ const ArtifactsTable: React.FC<any> = (props) => {
     if (haveData) {
         artifacts = data.artifacts.artifacts;
         has_next = data.artifacts.has_next;
+        if (onArtifactsLoaded) {
+            onArtifactsLoaded(artifacts);
+        }
         const aid_at_bottom = _.last(artifacts)?.aid;
         if (!_.includes(known_pages, aid_at_bottom) && aid_at_bottom) {
             known_pages.splice(
@@ -259,8 +269,29 @@ const ArtifactsTable: React.FC<any> = (props) => {
 };
 
 const PageByMongoField = () => {
+    const [pageTitle, setPageTitle] = useState<string | undefined>();
+    // Display the artifact's NVR/NVSC/whatever and gating status (if available) in
+    // the page title once the artifact info is loaded.
+    const onArtifactsLoaded = (artifacts: ArtifactType[]) => {
+        // We only handle the single-artifact case for now.
+        // TODO: Support multiple artifacts per page. Perhaps only display info for
+        // the currently expanded row?
+        if (artifacts?.length !== 1) return;
+        const artifact = artifacts[0];
+        let title = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
+        if (artifact.greenwave_decision?.summary) {
+            if (artifact.greenwave_decision.policies_satisfied)
+                title = `✅ ${title}`;
+            else
+                title = `❌ ${title}`;
+        }
+        setPageTitle(title);
+    };
+
     return (
-        <PageCommon>
+        <PageCommon
+            title={pageTitle}
+        >
             <ArtifactsTable />
             <ToastAlertGroup />
             <WaiveForm />

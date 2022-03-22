@@ -43,7 +43,7 @@ import {
     SSTListQuery,
     SSTResultsQuery,
 } from '../queries/SST';
-import PageCommon from './PageCommon';
+import { PageCommon } from './PageCommon';
 import { DropdownSelector } from './SSTSelector';
 import { StatusChart } from './SSTResultsStatusChart';
 import { ResultsTable } from './SSTResultsTable';
