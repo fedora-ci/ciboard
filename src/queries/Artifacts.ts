@@ -19,6 +19,7 @@
  */
 
 import { gql } from '@apollo/client';
+import { ArtifactType, ComponentMapping } from '../artifact';
 
 const stateEntryFragment = gql`
     fragment StateEntryFragment on StateType {
@@ -256,13 +257,22 @@ export const ArtifactsXunitQuery = gql`
 `;
 
 export const PageGatingGetSSTTeams = gql`
-    query ArtifactsComplete($product_id: Int) {
-        sst_list(product_id: $product_id)
+    query PageGatingGetSSTTeams($product_id: Int) {
+        db_sst_list(product_id: $product_id)
     }
 `;
 
+export interface PageGatingArtifactsData {
+    artifacts: {
+        has_next: boolean;
+        artifacts: ArtifactType[] & {
+            component_mapping: ComponentMapping;
+        };
+    };
+}
+
 export const PageGatingArtifacts = gql`
-    query ArtifactsComplete(
+    query PageGatingArtifacts(
         $limit: Int
         $atype: String!
         $aid_offset: String
@@ -293,13 +303,12 @@ export const PageGatingArtifacts = gql`
             has_next
             artifacts {
                 ...MainFragment
-                ...CurrentStateFragment
                 component_mapping {
                     component_name
-                    product_id
-                    description
                     def_assignee
                     def_assignee_name
+                    description
+                    product_id
                     qa_contact
                     qa_contact_name
                     sst_team_name

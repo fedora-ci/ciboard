@@ -44,7 +44,7 @@ import { mappingDatagrepperUrl } from '../config';
 import { TestSuites } from './TestSuites';
 import {
     getThreadID,
-getTestcaseName,
+    getTestcaseName,
     renderStatusIcon,
 } from '../utils/artifactUtils';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';

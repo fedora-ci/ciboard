@@ -23,6 +23,7 @@ import { combineReducers } from 'redux';
 import { alertsReducer } from './alertsReducer';
 import { authReducer } from './authReducer';
 import { filtersReducer } from './filtersReducer';
+import { gateArtifactsReducer } from './gateArtifactsReducer';
 import { queryStringReducer } from './queryStringReducer';
 import { waiveReducer } from './waiveReducer';
 
@@ -30,6 +31,7 @@ export const rootReducer = combineReducers({
     alerts: alertsReducer,
     auth: authReducer,
     filters: filtersReducer,
+    gateArtifacts: gateArtifactsReducer,
     queryString: queryStringReducer,
     waive: waiveReducer,
 });

@@ -34,7 +34,7 @@ import React, { MouseEventHandler } from 'react';
 
 export interface PaginationToolbarProps {
     isLoading: boolean;
-    currentPage: string;
+    currentPage: number;
     onClickLoadPrev: MouseEventHandler;
     onClickLoadNext: MouseEventHandler;
     loadPrevIsDisabled: boolean;

@@ -23,6 +23,7 @@ import { useParams } from 'react-router-dom';
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@apollo/client';
 import {
+    IRow,
     Table,
     TableBody,
     TableHeader,
@@ -39,7 +40,6 @@ import {
     ShowErrors,
     InputRowType,
     tableColumns,
-    TableRowsType,
     mkSpecialRows,
     mkArtifactsRows,
     CustomRowWrapper,
@@ -88,7 +88,7 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
     /**
      * currentPage -- index in known pages
      */
-    var currentPage = '';
+    var currentPage: number = 1;
     var loadNextIsDisabled = true;
     var loadPrevIsDisabled = true;
     /**
@@ -167,12 +167,10 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         }
     }
     if (known_pages.length && _.size(artifacts)) {
-        const aid_at_bottom = _.last(artifacts)?.aid;
-        currentPage = _.toString(
-            _.findIndex(known_pages, (x) => x === aid_at_bottom) + 1,
-        );
+        const aidAtBottom = _.last(artifacts)?.aid;
+        currentPage = 1 + _.findIndex(known_pages, (x) => x === aidAtBottom);
     }
-    if (_.toNumber(currentPage) > 1) {
+    if (currentPage > 1) {
         loadPrevIsDisabled = false;
     }
     if (has_next) {
@@ -197,7 +195,7 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         indexToOpen = 0;
     }
     const columns = tableColumns(artifactsType);
-    var rows_errors: TableRowsType = [];
+    var rows_errors: IRow[] = [];
     if (haveErrorNoData) {
         const errorMsg: InputRowType = {
             title: 'Cannot fetch data',
@@ -206,14 +204,14 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         };
         rows_errors = mkSpecialRows(errorMsg);
     }
-    const rows_artifacts: TableRowsType = mkArtifactsRows({
+    const rows_artifacts = mkArtifactsRows({
         artifacts,
         opened: indexToOpen,
     });
     const forceExpandErrors = haveErrorNoData ? true : false;
     const foundValues = _.map(artifacts, _.property(dbFieldName));
     const missing = _.difference(dbFieldValues, foundValues);
-    var rows_missing: TableRowsType = [];
+    var rows_missing: IRow[] = [];
     if (!_.isEmpty(missing) && haveData) {
         rows_errors = mkSpecialRows({
             title: `No data for ${artifactsType} with ${dbFieldName}`,
@@ -221,7 +219,7 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
             type: 'error',
         });
     }
-    var rows_loading: TableRowsType = [];
+    var rows_loading: IRow[] = [];
     if (isLoading) {
         rows_loading = mkSpecialRows({
             title: 'Loading data.',

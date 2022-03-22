@@ -247,13 +247,12 @@ export const ShowErrors = ({ error, forceExpand }: any) => {
     );
 };
 
-export type InputRowType = {
+export interface InputRowType {
+    body: React.ReactNode;
     title: string;
-    body: JSX.Element;
     type: string;
-};
+}
 
-export type TableRowsType = TableProps['rows'];
 export type OnCollapseEventType = Extract<TableProps['onCollapse'], Function>;
 export type TableRowWrapperType = Extract<TableProps['rowWrapper'], Function>;
 export type OnDropdownToggleType = Extract<
@@ -262,7 +261,7 @@ export type OnDropdownToggleType = Extract<
 >;
 export type OnDropdownSelectType = Extract<DropdownProps['onSelect'], Function>;
 
-export const mkSpecialRows = (args: InputRowType): TableRowsType => {
+export const mkSpecialRows = (args: InputRowType): IRow[] => {
     const default_args = { type: 'error' };
     const { title, body, type }: any = { ...default_args, ...args };
     var Icon = () => <></>;
@@ -344,7 +343,7 @@ export type InputArtifactRowType = {
     waitForRef?: React.MutableRefObject<any>;
 };
 
-export const mkArtifactsRows = (args: InputArtifactRowType): TableRowsType => {
+export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
     const { artifacts, opened, queryString, waitForRef } = args;
     if (_.isEmpty(artifacts)) {
         return [];

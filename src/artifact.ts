@@ -36,9 +36,9 @@ export type ArtifactType = {
     aid: string;
     type: ArtifactNameType;
     payload: PayloadsType;
-    states: Array<StateKaiType>;
+    states: StateKaiType[];
     greenwave_decision?: GreenwaveDecisionReplyType;
-    resultsdb_testscase: Array<number>;
+    resultsdb_testscase: number[];
 };
 
 /**
@@ -271,7 +271,19 @@ export type PayloadRPMBuildType = {
     gate_tag_name: string;
 };
 
-export const KnownKaiStates: Array<StateNameType> = [
+export interface ComponentMapping {
+    component_name: string;
+    default_assignee: string;
+    default_assignee_name: string;
+    description: string;
+    product_id: number;
+    sst_name: string;
+    qa_contact: string;
+    qa_contact_name: string;
+    _updated: string;
+}
+
+export const KnownKaiStates: StateNameType[] = [
     'error',
     'queued',
     'running',
