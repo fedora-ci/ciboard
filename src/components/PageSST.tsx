@@ -134,7 +134,7 @@ function PageHeader({ release, results, section, sstList }: PageHeaderProps) {
             <Flex
                 flex={{ default: 'flex_1' }}
                 justifyContent={{
-                     default: 'justifyContentFlexEnd'
+                    default: 'justifyContentFlexEnd'
                 }}
             >
                 <FlexItem>
@@ -172,8 +172,8 @@ export function PageSST() {
     const sstList: SSTItem[] | undefined = _.get(listQuery, 'data.sst_list');
     const sstResults: SSTResult[] | undefined = (
         (resultsQuery.error || resultsQuery.loading)
-        ? undefined
-        : _.get(resultsQuery, 'data.sst_results')
+            ? undefined
+            : _.get(resultsQuery, 'data.sst_results')
     );
     const showResultsTable = (resultsQuery.loading || sstResults);
 
@@ -213,7 +213,7 @@ export function PageSST() {
                                     <Text>Error loading SST list: {String(listQuery.error)}</Text>
                                 </TextContent>
                             }
-                            {sstList !== null &&
+                            {!listQuery.loading && sstList &&
                                 <DropdownSelector
                                     section={section}
                                     sstList={sstList}
