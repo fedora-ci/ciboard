@@ -425,7 +425,7 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
             <Flex flexWrap={{ default: 'nowrap' }}>
                 <StageName state={state} />
             </Flex>
-            <Flex align={{ default: 'alignRight' }}>
+            <Flex>
                 <StateLink
                     state={state}
                     artifactDashboardUrl={artifactDashboardUrl}

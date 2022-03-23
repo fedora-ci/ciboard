@@ -434,9 +434,9 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
                 </TextContent>
             </Flex>
             <Flex>
-                <FlexItem align={{ default: 'alignLeft' }}>{labels}</FlexItem>
+                <FlexItem>{labels}</FlexItem>
             </Flex>
-            <Flex align={{ default: 'alignRight' }}>
+            <Flex>
                 <StateLink
                     state={state}
                     artifactDashboardUrl={artifactDashboardUrl}
