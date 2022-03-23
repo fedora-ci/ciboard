@@ -45,18 +45,16 @@ import {
     DescriptionListDescription,
 } from '@patternfly/react-core';
 
-import Linkify from 'react-linkify';
-
 import {
-    ArrowIcon,
     WeeblyIcon,
     RebootingIcon,
     RegisteredIcon,
     OutlinedThumbsUpIcon,
+    NimblrIconConfig,
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
-import { renderStatusIcon } from '../utils/artifactUtils';
+import { renderStatusIcon, labelColors } from '../utils/artifactUtils';
 import { ArtifactType, StateGreenwaveType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
@@ -66,6 +64,7 @@ import {
     LinkifyNewTab,
     StateDetailsEntry,
 } from './ArtifactState';
+import { NodeBuilderFlags } from 'typescript';
 
 const timestampForUser = (inp: string, fromNow = false): string => {
     const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
@@ -195,15 +194,19 @@ export const GreenwaveResult: React.FC<GreenwaveResultProps> = (props) => {
     );
     return (
         <StateDetailsEntry caption="Result info">
-            <DescriptionList
-                isCompact
-                isHorizontal
-                columnModifier={{
-                    default: '2Col',
-                }}
-            >
-                {elements}
-            </DescriptionList>
+            <Flex>
+                <FlexItem>
+                    <DescriptionList
+                        isCompact
+                        isHorizontal
+                        columnModifier={{
+                            default: '2Col',
+                        }}
+                    >
+                        {elements}
+                    </DescriptionList>
+                </FlexItem>
+            </Flex>
         </StateDetailsEntry>
     );
 };
@@ -234,15 +237,19 @@ export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
     );
     return (
         <StateDetailsEntry caption="Waiver info">
-            <DescriptionList
-                isCompact
-                isHorizontal
-                columnModifier={{
-                    default: '2Col',
-                }}
-            >
-                {elements}
-            </DescriptionList>
+            <Flex>
+                <FlexItem>
+                    <DescriptionList
+                        isCompact
+                        isHorizontal
+                        columnModifier={{
+                            default: '2Col',
+                        }}
+                    >
+                        {elements}
+                    </DescriptionList>
+                </FlexItem>
+            </Flex>
         </StateDetailsEntry>
     );
 };
@@ -269,15 +276,19 @@ export const GreenwaveRequirement: React.FC<GreenwaveRequirementProps> = (
     );
     return (
         <StateDetailsEntry caption="Requirement info">
-            <DescriptionList
-                isCompact
-                isHorizontal
-                columnModifier={{
-                    default: '2Col',
-                }}
-            >
-                {elements}
-            </DescriptionList>
+            <Flex>
+                <FlexItem>
+                    <DescriptionList
+                        isCompact
+                        isHorizontal
+                        columnModifier={{
+                            default: '2Col',
+                        }}
+                    >
+                        {elements}
+                    </DescriptionList>
+                </FlexItem>
+            </Flex>
         </StateDetailsEntry>
     );
 };
@@ -332,16 +343,43 @@ export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
     }
     return (
         <StateDetailsEntry caption="Result data">
-            <DescriptionList
-                isCompact
-                isHorizontal
-                columnModifier={{
-                    default: '2Col',
-                }}
-            >
-                {items}
-            </DescriptionList>
+            <Flex>
+                <FlexItem>
+                    <DescriptionList
+                        isCompact
+                        isHorizontal
+                        columnModifier={{
+                            default: '2Col',
+                        }}
+                    >
+                        {items}
+                    </DescriptionList>
+                </FlexItem>
+            </Flex>
         </StateDetailsEntry>
+    );
+};
+
+export const mkOutcomeLabel = (state: StateGreenwaveType) => {
+    var outcome: string | undefined = state?.result?.outcome;
+    if (_.isNil(outcome) && state.requirement?.type === 'test-result-missing') {
+        outcome = 'missed';
+    }
+    if (_.isNil(outcome)) {
+        return;
+    }
+    outcome = _.toLower(outcome);
+    const color = _.findKey(labelColors, (statuses) =>
+        _.includes(statuses, outcome),
+    );
+    return (
+        <Label
+            isCompact
+            color={(color as LabelProps['color']) || 'grey'}
+            variant="filled"
+        >
+            {outcome}
+        </Label>
     );
 };
 
@@ -358,35 +396,30 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     const { waiver, requirement, result } = state;
     const isWaived = _.isNumber(waiver?.id);
     const isGatingResult = _.isString(state.requirement?.testcase);
-    var badgeClasses = classNames({
-        [styles.isHidden]: !isGatingResult,
-    });
     const labels: Array<JSX.Element> = [];
-    labels.push(
-        <Label
-            color="blue"
-            isCompact
-            key="required"
-            className={badgeClasses}
-            icon={<RegisteredIcon />}
-        >
-            required for gating
-        </Label>,
-    );
-    badgeClasses = classNames(styles.isRedBG, {
-        [styles.isHidden]: !isWaived,
-    });
-    labels.push(
-        <Label
-            color="red"
-            isCompact
-            key="waived"
-            className={badgeClasses}
-            icon={<WeeblyIcon />}
-        >
-            waived
-        </Label>,
-    );
+    if (isGatingResult) {
+        labels.push(
+            <Label
+                color="blue"
+                isCompact
+                key="required"
+                icon={<RegisteredIcon />}
+            >
+                required for gating
+            </Label>,
+        );
+    }
+    if (isWaived) {
+        labels.push(
+            <Label color="red" isCompact key="waived" icon={<WeeblyIcon />}>
+                waived
+            </Label>,
+        );
+    }
+    const outcomeLabel = mkOutcomeLabel(state);
+    if (!_.isNil(outcomeLabel)) {
+        labels.push(outcomeLabel);
+    }
     const iconName = _.get(
         state,
         'requirement.type',

@@ -22,57 +22,25 @@ import _ from 'lodash';
 import * as React from 'react';
 import moment from 'moment';
 import classNames from 'classnames';
-import { useDispatch } from 'react-redux';
 import {
-    Flex,
-    Text,
-    Label,
-    Title,
-    Button,
-    FlexItem,
-    TitleSizes,
-    LabelProps,
-    TextContent,
     DataListCell,
     DataListItem,
     DataListToggle,
     DataListItemRow,
     DataListContent,
-    DescriptionList,
     DataListItemCells,
-    DescriptionListTerm,
-    DescriptionListGroup,
-    DescriptionListDescription,
 } from '@patternfly/react-core';
 
-import Linkify from 'react-linkify';
-
-import {
-    ArrowIcon,
-    WeeblyIcon,
-    RebootingIcon,
-    RegisteredIcon,
-    OutlinedThumbsUpIcon,
-} from '@patternfly/react-icons';
-
 import styles from '../custom.module.css';
-import { renderStatusIcon } from '../utils/artifactUtils';
-import { ArtifactType, StateGreenwaveKaiType } from '../artifact';
+import { StateGreenwaveKaiType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
-    mkPairs,
-    mkLabel,
-    StateLink,
-    LinkifyNewTab,
-    StateDetailsEntry,
-} from './ArtifactState';
-import {
-    FaceForGreenwaveState,
-    GreenwaveRequirement,
     GreenwaveResult,
-    GreenwaveResultData,
-    GreenwaveStateActions,
     GreenwaveWaiver,
+    GreenwaveResultData,
+    GreenwaveRequirement,
+    FaceForGreenwaveState,
+    GreenwaveStateActions,
 } from './ArtifactGreenwaveState';
 import { KaiStateXunit } from './ArtifactKaiState';
 

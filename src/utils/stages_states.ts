@@ -59,7 +59,11 @@ export const mkStagesAndStates = (
     }> = [];
     const kaiStagesStates = mkStagesKaiStates(artifact);
     stagesStates.push(...kaiStagesStates);
-    if (artifact.greenwave_decision) {
+    /* Greenwave always produces structured-reply, check if this reply makes any sense */
+    if (
+        artifact.greenwave_decision &&
+        _.isBoolean(artifact.greenwave_decision?.policies_satisfied)
+    ) {
         const greenwaveStageStates = mkGreenwaveStageStates(
             artifact.greenwave_decision,
         );
@@ -214,7 +218,6 @@ const mkReqStatesGreenwave = (
         satisfied_requirements,
         unsatisfied_requirements,
     );
-    console.log('xxx1', decision.unsatisfied_requirements);
     /* {'test-result-passed' : [GreenwaveRequirementType], 'fetched-gating-yaml' : ... } */
     const requirementsByType = _.groupBy(requirements, 'type');
     /* {'test-result-passed' : [StateGreenWaveType], 'fetched-gating-yaml' : ... } */

@@ -307,7 +307,7 @@ const StateExplain: React.FC<StateExplainProps> = (props) => {
             </Alert>
         ),
         queued: (
-            <Alert isInline variant="info" title="Queued test">
+            <Alert isInline isPlain variant="info" title="Queued test">
                 Testing has been queued, but not yet started.
             </Alert>
         ),
