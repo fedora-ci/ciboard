@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import _ from 'lodash';
 import * as React from 'react';
 import {
     Card,
@@ -28,9 +29,41 @@ import {
     GridItem,
     StackItem,
     CardHeader,
+    Spinner,
 } from '@patternfly/react-core';
+import { useQuery } from '@apollo/client';
 
 import PageCommon from './PageCommon';
+import WaiverdbInfoQuery from '../queries/WaiverdbInfo';
+import WaiverdbPermissionsQuery from '../queries/WaiverdbPermissions';
+import {
+    Table,
+    TableBody,
+    TableHeader,
+    TableVariant,
+} from '@patternfly/react-table';
+import { TableRowsType } from '../utils/artifactsTable';
+
+const mkSeparatedList = (
+    elements: Array<string>,
+    separator: JSX.Element = <>', '</>,
+) => {
+    if (_.isNil(elements)) return null;
+    const ret = _.reduce<string, (string | JSX.Element)[]>(
+        elements,
+        (acc, el) => {
+            if (_.size(acc) === 0) {
+                acc.push(el);
+                return acc;
+            }
+            acc.push(separator);
+            acc.push(el);
+            return acc;
+        },
+        [],
+    );
+    return <>{ret}</>;
+};
 
 const Help = () => (
     <Grid hasGutter>
@@ -104,8 +137,99 @@ const Help = () => (
                 </CardBody>
             </Card>
         </GridItem>
+        <GridItem span={6}>
+            <WaiverdbPermissions />
+        </GridItem>
+        <GridItem span={6}>
+            <WaiverdbInfo />
+        </GridItem>
     </Grid>
 );
+
+const WaiverdbInfo: React.FC = () => {
+    const { loading, error, data } = useQuery(WaiverdbInfoQuery);
+    var info = { version: '', auth_method: '' };
+    if (loading) {
+        return <Spinner />;
+    }
+    if (_.isError(error)) {
+        return <StackItem>{error.message}</StackItem>;
+    }
+    info = data.waiver_db_info;
+    return (
+        <Card>
+            <CardHeader>
+                <Title headingLevel="h3" size="2xl">
+                    WaiverDB Info
+                </Title>
+            </CardHeader>
+            <CardBody>
+                <Stack hasGutter>
+                    <StackItem>Version: {info.version}</StackItem>
+                    <StackItem>Auth method: {info.auth_method}</StackItem>
+                </Stack>
+            </CardBody>
+        </Card>
+    );
+};
+
+type WaiverDBPermissionType = {
+    name: string;
+    description: string;
+    maintainers: Array<string>;
+    testcases: Array<string>;
+    users?: Array<string>;
+    groups?: Array<string>;
+};
+
+const WaiverdbPermissions = () => {
+    const { loading, error, data } = useQuery(WaiverdbPermissionsQuery);
+    const rows: TableRowsType = [];
+    const mkRow = (permission: WaiverDBPermissionType) => {
+        const patterns = mkSeparatedList(permission.testcases, <br />);
+        const users = mkSeparatedList(permission.users || [], <br />);
+        const groups = mkSeparatedList(permission.groups || [], <br />);
+        return {
+            cells: [patterns, <>{users}</>, <>{groups}</>],
+        };
+    };
+    if (loading) {
+        return <Spinner />;
+    }
+    if (_.isError(error)) {
+        return <StackItem>{error.message}</StackItem>;
+    }
+    const perms = data.waiver_db_permissions as Array<WaiverDBPermissionType>;
+    _.forEach(perms, (permission) => rows.push(mkRow(permission)));
+    const columns = [
+        { title: 'Test case patterns' },
+        { title: 'Users' },
+        { title: 'Groups' },
+    ];
+    return (
+        <Card>
+            <CardHeader>
+                <Title headingLevel="h3" size="2xl">
+                    WaiverDB Permissions
+                </Title>
+            </CardHeader>
+            <CardBody>
+                <>
+                    <Table
+                        aria-label="Table WaiverDB config"
+                        variant={TableVariant.compact}
+                        borders={true}
+                        cells={columns}
+                        rows={rows}
+                    >
+                        <TableHeader />
+                        <TableBody />
+                    </Table>
+                </>
+            </CardBody>
+        </Card>
+    );
+};
 
 const PageNewIssue = () => {
     return (
