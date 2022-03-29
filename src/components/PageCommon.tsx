@@ -32,7 +32,7 @@ import {
     AlertActionCloseButton,
 } from '@patternfly/react-core';
 
-import PageHeader from './PageHeader';
+import { DashboardPageHeader } from './PageHeader';
 import { RootStateType } from '../reducers';
 import { setQueryString, popAlert } from '../actions';
 import { IStateAlerts } from '../actions/types';
@@ -80,7 +80,7 @@ const PageCommon = (props: any) => {
     if (queryString.embedded !== 'true') {
         to_render = (
             <>
-                <Page header={<PageHeader />} mainContainerId={pageId}>
+                <Page header={<DashboardPageHeader />} mainContainerId={pageId}>
                     <PageSection
                         variant={PageSectionVariants.default}
                         isFilled

@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,18 +19,39 @@
  */
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { css } from '@patternfly/react-styles';
 import {
     Nav,
+    Button,
     NavItem,
     NavList,
     NavProps,
+    Dropdown,
     PageHeader,
+    ButtonVariant,
+    DropdownToggle,
+    PageHeaderTools,
+    PageHeaderToolsItem,
+    PageHeaderToolsGroup,
+    DropdownItem,
 } from '@patternfly/react-core';
-import { AutomationIcon } from '@patternfly/react-icons';
+import {
+    AutomationIcon,
+    ExternalLinkSquareAltIcon,
+} from '@patternfly/react-icons';
+import accessibleStyles from '@patternfly/react-styles/css/utilities/Accessibility/accessibility';
 
+import { fetchUser } from '../actions';
+import { IStateAuth } from '../actions/types';
 import { menuRoutes } from '../routes';
+import { RootStateType } from '../reducers';
+import {
+    OnDropdownSelectType,
+    OnDropdownToggleType,
+} from '../utils/artifactsTable';
 
 const logoProps = {
     to: '/',
@@ -42,13 +63,105 @@ const logoProps = {
 
 type SelectedItemType = Parameters<Extract<NavProps['onSelect'], Function>>[0];
 
-const Header = () => {
+const onLoginClick = () => {
+    /**
+     *  Set a session cookie to with the current URL as the value so that we can
+     * redirect back after a successful login/logout.
+     */
+    const { hash, pathname, search } = window.location;
+    const currentURL = encodeURIComponent(pathname + search + hash);
+    document.cookie = `auth_redirect=${currentURL}; path=/; secure`;
+};
+
+const LoginLink = () => {
+    return (
+        <Button
+            component="a"
+            href={'/login'}
+            id="default-example-uid-01"
+            aria-label="Log in to CI Dashboard"
+            icon={<ExternalLinkSquareAltIcon />}
+            iconPosition="right"
+            onClick={onLoginClick}
+            variant={ButtonVariant.link}
+        >
+            Login
+        </Button>
+    );
+};
+
+const LogoutLink = () => (
+    <DropdownItem
+        aria-label="Log out of CI Dashboard"
+        component="a"
+        href="/logout"
+        onClick={onLoginClick}
+    >
+        Logout
+    </DropdownItem>
+);
+
+const userDropdownItems = [<LogoutLink />];
+
+const HeaderToolbar = () => {
+    const dispatch = useDispatch();
+    const auth = useSelector<RootStateType, IStateAuth>((store) => store.auth);
+    const [isDropdownOpen, setDropDownOpen] = useState(false);
+    useEffect(() => {
+        dispatch(fetchUser());
+    }, []);
+    const onDropdownToggle: OnDropdownToggleType = (
+        isDropdownOpen: boolean,
+    ) => {
+        setDropDownOpen(isDropdownOpen);
+    };
+    const onDropdownSelect: OnDropdownSelectType = (event) => {
+        setDropDownOpen(!isDropdownOpen);
+    };
+    function renderContent() {
+        switch (auth.displayName) {
+            case '':
+                return <LoginLink />;
+            default:
+                return (
+                    <Dropdown
+                        isPlain
+                        position="right"
+                        onSelect={onDropdownSelect}
+                        isOpen={isDropdownOpen}
+                        toggle={
+                            <DropdownToggle onToggle={onDropdownToggle}>
+                                {auth.displayName}
+                            </DropdownToggle>
+                        }
+                        dropdownItems={userDropdownItems}
+                    />
+                );
+        }
+    }
+    const toolbar = (
+        <PageHeaderTools>
+            <PageHeaderToolsGroup>
+                <PageHeaderToolsItem
+                    className={css(
+                        accessibleStyles.screenReader,
+                        accessibleStyles.visibleOnMd,
+                    )}
+                >
+                    {renderContent()}
+                </PageHeaderToolsItem>
+            </PageHeaderToolsGroup>
+        </PageHeaderTools>
+    );
+    return toolbar;
+};
+
+export const DashboardPageHeader = () => {
     const location = useLocation();
     let history = useHistory();
     const [activeItem, setActiveItem] = useState<string | number>(
         'grp-1_itm-1',
     );
-
     const navigateTo = (href: string) => {
         history.push(href);
     };
@@ -78,14 +191,14 @@ const Header = () => {
         <PageHeader
             logo={
                 <>
-                    <AutomationIcon size="lg" className="pf-u-mr-sm" /> CI Dashboard
+                    <AutomationIcon size="lg" className="pf-u-mr-sm" /> CI
+                    Dashboard
                 </>
             }
+            headerTools={<HeaderToolbar />}
             logoComponent="div"
             logoProps={logoProps}
             topNav={PageNav}
         />
     );
 };
-
-export default Header;

@@ -227,6 +227,7 @@ const known_types = {
     'redhat-module': 'nsvc',
     'copr-build': 'component',
     'productmd-compose': 'compose_id',
+    'redhat-container': 'id',
 };
 
 const known_aid_meaning = {
@@ -236,6 +237,7 @@ const known_aid_meaning = {
     'redhat-module': 'mbsID',
     'copr-build': 'id',
     'productmd-compose': 'url',
+    'redhat-container': 'id',
 };
 
 export const nameFieldForType = (type: ArtifactNameType) => {
@@ -320,6 +322,7 @@ export const artifactUrl = (artifact: ArtifactType) => {
         'brew-build': `https://brewweb.engineering.redhat.com/brew/taskinfo?taskID=${artifact.aid}`,
         'koji-build': `https://koji.fedoraproject.org/koji/taskinfo?taskID=${artifact.aid}`,
         'koji-build-cs': `https://kojihub.stream.centos.org/koji/taskinfo?taskID=${artifact.aid}`,
+        'redhat-container': `https://fixme/${artifact.aid}`,
         'copr-build': (() => {
             // XXX: fixme
             // const component = artifact.payload.component;

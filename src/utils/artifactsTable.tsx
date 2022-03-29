@@ -39,6 +39,8 @@ import {
     EmptyStateBody,
     EmptyStateVariant,
     ExpandableSection,
+    DropdownProps,
+    DropdownToggleProps,
 } from '@patternfly/react-core';
 import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
 import { nowrap, expandable, fitContent } from '@patternfly/react-table';
@@ -268,6 +270,11 @@ export type InputRowType = {
 export type TableRowsType = TableProps['rows'];
 export type OnCollapseEventType = Extract<TableProps['onCollapse'], Function>;
 export type TableRowWrapperType = Extract<TableProps['rowWrapper'], Function>;
+export type OnDropdownToggleType = Extract<
+    DropdownToggleProps['onToggle'],
+    Function
+>;
+export type OnDropdownSelectType = Extract<DropdownProps['onSelect'], Function>;
 
 export const mkSpecialRows = (args: InputRowType): TableRowsType => {
     const default_args = { type: 'error' };

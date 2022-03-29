@@ -122,7 +122,10 @@ export const ArtifactGreenwaveKaiState: React.FC<
             >
                 {forceExpand && (
                     <>
-                        <GreenwaveStateActions state={state.gs} />
+                        <GreenwaveStateActions
+                            state={state.gs}
+                            artifact={artifact}
+                        />
                         <GreenwaveResult state={state.gs} />
                         <GreenwaveWaiver state={state.gs} />
                         <GreenwaveResultData state={state.gs} />

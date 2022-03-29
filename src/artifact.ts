@@ -26,6 +26,7 @@ export type ArtifactNameType =
     | 'copr-build'
     | 'redhat-module'
     | 'koji-build-cs'
+    | 'redhat-container'
     | 'productmd-compose';
 
 export type ArtifactType = {
@@ -213,7 +214,7 @@ export type StateExtendedNameType =
     | 'failed'
     | 'missing'
     /* greenwave result */
-    | 'result'
+    | 'not gate results'
     | StateNameType
     | GreenwaveRequirementTypesType;
 

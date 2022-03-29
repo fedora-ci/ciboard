@@ -265,7 +265,7 @@ const mkResultStatesGreenwave = (
             result: res,
         }),
     );
-    const stateName: StateExtendedNameType = 'result';
+    const stateName: StateExtendedNameType = 'not gate results';
     return { [stateName]: resultStates };
 };
 

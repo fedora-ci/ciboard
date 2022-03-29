@@ -19,6 +19,7 @@
  */
 
 import { AlertVariant } from '@patternfly/react-core';
+import { ArtifactType, StateType } from '../artifact';
 
 export const SST_PAGE = 'SST_PAGE';
 export const SST_MENU = 'SUBMIT_MENU';
@@ -68,6 +69,19 @@ export interface IStateAlerts {
         title: string;
         variant: keyof typeof AlertVariant;
     }[];
+}
+
+export interface IStateWaiver {
+    state: undefined | StateType;
+    reason: string;
+    waiveError: string;
+    timestamp: undefined | number;
+    artifact: undefined | ArtifactType;
+}
+
+export interface IStateAuth {
+    displayName: string;
+    nameID: string;
 }
 
 export interface IStateQueryString {
@@ -140,12 +154,46 @@ export interface ActionGABumpSearchEpoch {
     type: typeof GATE_ARTIFACTS_BUMP_SEARCH_EPOCH;
 }
 
+export interface ActionWaiverCreate {
+    type: typeof WAIVER_CREATE;
+    payload: {
+        state: StateType | undefined;
+        artifact: ArtifactType | undefined;
+    };
+}
+
+export interface ActionWaiverResetReply {
+    type: typeof WAIVER_RESET_REPLY;
+}
+
+export interface ActionWaiverResult {
+    type: typeof WAIVER_RESULT;
+    payload: {
+        /* Cannot send waiver */
+        waiveError: string;
+        reason: string;
+    };
+}
+
+export interface ActionAuthFetchUser {
+    type: typeof FETCH_USER;
+    payload: {
+        displayName: string;
+        nameID: string;
+    };
+}
+
 /**
  * Actions for reducers
  */
 
 export type ActionsQueryStringType = ActionSetQueryString;
+export type ActionsAuthType = ActionAuthFetchUser;
 export type ActionsAlertsType = ActionPushAlert | ActionPopAlert;
+export type ActionsWaiverType =
+    | ActionWaiverCreate
+    | ActionWaiverResetReply
+    | ActionWaiverResult;
 export type ActionsFiltersType =
     | ActionSetOptionsForFilters
     | ActionAddFilter

@@ -29,7 +29,7 @@ const INTIAL_STATE: IStateQueryString = {
     queryString: {},
 };
 
-const queryStringReducer = (
+export const queryStringReducer = (
     state = INTIAL_STATE,
     action: ActionsQueryStringType,
 ): IStateQueryString => {
@@ -43,5 +43,3 @@ const queryStringReducer = (
             return state;
     }
 };
-
-export default queryStringReducer;

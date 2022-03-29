@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,7 @@
  */
 
 import _ from 'lodash';
+import { ApolloClient } from '@apollo/client';
 
 import {
     /** Filters */
@@ -34,9 +35,17 @@ import {
     ActionPopAlert,
     ActionGASetSearchOptions,
     ActionGABumpSearchEpoch,
+    WAIVER_CREATE,
+    WAIVER_RESET_REPLY,
+    WAIVER_RESULT,
+    FETCH_USER,
 } from './types';
 import store from '../reduxStore';
-import { db_field_from_atype } from '../utils/artifactUtils';
+import { ArtifactType, StateType } from '../artifact';
+import { greenwave } from '../config';
+import WaiverdbNewMutation from '../mutations/WaiverdbNew';
+import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
+import axios from 'axios';
 
 type DispatchType = typeof store.dispatch;
 type GetStateType = typeof store.getState;
@@ -92,6 +101,7 @@ export const setQueryString = (queryString: string) => {
 };
 
 export const deleteFilter = (delval = '') => {
+    /** XXX: simplify */
     return async (dispatch: DispatchType, getState: GetStateType) => {
         dispatch({
             type: DELETE_FILTER,
@@ -143,5 +153,113 @@ export const addFilter = (newval = '', type = '') => {
             type: ADD_FILTER,
             payload: { type, newval },
         });
+    };
+};
+
+export const fetchUser = () => async (dispatch: DispatchType) => {
+    const res = await axios.get('/current_user');
+    dispatch({ type: FETCH_USER, payload: res.data });
+};
+
+export const createWaiver = (
+    artifact: ArtifactType | undefined,
+    state: StateType | undefined,
+) => {
+    return async (dispatch: DispatchType, getState: GetStateType) => {
+        const { displayName, nameID } = getState().auth;
+        if (!displayName && !nameID) {
+            dispatch(
+                pushAlert(
+                    'warning',
+                    'Please login before create a waiver.',
+                ) as any,
+            );
+            return;
+        }
+        dispatch({
+            type: WAIVER_CREATE,
+            payload: { artifact, state },
+        });
+    };
+};
+
+export const resetWaiverReply = () => {
+    return async (dispatch: DispatchType, getState: GetStateType) => {
+        const { timestamp, waiveError } = getState().waive;
+        if (timestamp || waiveError) {
+            dispatch({
+                type: WAIVER_RESET_REPLY,
+                payload: {},
+            });
+        }
+    };
+};
+
+export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
+    return async (dispatch: DispatchType, getState: GetStateType) => {
+        /**
+         * result - state to waive
+         * Result name with link
+         * get NVR, for modules we need to convert it to 'brew' like form
+         */
+        let waiveError: string;
+        const { artifact, state } = getState().waive;
+        if (_.isNil(artifact) || _.isNil(state)) {
+            return;
+        }
+        const nvr = artifact.payload.nvr;
+        if (!nvr) {
+            waiveError = 'Could not get NVR, please contact support.';
+            dispatch({
+                type: WAIVER_RESULT,
+                payload: { waiveError, reason: '' },
+            });
+            return;
+        }
+        /**
+         * Workaround until CVP-287 is not fixed, container are reported as brew builds.
+         * subject.type MUST be koji_build for containers until CVP-287 is not fixed
+         */
+        let artifactType = artifact.type;
+        if (artifactType === 'brew-build' && nvr.match(/.*-container-.*/)) {
+            artifactType = 'redhat-container';
+        }
+        let testcase: string = getTestcaseName(state);
+        const product_version = greenwave.decision.product_version(
+            nvr,
+            artifactType,
+        );
+        try {
+            const response = await client.mutate({
+                mutation: WaiverdbNewMutation,
+                variables: {
+                    subject_type: artifact.type,
+                    subject_identifier: nvr,
+                    testcase,
+                    waived: true,
+                    product_version,
+                    comment: reason,
+                },
+            });
+            console.log('Get response from WaiverDB', response);
+            dispatch({
+                type: WAIVER_RESULT,
+                payload: {
+                    reason,
+                    waiveError: '',
+                },
+            });
+            /* XXX run query to update artifacts */
+        } catch (error) {
+            if (_.isError(error)) {
+                waiveError = `Could not submit waiver: ${error.message}`;
+            } else {
+                waiveError = _.toString(error);
+            }
+            dispatch({
+                type: WAIVER_RESULT,
+                payload: { waiveError, reason: '' },
+            });
+        }
     };
 };

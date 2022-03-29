@@ -24,28 +24,26 @@ import { useSelector } from 'react-redux';
 import { useQuery, useApolloClient } from '@apollo/client';
 import { useState, useRef, useEffect } from 'react';
 import {
+    Flex,
+    Title,
     Text,
     DataList,
+    FlexItem,
+    TitleSizes,
     TextContent,
     TextVariants,
-    DataListItemRow,
     DataListItem,
-    DataListItemCells,
     DataListCell,
-    Flex,
-    FlexItem,
-    Title,
-    TitleSizes,
+    DataListItemRow,
+    DataListItemCells,
 } from '@patternfly/react-core';
 import {
     isKaiState,
     getThreadID,
+    resultColor,
     getTestcaseName,
     isGreenwaveState,
     renderStatusIcon,
-    transformKaiStates,
-    resultColor,
-    isGreenwaveKaiState,
 } from '../utils/artifactUtils';
 import {
     StateType,
@@ -62,7 +60,6 @@ import {
     mkStagesAndStates,
     StageNameStateNameStatesType,
 } from '../utils/stages_states';
-import { StoreReaderConfig } from '@apollo/client/cache/inmemory/readFromStore';
 
 const artifactDashboardUrl = (artifact: ArtifactType) => {
     return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;

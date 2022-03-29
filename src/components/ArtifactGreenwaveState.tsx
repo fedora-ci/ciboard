@@ -65,6 +65,7 @@ import {
     StateDetailsEntry,
 } from './ArtifactState';
 import { NodeBuilderFlags } from 'typescript';
+import { createWaiver } from '../actions';
 
 const timestampForUser = (inp: string, fromNow = false): string => {
     const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
@@ -77,10 +78,11 @@ const timestampForUser = (inp: string, fromNow = false): string => {
 };
 
 interface WaiveButtonProps {
+    artifact: ArtifactType;
     state: StateGreenwaveType;
 }
 const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
-    const { state } = props;
+    const { state, artifact } = props;
     const { requirement } = state;
     const dispatch = useDispatch();
     if (_.isNil(requirement?.testcase)) {
@@ -88,7 +90,7 @@ const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     }
     const onClick: React.MouseEventHandler = (e) => {
         e.stopPropagation();
-        // XXX dispatch(createWaiver(artifact, broker_msg_body));
+        dispatch(createWaiver(artifact, state));
     };
     return (
         <Button key="waived" variant="secondary" onClick={onClick}>
@@ -130,10 +132,11 @@ const ReTestButton: React.FC<ReTestButtonProps> = (props) => {
 };
 
 interface StateActionsProps {
+    artifact: ArtifactType;
     state: StateGreenwaveType;
 }
 export const GreenwaveStateActions: React.FC<StateActionsProps> = (props) => {
-    const { state } = props;
+    const { state, artifact } = props;
     const { requirement } = state;
     var hideWidget = true;
     if (!_.isNil(requirement?.testcase)) {
@@ -153,7 +156,7 @@ export const GreenwaveStateActions: React.FC<StateActionsProps> = (props) => {
         <StateDetailsEntry caption="Actions">
             <Flex>
                 <FlexItem>
-                    <WaiveButton state={state} />
+                    <WaiveButton state={state} artifact={artifact} />
                 </FlexItem>
                 <FlexItem>
                     <ReTestButton state={state} />
@@ -517,7 +520,10 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
             >
                 {forceExpand && (
                     <>
-                        <GreenwaveStateActions state={state} />
+                        <GreenwaveStateActions
+                            state={state}
+                            artifact={artifact}
+                        />
                         <GreenwaveResult state={state} />
                         <GreenwaveWaiver state={state} />
                         <GreenwaveResultData state={state} />

@@ -32,7 +32,7 @@ const INITIAL_STATE: IStateAlerts = {
     alerts: [],
 };
 
-const alertsReducer = (
+export const alertsReducer = (
     state = INITIAL_STATE,
     action: ActionsAlertsType,
 ): IStateAlerts => {
@@ -53,5 +53,3 @@ const alertsReducer = (
             return state;
     }
 };
-
-export default alertsReducer;

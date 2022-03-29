@@ -40,7 +40,7 @@ const INITIAL_STATE: IStateFilters = {
     },
 };
 
-const filtersReducer = (
+export const filtersReducer = (
     state = INITIAL_STATE,
     action: ActionsFiltersType,
 ): IStateFilters => {
@@ -89,5 +89,3 @@ const filtersReducer = (
             return state;
     }
 };
-
-export default filtersReducer;

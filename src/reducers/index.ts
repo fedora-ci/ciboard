@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,11 +20,15 @@
 
 import { combineReducers } from 'redux';
 
-import alertsReducer from './alertsReducer';
-import filtersReducer from './filtersReducer';
-import queryStringReducer from './queryStringReducer';
+import { authReducer } from './authReducer';
+import { waiveReducer } from './waiveReducer';
+import { alertsReducer } from './alertsReducer';
+import { filtersReducer } from './filtersReducer';
+import { queryStringReducer } from './queryStringReducer';
 
 const rootReducer = combineReducers({
+    auth: authReducer,
+    waive: waiveReducer,
     alerts: alertsReducer,
     filters: filtersReducer,
     queryString: queryStringReducer,
