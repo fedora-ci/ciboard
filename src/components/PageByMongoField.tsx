@@ -43,6 +43,7 @@ import {
     CustomRowWrapper,
     OnCollapseEventType,
 } from '../utils/artifactsTable';
+import WaiveForm from './WaiveForm';
 
 /**
  * Displays artifacts based on current URL
