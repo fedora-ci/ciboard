@@ -262,6 +262,7 @@ const PageByMongoField = () => {
         <PageCommon>
             <ArtifactsTable />
             <ToastAlertGroup />
+            <WaiveForm />
         </PageCommon>
     );
 };

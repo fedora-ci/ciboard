@@ -45,6 +45,7 @@ import { IStateFilters } from '../actions/types';
 import PageCommon, { ToastAlertGroup } from './PageCommon';
 import ArtifactsListByFilters from './ArtifactsListByFilters';
 import { addFilter, deleteFilter, setOptionsForFilters } from '../actions';
+import WaiveForm from './WaiveForm';
 
 /**
  * These are default search-field for each artifact type
@@ -293,6 +294,7 @@ const PageByFilters = () => {
             <SearchToolbar />
             <ArtifactsListByFilters />
             <ToastAlertGroup />
+            <WaiveForm />
         </PageCommon>
     );
 };
