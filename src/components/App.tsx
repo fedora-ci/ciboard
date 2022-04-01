@@ -44,7 +44,8 @@ const httpLink = new HttpLink({
     /**
      * prod instance: Apollo client assumes that graphql on express side is listening on server /graphql
      */
-    uri: '/graphql',
+    // uri: '/graphql',
+    uri: 'https://dashboard.dev.osci.redhat.com/graphql',
     /**
      * local development and local server can be accessed with:
      */

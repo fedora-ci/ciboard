@@ -30,6 +30,9 @@ import {
     AlertGroup,
     AlertVariant,
     AlertActionCloseButton,
+    Flex,
+    FlexItem,
+    Banner,
 } from '@patternfly/react-core';
 
 import { DashboardPageHeader } from './PageHeader';
@@ -80,15 +83,52 @@ const PageCommon = (props: any) => {
     if (queryString.embedded !== 'true') {
         to_render = (
             <>
-                <Page header={<DashboardPageHeader />} mainContainerId={pageId}>
-                    <PageSection
-                        variant={PageSectionVariants.default}
-                        isFilled
-                        hasOverflowScroll
+                <Flex
+                    direction={{ default: 'column' }}
+                    flexWrap={{ default: 'nowrap' }}
+                    spaceItems={{ default: 'spaceItemsNone' }}
+                    style={{ height: '100%' }}
+                >
+                    <FlexItem>
+                        <Banner isSticky variant="success">
+                            This dashboard will replace the current.
+                            <a
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href="https://dashboard.osci.redhat.com"
+                            >
+                                {' '}
+                                https://dashboard.osci.redhat.com
+                            </a>{' '}
+                            on 1 of Jun 2022. For missing features or feedback
+                            please:{' '}
+                            <a
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12325047&issuetype=1&priority=3&labels=user_request&labels=osci-dashboard&customfield_12311140=OSCI-3089"
+                            >
+                                open a ticket.
+                            </a>
+                        </Banner>
+                    </FlexItem>
+                    <FlexItem
+                        grow={{ default: 'grow' }}
+                        style={{ minHeight: 0 }}
                     >
-                        {props.children}
-                    </PageSection>
-                </Page>
+                        <Page
+                            header={<DashboardPageHeader />}
+                            mainContainerId={pageId}
+                        >
+                            <PageSection
+                                variant={PageSectionVariants.default}
+                                isFilled
+                                hasOverflowScroll
+                            >
+                                {props.children}
+                            </PageSection>
+                        </Page>
+                    </FlexItem>
+                </Flex>
             </>
         );
     } else {

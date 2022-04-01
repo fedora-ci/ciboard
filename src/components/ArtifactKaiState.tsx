@@ -232,10 +232,10 @@ export const KaiStateXunit: React.FC<KaiStateXunitProps> = (props) => {
     return render;
 };
 
-interface ReTestButtonProps {
+interface KaiReTestButtonProps {
     state: StateKaiType;
 }
-const ReTestButton: React.FC<ReTestButtonProps> = (props) => {
+export const KaiReTestButton: React.FC<KaiReTestButtonProps> = (props) => {
     const {
         state: { kai_state, broker_msg_body },
     } = props;
@@ -344,7 +344,7 @@ export const KaiStateInfo: React.FC<KaiStateInfoProps> = (props) => {
     return (
         <Flex>
             <FlexItem>
-                <StateDetailsEntry caption="Result info">
+                <StateDetailsEntry caption="Result info (kai)">
                     <Flex direction={{ default: 'column' }}>
                         <FlexItem>
                             <StateExplain state={state} />
@@ -385,7 +385,7 @@ export const KaiStateActions: React.FC<KaiStateActionsProps> = (props) => {
         <StateDetailsEntry caption="Actions">
             <Flex>
                 <FlexItem>
-                    <ReTestButton state={state} />
+                    <KaiReTestButton state={state} />
                 </FlexItem>
             </Flex>
         </StateDetailsEntry>

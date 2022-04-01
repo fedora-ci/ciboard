@@ -214,7 +214,7 @@ export type StateExtendedNameType =
     | 'failed'
     | 'missing'
     /* greenwave result */
-    | 'not gate results'
+    | 'additional-tests'
     | StateNameType
     | GreenwaveRequirementTypesType;
 

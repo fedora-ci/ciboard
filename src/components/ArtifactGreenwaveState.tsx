@@ -81,7 +81,7 @@ interface WaiveButtonProps {
     artifact: ArtifactType;
     state: StateGreenwaveType;
 }
-const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
+export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     const { state, artifact } = props;
     const { requirement } = state;
     const dispatch = useDispatch();
@@ -100,10 +100,12 @@ const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     );
 };
 
-interface ReTestButtonProps {
+interface GreenwaveReTestButtonProps {
     state: StateGreenwaveType;
 }
-const ReTestButton: React.FC<ReTestButtonProps> = (props) => {
+export const GreenwaveReTestButton: React.FC<GreenwaveReTestButtonProps> = (
+    props,
+) => {
     const { state } = props;
     const { result } = state;
     const rebuildUrl: string | undefined = _.get(result, 'data.rebuild[0]');
@@ -131,27 +133,14 @@ const ReTestButton: React.FC<ReTestButtonProps> = (props) => {
     );
 };
 
-interface StateActionsProps {
+interface GreenwaveStateActionsProps {
     artifact: ArtifactType;
     state: StateGreenwaveType;
 }
-export const GreenwaveStateActions: React.FC<StateActionsProps> = (props) => {
+export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
+    props,
+) => {
     const { state, artifact } = props;
-    const { requirement } = state;
-    var hideWidget = true;
-    if (!_.isNil(requirement?.testcase)) {
-        hideWidget = false;
-    }
-    const rebuildUrl: string | undefined = _.get(
-        state.result,
-        'data.rebuild[0]',
-    );
-    if (!_.isNil(rebuildUrl)) {
-        hideWidget = false;
-    }
-    if (hideWidget) {
-        return null;
-    }
     return (
         <StateDetailsEntry caption="Actions">
             <Flex>
@@ -159,7 +148,7 @@ export const GreenwaveStateActions: React.FC<StateActionsProps> = (props) => {
                     <WaiveButton state={state} artifact={artifact} />
                 </FlexItem>
                 <FlexItem>
-                    <ReTestButton state={state} />
+                    <GreenwaveReTestButton state={state} />
                 </FlexItem>
             </Flex>
         </StateDetailsEntry>
@@ -196,7 +185,7 @@ export const GreenwaveResult: React.FC<GreenwaveResultProps> = (props) => {
         mkLabel(name, value, 'orange'),
     );
     return (
-        <StateDetailsEntry caption="Result info">
+        <StateDetailsEntry caption="Result info (greenwave)">
             <Flex>
                 <FlexItem>
                     <DescriptionList
