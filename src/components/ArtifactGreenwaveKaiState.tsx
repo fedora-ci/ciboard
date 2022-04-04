@@ -37,12 +37,11 @@ import styles from '../custom.module.css';
 import { ArtifactType, StateGreenwaveKaiType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
+    WaiveButton,
     GreenwaveWaiver,
     GreenwaveResultInfo,
-    GreenwaveReTestButton,
     GreenwaveRequirement,
     FaceForGreenwaveState,
-    WaiveButton,
 } from './ArtifactGreenwaveState';
 import {
     KaiStateXunit,
@@ -111,15 +110,24 @@ export const ArtifactGreenwaveKaiState: React.FC<
         }
     };
     /** Note for info test results */
-    let resultClasses = classNames(styles['helpSelect'], {
-        [styles.expandedResult]: forceExpand,
-    });
     const key = state.gs.testcase;
+    const style: React.CSSProperties = {
+        backgroundColor: 'var(--pf-global--BackgroundColor--100)',
+    };
+    if (forceExpand) {
+        /**
+         * Colors are based on:
+         * https://www.colourlovers.com/palette/669439/Alcatraz!
+         * https://www.colourlovers.com/palette/2293597/Spiraling
+         */
+        style['backgroundColor'] = '#FFF7F7';
+    }
     const toRender = (
         <DataListItem
             key={key}
             isExpanded={forceExpand}
-            className={resultClasses}
+            style={style}
+            className={styles['helpSelect']}
             aria-labelledby="artifact-item-result"
         >
             <DataListItemRow>

@@ -20,15 +20,14 @@
 
 import _ from 'lodash';
 import * as React from 'react';
+import classNames from 'classnames';
 import { LegacyRef, useState } from 'react';
 import {
-    Flex,
     Text,
     List,
     Title,
     Spinner,
     Bullseye,
-    FlexItem,
     ListItem,
     OrderType,
     EmptyState,
@@ -48,18 +47,14 @@ import { ArrowIcon, ExclamationCircleIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 import {
     artifactUrl,
-    resultColor,
     nameFieldForType,
-    renderStatusIcon,
     aidMeaningForType,
-    transformKaiStates,
 } from './artifactUtils';
 import styles from '../custom.module.css';
 
 import { ArtifactType } from '../artifact';
 import ArtifactStatesList from '../components/ArtifactStatesList';
 import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
-import { StageNameStateNameStatesType } from './stages_states';
 
 interface ArtifactNameProps {
     artifact: ArtifactType;
@@ -159,18 +154,30 @@ export const CustomRowWrapper = (
         throw new Error('Child must be valid element');
     }
     const isOpenParent = firstCell.props.children.props.isOpen;
-    const customStyle = {
-        background: 'var(--pf-global--BackgroundColor--100)',
+    const customStyle: React.CSSProperties = {
+        backgroundColor: 'var(--pf-global--BackgroundColor--200)',
     };
     const ref = isOpenParent ? scrollRef : undefined;
+    const opened = isOpenParent || row?.isExpanded;
+    let resultClasses = classNames(
+        {},
+        {
+            [styles['giveHint']]: giveHint,
+            [styles['noHint']]: !giveHint,
+        },
+    );
+    if (opened) {
+        customStyle['backgroundColor'] =
+            'var(--pf-global--BackgroundColor--100)';
+    }
     return (
         <tr
             ref={ref}
             onMouseEnter={() => setGiveHint(true)}
             onMouseLeave={() => setGiveHint(false)}
+            className={resultClasses}
             hidden={row?.isExpanded !== undefined && !row.isExpanded}
-            className={giveHint ? styles['giveHint'] : styles['noHint']}
-            style={isOpenParent || row?.isExpanded ? customStyle : {}}
+            style={customStyle}
             children={children}
         />
     );

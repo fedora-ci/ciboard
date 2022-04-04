@@ -370,7 +370,10 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
     };
 
     return (
-        <DataListItem isExpanded={expanded}>
+        <DataListItem
+            isExpanded={expanded}
+            style={{ backgroundColor: '#DAE7DE' }}
+        >
             <DataListItemRow>
                 <DataListToggle
                     onClick={toggle}
@@ -378,6 +381,7 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
                     id={test._uuid}
                 />
                 <DataListItemCells
+                    className="pf-u-m-0 pf-u-p-0"
                     dataListCells={[
                         <DataListCell isIcon key="icon">
                             {renderStatusIcon(test.status)}
@@ -450,7 +454,7 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
                         test_case_status_name_ as TestSuiteCountNamesType;
                     if (_.isNil(isChecked)) return <></>;
                     return (
-                        <FlexItem>
+                        <FlexItem key={test_case_status_name}>
                             <Checkbox
                                 label={
                                     <span>

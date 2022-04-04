@@ -135,15 +135,19 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
         }
     };
     /** Note for info test results */
-    let resultClasses = classNames(styles['helpSelect'], {
-        [styles.expandedResult]: forceExpand,
-    });
+    const style: React.CSSProperties = {
+        backgroundColor: 'var(--pf-global--BackgroundColor--100)',
+    };
+    if (forceExpand) {
+        style['backgroundColor'] = '#FFF7F7';
+    }
     const thread_id = getThreadID({ broker_msg_body });
     const toRender = (
         <DataListItem
             key={thread_id}
             isExpanded={forceExpand}
-            className={resultClasses}
+            style={style}
+            className={styles['helpSelect']}
             aria-labelledby="artifact-item-result"
         >
             <DataListItemRow>
@@ -234,7 +238,7 @@ export const KaiReTestButton: React.FC<KaiReTestButtonProps> = (props) => {
             rel="noopener noreferrer"
         >
             <Button
-                variant="secondary"
+                variant="tertiary"
                 onClick={(e) => {
                     e.stopPropagation();
                 }}
@@ -332,10 +336,10 @@ export const KaiStateMapping: React.FC<KaiStateInfoProps> = (props) => {
             <FlexItem>
                 <StateDetailsEntry caption="Result details">
                     <Flex direction={{ default: 'column' }}>
-                        <FlexItem>
+                        <FlexItem key="1">
                             <StateExplain state={state} />
                         </FlexItem>
-                        <FlexItem>
+                        <FlexItem key="2">
                             <DescriptionList
                                 isCompact
                                 isHorizontal

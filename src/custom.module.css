@@ -1,11 +1,10 @@
 .helpSelect {
-    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth)
-        solid #f5f5f5 !important;
+    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth) solid #f5f5f5 !important;
 }
 
 .helpSelect:hover {
-    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth)
-        solid var(--pf-global--active-color--100) !important;
+    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth) solid
+        var(--pf-global--active-color--100) !important;
 }
 
 .isHidden {
@@ -42,8 +41,11 @@
     white-space: nowrap;
 }
 
-.sstStatusPassed, .sstStatusFailed, .sstStatusInfo, .sstStatusOther {
-    padding: 0 .4em;
+.sstStatusPassed,
+.sstStatusFailed,
+.sstStatusInfo,
+.sstStatusOther {
+    padding: 0 0.4em;
     color: var(--pf-global--palette--black-100);
 }
 .sstStatusPassed {
@@ -82,13 +84,11 @@
 }
 
 .ciSystemsList {
-    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth)
-        solid #f5f5f5 !important;
+    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth) solid #f5f5f5 !important;
 }
 
 .allCISystems {
-    border-top: var(--pf-c-data-list__item--BorderTopWidth) solid
-        #f5f5f5 !important;
+    border-top: var(--pf-c-data-list__item--BorderTopWidth) solid #f5f5f5 !important;
 }
 
 .wDBConfig {
@@ -125,10 +125,24 @@
         var(--pf-global--BackgroundColor--200) !important;
 }
 
-.giveHint
-    :global(.pf-c-table__toggle
-        .pf-c-button:not(.pf-m-expanded)
-        svg) {
+/*
+ * Next style is used to shadow icon
+ * All string up to { is a selector.
+ * Selector says: 
+ * Some element above must have class .giveHint
+ * Some element must have global class .pf-c-table__toggle
+ * Some element must have class .pf-c-button:not(.pf-m-expanded)
+ * > -- says must be follow immediatelly 
+ * Some element must be svg
+ */
+.giveHint :global(.pf-c-table__toggle > .pf-c-button:not(.pf-m-expanded)) svg {
+    color: var(--pf-global--link--Color);
+    box-shadow: var(--pf-global--BoxShadow--lg);
+}
+
+.helpSelect:hover
+    :global(.pf-c-data-list__toggle > .pf-c-button:not(.pf-m-expanded))
+    svg {
     color: var(--pf-global--link--Color);
     box-shadow: var(--pf-global--BoxShadow--lg);
 }

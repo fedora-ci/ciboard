@@ -93,7 +93,7 @@ export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
         dispatch(createWaiver(artifact, state));
     };
     return (
-        <Button key="waived" variant="secondary" onClick={onClick}>
+        <Button key="waived" variant="tertiary" onClick={onClick}>
             <OutlinedThumbsUpIcon />
             <span className={styles.waive}>waive</span>
         </Button>
@@ -121,7 +121,7 @@ export const GreenwaveReTestButton: React.FC<GreenwaveReTestButtonProps> = (
             rel="noopener noreferrer"
         >
             <Button
-                variant="secondary"
+                variant="tertiary"
                 onClick={(e) => {
                     e.stopPropagation();
                 }}
@@ -469,15 +469,20 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
         }
     };
     /** Note for info test results */
-    let resultClasses = classNames(styles['helpSelect'], {
-        [styles.expandedResult]: forceExpand,
-    });
+    const style: React.CSSProperties = {
+        backgroundColor: 'var(--pf-global--BackgroundColor--100)',
+    };
+    if (forceExpand) {
+        // style['backgroundColor'] = 'var(--pf-global--palette--black-100)';
+        style['backgroundColor'] = '#FFF7F7';
+    }
     const key = state.testcase;
     const toRender = (
         <DataListItem
             key={key}
             isExpanded={forceExpand}
-            className={resultClasses}
+            style={style}
+            className={styles['helpSelect']}
             aria-labelledby="artifact-item-result"
         >
             <DataListItemRow>

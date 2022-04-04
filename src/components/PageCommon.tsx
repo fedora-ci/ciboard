@@ -89,8 +89,26 @@ const PageCommon = (props: any) => {
                     spaceItems={{ default: 'spaceItemsNone' }}
                     style={{ height: '100%' }}
                 >
-                    <FlexItem>
-                        <Banner isSticky variant="success">
+                    <FlexItem
+                        key="1"
+                        grow={{ default: 'grow' }}
+                        style={{ minHeight: 0 }}
+                    >
+                        <Page
+                            header={<DashboardPageHeader />}
+                            mainContainerId={pageId}
+                        >
+                            <PageSection
+                                variant={PageSectionVariants.darker}
+                                isFilled
+                                hasOverflowScroll
+                            >
+                                {props.children}
+                            </PageSection>
+                        </Page>
+                    </FlexItem>
+                    <FlexItem key="2">
+                        <Banner isSticky variant="default">
                             This dashboard will replace the current.
                             <a
                                 target="_blank"
@@ -110,23 +128,6 @@ const PageCommon = (props: any) => {
                                 open a ticket.
                             </a>
                         </Banner>
-                    </FlexItem>
-                    <FlexItem
-                        grow={{ default: 'grow' }}
-                        style={{ minHeight: 0 }}
-                    >
-                        <Page
-                            header={<DashboardPageHeader />}
-                            mainContainerId={pageId}
-                        >
-                            <PageSection
-                                variant={PageSectionVariants.default}
-                                isFilled
-                                hasOverflowScroll
-                            >
-                                {props.children}
-                            </PageSection>
-                        </Page>
                     </FlexItem>
                 </Flex>
             </>
