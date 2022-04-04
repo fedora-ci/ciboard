@@ -23,24 +23,22 @@ import * as React from 'react';
 import moment from 'moment';
 import classNames from 'classnames';
 import {
+    Flex,
+    FlexItem,
     DataListCell,
     DataListItem,
     DataListToggle,
     DataListItemRow,
     DataListContent,
     DataListItemCells,
-    Button,
-    Flex,
-    FlexItem,
 } from '@patternfly/react-core';
 
 import styles from '../custom.module.css';
 import { ArtifactType, StateGreenwaveKaiType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
-    GreenwaveResult,
     GreenwaveWaiver,
-    GreenwaveResultData,
+    GreenwaveResultInfo,
     GreenwaveReTestButton,
     GreenwaveRequirement,
     FaceForGreenwaveState,
@@ -49,15 +47,9 @@ import {
 import {
     KaiStateXunit,
     KaiReTestButton,
-    KaiStateInfo,
+    KaiStateMapping,
 } from './ArtifactKaiState';
-import {
-    StateDetailsEntry,
-    StateLink,
-    mkLabel,
-    mkPairs,
-} from './ArtifactState';
-import { RebootingIcon } from '@patternfly/react-icons';
+import { StateDetailsEntry } from './ArtifactState';
 
 const timestampForUser = (inp: string, fromNow = false): string => {
     const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
@@ -77,18 +69,9 @@ export const GreenwaveKaiStateActions: React.FC<
     GreenwaveKaiStateActionsProps
 > = (props) => {
     const { state, artifact } = props;
-    var reTestButton: JSX.Element;
-    reTestButton = <GreenwaveReTestButton state={state.gs} />;
-    if (_.isNil(reTestButton)) {
-        reTestButton = <KaiReTestButton state={state.ks} />;
-    }
     const items: JSX.Element[] = [];
     items.push(<WaiveButton state={state.gs} artifact={artifact} />);
-    items.push(reTestButton);
-    _.remove(items, _.isNil);
-    if (_.isEmpty(items)) {
-        return null;
-    }
+    items.push(<KaiReTestButton state={state.ks} />);
     return (
         <StateDetailsEntry caption="Actions">
             <Flex>
@@ -172,11 +155,10 @@ export const ArtifactGreenwaveKaiState: React.FC<
                             state={state}
                             artifact={artifact}
                         />
-                        <GreenwaveResult state={state.gs} />
                         <GreenwaveWaiver state={state.gs} />
-                        <GreenwaveResultData state={state.gs} />
+                        <GreenwaveResultInfo state={state.gs} />
                         <GreenwaveRequirement state={state.gs} />
-                        <KaiStateInfo state={state.ks} />
+                        <KaiStateMapping state={state.ks} artifact={artifact} />
                         <KaiStateXunit state={state.ks} artifact={artifact} />
                     </>
                 )}

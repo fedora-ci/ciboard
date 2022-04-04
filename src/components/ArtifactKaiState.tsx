@@ -38,25 +38,18 @@ import {
     DataListContent,
 } from '@patternfly/react-core';
 
-import Linkify from 'react-linkify';
-
 import { RebootingIcon } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
 import TestSuites from './TestSuites';
-import { config } from '../config';
+import { mappingDatagrepperUrl } from '../config';
 import {
     getThreadID,
     getTestcaseName,
     renderStatusIcon,
 } from '../utils/artifactUtils';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
-import {
-    ArtifactType,
-    StateExtendedNameType,
-    StateKaiType,
-    StateNameType,
-} from '../artifact';
+import { ArtifactType, StateKaiType, StateNameType } from '../artifact';
 import {
     StateDetailsEntry,
     StateLink,
@@ -64,18 +57,6 @@ import {
     mkPairs,
 } from './ArtifactState';
 import { ArtifactStateProps } from './ArtifactState';
-import { State } from '@patternfly/react-core/dist/esm/helpers/Popper/thirdparty/popper-core';
-
-/** https://pagure.io/fedora-ci/messages/blob/master/f/schemas/contact.yaml */
-type ContactEntryNameType =
-    | 'email'
-    | 'irc'
-    | 'name'
-    | 'docs'
-    | 'team'
-    | 'url'
-    | 'slack'
-    | 'version';
 
 /**
  * 0.1.x: .label - string
@@ -194,7 +175,7 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
                 {forceExpand && (
                     <>
                         <KaiStateActions state={state} />
-                        <KaiStateInfo state={state} />
+                        <KaiStateMapping state={state} artifact={artifact} />
                         <KaiStateXunit state={state} artifact={artifact} />
                     </>
                 )}
@@ -324,9 +305,10 @@ const StateExplain: React.FC<StateExplainProps> = (props) => {
 
 interface KaiStateInfoProps {
     state: StateKaiType;
+    artifact: ArtifactType;
 }
-export const KaiStateInfo: React.FC<KaiStateInfoProps> = (props) => {
-    const { state } = props;
+export const KaiStateMapping: React.FC<KaiStateInfoProps> = (props) => {
+    const { state, artifact } = props;
     const { broker_msg_body, kai_state } = state;
     var pairs: string[][] = [];
     if (MSG_V_1.isMsg(broker_msg_body)) {
@@ -336,7 +318,11 @@ export const KaiStateInfo: React.FC<KaiStateInfoProps> = (props) => {
     } else {
         return null;
     }
-    const brokerMsgUrl = `${config.datagrepper.url}/id?id=${kai_state.msg_id}&is_raw=true&size=extra-large`;
+    const brokerMsgUrl: string = new URL(
+        `id?id=${kai_state.msg_id}&is_raw=true&size=extra-large`,
+        mappingDatagrepperUrl[artifact.type],
+    ).toString();
+    //const brokerMsgUrl = `${config.datagrepper.url}/id?id=${kai_state.msg_id}&is_raw=true&size=extra-large`;
     pairs.push(['broker msg', brokerMsgUrl]);
     const elements: Array<JSX.Element> = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'green'),
@@ -344,7 +330,7 @@ export const KaiStateInfo: React.FC<KaiStateInfoProps> = (props) => {
     return (
         <Flex>
             <FlexItem>
-                <StateDetailsEntry caption="Result info (kai)">
+                <StateDetailsEntry caption="Result details">
                     <Flex direction={{ default: 'column' }}>
                         <FlexItem>
                             <StateExplain state={state} />
@@ -435,38 +421,3 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
     );
     return element;
 };
-
-/*
-const getContactField = (
-    broker_msg_body: BrokerMessagesType,
-    name: ContactEntryNameType,
-) => {
-    if (MSG_V_0_1.isMsg(broker_msg_body)) {
-        if (
-            broker_msg_body.ci &&
-            broker_msg_body.ci[name] &&
-            broker_msg_body.ci[name] !== 'null'
-        )
-            return broker_msg_body.ci[name];
-    }
-    if (MSG_V_1.isMsg(broker_msg_body)) {
-        if (
-            broker_msg_body.contact &&
-            broker_msg_body.contact[name] &&
-            broker_msg_body.contact[name] !== 'null'
-        )
-            return broker_msg_body.contact[name];
-    }
-    return 'n/a';
-};
-*/
-
-/**
-const DocsLink: React.FC<DocsLinkProps> = (props) => {
-        docs = broker_msg_body.test.docs;
-const DebugLogLink: React.FC<DebugLogLinkProps> = (props) => {
-    if (!broker_msg_body.run || !broker_msg_body.run.debug) {
-const LogLink: React.FC<LogLinkProps> = (props) => {
-    const { broker_msg_body } = props;
-    if (!broker_msg_body.run || !broker_msg_body.run.log) {
-*/

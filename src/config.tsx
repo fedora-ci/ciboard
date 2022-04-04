@@ -19,11 +19,11 @@
  */
 
 import { getOSVersionFromNvr } from './utils/artifactUtils';
+import { ArtifactNameType } from './artifact';
 
 /*
  *  CI Dashboard configuration file
  */
-
 export const config = {
     defaultTitle: 'CI Dashboard',
     kai: {
@@ -35,12 +35,25 @@ export const config = {
     waiverdb: {
         url: 'https://waiverdb.engineering.redhat.com',
     },
-    datagrepper: {
+    datagrepperFedora: {
         url: 'https://apps.fedoraproject.org/datagrepper',
+    },
+    datagrepperRH: {
+        url: 'https://datagrepper.engineering.redhat.com',
     },
     sst: {
         url: 'https://sst.osci.redhat.com',
     },
+};
+
+export const mappingDatagrepperUrl: { [key in ArtifactNameType]: string } = {
+    'brew-build': config.datagrepperRH.url,
+    'koji-build': config.datagrepperFedora.url,
+    'copr-build': config.datagrepperFedora.url,
+    'redhat-module': config.datagrepperRH.url,
+    'koji-build-cs': config.datagrepperFedora.url,
+    'redhat-container': config.datagrepperRH.url,
+    'productmd-compose': config.datagrepperRH.url,
 };
 
 export const kai = {

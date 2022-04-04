@@ -172,7 +172,7 @@ const resultMapping = [
 interface GreenwaveResultProps {
     state: StateGreenwaveType;
 }
-export const GreenwaveResult: React.FC<GreenwaveResultProps> = (props) => {
+export const GreenwaveResultInfo: React.FC<GreenwaveResultProps> = (props) => {
     const { state } = props;
     if (!state.result) {
         return null;
@@ -185,7 +185,7 @@ export const GreenwaveResult: React.FC<GreenwaveResultProps> = (props) => {
         mkLabel(name, value, 'orange'),
     );
     return (
-        <StateDetailsEntry caption="Result info (greenwave)">
+        <StateDetailsEntry caption="Result info">
             <Flex>
                 <FlexItem>
                     <DescriptionList
@@ -513,7 +513,7 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
                             state={state}
                             artifact={artifact}
                         />
-                        <GreenwaveResult state={state} />
+                        <GreenwaveResultInfo state={state} />
                         <GreenwaveWaiver state={state} />
                         <GreenwaveResultData state={state} />
                         <GreenwaveRequirement state={state} />
