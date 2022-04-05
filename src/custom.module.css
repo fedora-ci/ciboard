@@ -152,3 +152,22 @@
     border-width: 2px;
     padding: 1rem;
 }
+
+/**
+* Colors are based on:
+* https://www.colourlovers.com/palette/669439/Alcatraz!
+* https://www.colourlovers.com/palette/2293597/Spiraling
+*/
+:global(.pf-c-data-list__item.pf-m-expanded).level2 {
+    --pf-c-data-list__item--BackgroundColor: #fff7f7;
+}
+
+:global(.pf-c-table.pf-m-compact
+        :not(.pf-c-table__expandable-row)).level1Closed {
+    background-color: #f7f7f7;
+}
+
+:global(.pf-c-table.pf-m-compact
+        :not(.pf-c-table__expandable-row)).level1Opened {
+    background-color: var(--pf-global--BackgroundColor--100);
+}

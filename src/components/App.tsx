@@ -28,6 +28,9 @@ import {
     ApolloProvider,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
+/**
+ * It's strongly advised to use the PatternFly Base CSS in your whole project, or some components may diverge in appearance.
+ */
 import '@patternfly/react-core/dist/styles/base.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';

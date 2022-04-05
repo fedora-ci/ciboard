@@ -154,9 +154,6 @@ export const CustomRowWrapper = (
         throw new Error('Child must be valid element');
     }
     const isOpenParent = firstCell.props.children.props.isOpen;
-    const customStyle: React.CSSProperties = {
-        backgroundColor: 'var(--pf-global--BackgroundColor--200)',
-    };
     const ref = isOpenParent ? scrollRef : undefined;
     const opened = isOpenParent || row?.isExpanded;
     let resultClasses = classNames(
@@ -164,12 +161,10 @@ export const CustomRowWrapper = (
         {
             [styles['giveHint']]: giveHint,
             [styles['noHint']]: !giveHint,
+            [styles['level1Opened']]: opened,
+            [styles['level1Closed']]: !opened,
         },
     );
-    if (opened) {
-        customStyle['backgroundColor'] =
-            'var(--pf-global--BackgroundColor--100)';
-    }
     return (
         <tr
             ref={ref}
@@ -177,13 +172,12 @@ export const CustomRowWrapper = (
             onMouseLeave={() => setGiveHint(false)}
             className={resultClasses}
             hidden={row?.isExpanded !== undefined && !row.isExpanded}
-            style={customStyle}
             children={children}
         />
     );
 };
 
-export const tableColumns = (buildType: any) => {
+export const tableColumns = (buildType: any): TableProps['cells'] => {
     /**
      * width: 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 60 | 70 | 80 | 90 | 'max' %
      */

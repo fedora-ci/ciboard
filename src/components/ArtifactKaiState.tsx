@@ -20,7 +20,6 @@
 
 import _ from 'lodash';
 import * as React from 'react';
-import classNames from 'classnames';
 import {
     Flex,
     Text,
@@ -57,6 +56,7 @@ import {
     mkPairs,
 } from './ArtifactState';
 import { ArtifactStateProps } from './ArtifactState';
+import classnames from 'classnames';
 
 /**
  * 0.1.x: .label - string
@@ -135,19 +135,13 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
         }
     };
     /** Note for info test results */
-    const style: React.CSSProperties = {
-        backgroundColor: 'var(--pf-global--BackgroundColor--100)',
-    };
-    if (forceExpand) {
-        style['backgroundColor'] = '#FFF7F7';
-    }
     const thread_id = getThreadID({ broker_msg_body });
+    const resultClasses = classnames(styles['helpSelect'], styles['level2']);
     const toRender = (
         <DataListItem
             key={thread_id}
             isExpanded={forceExpand}
-            style={style}
-            className={styles['helpSelect']}
+            className={resultClasses}
             aria-labelledby="artifact-item-result"
         >
             <DataListItemRow>

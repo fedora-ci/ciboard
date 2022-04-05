@@ -231,12 +231,12 @@ const known_types = {
 };
 
 const known_aid_meaning = {
-    'brew-build': 'taskID',
-    'koji-build': 'taskID',
-    'koji-build-cs': 'taskID',
-    'redhat-module': 'mbsID',
+    'brew-build': 'task id',
+    'koji-build': 'task id',
+    'koji-build-cs': 'task id',
+    'redhat-module': 'mbs id',
     'copr-build': 'id',
-    'productmd-compose': 'url',
+    'productmd-compose': 'compose',
     'redhat-container': 'id',
 };
 

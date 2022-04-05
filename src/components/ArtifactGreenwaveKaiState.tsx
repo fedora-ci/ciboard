@@ -21,7 +21,6 @@
 import _ from 'lodash';
 import * as React from 'react';
 import moment from 'moment';
-import classNames from 'classnames';
 import {
     Flex,
     FlexItem,
@@ -49,6 +48,7 @@ import {
     KaiStateMapping,
 } from './ArtifactKaiState';
 import { StateDetailsEntry } from './ArtifactState';
+import classnames from 'classnames';
 
 const timestampForUser = (inp: string, fromNow = false): string => {
     const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
@@ -111,23 +111,12 @@ export const ArtifactGreenwaveKaiState: React.FC<
     };
     /** Note for info test results */
     const key = state.gs.testcase;
-    const style: React.CSSProperties = {
-        backgroundColor: 'var(--pf-global--BackgroundColor--100)',
-    };
-    if (forceExpand) {
-        /**
-         * Colors are based on:
-         * https://www.colourlovers.com/palette/669439/Alcatraz!
-         * https://www.colourlovers.com/palette/2293597/Spiraling
-         */
-        style['backgroundColor'] = '#FFF7F7';
-    }
+    const resultClasses = classnames(styles['helpSelect'], styles['level2']);
     const toRender = (
         <DataListItem
             key={key}
             isExpanded={forceExpand}
-            style={style}
-            className={styles['helpSelect']}
+            className={resultClasses}
             aria-labelledby="artifact-item-result"
         >
             <DataListItemRow>

@@ -21,16 +21,13 @@
 import _ from 'lodash';
 import * as React from 'react';
 import moment from 'moment';
-import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
 import {
     Flex,
     Text,
     Label,
-    Title,
     Button,
     FlexItem,
-    TitleSizes,
     LabelProps,
     TextContent,
     DataListCell,
@@ -50,7 +47,6 @@ import {
     RebootingIcon,
     RegisteredIcon,
     OutlinedThumbsUpIcon,
-    NimblrIconConfig,
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
@@ -64,8 +60,8 @@ import {
     LinkifyNewTab,
     StateDetailsEntry,
 } from './ArtifactState';
-import { NodeBuilderFlags } from 'typescript';
 import { createWaiver } from '../actions';
+import classnames from 'classnames';
 
 const timestampForUser = (inp: string, fromNow = false): string => {
     const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
@@ -469,20 +465,13 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
         }
     };
     /** Note for info test results */
-    const style: React.CSSProperties = {
-        backgroundColor: 'var(--pf-global--BackgroundColor--100)',
-    };
-    if (forceExpand) {
-        // style['backgroundColor'] = 'var(--pf-global--palette--black-100)';
-        style['backgroundColor'] = '#FFF7F7';
-    }
+    const resultClasses = classnames(styles['helpSelect'], styles['level2']);
     const key = state.testcase;
     const toRender = (
         <DataListItem
             key={key}
             isExpanded={forceExpand}
-            style={style}
-            className={styles['helpSelect']}
+            className={resultClasses}
             aria-labelledby="artifact-item-result"
         >
             <DataListItemRow>
