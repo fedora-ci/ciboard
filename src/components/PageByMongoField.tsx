@@ -64,7 +64,9 @@ interface ArtifactsTableProps {
  * - focus - used to focus on a specific test for a single artifact view
  */
 
-const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProps) => {
+const ArtifactsTable: React.FC<any> = ({
+    onArtifactsLoaded,
+}: ArtifactsTableProps) => {
     const scrollRef = useRef<HTMLTableRowElement>(null);
     var artifacts: ArtifactType[] = [];
     /**
@@ -105,7 +107,7 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         value: dbFieldValuesString,
     } = useParams<MongoFieldsParams>();
     const dbFieldValues = dbFieldValuesString.split(',');
-    // Index of the currently expanded artifact row within the `artifacts` list.
+    /** Index of the currently expanded artifact row within the `artifacts` list. */
     const [opened, setOpened] = useState<number | null>(null);
     /** page navigation */
     const onClickLoadNext = () => {
@@ -128,6 +130,10 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         setOpened(null);
         setAidOffset(new_aid_offset);
     };
+    /** Frontend need to ask exact DB field, with its full path */
+    const dbFieldPath = _.includes(['aid'], dbFieldName)
+        ? dbFieldName
+        : `payload.${dbFieldName}`;
     const {
         loading: isLoading,
         error,
@@ -136,7 +142,7 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         variables: {
             atype: artifactsType,
             aid_offset,
-            dbFieldName1: dbFieldName,
+            dbFieldName1: dbFieldPath,
             dbFieldValues1: dbFieldValues,
         },
         /** https://www.apollographql.com/docs/react/api/core/ApolloClient/ */
@@ -177,11 +183,11 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         loadNextIsDisabled = false;
     }
     const onCollapse: OnCollapseEventType = (
-        event,
+        _event,
         rowKey,
-        isOpen,
-        rowData,
-        extraData,
+        _isOpen,
+        _rowData,
+        _extraData,
     ) => {
         if (opened === rowKey) {
             setOpened(null);
@@ -209,13 +215,13 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         opened: indexToOpen,
     });
     const forceExpandErrors = haveErrorNoData ? true : false;
-    const foundValues = _.map(artifacts, _.property(dbFieldName));
+    const foundValues = _.map(artifacts, _.property(dbFieldPath));
     const missing = _.difference(dbFieldValues, foundValues);
     var rows_missing: IRow[] = [];
     if (!_.isEmpty(missing) && haveData) {
         rows_errors = mkSpecialRows({
             title: `No data for ${artifactsType} with ${dbFieldName}`,
-            body: <>missing.toString()</>,
+            body: <>{missing.toString()}</>,
             type: 'error',
         });
     }
@@ -245,7 +251,6 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
         <>
             <Table
                 header={<PaginationToolbar {...paginationProps} />}
-                // XXX style={{ background: 'inherit' }}
                 variant={TableVariant.compact}
                 borders={false}
                 cells={columns}
@@ -268,31 +273,32 @@ const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProp
 
 export function PageByMongoField() {
     const [pageTitle, setPageTitle] = useState<string | undefined>();
-    // Display the artifact's NVR/NVSC/whatever and gating status (if available) in
-    // the page title once the artifact info is loaded.
+    /**
+     * Display the artifact's NVR/NVSC/whatever and gating status (if available) in
+     * the page title once the artifact info is loaded.
+     */
     const onArtifactsLoaded = (artifacts: ArtifactType[]) => {
-        // We only handle the single-artifact case for now.
-        // TODO: Support multiple artifacts per page. Perhaps only display info for
-        // the currently expanded row?
+        /**
+         * XXX: We only handle the single-artifact case for now.
+         * TODO: Support multiple artifacts per page. Perhaps only display info for
+         * the currently expanded row?
+         */
         if (artifacts?.length !== 1) return;
         const artifact = artifacts[0];
         let title = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
         if (artifact.greenwave_decision?.summary) {
             if (artifact.greenwave_decision.policies_satisfied)
                 title = `✅ ${title}`;
-            else
-                title = `❌ ${title}`;
+            else title = `❌ ${title}`;
         }
         setPageTitle(title);
     };
 
     return (
-        <PageCommon
-            title={pageTitle}
-        >
+        <PageCommon title={pageTitle}>
             <ArtifactsTable />
             <ToastAlertGroup />
             <WaiveForm />
         </PageCommon>
     );
-};
+}
