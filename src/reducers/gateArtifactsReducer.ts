@@ -26,49 +26,57 @@ import {
     ActionsGateArtifactsType,
     ActionGASetSearchOptions,
 } from '../actions/types';
+import { ArtifactNameType } from '../artifact';
 
 const query = new URLSearchParams(window.location.search);
 
-const buildTypeMenuItems = {
+export const buildTypeMenuItems = {
     ordinary: 'brew-build',
     modularity: 'redhat-module',
 };
-const getTypeFromSelect = _.partialRight(
-    _.get,
-    buildTypeMenuItems,
-    _,
-    'invalid',
-);
-const getSelectFromType = _.partialRight(
-    _.get,
-    _.invert(buildTypeMenuItems),
-    _,
-    'invalid',
+
+export const getTypeFromSelect = (value: string) => (
+    _.get(buildTypeMenuItems, value, 'invalid')
 );
 
-const INITIAL_STATE = {
-    gateTag: decodeURIComponent(query.get('gatetag') || ''),
-    packager: decodeURIComponent(query.get('packager') || ''),
+export const getSelectFromType = (type: string) => (
+    _.get(_.invert(buildTypeMenuItems), type, 'invalid')
+);
+
+export interface StateGatingTests {
+    buildType: ArtifactNameType;
+    ciSystem: string;
+    gateTag: string;
+    ignoreCiSystem: boolean;
+    packager: string;
+    productId: number;
+    searchEpoch: number;
+    sstTeams: string[];
+}
+
+const INITIAL_STATE: StateGatingTests = {
+    buildType: getTypeFromSelect(query.get('btype') || 'ordinary'),
     ciSystem: decodeURIComponent(query.get('cisystem') || ''),
+    gateTag: decodeURIComponent(query.get('gatetag') || ''),
+    ignoreCiSystem: decodeURIComponent(query.get('ic') || 'false') === 'true',
+    packager: decodeURIComponent(query.get('packager') || ''),
+    productId: _.toInteger(query.get('pid') || 604),
+    searchEpoch: 1,
     sstTeams: _.reject(
         _.split(decodeURIComponent(query.get('teams') || ''), ','),
         _.isEmpty,
     ),
-    product_id: _.toInteger(query.get('pid') || 604),
     /** buildType === artifact type */
-    buildType: getTypeFromSelect(query.get('btype') || 'ordinary'),
-    ignoreCISystem: decodeURIComponent(query.get('ic') || 'false') === 'true',
-    search_epoch: 1,
 };
 
-const gateArtifactsReducer = (
+export function gateArtifactsReducer(
     state = INITIAL_STATE,
     action: ActionsGateArtifactsType,
-) => {
+) {
     switch (action.type) {
         case GATE_ARTIFACTS_BUMP_SEARCH_EPOCH: {
             nstate = update(state, {
-                search_epoch: { $set: state.search_epoch + 1 },
+                searchEpoch: { $set: state.searchEpoch + 1 },
             });
             const url = new URL(window.location.href);
             if (!_.isEmpty(state.ciSystem)) {
@@ -103,14 +111,14 @@ const gateArtifactsReducer = (
             } else {
                 url.searchParams.delete('teams');
             }
-            url.searchParams.set('pid', encodeURIComponent(state.product_id));
+            url.searchParams.set('pid', encodeURIComponent(state.productId));
             /** Mapping select entries to actual aritfact type, URL contains value from select entry */
             const btype =
                 state.buildType === 'redhat-module' ? 'modularity' : 'ordinary';
             url.searchParams.set('btype', encodeURIComponent(btype));
             url.searchParams.set(
                 'ic',
-                encodeURIComponent(state.ignoreCISystem),
+                encodeURIComponent(state.ignoreCiSystem),
             );
             window.history.replaceState('', 'update search params', url.href);
             return nstate;
@@ -121,9 +129,9 @@ const gateArtifactsReducer = (
                 packager,
                 ciSystem,
                 sstTeams,
-                product_id,
+                productId,
                 buildType,
-                ignoreCISystem,
+                ignoreCiSystem,
             } = action.payload;
             /**
              * {type: 'brew-build',
@@ -131,8 +139,10 @@ const gateArtifactsReducer = (
              * resultsdb_testcase: {$regex: 'manual'},
              * $and: [ { gate_tag_name: { $type: "string" } }, { gate_tag_name: { $gt: "" } } ] }
              */
-            var type;
+            let type: ArtifactNameType | undefined;
             switch (buildType) {
+                case undefined:
+                    break;
                 case 'ordinary':
                     type = 'brew-build';
                     break;
@@ -148,9 +158,9 @@ const gateArtifactsReducer = (
                 packager,
                 ciSystem,
                 sstTeams,
-                product_id,
+                productId,
                 buildType: type,
-                ignoreCISystem,
+                ignoreCiSystem,
             };
             var nstate = state;
             let property: keyof ActionGASetSearchOptions['payload'];
@@ -166,6 +176,4 @@ const gateArtifactsReducer = (
         default:
             return state;
     }
-};
-
-export default gateArtifactsReducer;
+}

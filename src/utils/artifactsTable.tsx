@@ -23,65 +23,50 @@ import * as React from 'react';
 import classNames from 'classnames';
 import { LegacyRef, useState } from 'react';
 import {
-    Text,
-    List,
-    Title,
-    Spinner,
     Bullseye,
-    ListItem,
-    OrderType,
-    EmptyState,
-    TextContent,
-    TextVariants,
-    ListComponent,
-    EmptyStateIcon,
-    EmptyStateBody,
-    EmptyStateVariant,
-    ExpandableSection,
     DropdownProps,
     DropdownToggleProps,
+    EmptyState,
+    EmptyStateBody,
+    EmptyStateIcon,
+    EmptyStateVariant,
+    ExpandableSection,
+    List,
+    ListComponent,
+    ListItem,
+    OrderType,
+    Spinner,
+    Text,
+    TextContent,
+    TextVariants,
+    Title,
 } from '@patternfly/react-core';
 import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
 import { nowrap, expandable, fitContent } from '@patternfly/react-table';
 import { ArrowIcon, ExclamationCircleIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 import {
-    artifactUrl,
-    nameFieldForType,
     aidMeaningForType,
+    artifactUrl,
+    getArtifactName,
+    nameFieldForType,
 } from './artifactUtils';
 import styles from '../custom.module.css';
 
 import { ArtifactType } from '../artifact';
-import ArtifactStatesList from '../components/ArtifactStatesList';
-import ArtifactDetailedInfo from '../components/ArtifactDetailedInfo';
+import { ArtifactStatesList } from '../components/ArtifactStatesList';
+import { ArtifactDetailedInfo } from '../components/ArtifactDetailedInfo';
 
 interface ArtifactNameProps {
     artifact: ArtifactType;
 }
-const ArtifactName: React.FC<ArtifactNameProps> = (props) => {
-    const { artifact } = props;
-    let name;
-    switch (artifact.type) {
-        case 'brew-build':
-        case 'koji-build':
-        case 'koji-build-cs':
-        case 'copr-build':
-            name = artifact.payload.nvr;
-            break;
-        case 'redhat-module':
-            name = artifact.payload.nvr; // Fix me
-            break;
-        case 'productmd-compose':
-            name = artifact.aid;
-            break;
-        default:
-            name = <p>Unknown artifact, please file a bug</p>;
-    }
+const ArtifactName: React.FC<ArtifactNameProps> = ({ artifact }) => {
     return (
         <TextContent>
             <Title size="lg" headingLevel="h4" className="pf-u-m-0">
-                {name}
+                {getArtifactName(artifact) ||
+                    'Unknown artifact, please file a bug'
+                }
             </Title>
         </TextContent>
     );
@@ -262,13 +247,12 @@ export const ShowErrors = ({ error, forceExpand }: any) => {
     );
 };
 
-export type InputRowType = {
+export interface InputRowType {
+    body: React.ReactNode;
     title: string;
-    body: JSX.Element;
     type: string;
-};
+}
 
-export type TableRowsType = TableProps['rows'];
 export type OnCollapseEventType = Extract<TableProps['onCollapse'], Function>;
 export type TableRowWrapperType = Extract<TableProps['rowWrapper'], Function>;
 export type OnDropdownToggleType = Extract<
@@ -277,7 +261,7 @@ export type OnDropdownToggleType = Extract<
 >;
 export type OnDropdownSelectType = Extract<DropdownProps['onSelect'], Function>;
 
-export const mkSpecialRows = (args: InputRowType): TableRowsType => {
+export const mkSpecialRows = (args: InputRowType): IRow[] => {
     const default_args = { type: 'error' };
     const { title, body, type }: any = { ...default_args, ...args };
     var Icon = () => <></>;
@@ -359,7 +343,7 @@ export type InputArtifactRowType = {
     waitForRef?: React.MutableRefObject<any>;
 };
 
-export const mkArtifactsRows = (args: InputArtifactRowType): TableRowsType => {
+export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
     const { artifacts, opened, queryString, waitForRef } = args;
     if (_.isEmpty(artifacts)) {
         return [];

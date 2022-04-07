@@ -40,10 +40,11 @@ import {
 } from '@patternfly/react-core';
 import { SearchIcon } from '@patternfly/react-icons';
 
+import { config } from '../config';
 import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
-import PageCommon, { ToastAlertGroup } from './PageCommon';
-import ArtifactsListByFilters from './ArtifactsListByFilters';
+import { PageCommon, ToastAlertGroup } from './PageCommon';
+import { ArtifactsListByFilters } from './ArtifactsListByFilters';
 import { addFilter, deleteFilter, setOptionsForFilters } from '../actions';
 import WaiveForm from './WaiveForm';
 
@@ -117,7 +118,7 @@ const SearchToolbar = () => {
     useEffect(() => {
         const url = new URL(window.location.href);
         if (
-            _.size(filters.active) === 0 &&
+            _.isEmpty(filters.active) &&
             url.searchParams.has('filters') &&
             prevFiltersLen > 0
         ) {
@@ -156,7 +157,7 @@ const SearchToolbar = () => {
         if (!statusSelected) {
             return;
         }
-        if (keyEvent.key === 'Enter' && inputValue && _.size(inputValue) > 0) {
+        if (keyEvent.key === 'Enter' && inputValue && !_.isEmpty(inputValue)) {
             setInputValue('');
             dispatch(addFilter(inputValue, _.get(menuTypes, statusSelected)));
             keyEvent.stopPropagation();
@@ -263,7 +264,7 @@ const SearchToolbar = () => {
 
     const url = new URL(window.location.href);
     const filters_bin = url.searchParams.get('filters');
-    if (_.size(filters.active) > 0) {
+    if (!_.isEmpty(filters.active)) {
         let url_filters = {};
         if (filters_bin) {
             url_filters = JSON.parse(atob(filters_bin));
@@ -288,15 +289,31 @@ const SearchToolbar = () => {
     return toolBar;
 };
 
-const PageByFilters = () => {
+export function PageByFilters() {
+    const { active: activeFilters } = useSelector<RootStateType, IStateFilters>(
+        (state) => state.filters
+    );
+    const [pageTitle, setPageTitle] = useState<string | undefined>();
+
+    useEffect(() => {
+        if (!_.isEmpty(activeFilters)) {
+            let queryForTitle = activeFilters.join(' ');
+            // Trim the search query to 40 characters and ellipsize.
+            if (queryForTitle.length > 40) {
+                queryForTitle = queryForTitle.substring(0, 40).trimEnd() + '…';
+            }
+            setPageTitle(`Results for ‘${queryForTitle}’ | ${config.defaultTitle}`);
+        }
+    }, [activeFilters]);
+
     return (
-        <PageCommon>
+        <PageCommon
+            title={pageTitle}
+        >
             <SearchToolbar />
             <ArtifactsListByFilters />
             <ToastAlertGroup />
             <WaiveForm />
         </PageCommon>
     );
-};
-
-export default PageByFilters;
+}

@@ -153,6 +153,11 @@
     padding: 1rem;
 }
 
+:global(.pc-c-page__header-nav .pf-c-nav) {
+    /* Stretch the horizontal navbar in page header over the available space. */
+    flex: 1 1 auto;
+}
+
 /**
 * Colors are based on:
 * https://www.colourlovers.com/palette/669439/Alcatraz!

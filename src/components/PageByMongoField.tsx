@@ -23,27 +23,33 @@ import { useParams } from 'react-router-dom';
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@apollo/client';
 import {
+    IRow,
     Table,
     TableBody,
     TableHeader,
     TableVariant,
 } from '@patternfly/react-table';
 
+import { config } from '../config';
 import { ArtifactType } from '../artifact';
-import PageCommon, { ToastAlertGroup } from './PageCommon';
+import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { ArtifactsCompleteQuery } from '../queries/Artifacts';
-import PaginationToolbar, { PaginationToolbarProps } from './PaginationToolbar';
+import { PaginationToolbar, PaginationToolbarProps } from './PaginationToolbar';
+import { getArtifactName } from '../utils/artifactUtils';
 import {
     ShowErrors,
     InputRowType,
     tableColumns,
-    TableRowsType,
     mkSpecialRows,
     mkArtifactsRows,
     CustomRowWrapper,
     OnCollapseEventType,
 } from '../utils/artifactsTable';
 import WaiveForm from './WaiveForm';
+
+interface ArtifactsTableProps {
+    onArtifactsLoaded?(artifacts: ArtifactType[]): void;
+}
 
 /**
  * Displays artifacts based on current URL
@@ -58,7 +64,7 @@ import WaiveForm from './WaiveForm';
  * - focus - used to focus on a specific test for a single artifact view
  */
 
-const ArtifactsTable: React.FC<any> = (props) => {
+const ArtifactsTable: React.FC<any> = ({ onArtifactsLoaded }: ArtifactsTableProps) => {
     const scrollRef = useRef<HTMLTableRowElement>(null);
     var artifacts: ArtifactType[] = [];
     /**
@@ -82,7 +88,7 @@ const ArtifactsTable: React.FC<any> = (props) => {
     /**
      * currentPage -- index in known pages
      */
-    var currentPage = '';
+    var currentPage: number = 1;
     var loadNextIsDisabled = true;
     var loadPrevIsDisabled = true;
     /**
@@ -99,6 +105,7 @@ const ArtifactsTable: React.FC<any> = (props) => {
         value: dbFieldValuesString,
     } = useParams<MongoFieldsParams>();
     const dbFieldValues = dbFieldValuesString.split(',');
+    // Index of the currently expanded artifact row within the `artifacts` list.
     const [opened, setOpened] = useState<number | null>(null);
     /** page navigation */
     const onClickLoadNext = () => {
@@ -143,6 +150,9 @@ const ArtifactsTable: React.FC<any> = (props) => {
     if (haveData) {
         artifacts = data.artifacts.artifacts;
         has_next = data.artifacts.has_next;
+        if (onArtifactsLoaded) {
+            onArtifactsLoaded(artifacts);
+        }
         const aid_at_bottom = _.last(artifacts)?.aid;
         if (!_.includes(known_pages, aid_at_bottom) && aid_at_bottom) {
             known_pages.splice(
@@ -157,12 +167,10 @@ const ArtifactsTable: React.FC<any> = (props) => {
         }
     }
     if (known_pages.length && _.size(artifacts)) {
-        const aid_at_bottom = _.last(artifacts)?.aid;
-        currentPage = _.toString(
-            _.findIndex(known_pages, (x) => x === aid_at_bottom) + 1,
-        );
+        const aidAtBottom = _.last(artifacts)?.aid;
+        currentPage = 1 + _.findIndex(known_pages, (x) => x === aidAtBottom);
     }
-    if (_.toNumber(currentPage) > 1) {
+    if (currentPage > 1) {
         loadPrevIsDisabled = false;
     }
     if (has_next) {
@@ -187,7 +195,7 @@ const ArtifactsTable: React.FC<any> = (props) => {
         indexToOpen = 0;
     }
     const columns = tableColumns(artifactsType);
-    var rows_errors: TableRowsType = [];
+    var rows_errors: IRow[] = [];
     if (haveErrorNoData) {
         const errorMsg: InputRowType = {
             title: 'Cannot fetch data',
@@ -196,14 +204,14 @@ const ArtifactsTable: React.FC<any> = (props) => {
         };
         rows_errors = mkSpecialRows(errorMsg);
     }
-    const rows_artifacts: TableRowsType = mkArtifactsRows({
+    const rows_artifacts = mkArtifactsRows({
         artifacts,
         opened: indexToOpen,
     });
     const forceExpandErrors = haveErrorNoData ? true : false;
     const foundValues = _.map(artifacts, _.property(dbFieldName));
     const missing = _.difference(dbFieldValues, foundValues);
-    var rows_missing: TableRowsType = [];
+    var rows_missing: IRow[] = [];
     if (!_.isEmpty(missing) && haveData) {
         rows_errors = mkSpecialRows({
             title: `No data for ${artifactsType} with ${dbFieldName}`,
@@ -211,7 +219,7 @@ const ArtifactsTable: React.FC<any> = (props) => {
             type: 'error',
         });
     }
-    var rows_loading: TableRowsType = [];
+    var rows_loading: IRow[] = [];
     if (isLoading) {
         rows_loading = mkSpecialRows({
             title: 'Loading data.',
@@ -258,14 +266,33 @@ const ArtifactsTable: React.FC<any> = (props) => {
     return element;
 };
 
-const PageByMongoField = () => {
+export function PageByMongoField() {
+    const [pageTitle, setPageTitle] = useState<string | undefined>();
+    // Display the artifact's NVR/NVSC/whatever and gating status (if available) in
+    // the page title once the artifact info is loaded.
+    const onArtifactsLoaded = (artifacts: ArtifactType[]) => {
+        // We only handle the single-artifact case for now.
+        // TODO: Support multiple artifacts per page. Perhaps only display info for
+        // the currently expanded row?
+        if (artifacts?.length !== 1) return;
+        const artifact = artifacts[0];
+        let title = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
+        if (artifact.greenwave_decision?.summary) {
+            if (artifact.greenwave_decision.policies_satisfied)
+                title = `✅ ${title}`;
+            else
+                title = `❌ ${title}`;
+        }
+        setPageTitle(title);
+    };
+
     return (
-        <PageCommon>
+        <PageCommon
+            title={pageTitle}
+        >
             <ArtifactsTable />
             <ToastAlertGroup />
             <WaiveForm />
         </PageCommon>
     );
 };
-
-export default PageByMongoField;

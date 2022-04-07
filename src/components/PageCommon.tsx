@@ -35,12 +35,18 @@ import {
     Banner,
 } from '@patternfly/react-core';
 
-import { DashboardPageHeader } from './PageHeader';
+import { config } from '../config';
+import { useTitle } from '../hooks';
 import { RootStateType } from '../reducers';
-import { setQueryString, popAlert } from '../actions';
+import { popAlert, setQueryString } from '../actions';
 import { IStateAlerts } from '../actions/types';
+import { DashboardPageHeader } from './PageHeader';
 
-export const ToastAlertGroup = () => {
+type PageCommonProps = React.PropsWithChildren<React.ReactNode> & {
+    title?: string;
+}
+
+export function ToastAlertGroup() {
     const dispatch = useDispatch();
     const onClick = () => {
         // XXX key -- was param
@@ -51,7 +57,7 @@ export const ToastAlertGroup = () => {
     );
     return (
         <AlertGroup isToast>
-            {alerts.map(({ key, variant, title }) => (
+            {alerts.map(({ key, title, variant }) => (
                 <Alert
                     isLiveRegion
                     variant={AlertVariant[variant]}
@@ -68,9 +74,9 @@ export const ToastAlertGroup = () => {
             ))}
         </AlertGroup>
     );
-};
+}
 
-const PageCommon = (props: any) => {
+export function PageCommon(props: PageCommonProps) {
     const location = useLocation();
     const dispatch = useDispatch();
     const queryString = qs.parse(location.search, {
@@ -78,8 +84,10 @@ const PageCommon = (props: any) => {
     });
     dispatch(setQueryString(queryString.toString()));
 
+    useTitle(props.title || config.defaultTitle);
+
     const pageId = 'main-content-page-layout-horizontal-nav';
-    let to_render;
+    let to_render: JSX.Element;
     if (queryString.embedded !== 'true') {
         to_render = (
             <>
@@ -99,7 +107,7 @@ const PageCommon = (props: any) => {
                             mainContainerId={pageId}
                         >
                             <PageSection
-                                variant={PageSectionVariants.darker}
+                                variant={PageSectionVariants.default}
                                 isFilled
                                 hasOverflowScroll
                             >
@@ -133,8 +141,7 @@ const PageCommon = (props: any) => {
             </>
         );
     } else {
-        to_render = props.children;
+        to_render = <>{props.children}</>;
     }
     return to_render;
-};
-export default PageCommon;
+}

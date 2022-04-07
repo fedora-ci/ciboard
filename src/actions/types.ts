@@ -140,13 +140,13 @@ export interface ActionSetQueryString {
 export interface ActionGASetSearchOptions {
     type: typeof GATE_ARTIFACTS_SET_SEARCH_OPTIONS;
     payload: {
-        gateTag: string;
-        packager: string;
-        ciSystem: string;
-        sstTeams: string;
-        product_id: number;
-        buildType: string;
-        ignoreCISystem: boolean;
+        gateTag?: string;
+        packager?: string;
+        ciSystem?: string;
+        sstTeams?: string[];
+        productId?: number;
+        buildType?: string;
+        ignoreCiSystem?: boolean;
     };
 }
 

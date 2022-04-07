@@ -19,10 +19,11 @@
  */
 
 import * as React from 'react';
-import PageHelp from './components/PageHelp';
-import PageNewIssue from './components/PageNewIssue';
-import PageByFilters from './components/PageByFilters';
-import PageByMongoField from './components/PageByMongoField';
+import { PageByFilters } from './components/PageByFilters';
+import { PageByMongoField } from './components/PageByMongoField';
+import { PageGating } from './components/PageGating';
+import { PageHelp } from './components/PageHelp';
+import { PageNewIssue } from './components/PageNewIssue';
 import { PageSST } from './components/PageSST';
 
 export type menuEntryType = {
@@ -46,6 +47,13 @@ const menuRoutes: menuEntryType[] = [
         to: '/sst',
         route: '/sst/:section?/:release?',
         render: (props) => <PageSST {...props} />,
+    },
+    {
+        title: 'Gating tests',
+        key: 'gatingtests',
+        to: '/gating',
+        route: '/gating',
+        render: (props) => <PageGating {...props} />,
     },
     {
         title: 'Report issue',

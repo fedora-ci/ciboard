@@ -40,8 +40,8 @@ import {
 import { RebootingIcon } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
-import TestSuites from './TestSuites';
 import { mappingDatagrepperUrl } from '../config';
+import { TestSuites } from './TestSuites';
 import {
     getThreadID,
     getTestcaseName,

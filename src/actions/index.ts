@@ -40,7 +40,7 @@ import {
     WAIVER_RESULT,
     FETCH_USER,
 } from './types';
-import store from '../reduxStore';
+import { store } from '../reduxStore';
 import { ArtifactType, StateType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';

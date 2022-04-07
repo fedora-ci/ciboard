@@ -598,10 +598,8 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     return <Testsuites xunit={parsedXunit} />;
 };
 
-const TestSuites = memo(
+export const TestSuites = memo(
     TestSuites_,
     ({ state: state_prev }, { state: state_next }) =>
         _.isEqual(state_prev, state_next),
 );
-
-export default TestSuites;

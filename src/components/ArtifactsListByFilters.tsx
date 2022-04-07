@@ -24,6 +24,7 @@ import { useQuery } from '@apollo/client';
 import { useSelector } from 'react-redux';
 import { useState, useRef, useEffect } from 'react';
 import {
+    IRow,
     Table,
     TableBody,
     TableHeader,
@@ -35,7 +36,6 @@ import {
     ShowErrors,
     tableColumns,
     InputRowType,
-    TableRowsType,
     mkSpecialRows,
     mkArtifactsRows,
     CustomRowWrapper,
@@ -43,8 +43,7 @@ import {
 } from '../utils/artifactsTable';
 import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
-
-import PaginationToolbar from './PaginationToolbar';
+import { PaginationToolbar } from './PaginationToolbar';
 
 const ArtifactsTable: React.FC = () => {
     const queryString = ''; // XXX : delme
@@ -70,7 +69,7 @@ const ArtifactsTable: React.FC = () => {
     /** XXX */
     var artifacts: any[] = [];
     var has_next = false;
-    var currentPage = '';
+    var currentPage: number = 1;
     var loadNextIsDisabled = true;
     var loadPrevIsDisabled = true;
     useEffect(() => {
@@ -166,16 +165,15 @@ const ArtifactsTable: React.FC = () => {
         currentPage = _.chain(known_pages)
             .findIndex((x) => x === aid_offset)
             .add(1)
-            .value()
-            .toString();
+            .value();
     }
-    if (Number(currentPage) > 1) {
+    if (currentPage > 1) {
         loadPrevIsDisabled = false;
     }
     if (has_next) {
         loadNextIsDisabled = false;
     }
-    var rows_errors: TableRowsType = [];
+    var rows_errors: IRow[] = [];
     if (haveErrorNoData) {
         const errorMsg: InputRowType = {
             title: 'Cannot fetch data',
@@ -184,13 +182,13 @@ const ArtifactsTable: React.FC = () => {
         };
         rows_errors = mkSpecialRows(errorMsg);
     }
-    const rows_artifacts: TableRowsType = mkArtifactsRows({
+    const rows_artifacts = mkArtifactsRows({
         opened,
         artifacts,
         waitForRef,
         queryString,
     });
-    const known_rows: TableRowsType = _.concat(rows_artifacts, rows_errors);
+    const known_rows = _.concat(rows_artifacts, rows_errors);
     const forceExpandErrors = haveErrorNoData ? true : false;
     const paginationProps = {
         isLoading,
@@ -223,13 +221,6 @@ const ArtifactsTable: React.FC = () => {
     return results;
 };
 
-const ArtifactsListByFilters = () => {
-    const element = (
-        <>
-            <ArtifactsTable />
-        </>
-    );
-    return element;
-};
-
-export default ArtifactsListByFilters;
+export function ArtifactsListByFilters() {
+    return <ArtifactsTable />;
+}

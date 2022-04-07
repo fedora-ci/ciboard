@@ -33,42 +33,33 @@ import {
 } from '@patternfly/react-core';
 import { useQuery } from '@apollo/client';
 
-import PageCommon from './PageCommon';
+import { config } from '../config';
+import { PageCommon } from './PageCommon';
 import WaiverdbInfoQuery from '../queries/WaiverdbInfo';
 import WaiverdbPermissionsQuery from '../queries/WaiverdbPermissions';
 import {
+    ICell,
+    IRow,
     Table,
     TableBody,
     TableHeader,
     TableVariant,
 } from '@patternfly/react-table';
-import { TableRowsType } from '../utils/artifactsTable';
 
 const mkSeparatedList = (
-    elements: Array<string>,
-    separator: JSX.Element = <>', '</>,
+    elements: React.ReactNode[],
+    separator: React.ReactNode = ', ',
 ) => {
     if (_.isNil(elements)) return null;
-    const ret = _.reduce<string, (string | JSX.Element)[]>(
-        elements,
-        (acc, el) => {
-            if (_.size(acc) === 0) {
-                acc.push(el);
-                return acc;
-            }
-            acc.push(separator);
-            acc.push(el);
-            return acc;
-        },
-        [],
-    );
-    return <>{ret}</>;
+    return elements.reduce((acc, el) => (
+        acc === null ? el : <>{acc}{separator}{el}</>
+    ), null);
 };
 
 const Help = () => (
     <Grid hasGutter>
         <GridItem span={6}>
-            <Card isHoverable>
+            <Card>
                 <CardHeader>
                     <Title headingLevel="h3" size="2xl">
                         BaseOS
@@ -108,7 +99,7 @@ const Help = () => (
             </Card>
         </GridItem>
         <GridItem span={6}>
-            <Card isHoverable className="pf-u-h-100">
+            <Card className="pf-u-h-100">
                 <CardHeader>
                     <Title headingLevel="h3" size="2xl">
                         OSCI
@@ -184,14 +175,12 @@ type WaiverDBPermissionType = {
 
 const WaiverdbPermissions = () => {
     const { loading, error, data } = useQuery(WaiverdbPermissionsQuery);
-    const rows: TableRowsType = [];
     const mkRow = (permission: WaiverDBPermissionType) => {
         const patterns = mkSeparatedList(permission.testcases, <br />);
         const users = mkSeparatedList(permission.users || [], <br />);
         const groups = mkSeparatedList(permission.groups || [], <br />);
-        return {
-            cells: [patterns, <>{users}</>, <>{groups}</>],
-        };
+        const row: IRow = { cells: [patterns, <>{users}</>, <>{groups}</>] };
+        return row;
     };
     if (loading) {
         return <Spinner />;
@@ -200,8 +189,8 @@ const WaiverdbPermissions = () => {
         return <StackItem>{error.message}</StackItem>;
     }
     const perms = data.waiver_db_permissions as Array<WaiverDBPermissionType>;
-    _.forEach(perms, (permission) => rows.push(mkRow(permission)));
-    const columns = [
+    const rows: IRow[] = perms.map((permission) => mkRow(permission));
+    const columns: ICell[] = [
         { title: 'Test case patterns' },
         { title: 'Users' },
         { title: 'Groups' },
@@ -214,29 +203,27 @@ const WaiverdbPermissions = () => {
                 </Title>
             </CardHeader>
             <CardBody>
-                <>
-                    <Table
-                        aria-label="Table WaiverDB config"
-                        variant={TableVariant.compact}
-                        borders={true}
-                        cells={columns}
-                        rows={rows}
-                    >
-                        <TableHeader />
-                        <TableBody />
-                    </Table>
-                </>
+                <Table
+                    aria-label="Table WaiverDB config"
+                    variant={TableVariant.compact}
+                    borders={true}
+                    cells={columns}
+                    rows={rows}
+                >
+                    <TableHeader />
+                    <TableBody />
+                </Table>
             </CardBody>
         </Card>
     );
 };
 
-const PageNewIssue = () => {
+export function PageNewIssue() {
     return (
-        <PageCommon>
+        <PageCommon
+            title={`Report issue | ${config.defaultTitle}`}
+        >
             <Help />
         </PageCommon>
     );
-};
-
-export default PageNewIssue;
+}

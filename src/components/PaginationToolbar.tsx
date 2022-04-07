@@ -34,14 +34,14 @@ import React, { MouseEventHandler } from 'react';
 
 export interface PaginationToolbarProps {
     isLoading: boolean;
-    currentPage: string;
+    currentPage: number;
     onClickLoadPrev: MouseEventHandler;
     onClickLoadNext: MouseEventHandler;
     loadPrevIsDisabled: boolean;
     loadNextIsDisabled: boolean;
 }
 
-const PaginationToolbar: React.FC<PaginationToolbarProps> = (props) => {
+export function PaginationToolbar(props: PaginationToolbarProps) {
     const {
         isLoading,
         currentPage,
@@ -88,6 +88,4 @@ const PaginationToolbar: React.FC<PaginationToolbarProps> = (props) => {
             </ToolbarContent>
         </Toolbar>
     );
-};
-
-export default PaginationToolbar;
+}
