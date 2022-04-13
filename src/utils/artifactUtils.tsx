@@ -46,6 +46,8 @@ import {
     StatesByCategoryType,
     KnownKaiStates,
     StateGreenwaveKaiType,
+    PayloadRPMBuildType,
+    PayloadMBSBuildType,
 } from '../artifact';
 import { LabelProps } from '@patternfly/react-core';
 
@@ -245,11 +247,9 @@ export function getArtifactName(artifact: ArtifactType): string | undefined {
         case 'brew-build':
         case 'copr-build':
         case 'koji-build':
-            return artifact.payload.nvr;
-        // TODO: Modules are not yet fully supported. Uncomment this once we have
-        // the proper type for module build payloads.
-        // case 'redhat-module':
-        //     return artifact.payload.nsvc;
+            return (artifact.payload as PayloadRPMBuildType).nvr;
+        case 'redhat-module':
+            return (artifact.payload as PayloadMBSBuildType).nsvc;
         case 'productmd-compose':
             return artifact.aid;
         default:

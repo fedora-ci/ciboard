@@ -258,7 +258,7 @@ export type StateKaiType = {
     };
 };
 export type KaiStateType = StateKaiType['kai_state'];
-export type PayloadsType = PayloadRPMBuildType;
+export type PayloadsType = PayloadRPMBuildType | PayloadMBSBuildType;
 
 export type PayloadRPMBuildType = {
     nvr: string;
@@ -266,6 +266,21 @@ export type PayloadRPMBuildType = {
     issuer: string;
     task_id: number;
     build_id: number;
+    scratch: boolean;
+    component: string;
+    gate_tag_name: string;
+};
+
+export type PayloadMBSBuildType = {
+    context: string;
+    id: number;
+    issuer: string;
+    name: string;
+    nsvc: string;
+    nvr: string;
+    stream: string;
+    version: string;
+    source: string;
     scratch: boolean;
     component: string;
     gate_tag_name: string;
