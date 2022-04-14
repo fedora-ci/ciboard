@@ -38,16 +38,12 @@ import {
     ArtifactType,
     KaiStateType,
     StateKaiType,
-    StageNameType,
-    StateNameType,
     ArtifactNameType,
     KojiInstanceType,
     StateGreenwaveType,
-    StatesByCategoryType,
-    KnownKaiStates,
-    StateGreenwaveKaiType,
     PayloadRPMBuildType,
     PayloadMBSBuildType,
+    StateGreenwaveKaiType,
 } from '../artifact';
 import { LabelProps } from '@patternfly/react-core';
 
@@ -77,149 +73,6 @@ export const db_field_from_atype = {
     'koji-build-cs': 'nvr',
     'redhat-module': 'nsvc',
     'productmd-compose': 'compose_id',
-};
-
-/**
- * Transforms state provided by kai to expected states in UI.
- *
- * For test events in the complete state is split between passed and failed.
- *
- * For build events the error is recognized as a failed state.
- *
- * for stage == 'test' replace complete: [] ==> failed: [], info: [], passed: []
- * From: [ state1, state2, state3, ...]
- * To:   { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
- */
-export const transformKaiStates = (
-    states: Array<StateKaiType>,
-    stage: StageNameType,
-): StatesByCategoryType => {
-    const states_by_category: StatesByCategoryType = {};
-    const states_names: Array<StateNameType> = _.intersection<StateNameType>(
-        _.map(
-            states,
-            _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),
-        ),
-        KnownKaiStates,
-    );
-    _.forEach(states_names, (state_name) => {
-        /**
-         * For complete test states, count failed, passed and other events
-         */
-        /**
-         * complete tests
-         */
-        if (state_name === 'complete' && stage === 'test') {
-            const category_passed = _.filter(states, (state: StateKaiType) => {
-                if (
-                    state.kai_state.stage !== stage ||
-                    state.kai_state.state !== state_name
-                ) {
-                    return false;
-                }
-                var test_result: string = '';
-                if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
-                    const broker_msg =
-                        state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
-                    test_result = broker_msg.status;
-                }
-                if (MSG_V_1.isMsg(state.broker_msg_body)) {
-                    const broker_msg =
-                        state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
-                    test_result = broker_msg.test.result;
-                }
-                return _.includes(['pass', 'passed', 'PASSED'], test_result);
-            });
-            if (!_.isEmpty(category_passed)) {
-                states_by_category.passed = category_passed;
-            }
-            /**
-             * failed tests
-             */
-            const category_failed = _.filter(states, (state: StateKaiType) => {
-                if (
-                    state.kai_state.stage !== stage ||
-                    state.kai_state.state !== state_name
-                ) {
-                    return false;
-                }
-                var test_result: string = '';
-                if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
-                    const broker_msg =
-                        state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
-                    test_result = broker_msg.status;
-                }
-                if (MSG_V_1.isMsg(state.broker_msg_body)) {
-                    const broker_msg =
-                        state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
-                    test_result = broker_msg.test.result;
-                }
-                return _.includes(
-                    ['fail', 'failed', 'FAILED', 'needs_inspection'],
-                    test_result,
-                );
-            });
-            if (!_.isEmpty(category_failed)) {
-                states_by_category.failed = category_failed;
-            }
-            /**
-             * info tests
-             */
-            const category_info = _.filter((state: StateKaiType) => {
-                if (
-                    state.kai_state.stage !== stage ||
-                    state.kai_state.state !== state_name
-                ) {
-                    return false;
-                }
-                var test_result: string = '';
-                if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
-                    const broker_msg =
-                        state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
-                    test_result = broker_msg.status;
-                }
-                if (MSG_V_1.isMsg(state.broker_msg_body)) {
-                    const broker_msg =
-                        state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
-                    test_result = broker_msg.test.result;
-                }
-                return _.includes(['info', 'INFO'], test_result);
-            });
-            if (!_.isEmpty(category_info)) {
-                states_by_category.info = category_failed;
-            }
-        } else if (state_name === 'error' && stage === 'build') {
-            const category_failed = _.filter(states, (state: StateKaiType) => {
-                if (
-                    state.kai_state.stage === stage &&
-                    state.kai_state.state === state_name
-                ) {
-                    return true;
-                }
-                return false;
-            });
-            if (!_.isEmpty(category_failed)) {
-                states_by_category.failed = category_failed;
-            }
-        } else {
-            /** other categories for asked stage */
-            const category_other = _.filter(states, (state: StateKaiType) => {
-                const kai_state = state.kai_state;
-                if (
-                    kai_state.stage === stage &&
-                    kai_state.state === state_name
-                ) {
-                    return true;
-                }
-                return false;
-            });
-            if (!_.isEmpty(category_other)) {
-                states_by_category[state_name] = category_other;
-            }
-        }
-    });
-
-    return states_by_category;
 };
 
 const known_types = {

@@ -23,7 +23,6 @@ import {
     isKaiState,
     getTestcaseName,
     isGreenwaveState,
-    transformKaiStates,
     isGreenwaveKaiState,
 } from './artifactUtils';
 import {
@@ -31,15 +30,18 @@ import {
     ArtifactType,
     StageNameType,
     StateKaiType,
+    StateNameType,
+    KnownKaiStates,
     StateGreenwaveType,
+    GreenwaveResultType,
     StatesByCategoryType,
     StateExtendedNameType,
+    StateGreenwaveKaiType,
     GreenwaveRequirementType,
     GreenwaveDecisionReplyType,
     GreenwaveRequirementTypesType,
-    GreenwaveResultType,
-    StateGreenwaveKaiType,
 } from '../artifact';
+import { MSG_V_0_1, MSG_V_1 } from '../types';
 
 export type StageNameStateNameStatesType = [
     StageNameType,
@@ -89,9 +91,9 @@ const getKaiState = (
     stateNameReq: StateExtendedNameType,
     runUrl: string,
 ): StateKaiType | undefined => {
-    const s = _.find(states, ([_stageName, stateName, _states]) =>
-        _.isEqual(_.toUpper(stateNameReq), _.toUpper(stateName)),
-    );
+    const s = _.find(states, ([_stageName, stateName, _states]) => {
+        return _.isEqual(_.toUpper(stateNameReq), _.toUpper(stateName));
+    });
     if (_.isNil(s)) {
         return;
     }
@@ -304,9 +306,12 @@ const mergeKaiAndGreenwaveState = (
      * 1) greenwaveState.result.outcome == kai extended state
      * 2) greenwaveState.result.ref_url == kai message run.url
      */
-    const greenwave = filterByStageName('greenwave', stageStatesArray);
-    const test = filterByStageName('test', stageStatesArray);
-    _.forEach(greenwave, ([_stageName, _stateName, states]) =>
+    const greenwaveStageStates = filterByStageName(
+        'greenwave',
+        stageStatesArray,
+    );
+    const kaiStageStates = filterByStageName('test', stageStatesArray);
+    _.forEach(greenwaveStageStates, ([_stageName, _stateName, states]) =>
         _.forEach(states as StateGreenwaveType[], (greenwaveState) => {
             const outcome = greenwaveState.result?.outcome;
             const refUrl = greenwaveState.result?.ref_url;
@@ -314,7 +319,7 @@ const mergeKaiAndGreenwaveState = (
                 return;
             }
             const kaiState = getKaiState(
-                test,
+                kaiStageStates,
                 outcome as StateExtendedNameType,
                 refUrl,
             );
@@ -366,4 +371,172 @@ const minimizeStagesStates = (
     _.remove(stageStatesArray, ([_stageName, _stateName, states]) =>
         _.isEmpty(states),
     );
+};
+
+const getTestCompleteResult = (
+    state: StateKaiType,
+    reqStage: StageNameType,
+    reqState: StateNameType,
+): string | undefined => {
+    if (
+        state.kai_state.stage !== reqStage ||
+        state.kai_state.state !== reqState
+    ) {
+        return undefined;
+    }
+    var testResult: string | undefined;
+    if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
+        const broker_msg =
+            state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
+        testResult = broker_msg.status;
+    }
+    if (MSG_V_1.isMsg(state.broker_msg_body)) {
+        const broker_msg =
+            state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
+        testResult = broker_msg.test.result;
+    }
+    return testResult;
+};
+
+/**
+ * Transforms state provided by kai to expected states in UI.
+ *
+ * For test events in the complete state is split between passed and failed.
+ *
+ * For build events the error is recognized as a failed state.
+ *
+ * for stage == 'test' replace complete: [] ==> failed: [], info: [], passed: []
+ * From: [ state1, state2, state3, ...]
+ * To:   { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
+ */
+export const transformKaiStates = (
+    states: Array<StateKaiType>,
+    stage: StageNameType,
+): StatesByCategoryType => {
+    const states_by_category: StatesByCategoryType = {};
+    /** statesNames: ['running', 'complete'] */
+    const statesNames: Array<StateNameType> = _.intersection<StateNameType>(
+        _.map(
+            states,
+            _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),
+        ),
+        KnownKaiStates,
+    );
+    _.forEach(statesNames, (state_name) => {
+        /**
+         * For complete test states, count failed, passed and other events
+         */
+        /**
+         * complete tests to extended: [passed, failed, info, needs_inspection, not_applicable]
+         */
+        if (state_name === 'complete' && stage === 'test') {
+            /**
+             * pass tests
+             */
+            const category_passed = _.filter(states, (state: StateKaiType) => {
+                const testResult = getTestCompleteResult(
+                    state,
+                    stage,
+                    state_name,
+                );
+                return _.includes(['PASS', 'PASSED'], _.toUpper(testResult));
+            });
+            if (!_.isEmpty(category_passed)) {
+                states_by_category.passed = category_passed;
+            }
+            /**
+             * failed tests
+             */
+            const category_failed = _.filter(states, (state: StateKaiType) => {
+                const testResult = getTestCompleteResult(
+                    state,
+                    stage,
+                    state_name,
+                );
+                return _.includes(['FAIL', 'FAILED'], _.toUpper(testResult));
+            });
+            if (!_.isEmpty(category_failed)) {
+                states_by_category.failed = category_failed;
+            }
+            /**
+             * info tests
+             */
+            const category_info = _.filter(states, (state: StateKaiType) => {
+                const testResult = getTestCompleteResult(
+                    state,
+                    stage,
+                    state_name,
+                );
+                return _.isEqual('INFO', _.toUpper(testResult));
+            });
+            if (!_.isEmpty(category_info)) {
+                states_by_category.info = category_failed;
+            }
+            /**
+             * needs_inspection tests
+             */
+            const category_needs_inspections = _.filter(
+                states,
+                (state: StateKaiType) => {
+                    const testResult = getTestCompleteResult(
+                        state,
+                        stage,
+                        state_name,
+                    );
+                    return _.isEqual('NEEDS_INSPECTION', _.toUpper(testResult));
+                },
+            );
+            if (!_.isEmpty(category_needs_inspections)) {
+                states_by_category.needs_inspection =
+                    category_needs_inspections;
+            }
+            /**
+             * not_applicable tests
+             */
+            const category_not_applicable = _.filter(
+                states,
+                (state: StateKaiType) => {
+                    const testResult = getTestCompleteResult(
+                        state,
+                        stage,
+                        state_name,
+                    );
+                    return _.isEqual('NOT_APPLICABLE', _.toUpper(testResult));
+                },
+            );
+            if (!_.isEmpty(category_not_applicable)) {
+                states_by_category.not_applicable = category_not_applicable;
+            }
+        } else if (state_name === 'error' && stage === 'build') {
+            const category_failed = _.filter(states, (state: StateKaiType) => {
+                if (
+                    state.kai_state.stage === stage &&
+                    state.kai_state.state === state_name
+                ) {
+                    return true;
+                }
+                return false;
+            });
+            if (!_.isEmpty(category_failed)) {
+                states_by_category.failed = category_failed;
+            }
+        } else {
+            /** other categories for asked stage */
+            const category_other = _.filter(states, (state: StateKaiType) => {
+                const kai_state = state.kai_state;
+                if (
+                    kai_state.stage === stage &&
+                    kai_state.state === state_name
+                ) {
+                    return true;
+                }
+                return false;
+            });
+            if (!_.isEmpty(category_other)) {
+                states_by_category[state_name] = category_other;
+            }
+        }
+    });
+
+    return states_by_category;
 };

@@ -27,6 +27,7 @@ import {
     Flex,
     Title,
     Text,
+    Spinner,
     DataList,
     FlexItem,
     TitleSizes,
@@ -215,11 +216,11 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         artifact = _.get(reply, 'artifacts.artifacts[0]');
     }
     if (loadingCurrentState) {
-        /**
-         * Show nothing during load, usually this step is quick
-         * do not discrtuct user with jumping interface
-         */
-        return null;
+        return (
+            <Flex>
+                <Spinner size="sm" />
+            </Flex>
+        );
     }
     if (!artifact) {
         return <div>Cannot fetch artifact info.</div>;

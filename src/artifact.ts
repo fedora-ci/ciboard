@@ -208,11 +208,23 @@ export type StageNameType =
 
 export type StateNameType = 'error' | 'queued' | 'running' | 'complete';
 
+/**
+ * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-complete.yaml#_14
+ *
+ * complete is expanded to:
+ *
+ * - passed
+ * - failed
+ * - info
+ * - needs_inspection
+ * - not_applicable
+ */
 export type StateExtendedNameType =
-    | 'info'
     | 'passed'
     | 'failed'
-    | 'missing'
+    | 'info'
+    | 'needs_inspection'
+    | 'not_applicable'
     /* greenwave result */
     | 'additional-tests'
     | StateNameType

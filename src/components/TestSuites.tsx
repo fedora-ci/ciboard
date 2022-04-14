@@ -480,7 +480,7 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
             <DataList aria-label="Test suite items" isCompact>
                 {_.map(suite.tests, (test) => {
                     if (toggleState[test.status]) {
-                        return <TestCase test={test} />;
+                        return <TestCase key={test.name} test={test} />;
                     }
                 })}
             </DataList>

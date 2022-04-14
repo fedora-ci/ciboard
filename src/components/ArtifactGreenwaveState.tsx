@@ -363,6 +363,7 @@ export const mkOutcomeLabel = (state: StateGreenwaveType) => {
     return (
         <Label
             isCompact
+            key="outcome"
             color={(color as LabelProps['color']) || 'grey'}
             variant="filled"
         >

@@ -118,7 +118,7 @@ export const mkLabel = (
     icon: JSX.Element | null = null,
 ): JSX.Element => {
     return (
-        <DescriptionListGroup>
+        <DescriptionListGroup key={name}>
             <DescriptionListTerm>{name}</DescriptionListTerm>
             <DescriptionListDescription>
                 <Label
