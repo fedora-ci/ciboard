@@ -53,7 +53,7 @@ import {
     IRow,
 } from '@patternfly/react-table';
 
-import { ArtifactType, StateKaiType, StateType } from '../artifact';
+import { Artifact, StateKaiType } from '../artifact';
 import { renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 
@@ -499,7 +499,7 @@ const NoXunit = () => {
 
 interface TestSuitesProps {
     state: StateKaiType;
-    artifact: ArtifactType;
+    artifact: Artifact;
 }
 const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     const { state, artifact } = props;

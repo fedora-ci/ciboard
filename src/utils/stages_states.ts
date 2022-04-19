@@ -27,7 +27,7 @@ import {
 } from './artifactUtils';
 import {
     StateType,
-    ArtifactType,
+    Artifact,
     StageNameType,
     StateKaiType,
     StateNameType,
@@ -53,7 +53,7 @@ export type StageNameStateNameStatesType = [
  * Entry point. This file is the most complicated part in this project.
  */
 export const mkStagesAndStates = (
-    artifact: ArtifactType,
+    artifact: Artifact,
 ): StageNameStateNameStatesType[] => {
     const stagesStates: Array<{
         stage: StageNameType;
@@ -146,7 +146,7 @@ const getKaiState = (
  *     }
  */
 const mkStagesKaiStates = (
-    artifact: ArtifactType,
+    artifact: Artifact,
 ): {
     stage: StageNameType;
     states: StatesByCategoryType;

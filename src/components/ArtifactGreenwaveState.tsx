@@ -51,7 +51,7 @@ import {
 
 import styles from '../custom.module.css';
 import { renderStatusIcon, labelColors } from '../utils/artifactUtils';
-import { ArtifactType, StateGreenwaveType } from '../artifact';
+import { Artifact, StateGreenwaveType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
     mkPairs,
@@ -74,7 +74,7 @@ const timestampForUser = (inp: string, fromNow = false): string => {
 };
 
 interface WaiveButtonProps {
-    artifact: ArtifactType;
+    artifact: Artifact;
     state: StateGreenwaveType;
 }
 export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
@@ -130,7 +130,7 @@ export const GreenwaveReTestButton: React.FC<GreenwaveReTestButtonProps> = (
 };
 
 interface GreenwaveStateActionsProps {
-    artifact: ArtifactType;
+    artifact: Artifact;
     state: StateGreenwaveType;
 }
 export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
@@ -374,7 +374,7 @@ export const mkOutcomeLabel = (state: StateGreenwaveType) => {
 
 interface FaceForGreenwaveStateProps {
     state: StateGreenwaveType;
-    artifact: ArtifactType;
+    artifact: Artifact;
     artifactDashboardUrl: string;
 }
 

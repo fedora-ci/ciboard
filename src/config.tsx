@@ -19,7 +19,7 @@
  */
 
 import { getOSVersionFromNvr } from './utils/artifactUtils';
-import { ArtifactNameType } from './artifact';
+import { ArtifactType } from './artifact';
 
 /*
  *  CI Dashboard configuration file
@@ -46,7 +46,7 @@ export const config = {
     },
 };
 
-export const mappingDatagrepperUrl: { [key in ArtifactNameType]: string } = {
+export const mappingDatagrepperUrl: Record<ArtifactType, string> = {
     'brew-build': config.datagrepperRH.url,
     'koji-build': config.datagrepperFedora.url,
     'copr-build': config.datagrepperFedora.url,

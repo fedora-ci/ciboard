@@ -48,7 +48,7 @@ import {
 } from '../utils/artifactUtils';
 import {
     StateType,
-    ArtifactType,
+    Artifact,
     StageNameType,
     StateExtendedNameType,
     GreenwaveDecisionReplyType,
@@ -62,7 +62,7 @@ import {
     StageNameStateNameStatesType,
 } from '../utils/stages_states';
 
-const artifactDashboardUrl = (artifact: ArtifactType) => {
+const artifactDashboardUrl = (artifact: Artifact) => {
     return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
 };
 
@@ -143,7 +143,7 @@ const mkStateKey = (state: StateType): string => {
 };
 
 interface ArtifactResultsListProps {
-    artifact: ArtifactType;
+    artifact: Artifact;
 }
 
 export function ArtifactStatesList(props: ArtifactResultsListProps) {
@@ -198,7 +198,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         }
     }, [expandedResult, canScroll]);
     const focusOn: string = _.get(queryString.queryString, 'focus', '');
-    var artifact: ArtifactType | null = null;
+    var artifact: Artifact | null = null;
     if (haveData) {
         /**
          * readQuery() - always read data from cache, never makes request to server.
@@ -296,7 +296,7 @@ const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
     );
 };
 interface ArtifactGreenwaveStatesSummaryProps {
-    artifact: ArtifactType;
+    artifact: Artifact;
 }
 export const ArtifactGreenwaveStatesSummary: React.FC<
     ArtifactGreenwaveStatesSummaryProps

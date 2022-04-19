@@ -43,7 +43,7 @@ import {
     isGreenwaveKaiState,
 } from '../utils/artifactUtils';
 
-import { StateType, ArtifactType, StateExtendedNameType } from '../artifact';
+import { StateType, Artifact, StateExtendedNameType } from '../artifact';
 import { ArtifactKaiState, ArtifactKaiStateProps } from './ArtifactKaiState';
 import {
     ArtifactGreenwaveState,
@@ -169,7 +169,7 @@ export const LinkifyNewTab = (props: LinkifyNewTabPropsWithChildren) => {
 
 export interface ArtifactStateProps {
     state: StateType;
-    artifact: ArtifactType;
+    artifact: Artifact;
     stateName: StateExtendedNameType;
     forceExpand: boolean;
     setExpandedResult: React.Dispatch<React.SetStateAction<string>>;

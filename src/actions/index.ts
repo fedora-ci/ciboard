@@ -41,7 +41,7 @@ import {
     FETCH_USER,
 } from './types';
 import { store } from '../reduxStore';
-import { ArtifactType, StateType } from '../artifact';
+import { Artifact, StateType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
 import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
@@ -162,7 +162,7 @@ export const fetchUser = () => async (dispatch: DispatchType) => {
 };
 
 export const createWaiver = (
-    artifact: ArtifactType | undefined,
+    artifact: Artifact | undefined,
     state: StateType | undefined,
 ) => {
     return async (dispatch: DispatchType, getState: GetStateType) => {

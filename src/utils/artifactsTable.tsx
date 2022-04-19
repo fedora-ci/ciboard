@@ -53,27 +53,26 @@ import {
 } from './artifactUtils';
 import styles from '../custom.module.css';
 
-import { ArtifactType } from '../artifact';
+import { Artifact } from '../artifact';
 import { ArtifactStatesList } from '../components/ArtifactStatesList';
 import { ArtifactDetailedInfo } from '../components/ArtifactDetailedInfo';
 
 interface ArtifactNameProps {
-    artifact: ArtifactType;
+    artifact: Artifact;
 }
 const ArtifactName: React.FC<ArtifactNameProps> = ({ artifact }) => {
     return (
         <TextContent>
             <Title size="lg" headingLevel="h4" className="pf-u-m-0">
                 {getArtifactName(artifact) ||
-                    'Unknown artifact, please file a bug'
-                }
+                    'Unknown artifact, please file a bug'}
             </Title>
         </TextContent>
     );
 };
 
 interface ArtifactDestinationProps {
-    artifact: ArtifactType;
+    artifact: Artifact;
 }
 const ArtifactDestination: React.FC<ArtifactDestinationProps> = (props) => {
     const { artifact } = props;
@@ -97,7 +96,7 @@ const ArtifactDestination: React.FC<ArtifactDestinationProps> = (props) => {
 };
 
 interface ArtifactUrlProps {
-    artifact: ArtifactType;
+    artifact: Artifact;
 }
 const ArtifactUrl: React.FC<ArtifactUrlProps> = (props) => {
     const { artifact } = props;
@@ -300,7 +299,7 @@ export const mkSpecialRows = (args: InputRowType): IRow[] => {
     ];
 };
 
-export const mkArtifactRow = (artifact: ArtifactType): IRow => {
+export const mkArtifactRow = (artifact: Artifact): IRow => {
     const cells = [
         {
             title: <ArtifactUrl artifact={artifact} />,
@@ -336,7 +335,7 @@ export const mkArtifactRow = (artifact: ArtifactType): IRow => {
 };
 
 export type InputArtifactRowType = {
-    artifacts: Array<ArtifactType>;
+    artifacts: Array<Artifact>;
     opened: number | null;
     queryString?: string;
     body?: JSX.Element;

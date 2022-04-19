@@ -48,7 +48,7 @@ import {
     renderStatusIcon,
 } from '../utils/artifactUtils';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
-import { ArtifactType, StateKaiType, StateNameType } from '../artifact';
+import { Artifact, StateKaiType, StateNameType } from '../artifact';
 import {
     StateDetailsEntry,
     StateLink,
@@ -186,7 +186,7 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
 
 interface KaiStateXunitProps {
     state: StateKaiType;
-    artifact: ArtifactType;
+    artifact: Artifact;
 }
 export const KaiStateXunit: React.FC<KaiStateXunitProps> = (props) => {
     const { state, artifact } = props;
@@ -303,7 +303,7 @@ const StateExplain: React.FC<StateExplainProps> = (props) => {
 
 interface KaiStateInfoProps {
     state: StateKaiType;
-    artifact: ArtifactType;
+    artifact: Artifact;
 }
 export const KaiStateMapping: React.FC<KaiStateInfoProps> = (props) => {
     const { state, artifact } = props;

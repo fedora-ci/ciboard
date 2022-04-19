@@ -19,7 +19,7 @@
  */
 
 import { gql } from '@apollo/client';
-import { ArtifactType, ComponentMapping } from '../artifact';
+import { Artifact, ComponentMapping } from '../artifact';
 
 const stateEntryFragment = gql`
     fragment StateEntryFragment on StateType {
@@ -265,7 +265,7 @@ export const PageGatingGetSSTTeams = gql`
 export interface PageGatingArtifactsData {
     artifacts: {
         has_next: boolean;
-        artifacts: ArtifactType[] & {
+        artifacts: Artifact[] & {
             component_mapping: ComponentMapping;
         };
     };

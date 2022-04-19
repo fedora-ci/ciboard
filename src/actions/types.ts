@@ -19,7 +19,7 @@
  */
 
 import { AlertVariant } from '@patternfly/react-core';
-import { ArtifactType, StateType } from '../artifact';
+import { Artifact, StateType } from '../artifact';
 
 export const SST_PAGE = 'SST_PAGE';
 export const SST_MENU = 'SUBMIT_MENU';
@@ -72,11 +72,11 @@ export interface IStateAlerts {
 }
 
 export interface IStateWaiver {
-    state: undefined | StateType;
+    artifact?: Artifact;
     reason: string;
+    state?: StateType;
+    timestamp?: number;
     waiveError: string;
-    timestamp: undefined | number;
-    artifact: undefined | ArtifactType;
 }
 
 export interface IStateAuth {
@@ -158,7 +158,7 @@ export interface ActionWaiverCreate {
     type: typeof WAIVER_CREATE;
     payload: {
         state: StateType | undefined;
-        artifact: ArtifactType | undefined;
+        artifact: Artifact | undefined;
     };
 }
 

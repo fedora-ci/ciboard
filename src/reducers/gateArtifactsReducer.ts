@@ -26,7 +26,7 @@ import {
     ActionsGateArtifactsType,
     ActionGASetSearchOptions,
 } from '../actions/types';
-import { ArtifactNameType } from '../artifact';
+import { ArtifactType } from '../artifact';
 
 const query = new URLSearchParams(window.location.search);
 
@@ -42,7 +42,7 @@ export const getSelectFromType = (type: string) =>
     _.get(_.invert(buildTypeMenuItems), type, 'invalid');
 
 export interface StateGatingTests {
-    buildType: ArtifactNameType;
+    buildType: ArtifactType;
     ciSystem: string;
     gateTag: string;
     ignoreCiSystem: boolean;
@@ -137,7 +137,7 @@ export function gateArtifactsReducer(
              * resultsdb_testcase: {$regex: 'manual'},
              * $and: [ { gate_tag_name: { $type: "string" } }, { gate_tag_name: { $gt: "" } } ] }
              */
-            let type: ArtifactNameType | undefined;
+            let type: ArtifactType | undefined;
             switch (buildType) {
                 case undefined:
                     break;

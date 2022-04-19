@@ -78,7 +78,7 @@ import {
     getSelectFromType,
 } from '../reducers/gateArtifactsReducer';
 import {
-    ArtifactNameType,
+    Artifact,
     ArtifactType,
     ComponentMapping,
     StageNameType,
@@ -118,7 +118,7 @@ interface CiSystemsTableProps {
 
 interface GatingSearchQuery {
     aid_offset?: string;
-    atype: ArtifactNameType;
+    atype: ArtifactType;
     dbFieldName1: string;
     dbFieldNameComponentMapping1?: string;
     dbFieldValues1: string;
@@ -176,7 +176,7 @@ const columns = (buildType: string): ICell[] => {
     ];
 };
 
-const artifactDashboardUrl = ({ aid, type }: ArtifactType) =>
+const artifactDashboardUrl = ({ aid, type }: Artifact) =>
     `${window.location.origin}/#/artifact/${type}/aid/${aid}`;
 
 const CiSystemsTable = (props: CiSystemsTableProps) => {
@@ -376,7 +376,7 @@ const MappingInfo = (props: MappingInfoProps) => {
 };
 
 function mkArtifactRow(
-    artifact: ArtifactType,
+    artifact: Artifact,
     searchParams: StateGatingTests,
 ): IRow {
     const artifactLink = (
@@ -743,7 +743,7 @@ function GatingResults() {
     const reduxState = useSelector<RootStateType, StateGatingTests>(
         (state) => state.gateArtifacts,
     );
-    let artifacts: ArtifactType[] = [];
+    let artifacts: Artifact[] = [];
     /**
      * pagination vars,
      * useRef - preserves values during component re-render,

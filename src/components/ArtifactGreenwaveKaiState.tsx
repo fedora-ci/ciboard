@@ -33,7 +33,7 @@ import {
 } from '@patternfly/react-core';
 
 import styles from '../custom.module.css';
-import { ArtifactType, StateGreenwaveKaiType } from '../artifact';
+import { Artifact, StateGreenwaveKaiType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
     WaiveButton,
@@ -61,7 +61,7 @@ const timestampForUser = (inp: string, fromNow = false): string => {
 };
 
 interface GreenwaveKaiStateActionsProps {
-    artifact: ArtifactType;
+    artifact: Artifact;
     state: StateGreenwaveKaiType;
 }
 export const GreenwaveKaiStateActions: React.FC<

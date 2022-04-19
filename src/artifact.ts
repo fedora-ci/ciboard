@@ -20,30 +20,82 @@
 
 import { BrokerMessagesType } from './types';
 
-export type ArtifactNameType =
+export type ComposeArtifactType = 'productmd-compose';
+export type ContainerArtifactType = 'redhat-container';
+export type MBSArtifactType = 'redhat-module';
+export type RPMArtifactType =
     | 'brew-build'
-    | 'koji-build'
     | 'copr-build'
-    | 'redhat-module'
-    | 'koji-build-cs'
-    | 'redhat-container'
-    | 'productmd-compose';
+    | 'koji-build'
+    | 'koji-build-cs';
 
-export type ArtifactType = {
+export type ArtifactType =
+    | ComposeArtifactType
+    | ContainerArtifactType
+    | MBSArtifactType
+    | RPMArtifactType;
+
+export type ComposeType = 'gate' | 'production' | 'testing';
+
+export interface PayloadComposeBuildType {
+    compose_id: string;
+    compose_type: ComposeType;
+}
+
+export interface PayloadRPMBuildType {
+    nvr: string;
+    source: string;
+    issuer: string;
+    task_id: number;
+    build_id: number;
+    scratch: boolean;
+    component: string;
+    gate_tag_name: string;
+}
+
+export interface PayloadMBSBuildType {
+    context: string;
+    id: number;
+    issuer: string;
+    name: string;
+    nsvc: string;
+    nvr: string;
+    stream: string;
+    version: string;
+    source: string;
+    scratch: boolean;
+    component: string;
+    gate_tag_name: string;
+}
+
+export type PayloadsType =
+    | PayloadComposeBuildType
+    | PayloadMBSBuildType
+    | PayloadRPMBuildType;
+
+export interface ArtifactBase {
     _id: string;
     _updated: string;
     _version: string;
     aid: string;
-    type: ArtifactNameType;
-    payload: PayloadsType;
     states: StateKaiType[];
+    type: ArtifactType;
+    payload?: {};
     greenwave_decision?: GreenwaveDecisionReplyType;
     resultsdb_testscase: number[];
-};
+}
+
+export type Artifact = ArtifactBase &
+    (
+        | { type: ComposeArtifactType; payload: PayloadComposeBuildType }
+        | { type: ContainerArtifactType }
+        | { type: MBSArtifactType; payload: PayloadMBSBuildType }
+        | { type: RPMArtifactType; payload: PayloadRPMBuildType }
+    );
 
 /**
  * Decision requirements types
- * https://pagure.io/greenwave/blob/master/f/docs/decision_requirements.rst
+ * https://gating-greenwave.readthedocs.io/en/latest/decision_requirements.html
  */
 export type GreenwaveRequirementTypesType =
     | 'excluded'
@@ -76,7 +128,7 @@ export type GreenwaveRequirementType = {
     error_reason: string;
     source?: string;
     scenario?: string | null;
-    item: { type: ArtifactNameType; identifier: string };
+    item: { type: ArtifactType; identifier: string };
 };
 
 /**
@@ -105,27 +157,27 @@ export type GreenwaveRequirementType = {
  */
 export type GreenwaveResultType = {
     data: {
-        brew_task_id: Array<string>;
-        category: Array<string>;
-        ci_email: Array<string>;
-        ci_irc: Array<string>;
-        ci_name: Array<string>;
-        ci_team: Array<string>;
-        ci_url: Array<string>;
-        component: Array<string>;
-        issuer: Array<string>;
-        item: Array<string>;
-        log: Array<string>;
-        publisher_id: Array<string>;
-        rebuild: Array<string>;
-        scratch: Array<string>;
-        system_os: Array<string>;
-        system_provider: Array<string>;
-        arch: Array<string>;
-        seconds_taken: Array<string>;
-        type: Array<ArtifactNameType>;
+        brew_task_id: string[];
+        category: string[];
+        ci_email: string[];
+        ci_irc: string[];
+        ci_name: string[];
+        ci_team: string[];
+        ci_url: string[];
+        component: string[];
+        issuer: string[];
+        item: string[];
+        log: string[];
+        publisher_id: string[];
+        rebuild: string[];
+        scratch: string[];
+        system_os: string[];
+        system_provider: string[];
+        arch: string[];
+        seconds_taken: string[];
+        type: ArtifactType[];
     };
-    groups: Array<string>;
+    groups: string[];
     href: string;
     id: number;
     note: string;
@@ -192,11 +244,11 @@ export type GreenwaveWaiveType = {
 export type GreenwaveDecisionReplyType = {
     policies_satisfied: boolean;
     summary: string;
-    applicable_policies: Array<string>;
-    waivers: Array<GreenwaveWaiveType>;
-    results: Array<GreenwaveResultType>;
-    satisfied_requirements: Array<GreenwaveRequirementType>;
-    unsatisfied_requirements: Array<GreenwaveRequirementType>;
+    applicable_policies: string[];
+    waivers: GreenwaveWaiveType[];
+    results: GreenwaveResultType[];
+    satisfied_requirements: GreenwaveRequirementType[];
+    unsatisfied_requirements: GreenwaveRequirementType[];
 };
 
 export type StageNameType =
@@ -243,7 +295,7 @@ export type StateType =
     | StateGreenwaveKaiType;
 
 export type StatesByCategoryType = {
-    [key in StateExtendedNameType]?: Array<StateType>;
+    [key in StateExtendedNameType]?: StateType[];
 };
 
 export type StateGreenwaveType = {
@@ -253,50 +305,31 @@ export type StateGreenwaveType = {
     requirement?: GreenwaveRequirementType;
 };
 
+export interface KaiStateType {
+    stage: StageNameType;
+    state: StateNameType;
+    msg_id: string;
+    version: string;
+    thread_id: string;
+    timestamp: number;
+    origin: {
+        reason: string;
+        creator: string;
+    };
+    test_case_name: string;
+}
+
 export type StateKaiType = {
     broker_msg_body: BrokerMessagesType;
-    kai_state: {
-        stage: StageNameType;
-        state: StateNameType;
-        msg_id: string;
-        version: string;
-        thread_id: string;
-        timestamp: number;
-        origin: {
-            reason: string;
-            creator: string;
-        };
-        test_case_name: string;
-    };
-};
-export type KaiStateType = StateKaiType['kai_state'];
-export type PayloadsType = PayloadRPMBuildType | PayloadMBSBuildType;
-
-export type PayloadRPMBuildType = {
-    nvr: string;
-    source: string;
-    issuer: string;
-    task_id: number;
-    build_id: number;
-    scratch: boolean;
-    component: string;
-    gate_tag_name: string;
+    kai_state: KaiStateType;
 };
 
-export type PayloadMBSBuildType = {
-    context: string;
-    id: number;
-    issuer: string;
-    name: string;
-    nsvc: string;
-    nvr: string;
-    stream: string;
-    version: string;
-    source: string;
-    scratch: boolean;
-    component: string;
-    gate_tag_name: string;
-};
+export const KnownKaiStates: StateNameType[] = [
+    'error',
+    'queued',
+    'running',
+    'complete',
+];
 
 export interface ComponentMapping {
     component_name: string;
@@ -310,19 +343,12 @@ export interface ComponentMapping {
     _updated: string;
 }
 
-export const KnownKaiStates: StateNameType[] = [
-    'error',
-    'queued',
-    'running',
-    'complete',
-];
-
 /**
  * GraphQL KojiInstanceInputType
  */
 export type KojiInstanceType = 'fp' | 'cs' | 'rh';
 
-export const koji_instance = (type: ArtifactNameType): KojiInstanceType => {
+export const koji_instance = (type: ArtifactType): KojiInstanceType => {
     switch (type) {
         case 'koji-build':
             return 'fp';

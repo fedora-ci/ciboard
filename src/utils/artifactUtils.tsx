@@ -35,10 +35,12 @@ import {
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     StateType,
+    Artifact,
     ArtifactType,
     KaiStateType,
     StateKaiType,
-    ArtifactNameType,
+    StageNameType,
+    StateNameType,
     KojiInstanceType,
     StateGreenwaveType,
     PayloadRPMBuildType,
@@ -95,14 +97,14 @@ const known_aid_meaning = {
     'redhat-container': 'id',
 };
 
-export function getArtifactName(artifact: ArtifactType): string | undefined {
+export function getArtifactName(artifact: Artifact): string | undefined {
     switch (artifact.type) {
         case 'brew-build':
         case 'copr-build':
         case 'koji-build':
-            return (artifact.payload as PayloadRPMBuildType).nvr;
+            return artifact.payload.nvr;
         case 'redhat-module':
-            return (artifact.payload as PayloadMBSBuildType).nsvc;
+            return artifact.payload.nsvc;
         case 'productmd-compose':
             return artifact.aid;
         default:
@@ -110,7 +112,7 @@ export function getArtifactName(artifact: ArtifactType): string | undefined {
     }
 }
 
-export const nameFieldForType = (type: ArtifactNameType) => {
+export const nameFieldForType = (type: ArtifactType) => {
     const includes = _.includes(_.keys(known_types), type);
     if (!includes) {
         return 'unknown type';
@@ -118,7 +120,7 @@ export const nameFieldForType = (type: ArtifactNameType) => {
     return known_types[type];
 };
 
-export const aidMeaningForType = (type: ArtifactNameType) => {
+export const aidMeaningForType = (type: ArtifactType) => {
     const includes = _.includes(_.keys(known_aid_meaning), type);
     if (!includes) {
         return 'id';
@@ -187,7 +189,7 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
     return os_version;
 };
 
-export const artifactUrl = (artifact: ArtifactType) => {
+export const artifactUrl = (artifact: Artifact) => {
     const urlMap = {
         'brew-build': `https://brewweb.engineering.redhat.com/brew/taskinfo?taskID=${artifact.aid}`,
         'koji-build': `https://koji.fedoraproject.org/koji/taskinfo?taskID=${artifact.aid}`,

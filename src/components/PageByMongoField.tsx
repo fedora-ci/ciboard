@@ -31,7 +31,7 @@ import {
 } from '@patternfly/react-table';
 
 import { config } from '../config';
-import { ArtifactType } from '../artifact';
+import { Artifact } from '../artifact';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { ArtifactsCompleteQuery } from '../queries/Artifacts';
 import { PaginationToolbar, PaginationToolbarProps } from './PaginationToolbar';
@@ -48,7 +48,7 @@ import {
 import WaiveForm from './WaiveForm';
 
 interface ArtifactsTableProps {
-    onArtifactsLoaded?(artifacts: ArtifactType[]): void;
+    onArtifactsLoaded?(artifacts: Artifact[]): void;
 }
 
 /**
@@ -68,7 +68,7 @@ const ArtifactsTable: React.FC<any> = ({
     onArtifactsLoaded,
 }: ArtifactsTableProps) => {
     const scrollRef = useRef<HTMLTableRowElement>(null);
-    var artifacts: ArtifactType[] = [];
+    var artifacts: Artifact[] = [];
     /**
      * Pagination vars
      */
@@ -277,7 +277,7 @@ export function PageByMongoField() {
      * Display the artifact's NVR/NVSC/whatever and gating status (if available) in
      * the page title once the artifact info is loaded.
      */
-    const onArtifactsLoaded = (artifacts: ArtifactType[]) => {
+    const onArtifactsLoaded = (artifacts: Artifact[]) => {
         /**
          * XXX: We only handle the single-artifact case for now.
          * TODO: Support multiple artifacts per page. Perhaps only display info for
