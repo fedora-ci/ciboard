@@ -292,18 +292,15 @@ export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
     if (_.isUndefined(result) || !_.isObject(result?.data)) {
         return null;
     }
-    const mkItem = (
-        name: string,
-        values: Array<string>,
-    ): JSX.Element | null => {
+    const mkItem = (name: string, values: Array<string>): JSX.Element => {
         const valuesRendered: Array<JSX.Element | string> = _.map(
             values,
-            (v) => {
-                return <LinkifyNewTab>{v}</LinkifyNewTab>;
+            (v, index) => {
+                return <LinkifyNewTab key={index}>{v}</LinkifyNewTab>;
             },
         );
         return (
-            <DescriptionListGroup>
+            <DescriptionListGroup key={name}>
                 <DescriptionListTerm>{name}</DescriptionListTerm>
                 <DescriptionListDescription>
                     <Label
@@ -319,13 +316,12 @@ export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
             </DescriptionListGroup>
         );
     };
-    const items: Array<JSX.Element | null> = [];
+    const items: Array<JSX.Element> = [];
     /* result.data is array */
     _.map(result.data, (values, k) => {
         const item = mkItem(k, values);
         items.push(item);
     });
-    _.remove(items, _.flow(_.identity, _.isNil));
     if (_.isEmpty(items)) {
         return null;
     }

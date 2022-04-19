@@ -180,8 +180,6 @@ export const ArtifactState: React.FC<ArtifactStateProps> = (props) => {
     const { state } = props;
     if (isKaiState(state)) {
         return ArtifactKaiState(props as ArtifactKaiStateProps);
-    } else if (isKaiState(state)) {
-        return ArtifactKaiState(props as ArtifactKaiStateProps);
     } else if (isGreenwaveState(state)) {
         return ArtifactGreenwaveState(props as ArtifactGreenwaveStateProps);
     } else if (isGreenwaveKaiState(state)) {

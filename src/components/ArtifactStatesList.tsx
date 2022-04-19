@@ -20,6 +20,7 @@
 
 import * as React from 'react';
 import _ from 'lodash';
+import qs from 'qs';
 import { useSelector } from 'react-redux';
 import { useQuery, useApolloClient } from '@apollo/client';
 import { useState, useRef, useEffect } from 'react';
@@ -61,6 +62,7 @@ import {
     mkStagesAndStates,
     StageNameStateNameStatesType,
 } from '../utils/stages_states';
+import { QueryStoreValue } from '@apollo/client/core/QueryInfo';
 
 const artifactDashboardUrl = (artifact: Artifact) => {
     return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
@@ -197,8 +199,13 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
             setCanExpand(false);
         }
     }, [expandedResult, canScroll]);
-    const focusOn: string = _.get(queryString.queryString, 'focus', '');
-    var artifact: Artifact | null = null;
+    const focusOnParam: qs.ParsedQs[keyof qs.ParsedQs] = _.get(
+        queryString.queryString,
+        'focus',
+        '',
+    );
+    const focusOn = _.isString(focusOnParam) ? focusOnParam : '';
+    var artifact: ArtifactType | null = null;
     if (haveData) {
         /**
          * readQuery() - always read data from cache, never makes request to server.

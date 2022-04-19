@@ -19,6 +19,8 @@
  */
 
 import _ from 'lodash';
+import qs from 'qs';
+import axios from 'axios';
 import { ApolloClient } from '@apollo/client';
 
 import {
@@ -45,7 +47,6 @@ import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
 import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
-import axios from 'axios';
 
 type DispatchType = typeof store.dispatch;
 type GetStateType = typeof store.getState;
@@ -93,7 +94,7 @@ export const pushAlert = (
     };
 };
 
-export const setQueryString = (queryString: string) => {
+export const setQueryString = (queryString: qs.ParsedQs) => {
     return {
         type: SET_QUERY_STRING,
         payload: { queryString },

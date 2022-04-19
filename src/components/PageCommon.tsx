@@ -44,7 +44,7 @@ import { DashboardPageHeader } from './PageHeader';
 
 type PageCommonProps = React.PropsWithChildren<React.ReactNode> & {
     title?: string;
-}
+};
 
 export function ToastAlertGroup() {
     const dispatch = useDispatch();
@@ -82,7 +82,7 @@ export function PageCommon(props: PageCommonProps) {
     const queryString = qs.parse(location.search, {
         ignoreQueryPrefix: true,
     });
-    dispatch(setQueryString(queryString.toString()));
+    dispatch(setQueryString(queryString));
 
     useTitle(props.title || config.defaultTitle);
 

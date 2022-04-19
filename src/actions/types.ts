@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import qs from 'qs';
 import { AlertVariant } from '@patternfly/react-core';
 import { Artifact, StateType } from '../artifact';
 
@@ -85,7 +86,7 @@ export interface IStateAuth {
 }
 
 export interface IStateQueryString {
-    queryString: {};
+    queryString: qs.ParsedQs;
 }
 
 /**
@@ -133,7 +134,7 @@ export interface ActionDeleteFilter {
 export interface ActionSetQueryString {
     type: typeof SET_QUERY_STRING;
     payload: {
-        queryString: {};
+        queryString: qs.ParsedQs;
     };
 }
 

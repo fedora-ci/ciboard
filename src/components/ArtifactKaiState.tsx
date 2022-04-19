@@ -115,7 +115,6 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
     const {
         state,
         artifact,
-        stateName,
         forceExpand,
         setExpandedResult,
         artifactDashboardUrl,
