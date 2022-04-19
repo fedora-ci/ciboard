@@ -320,7 +320,7 @@ const mergeKaiAndGreenwaveState = (
             }
             const kaiState = getKaiState(
                 kaiStageStates,
-                outcome as StateExtendedNameType,
+                _.toLower(outcome) as StateExtendedNameType,
                 refUrl,
             );
             if (_.isNil(kaiState)) {
@@ -470,7 +470,7 @@ export const transformKaiStates = (
                 return _.isEqual('INFO', _.toUpper(testResult));
             });
             if (!_.isEmpty(category_info)) {
-                states_by_category.info = category_failed;
+                states_by_category.info = category_info;
             }
             /**
              * needs_inspection tests
