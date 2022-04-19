@@ -71,10 +71,7 @@ import {
 
 import { config } from '../config';
 import styles from '../custom.module.css';
-import {
-    bumpGatingSearchEpoch,
-    setGatingSearchOptions,
-} from '../actions';
+import { bumpGatingSearchEpoch, setGatingSearchOptions } from '../actions';
 import { RootStateType } from '../reducers';
 import {
     StateGatingTests,
@@ -96,7 +93,7 @@ import {
     PageGatingGetSSTTeams,
 } from '../queries/Artifacts';
 import { PaginationToolbar } from './PaginationToolbar';
-import { artifactUrl } from '../utils/artifactUtils';
+import { artifactUrl, getArtifactName } from '../utils/artifactUtils';
 
 interface CiSystem {
     ciSystemName: string;
@@ -179,16 +176,18 @@ const columns = (buildType: string): ICell[] => {
     ];
 };
 
-const artifactDashboardUrl = ({ aid, type }: ArtifactType) => (
-    `${window.location.origin}/#/artifact/${type}/aid/${aid}`
-);
+const artifactDashboardUrl = ({ aid, type }: ArtifactType) =>
+    `${window.location.origin}/#/artifact/${type}/aid/${aid}`;
 
 const CiSystemsTable = (props: CiSystemsTableProps) => {
     const { currentState, searchParams } = props;
     const ciSystemsNames: CiSystem[] = [];
-    for (const state of (
-        ['complete', 'error', 'queued', 'running'] as StateNameType[]
-    )) {
+    for (const state of [
+        'complete',
+        'error',
+        'queued',
+        'running',
+    ] as StateNameType[]) {
         if (!_.has(currentState, state)) {
             continue;
         }
@@ -202,19 +201,14 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
             const parts_v2 = [];
             for (const part of ['namespace', 'type', 'category']) {
                 parts_v1.push(_.get(ciSystem, part, null));
-                parts_v2.push(
-                    _.get(_.get(ciSystem, 'test', {}), part, null),
-                );
+                parts_v2.push(_.get(_.get(ciSystem, 'test', {}), part, null));
             }
             if (_.every(parts_v1)) {
                 ciSystemName = _.join(parts_v1, '.');
             } else if (_.every(parts_v2)) {
                 ciSystemName = _.join(parts_v2, '.');
             } else {
-                console.log(
-                    'Cannot construct CI system name',
-                    ciSystem,
-                );
+                console.log('Cannot construct CI system name', ciSystem);
                 continue;
             }
             const re = new RegExp(searchParams.ciSystem, 'gi');
@@ -238,12 +232,12 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
         }
     }
     _.forEach(ciSystemsNames, (ciSystem, index) => {
-        var { state, result } = ciSystem;
-        var isPassed = false;
-        var isInfo = false;
-        var isFailed = false;
-        var isOther = false;
-        var order;
+        const { state, result } = ciSystem;
+        let isPassed = false;
+        let isInfo = false;
+        let isFailed = false;
+        let isOther = false;
+        let order;
         if (state === 'running' || state === 'queued') {
             isInfo = true;
             order = 1;
@@ -263,7 +257,7 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
                 order = 3;
             }
         }
-        var textClasses = classNames(styles.sstStatus, {
+        const textClasses = classNames(styles.sstStatus, {
             [styles.statusPassed]: isPassed,
             [styles.statusInfo]: isInfo,
             [styles.statusFailed]: isFailed,
@@ -272,22 +266,15 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
         ciSystem.order = order;
         ciSystem.textClasses = textClasses;
     });
-    const items: ReactNode[] = [];
     const ciSystemsList = classNames(styles['ciSystemsList']);
-    _.forEach(
-        _.orderBy(ciSystemsNames, 'order', 'asc'),
+    const items: ReactNode[] = _.orderBy(ciSystemsNames, 'order', 'asc').map(
         (ciSystem, index) => {
-            var {
-                ciSystemName,
-                generatedAt,
-                result,
-                state,
-                textClasses,
-            } = ciSystem;
+            const { ciSystemName, generatedAt, result, state, textClasses } =
+                ciSystem;
             const time = moment.utc(generatedAt).local();
             const ciSystemTime = time.format('YYYY-MM-DD, HH:mm');
             const zoneShift = time.format('ZZ');
-            items.push(
+            return (
                 <DataListItem
                     key={index}
                     aria-labelledby="simple-item1"
@@ -326,12 +313,10 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
                                             <TextContent>
                                                 <Text
                                                     style={{
-                                                        whiteSpace:
-                                                            'nowrap',
+                                                        whiteSpace: 'nowrap',
                                                         fontFamily:
                                                             'var(--pf-global--FontFamily--monospace)',
-                                                        fontSize:
-                                                            'x-small',
+                                                        fontSize: 'x-small',
                                                     }}
                                                     component="small"
                                                 >
@@ -344,12 +329,10 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
                                                 <Text
                                                     component="small"
                                                     style={{
-                                                        whiteSpace:
-                                                            'nowrap',
+                                                        whiteSpace: 'nowrap',
                                                         fontFamily:
                                                             'var(--pf-global--FontFamily--monospace)',
-                                                        fontSize:
-                                                            '0.5em',
+                                                        fontSize: '0.5em',
                                                     }}
                                                 >
                                                     {zoneShift}
@@ -361,7 +344,7 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
                             ]}
                         />
                     </DataListItemRow>
-                </DataListItem>,
+                </DataListItem>
             );
         },
     );
@@ -380,23 +363,22 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
 const MappingInfo = (props: MappingInfoProps) => {
     const { mapping } = props;
     if (!mapping?.product_id) return null;
-    const {
-        default_assignee,
-        qa_contact,
-        sst_name,
-    } = mapping;
+    const { default_assignee, qa_contact, sst_name } = mapping;
     return (
         <>
-            team: {sst_name}
+            Team: {sst_name}
             <br />
-            qa: {qa_contact}
+            QA: {qa_contact}
             <br />
-            owner: {default_assignee}
+            Owner: {default_assignee}
         </>
     );
 };
 
-function mkArtifactRow(artifact: ArtifactType, searchParams: StateGatingTests): IRow {
+function mkArtifactRow(
+    artifact: ArtifactType,
+    searchParams: StateGatingTests,
+): IRow {
     const artifactLink = (
         <div style={{ whiteSpace: 'nowrap' }}>
             <a
@@ -405,7 +387,7 @@ function mkArtifactRow(artifact: ArtifactType, searchParams: StateGatingTests): 
                 rel="noopener noreferrer"
                 target="_blank"
             >
-                {artifact.payload.scratch
+                {artifact.payload?.scratch
                     ? `scratch:${artifact.aid}`
                     : artifact.aid}
             </a>
@@ -416,7 +398,7 @@ function mkArtifactRow(artifact: ArtifactType, searchParams: StateGatingTests): 
         {
             title: artifactLink,
         },
-        artifact.payload.gate_tag_name,
+        artifact.payload?.gate_tag_name,
         {
             title: (
                 <div>
@@ -425,10 +407,7 @@ function mkArtifactRow(artifact: ArtifactType, searchParams: StateGatingTests): 
                         headingLevel="h6"
                         style={{ whiteSpace: 'nowrap' }}
                     >
-                        {artifact.payload.nvr /*
-                            TODO: Modules not yet supported.
-                            || artifact.payload.nsvc
-                        */}
+                        {getArtifactName(artifact)}
                     </Title>
                 </div>
             ),
@@ -449,7 +428,7 @@ function mkArtifactRow(artifact: ArtifactType, searchParams: StateGatingTests): 
             ),
         },
         {
-            title: (/*
+            /*
                 <div>
                     <CiSystemsTable
                         currentState={transformKaiStates(artifact.states, 'test')}
@@ -457,8 +436,7 @@ function mkArtifactRow(artifact: ArtifactType, searchParams: StateGatingTests): 
                     />
                 </div>
                 */
-                <p>CiSystemsTable</p>
-            ),
+            title: <p>CiSystemsTable</p>,
         },
         {
             title: (
@@ -478,9 +456,10 @@ function mkArtifactRow(artifact: ArtifactType, searchParams: StateGatingTests): 
 
 function BuildTypeSelector() {
     const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { buildType: buildTypeInit } = useSelector<RootStateType, StateGatingTests>(
-        (state) => state.gateArtifacts,
-    );
+    const { buildType: buildTypeInit } = useSelector<
+        RootStateType,
+        StateGatingTests
+    >((state) => state.gateArtifacts);
     const inititalState = getSelectFromType(buildTypeInit);
     const [buildType, setBuildType] = useState(inititalState);
     const [isExpanded, setExpanded] = useState(false);
@@ -511,9 +490,10 @@ function BuildTypeSelector() {
 
 function Checkboxes() {
     const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { ignoreCiSystem: initialState } = useSelector<RootStateType, StateGatingTests>(
-        (state) => state.gateArtifacts,
-    );
+    const { ignoreCiSystem: initialState } = useSelector<
+        RootStateType,
+        StateGatingTests
+    >((state) => state.gateArtifacts);
     const [ignoreCiSystem, setIgnoreCiSystem] = useState(initialState);
     const onChange: CheckboxProps['onChange'] = (flag) => {
         setIgnoreCiSystem(flag);
@@ -536,9 +516,10 @@ function Checkboxes() {
 
 function CiSystemSelector() {
     const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { ciSystem: init_state } = useSelector<RootStateType, StateGatingTests>(
-        (state) => state.gateArtifacts,
-    );
+    const { ciSystem: init_state } = useSelector<
+        RootStateType,
+        StateGatingTests
+    >((state) => state.gateArtifacts);
     const [isExpanded, setExpanded] = useState(false);
     const [ciSystem, setCISystem] = useState(init_state);
     const onToggle = (isExpanded: boolean) => {
@@ -577,9 +558,10 @@ function CiSystemSelector() {
 
 function GatingTagSelector() {
     const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { gateTag: init_state } = useSelector<RootStateType, StateGatingTests>(
-        (state) => state.gateArtifacts,
-    );
+    const { gateTag: init_state } = useSelector<
+        RootStateType,
+        StateGatingTests
+    >((state) => state.gateArtifacts);
     const [gateTag, setRHELVersion] = useState(init_state);
     const [isExpanded, setExpanded] = useState(false);
     const titleId = 'plain-typeahead-select-id-gating-tag';
@@ -620,9 +602,10 @@ function GatingTagSelector() {
 
 function PackagerSelector() {
     const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { packager: init_state } = useSelector<RootStateType, StateGatingTests>(
-        (state) => state.gateArtifacts,
-    );
+    const { packager: init_state } = useSelector<
+        RootStateType,
+        StateGatingTests
+    >((state) => state.gateArtifacts);
     const [value, setValue] = useState(init_state);
     const handleTextInputChange: TextInputProps['onChange'] = (value) => {
         setValue(value);
@@ -706,9 +689,10 @@ function ProductSelector() {
 
 function SstSelector() {
     const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { productId, sstTeams: initialState } = useSelector<RootStateType, StateGatingTests>(
-        (state) => state.gateArtifacts,
-    );
+    const { productId, sstTeams: initialState } = useSelector<
+        RootStateType,
+        StateGatingTests
+    >((state) => state.gateArtifacts);
     const [isExpanded, setExpanded] = useState(false);
     const [selectedSst, setSelectedSst] = useState(initialState);
     const onSelect: SelectProps['onSelect'] = (_event, selection) => {
@@ -720,21 +704,17 @@ function SstSelector() {
             }),
         );
     };
-    var sstMenuItems: string[] = [];
+    let sstMenuItems: string[] = [];
     const queryVariables = {
         product_id: productId,
     };
-    const {
-        data,
-        loading,
-    } = useQuery(PageGatingGetSSTTeams, {
+    const { data, loading } = useQuery(PageGatingGetSSTTeams, {
         errorPolicy: 'all',
         fetchPolicy: 'cache-first',
         notifyOnNetworkStatusChange: true,
         variables: queryVariables,
     });
-    const haveData =
-        !loading && data && !_.isEmpty(data.db_sst_list);
+    const haveData = !loading && data && !_.isEmpty(data.db_sst_list);
     if (haveData) {
         sstMenuItems = _.map(data.db_sst_list, (a) => _.toString(a));
     }
@@ -763,7 +743,7 @@ function GatingResults() {
     const reduxState = useSelector<RootStateType, StateGatingTests>(
         (state) => state.gateArtifacts,
     );
-    var artifacts: ArtifactType[] = [];
+    let artifacts: ArtifactType[] = [];
     /**
      * pagination vars,
      * useRef - preserves values during component re-render,
@@ -782,9 +762,7 @@ function GatingResults() {
      * Maps to page number
      */
     const [aidOffset, setAidOffset] = useState<string | undefined>();
-    const [searchParams, setSearchParams] = useState(
-        _.cloneDeep(reduxState),
-    );
+    const [searchParams, setSearchParams] = useState(_.cloneDeep(reduxState));
     useEffect(() => {
         if (searchParams.searchEpoch !== reduxState.searchEpoch) {
             /** apply new search options */
@@ -799,13 +777,13 @@ function GatingResults() {
     /**
      * has_next -- returned by query from backend
      */
-    var hasNext = false;
+    let hasNext = false;
     /**
      * currentPage -- index in known pages
      */
-    var currentPage = 1;
-    var loadNextIsDisabled = true;
-    var loadPrevIsDisabled = true;
+    let currentPage = 1;
+    let loadNextIsDisabled = true;
+    let loadPrevIsDisabled = true;
     /**
      * page navigation
      */
@@ -814,10 +792,7 @@ function GatingResults() {
         setAidOffset(newAidOffset);
     };
     const onClickLoadPrev = () => {
-        const index = _.findLastIndex(
-            knownPages,
-            (o) => aidOffset! < o,
-        );
+        const index = _.findLastIndex(knownPages, (o) => aidOffset! < o);
         if (index < -1) {
             /** reach first page */
             setAidOffset(undefined);
@@ -901,8 +876,7 @@ function GatingResults() {
         /** Do query if URL has artifact type */
         skip: _.isEmpty(btype),
     });
-    const haveData =
-        !isLoading && data && !_.isEmpty(data.artifacts.artifacts);
+    const haveData = !isLoading && data && !_.isEmpty(data.artifacts.artifacts);
     const haveErrorNoData = !isLoading && error && !haveData;
     if (haveData) {
         artifacts = data.artifacts.artifacts;
@@ -914,11 +888,7 @@ function GatingResults() {
                  * Keep list sorted, by inserting aid at the correct place.
                  * Q: Does this works when 'aid' is not number?
                  */
-                _.sortedIndexBy(
-                    knownPages,
-                    aidAtBottom,
-                    (x) => -x,
-                ),
+                _.sortedIndexBy(knownPages, aidAtBottom, (x) => -x),
                 0,
                 aidAtBottom,
             );
@@ -934,7 +904,7 @@ function GatingResults() {
     if (hasNext) {
         loadNextIsDisabled = false;
     }
-    var rowsErrors: IRow[] = [];
+    let rowsErrors: IRow[] = [];
     if (haveErrorNoData) {
         const errorMsg = {
             title: 'Cannot fetch data',
@@ -948,7 +918,7 @@ function GatingResults() {
         mkArtifactRow(artifact, searchParams),
     );
 
-    var rowsLoading: IRow[] = [];
+    let rowsLoading: IRow[] = [];
     if (isLoading) {
         rowsLoading = mkSpecialRows({
             title: 'Loading data.',
@@ -956,11 +926,7 @@ function GatingResults() {
             type: 'loading',
         });
     }
-    const knownRows: IRow[] = _.concat(
-        rowsArtifacts,
-        rowsErrors,
-        rowsLoading,
-    );
+    const knownRows: IRow[] = _.concat(rowsArtifacts, rowsErrors, rowsLoading);
 
     const paginationProps = {
         isLoading,
@@ -1053,10 +1019,7 @@ function GatingToolbar() {
                         </GridItem>
                     </Grid>
                     <ActionGroup>
-                        <Button
-                            onClick={onClickSearch}
-                            variant="primary"
-                        >
+                        <Button onClick={onClickSearch} variant="primary">
                             Show
                         </Button>
                     </ActionGroup>
@@ -1068,13 +1031,8 @@ function GatingToolbar() {
 
 export function PageGating() {
     return (
-        <PageCommon
-            title={`Gating tests | ${config.defaultTitle}`}
-        >
-            <PageSection
-                isFilled
-                variant={PageSectionVariants.default}
-            >
+        <PageCommon title={`Gating tests | ${config.defaultTitle}`}>
+            <PageSection isFilled variant={PageSectionVariants.default}>
                 <GatingToolbar />
                 <GatingResults />
             </PageSection>
