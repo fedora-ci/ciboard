@@ -299,7 +299,7 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
                                 >
                                     <div className={textClasses}>
                                         {state}
-                                        {result ? ' / ' + result : ''}
+                                        {result ? ` / ${result}` : ''}
                                     </div>
                                 </DataListCell>,
                                 <DataListCell
@@ -379,6 +379,7 @@ function mkArtifactRow(
     artifact: Artifact,
     searchParams: StateGatingTests,
 ): IRow {
+    const isScratch = _.get(artifact, 'payload.scratch', false);
     const artifactLink = (
         <div style={{ whiteSpace: 'nowrap' }}>
             <a
@@ -387,18 +388,16 @@ function mkArtifactRow(
                 rel="noopener noreferrer"
                 target="_blank"
             >
-                {artifact.payload?.scratch
-                    ? `scratch:${artifact.aid}`
-                    : artifact.aid}
+                {isScratch ? `scratch:${artifact.aid}` : artifact.aid}
             </a>
         </div>
     );
 
-    const cells = [
+    const cells: IRow['cells'] = [
         {
             title: artifactLink,
         },
-        artifact.payload?.gate_tag_name,
+        _.get(artifact, 'payload.gate_tag_name', null),
         {
             title: (
                 <div>
@@ -435,7 +434,7 @@ function mkArtifactRow(
                         searchParams={searchParams}
                     />
                 </div>
-                */
+            */
             title: <p>CiSystemsTable</p>,
         },
         {

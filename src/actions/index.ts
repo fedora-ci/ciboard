@@ -41,7 +41,7 @@ import {
     FETCH_USER,
 } from './types';
 import { store } from '../reduxStore';
-import { Artifact, StateType } from '../artifact';
+import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
 import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
@@ -204,10 +204,13 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
          */
         let waiveError: string;
         const { artifact, state } = getState().waive;
-        if (_.isNil(artifact) || _.isNil(state)) {
+        if (_.isNil(_.get(artifact, 'payload.nvr')) || _.isNil(state)) {
             return;
         }
-        const nvr = artifact.payload.nvr;
+        // NOTE: We know that artifact.payload is not null thanks to the check at the
+        // top of the function. Moreover, we know that payload has the nvr property,
+        // so we assert the type of the payload here.
+        const nvr = (artifact!.payload! as PayloadRPMBuildType).nvr;
         if (!nvr) {
             waiveError = 'Could not get NVR, please contact support.';
             dispatch({
@@ -218,9 +221,11 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
         }
         /**
          * Workaround until CVP-287 is not fixed, container are reported as brew builds.
-         * subject.type MUST be koji_build for containers until CVP-287 is not fixed
+         * subject.type MUST be koji_build for containers until CVP-287 is not fixed.
+         * NOTE: We know that artifact is not null thanks to the check at the top
+         * of the function.
          */
-        let artifactType = artifact.type;
+        let artifactType = artifact!.type;
         if (artifactType === 'brew-build' && nvr.match(/.*-container-.*/)) {
             artifactType = 'redhat-container';
         }
@@ -233,7 +238,9 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
             const response = await client.mutate({
                 mutation: WaiverdbNewMutation,
                 variables: {
-                    subject_type: artifact.type,
+                    // NOTE: We know that artifact is not null thanks to the check at
+                    // the top of the function.
+                    subject_type: artifact!.type,
                     subject_identifier: nvr,
                     testcase,
                     waived: true,

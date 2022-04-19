@@ -76,16 +76,18 @@ interface ArtifactDestinationProps {
 }
 const ArtifactDestination: React.FC<ArtifactDestinationProps> = (props) => {
     const { artifact } = props;
-    if (artifact.payload.gate_tag_name) {
+    const gating_tag: string | undefined = _.get(
+        artifact,
+        'payload.gate_tag_name',
+    );
+    if (gating_tag) {
         return (
             <TextContent>
-                <Text component={TextVariants.p}>
-                    {artifact.payload.gate_tag_name}
-                </Text>
+                <Text component={TextVariants.p}>{gating_tag}</Text>
             </TextContent>
         );
     }
-    if (artifact.payload.scratch) {
+    if (_.get(artifact, 'payload.scratch')) {
         return (
             <TextContent>
                 <Text component={TextVariants.small}>scratch</Text>
@@ -180,17 +182,17 @@ export const tableColumns = (buildType: any): TableProps['cells'] => {
             cellTransforms: [nowrap],
         },
         {
-            title: 'gating-tag',
+            title: 'Gating tag',
             transforms: [fitContent],
             cellTransforms: [nowrap],
         },
         {
-            title: 'packager',
+            title: 'Packager',
             transforms: [fitContent],
             cellTransforms: [nowrap],
         },
         {
-            title: 'info',
+            title: 'Info',
         },
     ];
 };
@@ -300,6 +302,11 @@ export const mkSpecialRows = (args: InputRowType): IRow[] => {
 };
 
 export const mkArtifactRow = (artifact: Artifact): IRow => {
+    const packager: string = _.get(
+        artifact,
+        'payload.issuer',
+        'Unknown packager',
+    );
     const cells = [
         {
             title: <ArtifactUrl artifact={artifact} />,
@@ -311,11 +318,7 @@ export const mkArtifactRow = (artifact: Artifact): IRow => {
             title: <ArtifactDestination artifact={artifact} />,
         },
         {
-            title: (
-                <div style={{ whiteSpace: 'nowrap' }}>
-                    {artifact.payload.issuer}
-                </div>
-            ),
+            title: <div style={{ whiteSpace: 'nowrap' }}>{packager}</div>,
         },
         {
             title: (
@@ -343,11 +346,11 @@ export type InputArtifactRowType = {
 };
 
 export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
-    const { artifacts, opened, queryString, waitForRef } = args;
+    const { artifacts, opened } = args;
     if (_.isEmpty(artifacts)) {
         return [];
     }
-    var rows = _.chain(artifacts)
+    var rows: IRow[] = _.chain(artifacts)
         .map((artifact, index: number) => [
             mkArtifactRow(artifact),
             {
