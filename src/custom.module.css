@@ -128,11 +128,11 @@
 /*
  * Next style is used to shadow icon
  * All string up to { is a selector.
- * Selector says: 
+ * Selector says:
  * Some element above must have class .giveHint
  * Some element must have global class .pf-c-table__toggle
  * Some element must have class .pf-c-button:not(.pf-m-expanded)
- * > -- says must be follow immediatelly 
+ * > -- says must be follow immediatelly
  * Some element must be svg
  */
 .giveHint :global(.pf-c-table__toggle > .pf-c-button:not(.pf-m-expanded)) svg {

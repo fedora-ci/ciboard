@@ -37,7 +37,7 @@ import {
     DataListContent,
 } from '@patternfly/react-core';
 
-import { RebootingIcon } from '@patternfly/react-icons';
+import { RedoIcon } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
 import { mappingDatagrepperUrl } from '../config';
@@ -236,7 +236,7 @@ export const KaiReTestButton: React.FC<KaiReTestButtonProps> = (props) => {
                     e.stopPropagation();
                 }}
             >
-                <RebootingIcon />
+                <RedoIcon />
                 <span className={styles.waive}>rerun</span>
             </Button>
         </a>

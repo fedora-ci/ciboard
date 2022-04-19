@@ -34,7 +34,7 @@ import {
 
 import Linkify from 'react-linkify';
 
-import { ArrowIcon } from '@patternfly/react-icons';
+import { LinkIcon } from '@patternfly/react-icons';
 
 import {
     isKaiState,
@@ -99,14 +99,14 @@ export const StateLink: React.FC<StateLinkProps> = (props) => {
     return (
         <a
             href={href}
-            title="Result link"
+            title="Permanent link to result"
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => {
                 e.stopPropagation();
             }}
         >
-            <ArrowIcon style={{ height: '0.75em' }} />
+            <LinkIcon style={{ height: '0.9em' }} />
         </a>
     );
 };
