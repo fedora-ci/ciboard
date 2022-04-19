@@ -205,7 +205,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         '',
     );
     const focusOn = _.isString(focusOnParam) ? focusOnParam : '';
-    var artifact: ArtifactType | null = null;
+    var artifact: Artifact | null = null;
     if (haveData) {
         /**
          * readQuery() - always read data from cache, never makes request to server.
