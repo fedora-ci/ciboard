@@ -79,7 +79,7 @@ export const mkStagesAndStates = (
 
 const filterByStageName = (
     stage: StageNameType,
-    stageStatesArray: Array<StageNameStateNameStatesType>,
+    stageStatesArray: StageNameStateNameStatesType[],
 ) =>
     _.filter(
         stageStatesArray,
@@ -94,9 +94,7 @@ const getKaiState = (
     const s = _.find(states, ([_stageName, stateName, _states]) => {
         return _.isEqual(_.toUpper(stateNameReq), _.toUpper(stateName));
     });
-    if (_.isNil(s)) {
-        return;
-    }
+    if (_.isNil(s)) return;
     const [_stageName, _stateName, kaiStates] = s;
     var kaiState = _.find(kaiStates as StateKaiType[], (state) =>
         _.isEqual(runUrl, _.get(state.broker_msg_body, 'run.url')),
@@ -216,7 +214,7 @@ const mkReqStatesGreenwave = (
     decision: GreenwaveDecisionReplyType,
 ): StatesByCategoryType => {
     const { satisfied_requirements, unsatisfied_requirements } = decision;
-    const requirements: Array<GreenwaveRequirementType> = _.concat(
+    const requirements: GreenwaveRequirementType[] = _.concat(
         satisfied_requirements,
         unsatisfied_requirements,
     );
@@ -227,11 +225,11 @@ const mkReqStatesGreenwave = (
     _.forOwn(
         requirementsByType,
         (
-            reqsByType: Array<GreenwaveRequirementType>,
+            reqsByType: GreenwaveRequirementType[],
             reqType /* GreenwaveRequirementTypesType */,
         ) => {
             /* [r1,r2,r3] => [{req:r1}, {req:r2}, {req:r3}] */
-            const greenwaveStates: Array<StateGreenwaveType> = _.map(
+            const greenwaveStates: StateGreenwaveType[] = _.map(
                 reqsByType,
                 (req) => mkGreenwaveStateReq(req, decision),
             );
@@ -247,20 +245,18 @@ const mkResultStatesGreenwave = (
 ): StatesByCategoryType => {
     const { satisfied_requirements, unsatisfied_requirements, results } =
         decision;
-    const requirements: Array<GreenwaveRequirementType> = _.concat(
+    const requirements: GreenwaveRequirementType[] = _.concat(
         satisfied_requirements,
         unsatisfied_requirements,
     );
-    const resultsToShow: Array<GreenwaveResultType> = _.filter(
-        results,
-        (result) =>
-            _.isUndefined(
-                _.find(requirements, (req) =>
-                    _.isEqual(result.testcase.name, req.testcase),
-                ),
+    const resultsToShow: GreenwaveResultType[] = _.filter(results, (result) =>
+        _.isUndefined(
+            _.find(requirements, (req) =>
+                _.isEqual(result.testcase.name, req.testcase),
             ),
+        ),
     );
-    const resultStates: Array<StateGreenwaveType> = _.map(
+    const resultStates: StateGreenwaveType[] = _.map(
         resultsToShow,
         (res): StateGreenwaveType => ({
             testcase: res.testcase.name,
@@ -283,8 +279,8 @@ const mkStageStatesArray = (
         stage: StageNameType;
         states: StatesByCategoryType;
     }>,
-): Array<StageNameStateNameStatesType> => {
-    const stageStatesArray: Array<StageNameStateNameStatesType> = [];
+): StageNameStateNameStatesType[] => {
+    const stageStatesArray: StageNameStateNameStatesType[] = [];
     for (const { stage, states } of stageStates) {
         for (const [stateName, statesList] of _.toPairs(states)) {
             /** _.toPairs(obj) ===> [pair1, pair2, pair3] where pair == [key, value] */
@@ -299,7 +295,7 @@ const mkStageStatesArray = (
 };
 
 const mergeKaiAndGreenwaveState = (
-    stageStatesArray: Array<StageNameStateNameStatesType>,
+    stageStatesArray: StageNameStateNameStatesType[],
 ): void => {
     /**
      * Add kai state to greenwave state if both apply:
@@ -337,7 +333,7 @@ const mergeKaiAndGreenwaveState = (
 };
 
 const minimizeStagesStates = (
-    stageStatesArray: Array<StageNameStateNameStatesType>,
+    stageStatesArray: StageNameStateNameStatesType[],
 ): void => {
     /**
      * This functions applies only to case where:
@@ -347,7 +343,7 @@ const minimizeStagesStates = (
      * Remove any state in stage == 'test' if testcase appears anywhere in stage == 'greenwave'
      */
     const greenwave = filterByStageName('greenwave', stageStatesArray);
-    const greenwaveTestNames: Array<string> = [];
+    const greenwaveTestNames: string[] = [];
     _.forEach(greenwave, ([_stageName, _stateName, states]) =>
         _.forEach(states, (state) => {
             if (isGreenwaveState(state)) {
@@ -410,12 +406,12 @@ const getTestCompleteResult = (
  * To:   { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
  */
 export const transformKaiStates = (
-    states: Array<StateKaiType>,
+    states: StateKaiType[],
     stage: StageNameType,
 ): StatesByCategoryType => {
     const states_by_category: StatesByCategoryType = {};
     /** statesNames: ['running', 'complete'] */
-    const statesNames: Array<StateNameType> = _.intersection<StateNameType>(
+    const statesNames: StateNameType[] = _.intersection<StateNameType>(
         _.map(
             states,
             _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),

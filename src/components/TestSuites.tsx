@@ -58,49 +58,50 @@ import { renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 
 type TestCaseType = {
+    _uuid: string;
     name: string;
     time: string;
-    _uuid: string;
-    logs: Array<TestCaseLogsType>;
+    logs: TestCaseLogsType[];
     status: TestCaseStatusNameType;
-    phases: Array<TestCasePhasesType>;
+    phases: TestCasePhasesType[];
     message: string;
-    properties: Array<TestCasePropertiesType>;
-    'test-outputs': Array<TestCaseTestOutputsType>;
+    properties: TestCasePropertiesType[];
+    'test-outputs': TestCaseTestOutputsType[];
 };
 
-type TestCaseStatusNameType = 'pass' | 'fail' | 'skip' | 'error';
+type TestCaseStatusNameType = 'error' | 'fail' | 'pass' | 'skip';
 
-type TestCaseLogsType = { log: Array<TestCaseLogsEntryType> };
+type TestCaseLogsType = { log: TestCaseLogsEntryType[] };
 type TestCaseLogsEntryType = { $: { name: string; href: string } };
 
 type TestCaseTestOutputsType = {
-    'test-output': Array<TestCaseTestOutputsEntryType>;
+    'test-output': TestCaseTestOutputsEntryType[];
 };
 type TestCaseTestOutputsEntryType = {
     $: { result: string; remedy: string; message: string };
 };
 
-type TestCasePhasesType = { phase: Array<TestCasePhasesEntryType> };
+type TestCasePhasesType = { phase: TestCasePhasesEntryType[] };
 type TestCasePhasesEntryType = {
     $: { name: string; result: string };
-    logs: Array<TestCaseLogsType>;
+    logs: TestCaseLogsType[];
 };
 
-type TestCasePropertiesType = { property: Array<TestCasePropertiesEntryType> };
+type TestCasePropertiesType = { property: TestCasePropertiesEntryType[] };
 type TestCasePropertiesEntryType = { $: { name: string; value: string } };
 
 type TestSuitePropertiesType = {
-    property: Array<TestSuitePropertiesEntryType>;
+    property: TestSuitePropertiesEntryType[];
 };
 type TestSuitePropertiesEntryType = { $: { name: string; value: string } };
 
 type TestSuiteType = {
+    _uuid: string;
     name: string;
-    time: string;
-    tests: Array<TestCaseType>;
+    time?: string;
+    tests: TestCaseType[];
     status: string;
-    properties: Array<TestSuitePropertiesType>;
+    properties: TestSuitePropertiesType[];
     count: {
         pass?: number;
         fail?: number;
@@ -114,7 +115,7 @@ type TestSuiteCountType = TestSuiteType['count'];
 type TestSuiteCountNamesType = keyof TestSuiteCountType;
 
 interface TestsuitesProps {
-    xunit: Array<TestSuiteType>;
+    xunit: TestSuiteType[];
 }
 
 const Testsuites: React.FC<TestsuitesProps> = (props) => {
@@ -125,7 +126,7 @@ const Testsuites: React.FC<TestsuitesProps> = (props) => {
     }
     for (const suite of xunit) {
         testsuites.push(
-            <Flex key={suite.name}>
+            <Flex key={suite._uuid}>
                 <FlexItem>
                     <TextContent>
                         <Title headingLevel="h4" size="lg">
@@ -166,7 +167,7 @@ const mkLogName = (log: TestCaseLogsEntryType): IRow => {
 };
 
 interface TestCaseLogsProps {
-    logs: Array<TestCaseLogsType>;
+    logs: TestCaseLogsType[];
 }
 
 const TestCaseLogs: React.FC<TestCaseLogsProps> = (props) => {
@@ -175,7 +176,7 @@ const TestCaseLogs: React.FC<TestCaseLogsProps> = (props) => {
         return null;
     }
     const all_logs = logs[0].log;
-    const rows: Array<IRow> = [];
+    const rows: IRow[] = [];
     _.map(all_logs, (log) => rows.push(mkLogName(log)));
     return (
         <Table
@@ -192,12 +193,12 @@ const TestCaseLogs: React.FC<TestCaseLogsProps> = (props) => {
     );
 };
 
-const mkLogsLinks = (logs: Array<TestCaseLogsType>): JSX.Element => {
+const mkLogsLinks = (logs: TestCaseLogsType[]): JSX.Element => {
     /** logs[0].log - [log1, log2, log3] */
     if (!logs[0] || !logs[0].log) {
         return <></>;
     }
-    const links: Array<JSX.Element> = [];
+    const links: JSX.Element[] = [];
     _.map(logs[0].log, (l) =>
         links.push(
             <a
@@ -216,15 +217,15 @@ const mkLogsLinks = (logs: Array<TestCaseLogsType>): JSX.Element => {
 const mkPhase = (phase: TestCasePhasesEntryType): IRow => {
     return {
         cells: [
-            <>{renderStatusIcon(phase.$.result)}</>,
-            <>{phase.$.name}</>,
-            <>{mkLogsLinks(phase.logs)}</>,
+            renderStatusIcon(phase.$.result),
+            phase.$.name,
+            mkLogsLinks(phase.logs),
         ],
     };
 };
 
 interface TestCasePhasesProps {
-    phases: Array<TestCasePhasesType>;
+    phases: TestCasePhasesType[];
 }
 
 const TestCasePhases: React.FC<TestCasePhasesProps> = (props) => {
@@ -233,7 +234,7 @@ const TestCasePhases: React.FC<TestCasePhasesProps> = (props) => {
         return null;
     }
     const all_phases = phases[0].phase;
-    const rows: Array<IRow> = [];
+    const rows: IRow[] = [];
     _.map(all_phases, (phase) => rows.push(mkPhase(phase)));
     return (
         <Table
@@ -266,7 +267,7 @@ const mkTestOutput = (output: TestCaseTestOutputsEntryType): IRow => {
 };
 
 interface TestCaseOutputProps {
-    outputs: Array<TestCaseTestOutputsType>;
+    outputs: TestCaseTestOutputsType[];
 }
 const TestCaseOutput: React.FC<TestCaseOutputProps> = (props) => {
     const { outputs } = props;
@@ -274,7 +275,7 @@ const TestCaseOutput: React.FC<TestCaseOutputProps> = (props) => {
         return null;
     }
     const all_outputs = outputs[0]['test-output'];
-    const rows: Array<IRow> = [];
+    const rows: IRow[] = [];
     _.map(all_outputs, (output) => rows.push(mkTestOutput(output)));
     return (
         <Table
@@ -306,7 +307,7 @@ function mkProperties(property: TestCasePropertiesEntryType) {
 }
 
 interface TestCasePropertiesProps {
-    properties: Array<TestCasePropertiesType>;
+    properties: TestCasePropertiesType[];
 }
 
 const TestCaseProperties: React.FC<TestCasePropertiesProps> = (props) => {
@@ -315,7 +316,7 @@ const TestCaseProperties: React.FC<TestCasePropertiesProps> = (props) => {
         return null;
     }
     const all_properties = properties[0].property;
-    const rows: Array<IRow> = [];
+    const rows: IRow[] = [];
     _.map(all_properties, (p) => rows.push(mkProperties(p)));
     return (
         <Table
@@ -376,9 +377,9 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
         >
             <DataListItemRow>
                 <DataListToggle
-                    onClick={toggle}
-                    isExpanded={expanded}
                     id={test._uuid}
+                    isExpanded={expanded}
+                    onClick={toggle}
                 />
                 <DataListItemCells
                     className="pf-u-m-0 pf-u-p-0"
@@ -411,9 +412,7 @@ interface TestsuiteProps {
     suite: TestSuiteType;
 }
 
-type ToggleStateType = {
-    [key in TestSuiteCountNamesType]?: boolean;
-};
+type ToggleStateType = Partial<Record<TestSuiteCountNamesType, boolean>>;
 
 const default_toggle_state: ToggleStateType = {
     fail: true,
@@ -449,38 +448,36 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
     return (
         <>
             <Flex>
-                {_.map(toggleState, (isChecked, test_case_status_name_) => {
-                    const test_case_status_name =
-                        test_case_status_name_ as TestSuiteCountNamesType;
-                    if (_.isNil(isChecked)) return <></>;
-                    return (
-                        <FlexItem key={test_case_status_name}>
-                            <Checkbox
-                                label={
-                                    <span>
-                                        {renderStatusIcon(
-                                            test_case_status_name,
-                                        )}{' '}
-                                        {suite.count[test_case_status_name]}
-                                    </span>
-                                }
-                                isChecked={_.isBoolean(isChecked) && isChecked}
-                                onChange={() =>
-                                    toggle(test_case_status_name, isChecked)
-                                }
-                                aria-label={`checkbox ${test_case_status_name}`}
-                                id={`check-${test_case_status_name}-XXX-{test._uuid}`}
-                                name={`${test_case_status_name}`}
-                            />
-                        </FlexItem>
-                    );
-                })}
+                {_.map(
+                    toggleState,
+                    (isChecked, outcome: TestSuiteCountNamesType) => {
+                        if (_.isNil(isChecked)) return <></>;
+                        const label = (
+                            <>
+                                {renderStatusIcon(outcome)}{' '}
+                                {suite.count[outcome]}
+                            </>
+                        );
+                        return (
+                            <FlexItem key={outcome}>
+                                <Checkbox
+                                    aria-label={`Toggle display of results in status ${outcome}`}
+                                    id={`check-${outcome}-${suite._uuid}`}
+                                    isChecked={isChecked}
+                                    label={label}
+                                    name={outcome}
+                                    onChange={() => toggle(outcome, isChecked)}
+                                />
+                            </FlexItem>
+                        );
+                    },
+                )}
             </Flex>
 
             <DataList aria-label="Test suite items" isCompact>
-                {_.map(suite.tests, (test) => {
+                {_.map(suite.tests, (test, index) => {
                     if (toggleState[test.status]) {
-                        return <TestCase key={test.name} test={test} />;
+                        return <TestCase key={index} test={test} />;
                     }
                 })}
             </DataList>
@@ -509,7 +506,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     const [xunitProcessed, setXunitProcessed] = useState(false);
     /** why do we need msgError? */
     const [msgError, setError] = useState<JSX.Element>();
-    const { loading, error, data } = useQuery(ArtifactsXunitQuery, {
+    const { loading, data } = useQuery(ArtifactsXunitQuery, {
         variables: {
             msg_id,
             dbFieldName1: 'aid',
@@ -525,7 +522,6 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
         !loading &&
         Boolean(data) &&
         _.has(data, 'artifacts.artifacts[0].states');
-    const haveErrorNoData = !loading && error && !haveData;
     useEffect(() => {
         if (!haveData) {
             return;

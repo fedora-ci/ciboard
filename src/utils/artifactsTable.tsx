@@ -338,7 +338,7 @@ export const mkArtifactRow = (artifact: Artifact): IRow => {
 };
 
 export type InputArtifactRowType = {
-    artifacts: Array<Artifact>;
+    artifacts: Artifact[];
     opened: number | null;
     queryString?: string;
     body?: JSX.Element;

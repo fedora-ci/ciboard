@@ -63,10 +63,9 @@ interface ArtifactsTableProps {
  * - embedded - used for embedded view
  * - focus - used to focus on a specific test for a single artifact view
  */
-
-const ArtifactsTable: React.FC<any> = ({
+const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     onArtifactsLoaded,
-}: ArtifactsTableProps) => {
+}) => {
     const scrollRef = useRef<HTMLTableRowElement>(null);
     var artifacts: Artifact[] = [];
     /**
@@ -229,7 +228,7 @@ const ArtifactsTable: React.FC<any> = ({
     if (isLoading) {
         rows_loading = mkSpecialRows({
             title: 'Loading data.',
-            body: <>'Please wait.'</>,
+            body: 'Please wait.',
             type: 'loading',
         });
     }
@@ -296,7 +295,7 @@ export function PageByMongoField() {
 
     return (
         <PageCommon title={pageTitle}>
-            <ArtifactsTable />
+            <ArtifactsTable onArtifactsLoaded={onArtifactsLoaded} />
             <ToastAlertGroup />
             <WaiveForm />
         </PageCommon>

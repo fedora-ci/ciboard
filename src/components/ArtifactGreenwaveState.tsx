@@ -28,7 +28,6 @@ import {
     Label,
     Button,
     FlexItem,
-    LabelProps,
     TextContent,
     DataListCell,
     DataListItem,
@@ -43,14 +42,14 @@ import {
 } from '@patternfly/react-core';
 
 import {
-    WeeblyIcon,
-    RebootingIcon,
+    RedoIcon,
     RegisteredIcon,
     OutlinedThumbsUpIcon,
+    WeeblyIcon,
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
-import { renderStatusIcon, labelColors } from '../utils/artifactUtils';
+import { renderStatusIcon } from '../utils/artifactUtils';
 import { Artifact, StateGreenwaveType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
@@ -69,8 +68,7 @@ const timestampForUser = (inp: string, fromNow = false): string => {
         return time;
     }
     const passed = moment.utc(inp).local().fromNow();
-    const ret = time + ' (' + passed + ')';
-    return ret;
+    return `${time} (${passed})`;
 };
 
 interface WaiveButtonProps {
@@ -122,7 +120,7 @@ export const GreenwaveReTestButton: React.FC<GreenwaveReTestButtonProps> = (
                     e.stopPropagation();
                 }}
             >
-                <RebootingIcon />
+                <RedoIcon />
                 <span className={styles.waive}>rerun</span>
             </Button>
         </a>
@@ -177,7 +175,7 @@ export const GreenwaveResultInfo: React.FC<GreenwaveResultProps> = (props) => {
     if (_.isEmpty(pairs)) {
         return null;
     }
-    const elements: Array<JSX.Element> = _.map(pairs, ([name, value]) =>
+    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'orange'),
     );
     return (
@@ -220,7 +218,7 @@ export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
     if (_.isEmpty(pairs)) {
         return null;
     }
-    const elements: Array<JSX.Element> = _.map(pairs, ([name, value]) =>
+    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'red'),
     );
     return (
@@ -242,12 +240,6 @@ export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
     );
 };
 
-const reqMapping = [
-    ['requirement.scenario', 'scenario'],
-    ['requirement.source', 'source'],
-    ['requirement.error_reason', 'error reason'],
-];
-
 interface GreenwaveRequirementProps {
     state: StateGreenwaveType;
 }
@@ -259,7 +251,7 @@ export const GreenwaveRequirement: React.FC<GreenwaveRequirementProps> = (
     if (_.isEmpty(pairs)) {
         return null;
     }
-    const elements: Array<JSX.Element> = _.map(pairs, ([name, value]) =>
+    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'blue'),
     );
     return (
@@ -292,7 +284,7 @@ export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
     if (_.isUndefined(result) || !_.isObject(result?.data)) {
         return null;
     }
-    const mkItem = (name: string, values: Array<string>): JSX.Element => {
+    const mkItem = (name: string, values: string[]): JSX.Element => {
         const valuesRendered: Array<JSX.Element | string> = _.map(
             values,
             (v, index) => {
@@ -344,30 +336,6 @@ export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
     );
 };
 
-export const mkOutcomeLabel = (state: StateGreenwaveType) => {
-    var outcome: string | undefined = state?.result?.outcome;
-    if (_.isNil(outcome) && state.requirement?.type === 'test-result-missing') {
-        outcome = 'missed';
-    }
-    if (_.isNil(outcome)) {
-        return;
-    }
-    outcome = _.toLower(outcome);
-    const color = _.findKey(labelColors, (statuses) =>
-        _.includes(statuses, outcome),
-    );
-    return (
-        <Label
-            isCompact
-            key="outcome"
-            color={(color as LabelProps['color']) || 'grey'}
-            variant="filled"
-        >
-            {outcome}
-        </Label>
-    );
-};
-
 interface FaceForGreenwaveStateProps {
     state: StateGreenwaveType;
     artifact: Artifact;
@@ -377,11 +345,11 @@ interface FaceForGreenwaveStateProps {
 export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     props,
 ) => {
-    const { state, artifact, artifactDashboardUrl } = props;
-    const { waiver, requirement, result } = state;
+    const { state, artifactDashboardUrl } = props;
+    const { waiver } = state;
     const isWaived = _.isNumber(waiver?.id);
     const isGatingResult = _.isString(state.requirement?.testcase);
-    const labels: Array<JSX.Element> = [];
+    const labels: JSX.Element[] = [];
     if (isGatingResult) {
         labels.push(
             <Label
@@ -401,15 +369,11 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
             </Label>,
         );
     }
-    const outcomeLabel = mkOutcomeLabel(state);
-    if (!_.isNil(outcomeLabel)) {
-        labels.push(outcomeLabel);
-    }
-    const iconName = _.get(
+    const iconName: string = _.get(
         state,
         'requirement.type',
         _.get(state, 'result.outcome', 'unknown'),
-    );
+    ).toLocaleLowerCase();
     const element = (
         <Flex style={{ minHeight: '34px' }}>
             <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
@@ -442,31 +406,24 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
     const {
         state,
         artifact,
-        stateName,
         forceExpand,
         setExpandedResult,
         artifactDashboardUrl,
     } = props;
 
-    const { requirement, result, waiver } = state;
+    const { testcase } = state;
     /*
      * Expand a specific testcase according to query string and scroll to it
      * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
      */
     const onToggle = () => {
-        if (!forceExpand) {
-            const key = state.testcase;
-            setExpandedResult(key);
-        } else if (forceExpand) {
-            setExpandedResult('');
-        }
+        setExpandedResult(forceExpand ? '' : testcase);
     };
     /** Note for info test results */
     const resultClasses = classnames(styles['helpSelect'], styles['level2']);
-    const key = state.testcase;
     const toRender = (
         <DataListItem
-            key={key}
+            key={testcase}
             isExpanded={forceExpand}
             className={resultClasses}
             aria-labelledby="artifact-item-result"

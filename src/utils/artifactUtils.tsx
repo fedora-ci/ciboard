@@ -20,32 +20,27 @@
 
 import _ from 'lodash';
 import {
-    OkIcon,
-    InfoIcon,
+    CheckCircleIcon,
+    ExclamationTriangleIcon,
     GhostIcon,
-    UnlinkIcon,
-    TumblrIcon,
+    HistoryIcon,
+    InfoIcon,
     InProgressIcon,
-    TrafficLightIcon,
-    ErrorCircleOIcon,
-    PficonHistoryIcon,
-    WarningTriangleIcon,
     OutlinedQuestionCircleIcon,
+    TimesCircleIcon,
+    TrafficLightIcon,
+    UnlinkIcon,
 } from '@patternfly/react-icons';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
-    StateType,
     Artifact,
     ArtifactType,
     KaiStateType,
-    StateKaiType,
-    StageNameType,
-    StateNameType,
     KojiInstanceType,
-    StateGreenwaveType,
-    PayloadRPMBuildType,
-    PayloadMBSBuildType,
     StateGreenwaveKaiType,
+    StateGreenwaveType,
+    StateKaiType,
+    StateType,
 } from '../artifact';
 import { LabelProps } from '@patternfly/react-core';
 
@@ -334,11 +329,10 @@ export const getXunit = (broker_msg_body: BrokerMessagesType) => {
 };
 
 export const renderStatusIcon = (
-    type_: string,
+    type: string,
     mod: modifyType = 'test',
-    size = '0.75em',
+    size = '1em',
 ) => {
-    const type = _.isString(type_) ? type_.toLocaleLowerCase() : type_;
     const icons = {
         missing: {
             pick: type === 'missing' || type === 'test-result-missing',
@@ -357,7 +351,7 @@ export const renderStatusIcon = (
                 type === 'fetched-gating-yaml' ||
                 type === 'true',
             color: '--pf-global--success-color--100',
-            icon: OkIcon,
+            icon: CheckCircleIcon,
             aria: 'Result is OK.',
         },
         error: {
@@ -373,8 +367,8 @@ export const renderStatusIcon = (
                 type === 'missing-gating-yaml' ||
                 type === 'false',
             color: '--pf-global--danger-color--100',
-            icon: ErrorCircleOIcon,
-            aria: 'Result is error.',
+            icon: TimesCircleIcon,
+            aria: 'Test has failed.',
         },
         warning: {
             pick:
@@ -386,20 +380,20 @@ export const renderStatusIcon = (
                 type === 'test-result-errored-waived' ||
                 type === 'failed-fetch-gating-yaml-waived',
             color: '--pf-global--warning-color--100',
-            icon: WarningTriangleIcon,
-            aria: 'Result is warning.',
+            icon: ExclamationTriangleIcon,
+            aria: 'Test run resulted in an error.',
         },
         progress: {
             pick: type === 'running',
             color: '--pf-global--link--Color',
             icon: InProgressIcon,
-            aria: 'Result is in progress.',
+            aria: 'Test is in progress.',
         },
         history: {
             pick: type === 'queued',
             color: '--pf-global--warning-color--200',
-            icon: PficonHistoryIcon,
-            aria: 'Result has some history.',
+            icon: HistoryIcon,
+            aria: 'Test is queued.',
         },
         info: {
             pick:
@@ -414,22 +408,26 @@ export const renderStatusIcon = (
             pick: type === 'skip',
             color: '--pf-global--warning-color--200',
             icon: UnlinkIcon,
-            aria: 'Result was skipped.',
+            aria: 'Test was skipped.',
+        },
+        not_applicable: {
+            pick: type === 'not_applicable',
+            color: '--pf-global--info-color--100',
+            icon: InfoIcon,
+            aria: 'Test was skipped.',
         },
     };
     type KnownIconsType = keyof typeof icons;
     const name = _.findKey(icons, (i) => i.pick);
     if (!name) {
-        console.log('Asked to render icon wiht unknown type:', type);
+        console.warn('Asked to render icon with unknown type:', type);
         return (
             <OutlinedQuestionCircleIcon aria-label="Result is unknown type." />
         );
     }
     let useIcon = icons[name as KnownIconsType];
     let Icon = useIcon.icon;
-    if (mod === 'test') {
-        Icon = TumblrIcon;
-    } else if (mod === 'gating') {
+    if (mod === 'gating') {
         Icon = TrafficLightIcon;
     }
     const color = useIcon.color;
@@ -447,6 +445,21 @@ export const renderStatusIcon = (
     );
 };
 
+export const repoNameAndCommitFromSource = (
+    source: string,
+): [string, string | undefined] => {
+    // source.split() will always be nonempty as long as source is a string.
+    const tailSegment = _.last(source.split('rpms/'))!;
+    const [nameDotGit, commit] = tailSegment.split('#');
+    const name = nameDotGit.replace(/.git$/, '');
+    return [name, commit];
+};
+
+export const mkCommitHashFromSource = (source: string): string | undefined => {
+    const [_name, commit] = repoNameAndCommitFromSource(source);
+    return commit;
+};
+
 /**
  * Transforms
  *
@@ -454,24 +467,22 @@ export const renderStatusIcon = (
  * git://pkgs.devel.redhat.com/rpms/bash#4cbab69537d8401a4c9b3c326f25fa95c5f6f6ee
  *
  * to:
- * http://pkgs.devel.redhat.com/cgit/rpms/bash/commit/?id=13117b55f5246ecac677f8e64ea640d27a9a527d
+ * http://pkgs.devel.redhat.com/cgit/rpms/bash/commit/?id=4cbab69537d8401a4c9b3c326f25fa95c5f6f6ee
  */
 export const mkLinkPkgsDevelFromSource = (
     source: string,
     instance: KojiInstanceType,
 ) => {
-    const name_sha1 = _.last(_.split(source, 'rpms/'));
-    const [name_dot_git, sha1] = _.split(name_sha1, '#');
-    const name = _.replace(name_dot_git, /.git$/, '');
+    const [name, commit] = repoNameAndCommitFromSource(source);
     switch (instance) {
-        case 'fp':
-            return `https://src.fedoraproject.org/rpms/${name}/c/${sha1}`;
         case 'cs':
-            return `https://gitlab.com/redhat/centos-stream/rpms/${name}/-/commit/${sha1}`;
+            return `https://gitlab.com/redhat/centos-stream/rpms/${name}/-/commit/${commit}`;
+        case 'fp':
+            return `https://src.fedoraproject.org/rpms/${name}/c/${commit}`;
         case 'rh':
-            return `http://pkgs.devel.redhat.com/cgit/rpms/${name}/commit/?id=${sha1}`;
+            return `http://pkgs.devel.redhat.com/cgit/rpms/${name}/commit/?id=${commit}`;
         default:
-            console.log(`Unknown koji instance: ${instance}`);
+            console.warn(`Unknown Koji instance: ${instance}`);
             return '';
     }
 };
