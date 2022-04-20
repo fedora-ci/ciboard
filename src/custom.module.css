@@ -111,7 +111,8 @@
  */
 :global(.pf-c-data-list__item.pf-m-expanded
         .issue_2177
-        .pf-c-data-list__toggle-icon) {
+        .pf-c-data-list__toggle-icon)
+{
     transform: none;
 }
 
@@ -123,6 +124,11 @@
 .noHint {
     border-bottom: var(--pf-c-table--border-width--base) solid
         var(--pf-global--BackgroundColor--200) !important;
+}
+
+.buildInfoCommitHash, .buildInfoTimestamp {
+    font-size: 0.85em;
+    font-family: monospace;
 }
 
 /*

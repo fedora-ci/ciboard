@@ -445,6 +445,21 @@ export const renderStatusIcon = (
     );
 };
 
+export const repoNameAndCommitFromSource = (
+    source: string,
+): [string, string | undefined] => {
+    // source.split() will always be nonempty as long as source is a string.
+    const tailSegment = _.last(source.split('rpms/'))!;
+    const [nameDotGit, commit] = tailSegment.split('#');
+    const name = nameDotGit.replace(/.git$/, '');
+    return [name, commit];
+};
+
+export const mkCommitHashFromSource = (source: string): string | undefined => {
+    const [_name, commit] = repoNameAndCommitFromSource(source);
+    return commit;
+};
+
 /**
  * Transforms
  *
@@ -452,24 +467,22 @@ export const renderStatusIcon = (
  * git://pkgs.devel.redhat.com/rpms/bash#4cbab69537d8401a4c9b3c326f25fa95c5f6f6ee
  *
  * to:
- * http://pkgs.devel.redhat.com/cgit/rpms/bash/commit/?id=13117b55f5246ecac677f8e64ea640d27a9a527d
+ * http://pkgs.devel.redhat.com/cgit/rpms/bash/commit/?id=4cbab69537d8401a4c9b3c326f25fa95c5f6f6ee
  */
 export const mkLinkPkgsDevelFromSource = (
     source: string,
     instance: KojiInstanceType,
 ) => {
-    const name_sha1 = _.last(_.split(source, 'rpms/'));
-    const [name_dot_git, sha1] = _.split(name_sha1, '#');
-    const name = _.replace(name_dot_git, /.git$/, '');
+    const [name, commit] = repoNameAndCommitFromSource(source);
     switch (instance) {
-        case 'fp':
-            return `https://src.fedoraproject.org/rpms/${name}/c/${sha1}`;
         case 'cs':
-            return `https://gitlab.com/redhat/centos-stream/rpms/${name}/-/commit/${sha1}`;
+            return `https://gitlab.com/redhat/centos-stream/rpms/${name}/-/commit/${commit}`;
+        case 'fp':
+            return `https://src.fedoraproject.org/rpms/${name}/c/${commit}`;
         case 'rh':
-            return `http://pkgs.devel.redhat.com/cgit/rpms/${name}/commit/?id=${sha1}`;
+            return `http://pkgs.devel.redhat.com/cgit/rpms/${name}/commit/?id=${commit}`;
         default:
-            console.log(`Unknown koji instance: ${instance}`);
+            console.warn(`Unknown Koji instance: ${instance}`);
             return '';
     }
 };
