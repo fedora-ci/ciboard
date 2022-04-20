@@ -394,7 +394,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
  */
 interface HistoryListProps {
     history: {
-        tag_listing: Array<KojiBuildTagType>;
+        tag_listing: KojiBuildTagType[];
     };
 }
 
@@ -430,7 +430,7 @@ const HistoryList: React.FC<HistoryListProps> = (props) => {
     const {
         history: { tag_listing },
     } = props;
-    const lines: Array<TagActionHistoryType> = [];
+    const lines: TagActionHistoryType[] = [];
     _.forEach(tag_listing, (e) => {
         lines.push({
             action: 'tagged into',

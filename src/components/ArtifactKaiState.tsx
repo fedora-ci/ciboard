@@ -24,7 +24,6 @@ import {
     Flex,
     Text,
     Alert,
-    Badge,
     Button,
     FlexItem,
     TextContent,
@@ -47,7 +46,7 @@ import {
     getTestcaseName,
     renderStatusIcon,
 } from '../utils/artifactUtils';
-import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
+import { MSG_V_1, MSG_V_0_1 } from '../types';
 import { Artifact, StateKaiType, StateNameType } from '../artifact';
 import {
     StateDetailsEntry,
@@ -58,66 +57,16 @@ import {
 import { ArtifactStateProps } from './ArtifactState';
 import classnames from 'classnames';
 
-/**
- * 0.1.x: .label - string
- * 0.2.x: test.label - string[]
- */
-const mkLabels = (broker_msg_body: BrokerMessagesType): Array<JSX.Element> => {
-    let labels: string | Array<string> = [];
-    if (MSG_V_0_1.isMsg(broker_msg_body)) {
-        if (!broker_msg_body.label) {
-            return [];
-        }
-        labels = broker_msg_body.label;
-    }
-    if (MSG_V_1.isMsg(broker_msg_body)) {
-        if (!broker_msg_body.test.label) {
-            return [];
-        }
-        labels = broker_msg_body.test.label;
-    }
-    var labels_str: Array<string> = [];
-    if (typeof labels === 'string') {
-        /** Workaround with convert array string to array */
-        if (labels.startsWith('[')) {
-            labels_str = labels.replace(/^\[|\]$|'|\s+/g, '').split(',');
-            /** Get rid of python unicode identifier 'u' */
-            for (const key in labels_str) {
-                if (labels_str.hasOwnProperty(key))
-                    labels_str[key] = labels_str[key].substr(1);
-            }
-        } else {
-            labels_str.push(labels);
-        }
-    } else {
-        labels_str.push(...labels);
-    }
-    const components: Array<JSX.Element> = [];
-    for (const key in labels_str) {
-        if (_.has(labels_str, key)) {
-            components.push(
-                <Badge isRead key={labels_str[key]}>
-                    <TextContent>
-                        <Text component="small">{labels_str[key]}</Text>
-                    </TextContent>
-                </Badge>,
-                <>' '</>,
-            );
-        }
-    }
-    return components;
-};
-
 export interface ArtifactKaiStateProps extends ArtifactStateProps {
     state: StateKaiType;
 }
 export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
     const {
-        state,
         artifact,
+        artifactDashboardUrl,
         forceExpand,
         setExpandedResult,
-        artifactDashboardUrl,
+        state,
     } = props;
 
     const { broker_msg_body, kai_state } = state;
@@ -157,8 +106,8 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
                             key="secondary content"
                         >
                             <FaceForKaiState
-                                state={state}
                                 artifactDashboardUrl={artifactDashboardUrl}
+                                state={state}
                             />
                         </DataListCell>,
                     ]}
@@ -189,16 +138,11 @@ interface KaiStateXunitProps {
 }
 export const KaiStateXunit: React.FC<KaiStateXunitProps> = (props) => {
     const { state, artifact } = props;
-    const { broker_msg_body, kai_state } = state;
+    const { kai_state } = state;
     /* [OSCI-1861]: info messages also can have xunit */
     const stateName = kai_state.state;
     /* https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-common.yaml#_120 */
-    const showFor: Array<StateNameType> = [
-        'error',
-        'queued',
-        'running',
-        'complete',
-    ];
+    const showFor: StateNameType[] = ['error', 'queued', 'running', 'complete'];
     if (!_.includes(showFor, stateName)) {
         return null;
     }
@@ -321,7 +265,7 @@ export const KaiStateMapping: React.FC<KaiStateInfoProps> = (props) => {
     ).toString();
     //const brokerMsgUrl = `${config.datagrepper.url}/id?id=${kai_state.msg_id}&is_raw=true&size=extra-large`;
     pairs.push(['broker msg', brokerMsgUrl]);
-    const elements: Array<JSX.Element> = _.map(pairs, ([name, value]) =>
+    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'green'),
     );
     return (
@@ -396,11 +340,12 @@ const StageName: React.FC<StageNameProps> = (props) => {
 };
 
 interface FaceForKaiStateProps {
-    state: StateKaiType;
     artifactDashboardUrl: string;
+    state: StateKaiType;
 }
+
 const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
-    const { state, artifactDashboardUrl } = props;
+    const { artifactDashboardUrl, state } = props;
     const { kai_state } = state;
     const element = (
         <Flex style={{ minHeight: '34px' }}>
@@ -410,8 +355,8 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
             </Flex>
             <Flex>
                 <StateLink
-                    state={state}
                     artifactDashboardUrl={artifactDashboardUrl}
+                    state={state}
                 />
             </Flex>
         </Flex>

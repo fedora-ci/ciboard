@@ -51,9 +51,19 @@ const mkSeparatedList = (
     separator: React.ReactNode = ', ',
 ) => {
     if (_.isNil(elements)) return null;
-    return elements.reduce((acc, el) => (
-        acc === null ? el : <>{acc}{separator}{el}</>
-    ), null);
+    return elements.reduce(
+        (acc, el) =>
+            acc === null ? (
+                el
+            ) : (
+                <>
+                    {acc}
+                    {separator}
+                    {el}
+                </>
+            ),
+        null,
+    );
 };
 
 const Help = () => (
@@ -167,10 +177,10 @@ const WaiverdbInfo: React.FC = () => {
 type WaiverDBPermissionType = {
     name: string;
     description: string;
-    maintainers: Array<string>;
-    testcases: Array<string>;
-    users?: Array<string>;
-    groups?: Array<string>;
+    maintainers: string[];
+    testcases: string[];
+    users?: string[];
+    groups?: string[];
 };
 
 const WaiverdbPermissions = () => {
@@ -188,7 +198,7 @@ const WaiverdbPermissions = () => {
     if (_.isError(error)) {
         return <StackItem>{error.message}</StackItem>;
     }
-    const perms = data.waiver_db_permissions as Array<WaiverDBPermissionType>;
+    const perms = data.waiver_db_permissions as WaiverDBPermissionType[];
     const rows: IRow[] = perms.map((permission) => mkRow(permission));
     const columns: ICell[] = [
         { title: 'Test case patterns' },
@@ -220,9 +230,7 @@ const WaiverdbPermissions = () => {
 
 export function PageNewIssue() {
     return (
-        <PageCommon
-            title={`Report issue | ${config.defaultTitle}`}
-        >
+        <PageCommon title={`Report issue | ${config.defaultTitle}`}>
             <Help />
         </PageCommon>
     );

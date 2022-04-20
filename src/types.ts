@@ -90,7 +90,7 @@ export namespace MSG_V_1 {
         scratch: boolean;
         baseline?: string;
         component: string;
-        dependencies?: Array<string>;
+        dependencies?: string[];
     };
 
     export type MsgStageType = {
@@ -109,30 +109,30 @@ export namespace MSG_V_1 {
         note?: string;
         docs?: string;
         xunit?: string;
-        label?: Array<string>;
+        label?: string[];
         category: TestCategoryType;
         lifetime?: number;
         progress?: number;
         scenario?: string;
         namespace: string;
-        xunit_urls?: Array<string>;
+        xunit_urls?: string[];
     };
 
     export type MsgTestCompleteType = {
         result: TestResultType;
         output?: string;
         runtime?: number;
-        output_urls?: Array<string>;
+        output_urls?: string[];
     };
 
     export type MsgNotificationType = {
-        recipients?: Array<string>;
+        recipients?: string[];
     };
 
     export type MsgRPMBuildTestComplete = {
         run: MsgRunType;
         test: MsgTestCommonType & MsgTestCompleteType;
-        system: Array<MsgSystemType>;
+        system: MsgSystemType[];
         version: MsgCommonType['version'];
         contact: MsgContactType;
         artifact: MsgRPMBuildType;
@@ -233,7 +233,7 @@ export namespace MSG_V_0_1 {
         ci: MsgContactType;
         run: MsgRunType;
         artifact: MsgRPMBuildType;
-        system: Array<MsgSystemType>;
+        system: MsgSystemType[];
         docs: string;
         category: TestCategoryType;
         type: string;
@@ -241,7 +241,7 @@ export namespace MSG_V_0_1 {
         status: TestResultType;
         web_url: string;
         xunit: string;
-        recipients: Array<string>;
+        recipients: string[];
         thread_id: string;
         namespace: string;
         note: string;
@@ -259,7 +259,7 @@ export namespace MSG_V_0_1 {
         label: string;
         reason: string;
         issue_url: string;
-        recipients: Array<string>;
+        recipients: string[];
         thread_id: string;
         namespace: string;
         note: string;
@@ -326,7 +326,7 @@ export namespace MSG_V_0_1 {
         scratch: boolean;
         nvr: string;
         baseline?: string;
-        dependencies?: Array<string>;
+        dependencies?: string[];
         source?: string;
     };
 
@@ -354,27 +354,27 @@ export interface SSTItem {
 }
 
 export interface SSTResult {
-	artifact: {
+    artifact: {
         id: number;
         url: string;
     };
-	assignee: string;
-	gating_bug?: {
+    assignee: string;
+    gating_bug?: {
         text: string;
         url: string;
     };
-	gating_yaml_url?: string;
-	log_urls?: string[];
-	metadata_url: string;
-	nvr: string;
-	rebuild_url?: string;
-	sortKey: string;
+    gating_yaml_url?: string;
+    log_urls?: string[];
+    metadata_url: string;
+    nvr: string;
+    rebuild_url?: string;
+    sortKey: string;
     status: string;
     tag: string;
-	testcase: {
-		category: string;
-		namespace: string;
-		type: string;
-	};
-	time: string;
+    testcase: {
+        category: string;
+        namespace: string;
+        type: string;
+    };
+    time: string;
 }
