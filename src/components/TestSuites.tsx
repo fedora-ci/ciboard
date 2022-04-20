@@ -96,6 +96,7 @@ type TestSuitePropertiesType = {
 type TestSuitePropertiesEntryType = { $: { name: string; value: string } };
 
 type TestSuiteType = {
+    _uuid: string;
     name: string;
     time?: string;
     tests: TestCaseType[];
@@ -125,7 +126,7 @@ const Testsuites: React.FC<TestsuitesProps> = (props) => {
     }
     for (const suite of xunit) {
         testsuites.push(
-            <Flex key={suite.name}>
+            <Flex key={suite._uuid}>
                 <FlexItem>
                     <TextContent>
                         <Title headingLevel="h4" size="lg">
@@ -376,9 +377,9 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
         >
             <DataListItemRow>
                 <DataListToggle
-                    onClick={toggle}
-                    isExpanded={expanded}
                     id={test._uuid}
+                    isExpanded={expanded}
+                    onClick={toggle}
                 />
                 <DataListItemCells
                     className="pf-u-m-0 pf-u-p-0"
@@ -447,32 +448,30 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
     return (
         <>
             <Flex>
-                {_.map(toggleState, (isChecked, test_case_status_name_) => {
-                    const test_case_status_name =
-                        test_case_status_name_ as TestSuiteCountNamesType;
-                    if (_.isNil(isChecked)) return <></>;
-                    return (
-                        <FlexItem key={test_case_status_name}>
-                            <Checkbox
-                                label={
-                                    <span>
-                                        {renderStatusIcon(
-                                            test_case_status_name,
-                                        )}{' '}
-                                        {suite.count[test_case_status_name]}
-                                    </span>
-                                }
-                                isChecked={_.isBoolean(isChecked) && isChecked}
-                                onChange={() =>
-                                    toggle(test_case_status_name, isChecked)
-                                }
-                                aria-label={`checkbox ${test_case_status_name}`}
-                                id={`check-${test_case_status_name}-XXX-{test._uuid}`}
-                                name={`${test_case_status_name}`}
-                            />
-                        </FlexItem>
-                    );
-                })}
+                {_.map(
+                    toggleState,
+                    (isChecked, outcome: TestSuiteCountNamesType) => {
+                        if (_.isNil(isChecked)) return <></>;
+                        const label = (
+                            <>
+                                {renderStatusIcon(outcome)}{' '}
+                                {suite.count[outcome]}
+                            </>
+                        );
+                        return (
+                            <FlexItem key={outcome}>
+                                <Checkbox
+                                    aria-label={`Toggle display of results in status ${outcome}`}
+                                    id={`check-${outcome}-${suite._uuid}`}
+                                    isChecked={isChecked}
+                                    label={label}
+                                    name={outcome}
+                                    onChange={() => toggle(outcome, isChecked)}
+                                />
+                            </FlexItem>
+                        );
+                    },
+                )}
             </Flex>
 
             <DataList aria-label="Test suite items" isCompact>
