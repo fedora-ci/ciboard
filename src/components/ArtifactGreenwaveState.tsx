@@ -28,7 +28,6 @@ import {
     Label,
     Button,
     FlexItem,
-    LabelProps,
     TextContent,
     DataListCell,
     DataListItem,
@@ -50,7 +49,7 @@ import {
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
-import { renderStatusIcon, labelColors } from '../utils/artifactUtils';
+import { renderStatusIcon } from '../utils/artifactUtils';
 import { Artifact, StateGreenwaveType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
@@ -344,30 +343,6 @@ export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
     );
 };
 
-export const mkOutcomeLabel = (state: StateGreenwaveType) => {
-    var outcome: string | undefined = state?.result?.outcome;
-    if (_.isNil(outcome) && state.requirement?.type === 'test-result-missing') {
-        outcome = 'missed';
-    }
-    if (_.isNil(outcome)) {
-        return;
-    }
-    outcome = _.toLower(outcome);
-    const color = _.findKey(labelColors, (statuses) =>
-        _.includes(statuses, outcome),
-    );
-    return (
-        <Label
-            isCompact
-            key="outcome"
-            color={(color as LabelProps['color']) || 'grey'}
-            variant="filled"
-        >
-            {outcome}
-        </Label>
-    );
-};
-
 interface FaceForGreenwaveStateProps {
     state: StateGreenwaveType;
     artifact: Artifact;
@@ -401,15 +376,11 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
             </Label>,
         );
     }
-    const outcomeLabel = mkOutcomeLabel(state);
-    if (!_.isNil(outcomeLabel)) {
-        labels.push(outcomeLabel);
-    }
-    const iconName = _.get(
+    const iconName: string = _.get(
         state,
         'requirement.type',
         _.get(state, 'result.outcome', 'unknown'),
-    );
+    ).toLocaleLowerCase();
     const element = (
         <Flex style={{ minHeight: '34px' }}>
             <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
