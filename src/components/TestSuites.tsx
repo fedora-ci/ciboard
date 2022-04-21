@@ -359,8 +359,8 @@ interface TestCaseProps {
 const TestCase: React.FC<TestCaseProps> = (props) => {
     const { test } = props;
     const [expanded, setExpanded] = useState(false);
-    let version = getProperty(test.properties, 'baseosci.beaker-version');
-    let time = test.time
+    const version = getProperty(test.properties, 'baseosci.beaker-version');
+    const time = test.time
         ? moment
               .duration(parseInt(test.time, 10), 'seconds')
               .format('hh:mm:ss', { trim: false })
@@ -371,10 +371,7 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
     };
 
     return (
-        <DataListItem
-            isExpanded={expanded}
-            style={{ backgroundColor: '#DAE7DE' }}
-        >
+        <DataListItem isExpanded={expanded}>
             <DataListItemRow>
                 <DataListToggle
                     id={test._uuid}
@@ -383,18 +380,22 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
                 />
                 <DataListItemCells
                     className="pf-u-m-0 pf-u-p-0"
-                    dataListCells={[
-                        <DataListCell isIcon key="icon">
-                            {renderStatusIcon(test.status)}
-                        </DataListCell>,
-                        <DataListCell key="test-name" wrapModifier="nowrap">
-                            <TextContent>
-                                <Text>{test.name}</Text>
-                            </TextContent>
-                        </DataListCell>,
-                        <DataListCell key="version">{version}</DataListCell>,
-                        <DataListCell key="duration">{time}</DataListCell>,
-                    ]}
+                    dataListCells={
+                        <>
+                            <DataListCell isIcon>
+                                {renderStatusIcon(test.status)}
+                            </DataListCell>
+                            <DataListCell wrapModifier="nowrap">
+                                <TextContent>
+                                    <Text>{test.name}</Text>
+                                </TextContent>
+                            </DataListCell>
+                            <DataListCell>{version}</DataListCell>
+                            <DataListCell alignRight={true} isFilled={false}>
+                                {time}
+                            </DataListCell>
+                        </>
+                    }
                 />
             </DataListItemRow>
             <DataListContent
@@ -502,7 +503,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     const { state, artifact } = props;
     const { kai_state } = state;
     const { msg_id } = kai_state;
-    const [xunit, setXunit] = useState<string>();
+    const [xunit, setXunit] = useState<string>('');
     const [xunitProcessed, setXunitProcessed] = useState(false);
     /** why do we need msgError? */
     const [msgError, setError] = useState<JSX.Element>();
@@ -523,9 +524,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
         Boolean(data) &&
         _.has(data, 'artifacts.artifacts[0].states');
     useEffect(() => {
-        if (!haveData) {
-            return;
-        }
+        if (!haveData) return;
         const state = _.find(
             /** this is a bit strange, that received data doesn't propage to original
              * artifact object. Original artifact.states objects stays old */
@@ -533,22 +532,21 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
             (state) => state.kai_state?.msg_id === msg_id,
         );
         if (_.isNil(state)) return;
-        const xunitRaw = _.get(state, 'broker_msg_xunit');
+        const xunitRaw: string = state.broker_msg_xunit;
         if (_.isEmpty(xunitRaw)) {
             setXunitProcessed(true);
             return;
         }
         try {
-            const encodedRawData = Buffer.from(xunitRaw, 'base64');
             /** Decode base64 encoded gzipped data */
-            const decodedRawData = pako.inflate(encodedRawData);
-            const xunitUtf8Encoded =
-                Buffer.from(decodedRawData).toString('utf8');
-            setXunit(xunitUtf8Encoded);
+            const compressed = Buffer.from(xunitRaw, 'base64');
+            const decompressed = pako.inflate(compressed);
+            const utf8Decoded = Buffer.from(decompressed).toString('utf8');
+            setXunit(utf8Decoded);
         } catch (err) {
             const error = (
                 <Alert isInline isPlain title="Xunit error">
-                    Could not parse xunit: {err}
+                    Could not parse test results: {err}
                 </Alert>
             );
             setError(error);
@@ -557,7 +555,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     }, [data, msg_id, haveData, artifact.states]);
     const inflating = data && !xunitProcessed;
     if (loading || inflating) {
-        const text = loading ? 'Fetching xunit' : 'Inflating';
+        const text = loading ? 'Fetching test results…' : 'Inflating…';
         return (
             <>
                 <Spinner size="md" />

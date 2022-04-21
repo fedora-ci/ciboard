@@ -38,8 +38,6 @@ import {
     Tab,
     TabTitleText,
     Tabs,
-    Text,
-    TextContent,
 } from '@patternfly/react-core';
 
 import styles from '../custom.module.css';

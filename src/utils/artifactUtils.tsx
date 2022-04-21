@@ -42,7 +42,6 @@ import {
     StateKaiType,
     StateType,
 } from '../artifact';
-import { LabelProps } from '@patternfly/react-core';
 
 export function isKaiState(
     state: StateType | undefined,
@@ -229,29 +228,11 @@ export const resultColors = {
     '--pf-global--info-color--100': ['info'],
 };
 
-/**
- * https://fnune.com/typescript/2019/01/30/typescript-series-1-record-is-usually-not-the-best-choice/
- *
- * GreenwaveResultType.outcome: INFO, ERROR, PASSED, FAILED, RUNNING, NOT_APPLICABLE, NEEDS_INSPECTION
- */
-
-export const labelColors: Partial<
-    Record<Exclude<LabelProps['color'], undefined>, string[]>
-> = {
-    red: ['error', 'failed', 'missed'],
-    orange: ['needs_inspection', 'not_applicable'],
-    blue: [],
-    cyan: [],
-    green: ['passed'],
-    purple: ['running'],
-    grey: ['info'],
-};
-
 export const resultColor = (result: string) => {
     return _.findKey(resultColors, (item) => item.indexOf(result) !== -1);
 };
 
-type modifyType = 'test' | 'gating';
+type modifyType = 'gating' | 'test';
 
 export const getThreadID = (args: {
     kai_state?: KaiStateType;

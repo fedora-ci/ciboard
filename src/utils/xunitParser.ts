@@ -21,7 +21,7 @@
 import * as uuid from 'uuid';
 const parseString = require('xml2js-parser').parseStringSync;
 
-const xml2js = (xml: any) => {
+const xml2js = (xml: string) => {
     const data = parseString(xml);
 
     let suites = [];
@@ -155,7 +155,7 @@ const buildTests = (suite: any) => {
     delete suite.testcase;
 };
 
-const buildSuites = (suites: any) =>
+const buildSuites = (suites: any[]) =>
     suites
         .filter((suite: any) => {
             if (typeof suite === 'string') return suite.trim() !== '';
@@ -170,7 +170,7 @@ const buildSuites = (suites: any) =>
             delete suite.errors;
             delete suite.skipped;
 
-            suite.name = suite.name || 'No Name';
+            suite.name = suite.name || 'Unnamed suite';
 
             if (suite.testcase) buildTests(suite);
 
@@ -229,7 +229,7 @@ const buildSuites = (suites: any) =>
             return suite;
         });
 
-export const xunitParser = (xml: any) => {
+export const xunitParser = (xml: string) => {
     const suites = xml2js(xml);
     return buildSuites(suites);
 };

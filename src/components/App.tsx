@@ -34,6 +34,7 @@ import { onError } from '@apollo/client/link/error';
 import '@patternfly/react-core/dist/styles/base.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
+import '@patternfly/react-styles/css/utilities/Text/text.css';
 
 import { menuRoutes, otherRoutes } from '../routes';
 
@@ -62,7 +63,9 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors)
         graphQLErrors.map(({ message, locations, path }) =>
             console.log(
-                `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(locations)}, Path: ${path}`,
+                `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
+                    locations,
+                )}, Path: ${path}`,
             ),
         );
     if (networkError) console.log(`[Network error]: ${networkError}`);

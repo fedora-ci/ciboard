@@ -106,13 +106,17 @@
     line-height: 1;
 }
 
+.pageHeaderNav {
+    /* Stretch the horizontal navbar in page header over the available space. */
+    flex: 1 1 auto;
+}
+
 /*
  * https://github.com/patternfly/patternfly/issues/2177
  */
 :global(.pf-c-data-list__item.pf-m-expanded
         .issue_2177
-        .pf-c-data-list__toggle-icon)
-{
+        .pf-c-data-list__toggle-icon) {
     transform: none;
 }
 
@@ -126,7 +130,8 @@
         var(--pf-global--BackgroundColor--200) !important;
 }
 
-.buildInfoCommitHash, .buildInfoTimestamp {
+.buildInfoCommitHash,
+.buildInfoTimestamp {
     font-size: 0.85em;
     font-family: monospace;
 }
@@ -162,23 +167,4 @@
 :global(.pc-c-page__header-nav .pf-c-nav) {
     /* Stretch the horizontal navbar in page header over the available space. */
     flex: 1 1 auto;
-}
-
-/**
-* Colors are based on:
-* https://www.colourlovers.com/palette/669439/Alcatraz!
-* https://www.colourlovers.com/palette/2293597/Spiraling
-*/
-:global(.pf-c-data-list__item.pf-m-expanded).level2 {
-    --pf-c-data-list__item--BackgroundColor: #fff7f7;
-}
-
-:global(.pf-c-table.pf-m-compact
-        :not(.pf-c-table__expandable-row)).level1Closed {
-    background-color: #f7f7f7;
-}
-
-:global(.pf-c-table.pf-m-compact
-        :not(.pf-c-table__expandable-row)).level1Opened {
-    background-color: var(--pf-global--BackgroundColor--100);
 }

@@ -147,7 +147,7 @@ export const KaiStateXunit: React.FC<KaiStateXunitProps> = (props) => {
         return null;
     }
     const render = (
-        <StateDetailsEntry caption="Xunit">
+        <StateDetailsEntry caption="Test results">
             <TestSuites state={state} artifact={artifact} />
         </StateDetailsEntry>
     );

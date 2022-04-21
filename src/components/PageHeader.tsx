@@ -48,6 +48,7 @@ import { fetchUser } from '../actions';
 import { IStateAuth } from '../actions/types';
 import { menuRoutes } from '../routes';
 import { RootStateType } from '../reducers';
+import styles from '../custom.module.css';
 import {
     OnDropdownSelectType,
     OnDropdownToggleType,
@@ -183,7 +184,12 @@ export const DashboardPageHeader = () => {
         </NavItem>
     ));
     const PageNav = (
-        <Nav variant="horizontal" onSelect={onNavSelect} aria-label="Nav">
+        <Nav
+            className={styles['pageHeaderNav']}
+            variant="horizontal"
+            onSelect={onNavSelect}
+            aria-label="Nav"
+        >
             <NavList>{menuElements}</NavList>
         </Nav>
     );

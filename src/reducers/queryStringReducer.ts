@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import qs from 'qs';
 import update from 'immutability-helper';
 import {
     SET_QUERY_STRING,
