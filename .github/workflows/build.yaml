@@ -1,32 +1,44 @@
 name: Check build
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+
+  # Allows to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [14.x, 16.x, 17.x]
+
     steps:
       - name: Check out sources
         uses: actions/checkout@v2
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: yarn
+          cache-dependency-path: yarn.lock
 
       - name: Install build dependencies
-        run: npm install
+        run: yarn install
 
       - name: Compile TypeScript
-        run: npx tsc
+        run: yarn build
 
       - name: Lint with ESLint
         run: npx eslint .
 
       - name: Run tests
-        run: npm test
+        run: yarn test
+
+      - name: Codecov
+        if: ${{ matrix.node-version == '17.x' }}
+        uses: codecov/codecov-action@v3
