@@ -19,29 +19,42 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import React from 'react';
+import * as React from 'react';
 import {
     Chart,
-    ChartAxis,
     ChartBar,
+    ChartAxis,
     ChartStack,
-    ChartThemeColor,
-    ChartThemeVariant,
     ChartTooltip,
     getCustomTheme,
+    ChartThemeColor,
+    ChartThemeVariant,
 } from '@patternfly/react-charts';
+
+/**
+ * map to labels colors:
+ *
+ * pass = green
+ * fail = red
+ * info = orange
+ * unknown = blue
+ */
 import {
-    chart_color_blue_100,
-    chart_color_blue_300,
-    chart_color_blue_500,
-    chart_color_red_100,
+    c_label_m_green__icon_Color,
+    c_label_m_red__icon_Color,
+    c_label_m_orange__icon_Color,
+    c_label_m_blue__icon_Color,
 } from '@patternfly/react-tokens';
 
 const colorScale: string[] = [
-    chart_color_blue_300.value,
-    chart_color_red_100.value,
-    chart_color_blue_100.value,
-    chart_color_blue_500.value,
+    /* passed */
+    c_label_m_green__icon_Color.value,
+    /* failed */
+    c_label_m_red__icon_Color.value,
+    /* info */
+    c_label_m_orange__icon_Color.value,
+    /* other/unknown */
+    c_label_m_blue__icon_Color.value,
 ];
 
 const chartTheme = getCustomTheme(
@@ -56,62 +69,67 @@ const chartTheme = getCustomTheme(
 );
 
 interface StatusChartData {
-    Failed: Number;
     Info: Number;
     Other: Number;
+    Failed: Number;
     Passed: Number;
-};
+}
 
 interface StatusChartProps {
     data: StatusChartData;
-    height: number;
     width: number;
-};
+    height: number;
+}
 
 export function StatusChart({ data, height, width }: StatusChartProps) {
-    const legendData = Object.entries(data).map(
-        ([status, count], i) => (
-            { name: `${status} (${count})` }
-        )
-    );
+    const legendData = Object.entries(data).map(([status, count], i) => ({
+        name: `${status} (${count})`,
+    }));
 
     const makeLabel = (status: string, count: number): string => {
         let countLabel = `${count} results`;
-        if (count === 0)
-            countLabel = 'no results';
-        else if (count === 1)
-            countLabel = '1 result';
+        if (count === 0) countLabel = 'no results';
+        else if (count === 1) countLabel = '1 result';
         return `${status}: ${countLabel}`;
     };
 
-    return <div style={{ height: `${height}px`, width: `${width}px` }}>
-        <Chart
-            ariaDesc="Summary of test result statuses"
-            ariaTitle="Stacked bar chart of the number of number in each status"
-            height={height}
-            legendData={legendData}
-            legendPosition="bottom"
-            padding={{
-                right: 10,
-                bottom: 60, // Adjusted to accommodate legend
-                left: 10,
-            }}
-            theme={chartTheme}
-            width={width}
-        >
-            <ChartAxis dependentAxis />
-            <ChartStack horizontal colorScale={colorScale}>
-                {Object.entries(data).map(([status, count]) => (
-                    <ChartBar
-                        barWidth={20}
-                        data={[
-                            { name: status, x: 0, y: count, label: makeLabel(status, count) },
-                        ]}
-                        key={status}
-                        labelComponent={<ChartTooltip constrainToVisibleArea />}
-                    />
-                ))}
-            </ChartStack>
-        </Chart>
-    </div>;
+    return (
+        <div style={{ height: `${height}px`, width: `${width}px` }}>
+            <Chart
+                ariaDesc="Summary of test result statuses"
+                ariaTitle="Stacked bar chart of the number of number in each status"
+                height={height}
+                legendData={legendData}
+                legendPosition="bottom"
+                padding={{
+                    right: 10,
+                    bottom: 60, // Adjusted to accommodate legend
+                    left: 10,
+                }}
+                theme={chartTheme}
+                width={width}
+            >
+                <ChartAxis dependentAxis />
+                <ChartStack horizontal colorScale={colorScale}>
+                    {Object.entries(data).map(([status, count]) => (
+                        <ChartBar
+                            barWidth={20}
+                            data={[
+                                {
+                                    name: status,
+                                    x: 0,
+                                    y: count,
+                                    label: makeLabel(status, count),
+                                },
+                            ]}
+                            key={status}
+                            labelComponent={
+                                <ChartTooltip constrainToVisibleArea />
+                            }
+                        />
+                    ))}
+                </ChartStack>
+            </Chart>
+        </div>
+    );
 }

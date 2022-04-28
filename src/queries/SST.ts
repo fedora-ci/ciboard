@@ -32,36 +32,7 @@ export const SSTListQuery = gql`
 `;
 
 export const SSTResultsQuery = gql`
-    query SSTResultsQuery(
-        $sst_name: String!
-        $release: String!
-    ) {
-        sst_results(
-            sst_name: $sst_name
-            release: $release
-        ) {
-            artifact {
-                id
-                url
-            }
-            assignee
-            gating_bug {
-                text
-                url
-            }
-            gating_yaml_url
-            log_urls
-            metadata_url
-            nvr
-            rebuild_url
-            status
-            tag
-            testcase {
-                category
-                namespace
-                type
-            }
-            time
-        }
+    query SSTResultsQuery($sst_name: String!, $release: String!) {
+        sst_results(sst_name: $sst_name, release: $release)
     }
 `;

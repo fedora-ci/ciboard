@@ -353,28 +353,82 @@ export interface SSTItem {
     releases: string[];
 }
 
+/**
 export interface SSTResult {
-    artifact: {
-        id: number;
-        url: string;
-    };
-    assignee: string;
-    gating_bug?: {
-        text: string;
-        url: string;
-    };
-    gating_yaml_url?: string;
-    log_urls?: string[];
-    metadata_url: string;
-    nvr: string;
-    rebuild_url?: string;
-    sortKey: string;
-    status: string;
     tag: string;
+    nvr: string;
+    time: string;
+    status: string;
+    sortKey: string;
+    assignee: string;
+    artifact: {
+        aid: string;
+        aid_link: string;
+    };
     testcase: {
         category: string;
         namespace: string;
         type: string;
     };
+    log_urls?: string[];
+    gating_bug?: {
+        text: string;
+        url: string;
+    };
+    rebuild_url?: string;
+    metadata_url: string;
+    gating_yaml_url?: string;
+}
+*/
+
+/**
+ * Raw reply from SST backend
+ *  {
+ *     "nvr": "ftp",
+ *     "nvr_link": "https://gitlab.com/redhat/centos-stream/rpms/ftp.git",
+ *     "assignee": "email@domain.com",
+ *     "aid": "0ef459c4-48d4-43cd-8210-e281eedf8899",
+ *     "aid_link": "https://artifacts.dev.testing-farm.io/0ef459c4-48d4-43cd-8210-e281eedf8899",
+ *     "namespace": "5",
+ *     "type": "",
+ *     "el8_gating_bug": "File bug",
+ *     "el8_gating_bug_link": "http://sst.osci.redhat.com/www/file-bug-centos.html",
+ *     "test_git": "git",
+ *     "test_git_link": "https://src.fedoraproject.org/tests/ftp.git",
+ *     "rebuild_link": "https://sst.osci.redhat.com/www/rebuild-centos.html",
+ *     "yaml": "gating.yaml",
+ *     "yaml_link": "https://gitlab.com/redhat/centos-stream/rpms/ftp.git",
+ *     "log_link": "https://artifacts.dev.testing-farm.io/0ef459c4-48d4-43cd-8210-e281eedf8899/work-testg7QfRB",
+ *     "category": "",
+ *     "time": "2022-04-26 11:00:56",
+ *     "state": "complete",
+ *     "status": "failed",
+ *     "buildstate": "complete",
+ *     "buildstate_link": "https://api.dev.testing-farm.io/v0.1/requests/0ef459c4-48d4-43cd-8210-e281eedf8899",
+ *     "tag": "None"
+ *   }
+ */
+export interface SSTResult {
+    nvr: string;
+    nvr_link: string;
+    assignee: string;
+    aid: string;
+    aid_link: string;
+    namespace: string;
+    type: string;
+    el8_gating_bug: string;
+    el8_gating_bug_link: string;
+    test_git: string;
+    test_git_link: string;
+    rebuild_link: string;
+    yaml: string;
+    yaml_link: string;
+    log_link: string | string[];
+    category: string;
     time: string;
+    state: string;
+    status: string;
+    buildstate: string;
+    buildstate_link: string;
+    tag: string;
 }

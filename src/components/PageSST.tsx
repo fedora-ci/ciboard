@@ -20,29 +20,26 @@
  */
 
 import _ from 'lodash';
+import * as React from 'react';
 import { useQuery } from '@apollo/client';
-import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-    Flex,
-    FlexItem,
     Nav,
+    Text,
+    Flex,
+    Title,
     NavItem,
     NavList,
-    PageSection,
-    PageSectionVariants,
     Spinner,
-    Text,
+    FlexItem,
+    PageSection,
     TextContent,
-    Title,
+    PageSectionVariants,
 } from '@patternfly/react-core';
 
 import { config } from '../config';
 import { SSTItem, SSTResult } from '../types';
-import {
-    SSTListQuery,
-    SSTResultsQuery,
-} from '../queries/SST';
+import { SSTListQuery, SSTResultsQuery } from '../queries/SST';
 import { PageCommon } from './PageCommon';
 import { DropdownSelector } from './SSTSelector';
 import { StatusChart } from './SSTResultsStatusChart';
@@ -61,7 +58,7 @@ interface PageSSTParams {
 }
 
 function PageHeader({ release, results, section, sstList }: PageHeaderProps) {
-    const currentSst = _.find(sstList, (sst) => (sst.name === section));
+    const currentSst = _.find(sstList, (sst) => sst.name === section);
 
     const haveStatusChartData = !_.isEmpty(results);
 
@@ -71,13 +68,8 @@ function PageHeader({ release, results, section, sstList }: PageHeaderProps) {
         <Nav variant="tertiary">
             <NavList>
                 {_.map(releases, (r) => (
-                    <NavItem
-                        isActive={r === release}
-                        key={r}
-                    >
-                        <Link to={`/sst/${section}/${r}`}>
-                            {r}
-                        </Link>
+                    <NavItem isActive={r === release} key={r}>
+                        <Link to={`/sst/${section}/${r}`}>{r}</Link>
                     </NavItem>
                 ))}
             </NavList>
@@ -86,25 +78,32 @@ function PageHeader({ release, results, section, sstList }: PageHeaderProps) {
 
     // Enforce a fixed order of the labels and colors.
     let statusChartData = {
-        'Passed': 0,
-        'Failed': 0,
-        'Info': 0,
-        'Other': 0,
+        Passed: 0,
+        Failed: 0,
+        Info: 0,
+        Other: 0,
     };
     if (haveStatusChartData) {
-        _.assign(statusChartData, _.countBy(results, (result) => {
-            const statusLower = result.status.toLowerCase();
-            if (statusLower.startsWith('pass')) {
-                return 'Passed';
-            }
-            if (statusLower.startsWith('fail')) {
-                return 'Failed';
-            }
-            if (['info', 'needs_inspection', 'not_applicable'].includes(statusLower)) {
-                return 'Info';
-            }
-            return 'Other';
-        }));
+        _.assign(
+            statusChartData,
+            _.countBy(results, (result) => {
+                const statusLower = result.status.toLowerCase();
+                if (statusLower.startsWith('pass')) {
+                    return 'Passed';
+                }
+                if (statusLower.startsWith('fail')) {
+                    return 'Failed';
+                }
+                if (
+                    ['info', 'needs_inspection', 'not_applicable'].includes(
+                        statusLower,
+                    )
+                ) {
+                    return 'Info';
+                }
+                return 'Other';
+            }),
+        );
     }
 
     return (
@@ -134,16 +133,17 @@ function PageHeader({ release, results, section, sstList }: PageHeaderProps) {
             <Flex
                 flex={{ default: 'flex_1' }}
                 justifyContent={{
-                    default: 'justifyContentFlexEnd'
+                    default: 'justifyContentFlexEnd',
                 }}
             >
                 <FlexItem>
-                    {haveStatusChartData &&
+                    {haveStatusChartData && (
                         <StatusChart
                             data={statusChartData}
                             height={80}
                             width={500}
-                        />}
+                        />
+                    )}
                 </FlexItem>
             </Flex>
         </>
@@ -158,24 +158,20 @@ export function PageSST() {
     const skipResultsQuery = !release || !section;
 
     const listQuery = useQuery(SSTListQuery);
-    const resultsQuery = useQuery(
-        SSTResultsQuery,
-        {
-            skip: skipResultsQuery,
-            variables: {
-                release: release,
-                sst_name: section,
-            },
+    const resultsQuery = useQuery(SSTResultsQuery, {
+        skip: skipResultsQuery,
+        variables: {
+            release: release,
+            sst_name: section,
         },
-    );
+    });
 
     const sstList: SSTItem[] | undefined = _.get(listQuery, 'data.sst_list');
-    const sstResults: SSTResult[] | undefined = (
-        (resultsQuery.error || resultsQuery.loading)
+    const sstResults: SSTResult[] | undefined =
+        resultsQuery.error || resultsQuery.loading
             ? undefined
-            : _.get(resultsQuery, 'data.sst_results')
-    );
-    const showResultsTable = (resultsQuery.loading || sstResults);
+            : _.get(resultsQuery, 'data.sst_results');
+    const showResultsTable = resultsQuery.loading || sstResults;
 
     let pageTitle = 'Subsystems';
     if (section) {
@@ -187,56 +183,57 @@ export function PageSST() {
     pageTitle += ` | ${config.defaultTitle}`;
 
     return (
-        <PageCommon
-            title={pageTitle}
-        >
-            <PageSection
-                variant={PageSectionVariants.default}
-                isFilled
-            >
+        <PageCommon title={pageTitle}>
+            <PageSection variant={PageSectionVariants.default} isFilled>
                 <Flex>
                     <Flex
                         flex={{ default: 'flex_1' }}
                         alignSelf={{ default: 'alignSelfFlexStart' }}
                     >
                         <FlexItem>
-                            {listQuery.loading &&
+                            {listQuery.loading && (
                                 <TextContent>
                                     <Text>
-                                        <Spinner size="md" className="pf-u-mr-sm" />
+                                        <Spinner
+                                            size="md"
+                                            className="pf-u-mr-sm"
+                                        />
                                         Loading SST list…
                                     </Text>
                                 </TextContent>
-                            }
-                            {listQuery.error &&
+                            )}
+                            {listQuery.error && (
                                 <TextContent>
-                                    <Text>Error loading SST list: {String(listQuery.error)}</Text>
+                                    <Text>
+                                        Error loading SST list:{' '}
+                                        {String(listQuery.error)}
+                                    </Text>
                                 </TextContent>
-                            }
-                            {!listQuery.loading && sstList &&
+                            )}
+                            {!listQuery.loading && sstList && (
                                 <DropdownSelector
                                     section={section}
                                     sstList={sstList}
                                 />
-                            }
+                            )}
                         </FlexItem>
                     </Flex>
-                    {section && sstList &&
+                    {section && sstList && (
                         <PageHeader
                             release={release}
                             results={sstResults}
                             section={section}
                             sstList={sstList}
                         />
-                    }
+                    )}
                 </Flex>
-                {showResultsTable &&
+                {showResultsTable && (
                     <ResultsTable
                         error={resultsQuery.error}
                         loading={resultsQuery.loading}
                         results={sstResults}
                     />
-                }
+                )}
             </PageSection>
         </PageCommon>
     );

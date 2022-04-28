@@ -27,39 +27,12 @@
     background-color: oldlace;
 }
 
-.sstStatus {
-    width: fit-content;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
 
 .sstNVR {
     max-width: 25ch;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.sstStatusPassed,
-.sstStatusFailed,
-.sstStatusInfo,
-.sstStatusOther {
-    padding: 0 0.4em;
-    color: var(--pf-global--palette--black-100);
-}
-.sstStatusPassed {
-    background: var(--pf-global--palette--blue-400);
-}
-.sstStatusFailed {
-    background: var(--pf-global--palette--red-100);
-}
-.sstStatusInfo {
-    color: var(--pf-global--palette--black);
-    background: var(--pf-global--palette--blue-100);
-}
-.sstStatusOther {
-    background: var(--pf-global--palette--blue-600);
 }
 
 .statusPassed {

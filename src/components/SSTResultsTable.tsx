@@ -20,92 +20,115 @@
  */
 
 import _ from 'lodash';
-import React, { ComponentType, useEffect, useState } from 'react';
+import * as React from 'react';
+import { ComponentType, useEffect, useState } from 'react';
 import {
+    Flex,
+    Label,
+    Title,
+    Button,
+    Spinner,
     Bullseye,
+    FlexItem,
     EmptyState,
+    LabelProps,
     EmptyStateBody,
     EmptyStateIcon,
     EmptyStateVariant,
-    Spinner,
-    Title,
 } from '@patternfly/react-core';
 import ReactTable, {
-    SortByDirection,
     Table,
+    sortable,
+    cellWidth,
     TableBody,
+    Visibility,
+    classNames as rtClassNames,
     TableHeader,
     TableVariant,
-    cellWidth,
-    sortable,
+    SortByDirection,
 } from '@patternfly/react-table';
+import classNames from 'classnames';
+import { ApolloError } from '@apollo/client';
 import { global_danger_color_200 } from '@patternfly/react-tokens';
 import {
-    ExclamationCircleIcon,
+    OkIcon,
     SearchIcon,
+    InfoCircleIcon,
+    ErrorCircleOIcon,
+    ExclamationCircleIcon,
 } from '@patternfly/react-icons';
-import { ApolloError } from '@apollo/client';
 
 import styles from '../custom.module.css';
 import { SSTResult } from '../types';
 
 interface EmptyStateParam {
-	body: string;
-	icon: ComponentType;
-	icon_color?: string;
-	title: string;
-}
-
-interface ResultsTableProps {
-	error?: ApolloError;
-	loading: boolean;
-	results?: SSTResult[];
+    body: string;
+    icon: ComponentType;
+    icon_color?: string;
+    title: string;
 }
 
 const columns: ReactTable.ICell[] = [
     {
+        /* 0 */
         title: 'NVR',
         transforms: [cellWidth(20), sortable],
     },
     {
+        /* 1 */
         title: 'Bug',
         transforms: [cellWidth(10)],
     },
     {
+        /* 2 */
         title: 'Assignee',
         transforms: [sortable],
     },
     {
+        /* 3 */
         title: 'Artifact',
     },
     {
+        /* 4 */
         title: 'Gating rules',
     },
     {
-        title: 'Testcase',
+        /* 5 */
+        title: 'Tests',
     },
     {
+        /* index: 6 */
+        title: 'Test repo',
+        /**
+         * use to hide column, if all entries are emtpy: OSCI-3214
+         * [ classNames(Visibility.hidden, Visibility.visibleOnMd, Visibility.hiddenOnLg, Visibility.visibleOn2Xl) ]
+         */
+        columnTransforms: [],
+    },
+    {
+        /* 7 */
         title: 'Status',
         transforms: [cellWidth(15), sortable],
     },
     {
+        /* 8 */
         title: 'Time',
         transforms: [sortable],
     },
     {
+        /* 9 */
         title: 'Logs',
     },
 ];
 
-function makeRow(row: SSTResult): ReactTable.IRow[] {
+function makeRow(row: SSTResult, showTestRepo: boolean): ReactTable.IRow[] {
     const cells = [];
-
     cells.push({
         sortKey: row.nvr,
         title: (
             <a
                 className={styles.sstNVR}
-                href={row.metadata_url}
+                href={row.nvr_link}
                 rel="noopener noreferrer"
                 target="_blank"
             >
@@ -113,41 +136,33 @@ function makeRow(row: SSTResult): ReactTable.IRow[] {
             </a>
         ),
     });
-
-    if (row.gating_bug) {
+    if (!_.isEmpty(row.el8_gating_bug) && row.el8_gating_bug != 'X') {
         cells.push({
             title: (
                 <a
-                    href={row.gating_bug.url}
+                    href={row.el8_gating_bug_link}
                     rel="noopener noreferrer"
                     target="_blank"
                 >
-                    {row.gating_bug.text}
+                    {row.el8_gating_bug}
                 </a>
             ),
         });
     } else {
-        cells.push({ title: 'N/A', });
+        cells.push({ title: 'N/A' });
     }
-
     cells.push({
         sortKey: row.assignee,
         title: row.assignee,
     });
-
     cells.push({
-        title: (
-            <a href={row.artifact.url}>
-                {row.artifact.id}
-            </a>
-        ),
+        title: <a href={row.aid_link}>{row.aid}</a>,
     });
-
-    if (row.gating_yaml_url) {
+    if (!_.isEmpty(row.yaml_link) && row?.yaml !== 'missing') {
         cells.push({
             title: (
                 <a
-                    href={row.gating_yaml_url}
+                    href={row.yaml_link}
                     rel="noopener noreferrer"
                     target="_blank"
                 >
@@ -156,48 +171,78 @@ function makeRow(row: SSTResult): ReactTable.IRow[] {
             ),
         });
     } else {
-        cells.push({ title: <i>Missing</i>, });
+        cells.push({ title: <i>Missing</i> });
     }
 
-    if (row.testcase.category === null) {
-        cells.push({ title: <i>Unknown test</i>, });
+    if (row.category === null) {
+        cells.push({ title: <i>Unknown test</i> });
     } else {
         cells.push({
-            title: (
-                ({ category, namespace, type }) => (
-                    `${namespace}.${type}.${category}`
-                )
-            )(row.testcase),
+            title: `${row.namespace}.${row.type}.${row.category}`,
         });
     }
 
-    // FIXME: Duplication in PageSST.
-    const statusLower = _.get(row, 'status', 'unknown').toLowerCase();
-    let statusClass = styles.sstStatusOther;
-    if (statusLower.startsWith('pass')) {
-        statusClass = styles.sstStatusPassed;
-    } else if (statusLower.startsWith('fail')) {
-        statusClass = styles.sstStatusFailed;
-    } else if (['info', 'needs_inspection', 'not_applicable'].includes(statusLower)) {
-        statusClass = styles.sstStatusInfo;
-    }
-
-    cells.push({
-        sortKey: statusLower,
-        title: (
-            <>
-                <span className={statusClass}>{statusLower}</span>
-                {row.rebuild_url &&
+    if (showTestRepo) {
+        if (!_.isEmpty(row.test_git_link) && row.test_git_link !== 'X') {
+            cells.push({
+                title: (
                     <a
-                        className="pf-u-ml-sm"
-                        href={row.rebuild_url}
+                        href={row.test_git_link}
                         rel="noopener noreferrer"
                         target="_blank"
                     >
-                        Rebuild ↻
+                        {row.test_git}
                     </a>
-                }
-            </>
+                ),
+            });
+        } else {
+            cells.push({});
+        }
+    }
+
+    // FIXME: Duplication in PageSST.
+    const status = _.toLower(_.get(row, 'status', 'unknown'));
+    let statusColor: LabelProps['color'] = 'blue';
+    let statusIcon = <InfoCircleIcon />;
+    if (_.startsWith(status, 'pass')) {
+        statusColor = 'green';
+        statusIcon = <OkIcon />;
+    } else if (status.startsWith('fail')) {
+        statusColor = 'red';
+        statusIcon = <ErrorCircleOIcon />;
+    } else if (
+        _.includes(['info', 'needs_inspection', 'not_applicable'], status)
+    ) {
+        statusColor = 'orange';
+        statusIcon = <ExclamationCircleIcon />;
+    }
+    const rebuildButtonIsHidden =
+        _.isEmpty(row.rebuild_link) || row.rebuild_link === 'X';
+    const rebuildButtonClass = classNames({
+        [styles['isHidden']]: rebuildButtonIsHidden,
+    });
+    cells.push({
+        sortKey: status,
+        title: (
+            <Flex>
+                <FlexItem>
+                    <Label color={statusColor} isCompact icon={statusIcon}>
+                        {status}
+                    </Label>
+                </FlexItem>
+                <FlexItem>
+                    <Button
+                        href={row.rebuild_link}
+                        target="_blank"
+                        isInline
+                        className={rebuildButtonClass}
+                        component="a"
+                        variant="link"
+                    >
+                        ↻ rebuild
+                    </Button>
+                </FlexItem>
+            </Flex>
         ),
     });
 
@@ -206,29 +251,26 @@ function makeRow(row: SSTResult): ReactTable.IRow[] {
         title: row.time,
     });
 
-    if (row.log_urls) {
+    const logUrl = _.isArray(row.log_link) ? row.log_link[0] : row.log_link;
+    if (!_.isEmpty(logUrl) && logUrl !== 'X') {
         cells.push({
             title: (
-                <a
-                    href={row.log_urls[0]}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
+                <a href={logUrl} rel="noopener noreferrer" target="_blank">
                     Logs
                 </a>
             ),
         });
     } else {
-        cells.push({ title: <i>No logs</i>, });
+        cells.push({ title: <i>No logs</i> });
     }
 
     return cells;
 }
 
 const emptyStateParams: {
-	empty: EmptyStateParam;
-	error: EmptyStateParam;
-	loading: EmptyStateParam;
+    empty: EmptyStateParam;
+    error: EmptyStateParam;
+    loading: EmptyStateParam;
 } = {
     empty: {
         body: 'No results match the criteria.',
@@ -248,48 +290,70 @@ const emptyStateParams: {
     },
 };
 
-function makeEmptyStateRow({ body, icon, icon_color, title }: EmptyStateParam): ReactTable.IRow {
+function makeEmptyStateRow({
+    body,
+    icon,
+    icon_color,
+    title,
+}: EmptyStateParam): ReactTable.IRow {
     return {
         heightAuto: true,
-        cells: [{
-            props: { colSpan: 11 },
-            title: (
-                <Bullseye>
-                    <EmptyState variant={EmptyStateVariant.small}>
-                        <EmptyStateIcon
-                            icon={icon}
-                            color={icon_color}
-                        />
-                        <Title headingLevel="h2" size="lg">
-                            {title}
-                        </Title>
-                        <EmptyStateBody>
-                            {body}
-                        </EmptyStateBody>
-                    </EmptyState>
-                </Bullseye>
-            ),
-        }],
+        cells: [
+            {
+                props: { colSpan: 11 },
+                title: (
+                    <Bullseye>
+                        <EmptyState variant={EmptyStateVariant.small}>
+                            <EmptyStateIcon icon={icon} color={icon_color} />
+                            <Title headingLevel="h2" size="lg">
+                                {title}
+                            </Title>
+                            <EmptyStateBody>{body}</EmptyStateBody>
+                        </EmptyState>
+                    </Bullseye>
+                ),
+            },
+        ],
     };
 }
 
-export function ResultsTable({ error, loading, results }: ResultsTableProps) {
+interface ResultsTableProps {
+    error?: ApolloError;
+    loading: boolean;
+    results?: SSTResult[];
+}
+
+export function ResultsTable(props: ResultsTableProps) {
+    const { error, loading, results } = props;
     const [rows, setRows] = useState<ReactTable.IRow[]>([]);
     const [sortBy, setSortBy] = useState<ReactTable.ISortBy>({});
 
+    /** `columns` is global var, need to reset before previous render */
+    /** https://issues.redhat.com/browse/OSCI-3214 */
+    const showTestRespoColumn = _.some(_.map(results, 'test_git_link'), _.size);
+    if (showTestRespoColumn) {
+        columns[6].columnTransforms = [];
+    } else {
+        columns[6].columnTransforms = [
+            /** type error - bug in upstream, `as string` can be removed on next release */
+            rtClassNames(Visibility.hidden as string),
+        ];
+    }
+
     useEffect(() => {
-        // Clear rows and reset sorting criteria whenever the results change.
+        /* XXX: Clear rows and reset sorting criteria whenever the results change. */
         setRows([]);
         setSortBy({});
 
-        if (error)
+        if (error) {
             setRows([makeEmptyStateRow(emptyStateParams.error)]);
-        else if (loading)
+        } else if (loading) {
             setRows([makeEmptyStateRow(emptyStateParams.loading)]);
-        else if (_.isEmpty(results))
+        } else if (_.isEmpty(results)) {
             setRows([makeEmptyStateRow(emptyStateParams.empty)]);
-        else
-            setRows(_.map(results, makeRow));
+        } else {
+            setRows(_.map(results, (r) => makeRow(r, showTestRespoColumn)));
+        }
     }, [error, loading, results]);
 
     const onSort: ReactTable.OnSort = (_event, index, direction) => {
@@ -303,7 +367,7 @@ export function ResultsTable({ error, loading, results }: ResultsTableProps) {
         setRows(
             direction === SortByDirection.asc
                 ? sortedRows
-                : sortedRows.reverse()
+                : sortedRows.reverse(),
         );
         setSortBy({ index, direction });
     };
