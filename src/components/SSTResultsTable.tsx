@@ -121,7 +121,7 @@ const columns: ReactTable.ICell[] = [
     },
 ];
 
-function makeRow(row: SSTResult, showTestRepo: boolean): ReactTable.IRow[] {
+function makeRow(row: SSTResult): ReactTable.IRow[] {
     const cells = [];
     cells.push({
         sortKey: row.nvr,
@@ -182,22 +182,20 @@ function makeRow(row: SSTResult, showTestRepo: boolean): ReactTable.IRow[] {
         });
     }
 
-    if (showTestRepo) {
-        if (!_.isEmpty(row.test_git_link) && row.test_git_link !== 'X') {
-            cells.push({
-                title: (
-                    <a
-                        href={row.test_git_link}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                    >
-                        {row.test_git}
-                    </a>
-                ),
-            });
-        } else {
-            cells.push({});
-        }
+    if (!_.isEmpty(row.test_git_link) && row.test_git_link !== 'X') {
+        cells.push({
+            title: (
+                <a
+                    href={row.test_git_link}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                >
+                    {row.test_git}
+                </a>
+            ),
+        });
+    } else {
+        cells.push({});
     }
 
     // FIXME: Duplication in PageSST.
@@ -352,7 +350,7 @@ export function ResultsTable(props: ResultsTableProps) {
         } else if (_.isEmpty(results)) {
             setRows([makeEmptyStateRow(emptyStateParams.empty)]);
         } else {
-            setRows(_.map(results, (r) => makeRow(r, showTestRespoColumn)));
+            setRows(_.map(results, (r) => makeRow(r)));
         }
     }, [error, loading, results]);
 
