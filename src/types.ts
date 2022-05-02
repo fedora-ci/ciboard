@@ -405,7 +405,8 @@ export interface SSTResult {
  *     "status": "failed",
  *     "buildstate": "complete",
  *     "buildstate_link": "https://api.dev.testing-farm.io/v0.1/requests/0ef459c4-48d4-43cd-8210-e281eedf8899",
- *     "tag": "None"
+ *     "tag": "None",
+ *     "tests_number": "2"
  *   }
  */
 export interface SSTResult {
@@ -431,4 +432,5 @@ export interface SSTResult {
     buildstate: string;
     buildstate_link: string;
     tag: string;
+    tests_number: string;
 }

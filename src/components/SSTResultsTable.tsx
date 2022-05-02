@@ -174,7 +174,9 @@ function makeRow(row: SSTResult): ReactTable.IRow[] {
         cells.push({ title: <i>Missing</i> });
     }
 
-    if (row.category === null) {
+    if (!_.isEmpty(row.tests_number)) {
+        cells.push({ title: `${row.tests_number}` });
+    } else if (row.category === null) {
         cells.push({ title: <i>Unknown test</i> });
     } else {
         cells.push({
