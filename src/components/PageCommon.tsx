@@ -97,8 +97,29 @@ export function PageCommon(props: PageCommonProps) {
                     spaceItems={{ default: 'spaceItemsNone' }}
                     style={{ height: '100%' }}
                 >
+                    <FlexItem>
+                        <Banner isSticky variant="warning">
+                            This dashboard will replace the{' '}
+                            <a
+                                href="https://dashboard.osci.redhat.com"
+                                rel="noopener noreferrer"
+                                target="_blank"
+                            >
+                                old one
+                            </a>{' '}
+                            on June 1, 2022. For missing features or feedback
+                            please{' '}
+                            <a
+                                href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12325047&issuetype=1&components=12339807&priority=3&labels=user_request&labels=osci-dashboard&customfield_12311140=OSCI-3089"
+                                rel="noopener noreferrer"
+                                target="_blank"
+                            >
+                                file a Jira ticket
+                            </a>
+                            .
+                        </Banner>
+                    </FlexItem>
                     <FlexItem
-                        key="1"
                         grow={{ default: 'grow' }}
                         style={{ minHeight: 0 }}
                     >
@@ -114,28 +135,6 @@ export function PageCommon(props: PageCommonProps) {
                                 {props.children}
                             </PageSection>
                         </Page>
-                    </FlexItem>
-                    <FlexItem key="2">
-                        <Banner isSticky variant="default">
-                            This dashboard will replace the current.
-                            <a
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                href="https://dashboard.osci.redhat.com"
-                            >
-                                {' '}
-                                https://dashboard.osci.redhat.com
-                            </a>{' '}
-                            on 1 of Jun 2022. For missing features or feedback
-                            please:{' '}
-                            <a
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12325047&issuetype=1&priority=3&labels=user_request&labels=osci-dashboard&customfield_12311140=OSCI-3089"
-                            >
-                                open a ticket.
-                            </a>
-                        </Banner>
                     </FlexItem>
                 </Flex>
             </>
