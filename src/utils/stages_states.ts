@@ -332,16 +332,12 @@ const mergeKaiAndGreenwaveState = (
     );
 };
 
+/**
+ * Remove states from `test` stage that also appear in the `greenwave` stage.
+ */
 const minimizeStagesStates = (
     stageStatesArray: StageNameStateNameStatesType[],
 ): void => {
-    /**
-     * This functions applies only to case where:
-     * stage 1 == 'test'
-     * stage 2 == 'greenwave'
-     *
-     * Remove any state in stage == 'test' if testcase appears anywhere in stage == 'greenwave'
-     */
     const greenwave = filterByStageName('greenwave', stageStatesArray);
     const greenwaveTestNames: string[] = [];
     _.forEach(greenwave, ([_stageName, _stateName, states]) =>

@@ -73,7 +73,7 @@ export function gateArtifactsReducer(
 ) {
     switch (action.type) {
         case GATE_ARTIFACTS_BUMP_SEARCH_EPOCH: {
-            nstate = update(state, {
+            const nstate = update(state, {
                 searchEpoch: { $set: state.searchEpoch + 1 },
             });
             const url = new URL(window.location.href);

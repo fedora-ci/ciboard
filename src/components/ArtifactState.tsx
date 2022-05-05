@@ -159,7 +159,12 @@ export const LinkifyNewTab = (props: LinkifyNewTabPropsWithChildren) => {
     return (
         <Linkify
             componentDecorator={(decoratedHref, decoratedText, key) => (
-                <a target="_blank" href={decoratedHref} key={key}>
+                <a
+                    href={decoratedHref}
+                    key={key}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                >
                     {decoratedText}
                 </a>
             )}

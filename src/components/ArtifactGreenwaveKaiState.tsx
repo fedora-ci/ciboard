@@ -20,7 +20,6 @@
 
 import _ from 'lodash';
 import * as React from 'react';
-import moment from 'moment';
 import {
     Flex,
     FlexItem,
@@ -34,6 +33,7 @@ import {
 
 import styles from '../custom.module.css';
 import { Artifact, StateGreenwaveKaiType } from '../artifact';
+import { timestampForUser } from '../utils/artifactUtils';
 import { ArtifactStateProps } from './ArtifactState';
 import {
     WaiveButton,
@@ -49,16 +49,6 @@ import {
 } from './ArtifactKaiState';
 import { StateDetailsEntry } from './ArtifactState';
 import classnames from 'classnames';
-
-const timestampForUser = (inp: string, fromNow = false): string => {
-    const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
-    if (!fromNow) {
-        return time;
-    }
-    const passed = moment.utc(inp).local().fromNow();
-    const ret = time + ' (' + passed + ')';
-    return ret;
-};
 
 interface GreenwaveKaiStateActionsProps {
     artifact: Artifact;

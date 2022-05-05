@@ -19,6 +19,7 @@
  */
 
 import _ from 'lodash';
+import moment from 'moment';
 import {
     CheckCircleIcon,
     ExclamationTriangleIcon,
@@ -31,6 +32,7 @@ import {
     TrafficLightIcon,
     UnlinkIcon,
 } from '@patternfly/react-icons';
+
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     Artifact,
@@ -517,4 +519,14 @@ export const mkLinkKojiWebTagId = (
             console.log(`Unknown koji instance: ${instance}`);
             return '';
     }
+};
+
+export const timestampForUser = (inp: string, fromNow = false): string => {
+    const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
+    if (!fromNow) {
+        return time;
+    }
+    const passed = moment.utc(inp).local().fromNow();
+    const ret = time + ' (' + passed + ')';
+    return ret;
 };

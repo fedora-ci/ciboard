@@ -21,20 +21,19 @@
 import * as React from 'react';
 import { useState } from 'react';
 import {
-    Form,
-    Text,
-    Modal,
-    Title,
+    ActionGroup,
     Button,
-    Spinner,
-    Tooltip,
-    BaseSizes,
+    Form,
     FormGroup,
+    FormGroupProps,
+    Modal,
+    Spinner,
+    Text,
+    TextContent,
     TextInput,
     TextVariants,
-    TextContent,
-    ActionGroup,
-    FormGroupProps,
+    Title,
+    Tooltip,
 } from '@patternfly/react-core';
 import { useApolloClient } from '@apollo/client';
 import { useSelector, useDispatch } from 'react-redux';

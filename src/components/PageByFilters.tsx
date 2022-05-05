@@ -172,7 +172,7 @@ const SearchToolbar = () => {
         if (inputValue && _.size(inputValue)) {
             setInputValue('');
             dispatch(addFilter(inputValue, atype));
-        } else if (_.isEmpty(inputValue) && filters.type != atype) {
+        } else if (_.isEmpty(inputValue) && filters.type !== atype) {
             /** keep values, just change artifacts type */
             dispatch(addFilter(inputValue, atype));
         }
@@ -291,7 +291,7 @@ const SearchToolbar = () => {
 
 export function PageByFilters() {
     const { active: activeFilters } = useSelector<RootStateType, IStateFilters>(
-        (state) => state.filters
+        (state) => state.filters,
     );
     const [pageTitle, setPageTitle] = useState<string | undefined>();
 
@@ -302,14 +302,14 @@ export function PageByFilters() {
             if (queryForTitle.length > 40) {
                 queryForTitle = queryForTitle.substring(0, 40).trimEnd() + '…';
             }
-            setPageTitle(`Results for ‘${queryForTitle}’ | ${config.defaultTitle}`);
+            setPageTitle(
+                `Results for ‘${queryForTitle}’ | ${config.defaultTitle}`,
+            );
         }
     }, [activeFilters]);
 
     return (
-        <PageCommon
-            title={pageTitle}
-        >
+        <PageCommon title={pageTitle}>
             <SearchToolbar />
             <ArtifactsListByFilters />
             <ToastAlertGroup />

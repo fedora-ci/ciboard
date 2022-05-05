@@ -22,7 +22,7 @@ import * as React from 'react';
 import _ from 'lodash';
 import qs from 'qs';
 import { useSelector } from 'react-redux';
-import { useQuery, useApolloClient } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { useState, useRef, useEffect } from 'react';
 import {
     Flex,

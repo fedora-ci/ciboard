@@ -20,7 +20,6 @@
 
 import _ from 'lodash';
 import * as React from 'react';
-import moment from 'moment';
 import { useDispatch } from 'react-redux';
 import {
     Button,
@@ -49,7 +48,7 @@ import {
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
-import { renderStatusIcon } from '../utils/artifactUtils';
+import { renderStatusIcon, timestampForUser } from '../utils/artifactUtils';
 import { Artifact, StateGreenwaveType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
@@ -61,15 +60,6 @@ import {
 } from './ArtifactState';
 import { createWaiver } from '../actions';
 import classnames from 'classnames';
-
-const timestampForUser = (inp: string, fromNow = false): string => {
-    const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
-    if (!fromNow) {
-        return time;
-    }
-    const passed = moment.utc(inp).local().fromNow();
-    return `${time} (${passed})`;
-};
 
 interface WaiveButtonProps {
     artifact: Artifact;

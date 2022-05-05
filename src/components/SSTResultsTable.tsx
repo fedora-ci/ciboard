@@ -136,7 +136,7 @@ function makeRow(row: SSTResult): ReactTable.IRow[] {
             </a>
         ),
     });
-    if (!_.isEmpty(row.el8_gating_bug) && row.el8_gating_bug != 'X') {
+    if (!_.isEmpty(row.el8_gating_bug) && row.el8_gating_bug !== 'X') {
         cells.push({
             title: (
                 <a
