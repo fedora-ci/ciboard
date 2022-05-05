@@ -70,3 +70,19 @@ test('POP removes an alert', () => {
         ],
     });
 });
+
+test('POP does not remove a non-existent alert', () => {
+    const state: IStateAlerts = {
+        alerts: [
+            { key: 1, title: 'First alert', variant: 'info' },
+            { key: 2, title: 'Second alert', variant: 'danger' },
+            { key: 3, title: 'New alert', variant: 'info' },
+        ],
+    };
+    const action: ActionPopAlert = {
+        type: POP_ALERT,
+        payload: { key: 246 },
+    };
+    const newState = alertsReducer(state, action);
+    expect(newState).toStrictEqual(state);
+});
