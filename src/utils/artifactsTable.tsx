@@ -43,7 +43,7 @@ import {
 } from '@patternfly/react-core';
 import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
 import { nowrap, expandable, fitContent } from '@patternfly/react-table';
-import { ArrowIcon, ExclamationCircleIcon } from '@patternfly/react-icons';
+import { ExclamationCircleIcon, LinkIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 import {
     aidMeaningForType,
@@ -329,7 +329,7 @@ export const mkArtifactRow = (artifact: Artifact): IRow => {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    <ArrowIcon style={{ height: '0.75em' }} />
+                    <LinkIcon style={{ height: '0.9em' }} />
                 </a>
             ),
         },

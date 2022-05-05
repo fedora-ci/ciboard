@@ -58,7 +58,7 @@ import {
     TextInputProps,
     Title,
 } from '@patternfly/react-core';
-import { ArrowIcon, ThIcon } from '@patternfly/react-icons';
+import { LinkIcon, ThIcon } from '@patternfly/react-icons';
 import {
     cellWidth,
     ICell,
@@ -445,7 +445,7 @@ function mkArtifactRow(
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    <ArrowIcon size="sm" />
+                    <LinkIcon style={{ height: '0.9em' }} />
                 </a>
             ),
         },
