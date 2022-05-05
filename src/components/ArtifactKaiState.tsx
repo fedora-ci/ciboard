@@ -326,10 +326,10 @@ const StageName: React.FC<StageNameProps> = (props) => {
     const { state } = props;
     const { kai_state } = state;
     if (kai_state.stage === 'dispatch') {
-        return <>`dispatcher / ${_.get(state.broker_msg_body, 'ci.name')}`</>;
+        return <>{`dispatcher / ${_.get(state.broker_msg_body, 'ci.name')}`}</>;
     }
     if (kai_state.stage === 'build') {
-        return <>'build'</>;
+        return <>build</>;
     }
     const name = getTestcaseName(state);
     return (

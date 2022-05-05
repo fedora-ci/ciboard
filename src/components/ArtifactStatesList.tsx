@@ -74,7 +74,7 @@ interface StageAndStateProps {
 
 const StageAndState: React.FC<StageAndStateProps> = (props) => {
     const { stageName, stateName } = props;
-    let content = `${stageName} / ${stateName}`;
+    const content = `${stageName} / ${stateName}`;
     return (
         <DataListItem
             key={content}
@@ -232,7 +232,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
     if (!_.size(stagesAndStates)) {
         return <>No test results available for this artifact.</>;
     }
-    const resultRows = [];
+    const resultRows: React.ReactNode[] = [];
     for (const [stageName, stateName, statesList] of stagesAndStates) {
         const key = `${stageName} / ${stateName}`;
         resultRows.push(
@@ -255,12 +255,12 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
             resultRows.push(
                 <div key={key} ref={ref}>
                     <ArtifactState
-                        state={state}
                         artifact={artifact}
-                        stateName={stateName}
+                        artifactDashboardUrl={artifactDashboardUrl(artifact)}
                         forceExpand={forceExpand}
                         setExpandedResult={setExpandedResult}
-                        artifactDashboardUrl={artifactDashboardUrl(artifact)}
+                        state={state}
+                        stateName={stateName}
                     />
                 </div>,
             );

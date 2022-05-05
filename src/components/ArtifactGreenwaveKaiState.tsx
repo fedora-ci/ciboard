@@ -89,12 +89,11 @@ export const ArtifactGreenwaveKaiState: React.FC<
     ArtifactGreenwaveKaiStateProps
 > = (props) => {
     const {
-        state,
         artifact,
-        stateName,
+        artifactDashboardUrl,
         forceExpand,
         setExpandedResult,
-        artifactDashboardUrl,
+        state,
     } = props;
 
     /*

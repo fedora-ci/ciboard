@@ -87,7 +87,7 @@ export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
         dispatch(createWaiver(artifact, state));
     };
     return (
-        <Button key="waived" variant="tertiary" onClick={onClick}>
+        <Button variant="tertiary" onClick={onClick}>
             <OutlinedThumbsUpIcon />
             <span className={styles.waive}>waive</span>
         </Button>

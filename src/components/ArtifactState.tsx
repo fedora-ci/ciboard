@@ -85,7 +85,7 @@ interface StateLinkProps {
 }
 export const StateLink: React.FC<StateLinkProps> = (props) => {
     const { state, artifactDashboardUrl } = props;
-    var href: string;
+    let href: string;
     if (isGreenwaveState(state)) {
         const { testcase } = state;
         href = `${artifactDashboardUrl}?focus=tc:${testcase}`;
