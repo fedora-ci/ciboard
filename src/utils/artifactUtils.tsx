@@ -317,7 +317,7 @@ export const renderStatusIcon = (
     const icons = {
         missing: {
             pick: type === 'missing' || type === 'test-result-missing',
-            color: '--pf-global--danger-color--100',
+            color: '--pf-global--disabled-color--100',
             icon: GhostIcon,
             aria: 'Result is missing.',
         },
