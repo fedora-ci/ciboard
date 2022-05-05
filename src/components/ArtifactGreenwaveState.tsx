@@ -23,28 +23,28 @@ import * as React from 'react';
 import moment from 'moment';
 import { useDispatch } from 'react-redux';
 import {
-    Flex,
-    Text,
-    Label,
     Button,
-    FlexItem,
-    TextContent,
     DataListCell,
-    DataListItem,
-    DataListToggle,
-    DataListItemRow,
     DataListContent,
-    DescriptionList,
+    DataListItem,
     DataListItemCells,
-    DescriptionListTerm,
-    DescriptionListGroup,
+    DataListItemRow,
+    DataListToggle,
+    DescriptionList,
     DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
+    Flex,
+    FlexItem,
+    Label,
+    Text,
+    TextContent,
 } from '@patternfly/react-core';
 
 import {
+    OutlinedThumbsUpIcon,
     RedoIcon,
     RegisteredIcon,
-    OutlinedThumbsUpIcon,
     WeeblyIcon,
 } from '@patternfly/react-icons';
 
@@ -53,11 +53,11 @@ import { renderStatusIcon } from '../utils/artifactUtils';
 import { Artifact, StateGreenwaveType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
-    mkPairs,
-    mkLabel,
-    StateLink,
     LinkifyNewTab,
     StateDetailsEntry,
+    StateLink,
+    mkLabel,
+    mkPairs,
 } from './ArtifactState';
 import { createWaiver } from '../actions';
 import classnames from 'classnames';
@@ -75,6 +75,7 @@ interface WaiveButtonProps {
     artifact: Artifact;
     state: StateGreenwaveType;
 }
+
 export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     const { state, artifact } = props;
     const { requirement } = state;
@@ -97,6 +98,7 @@ export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
 interface GreenwaveReTestButtonProps {
     state: StateGreenwaveType;
 }
+
 export const GreenwaveReTestButton: React.FC<GreenwaveReTestButtonProps> = (
     props,
 ) => {
@@ -131,6 +133,7 @@ interface GreenwaveStateActionsProps {
     artifact: Artifact;
     state: StateGreenwaveType;
 }
+
 export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
     props,
 ) => {
@@ -163,10 +166,13 @@ const resultMapping = [
     ['testcase.ref_url', 'testcase info'],
 ];
 
-interface GreenwaveResultProps {
+interface GreenwaveResultInfoProps {
     state: StateGreenwaveType;
 }
-export const GreenwaveResultInfo: React.FC<GreenwaveResultProps> = (props) => {
+
+export const GreenwaveResultInfo: React.FC<GreenwaveResultInfoProps> = (
+    props,
+) => {
     const { state } = props;
     if (!state.result) {
         return null;
@@ -209,6 +215,7 @@ const waiverMapping = [
 interface GreenwaveWaiverProps {
     state: StateGreenwaveType;
 }
+
 export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
     const { state } = props;
     if (!state.waiver) {
@@ -243,6 +250,7 @@ export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
 interface GreenwaveRequirementProps {
     state: StateGreenwaveType;
 }
+
 export const GreenwaveRequirement: React.FC<GreenwaveRequirementProps> = (
     props,
 ) => {
@@ -276,6 +284,7 @@ export const GreenwaveRequirement: React.FC<GreenwaveRequirementProps> = (
 interface GreenwaveResultDataProps {
     state: StateGreenwaveType;
 }
+
 export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
     props,
 ) => {

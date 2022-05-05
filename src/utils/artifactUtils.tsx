@@ -63,32 +63,32 @@ export function isGreenwaveKaiState(
 
 /** Maps artifact type to DB field to use in next query */
 export const db_field_from_atype = {
-    'brew-build': 'nvr',
-    'koji-build': 'nvr',
-    'copr-build': 'component',
-    'koji-build-cs': 'nvr',
-    'redhat-module': 'nsvc',
-    'productmd-compose': 'compose_id',
+    'brew-build': 'NVR',
+    'copr-build': 'Component',
+    'koji-build-cs': 'NVR',
+    'koji-build': 'NVR',
+    'productmd-compose': 'Compose ID',
+    'redhat-module': 'NSVC',
 };
 
 const known_types = {
-    'brew-build': 'nvr',
-    'koji-build': 'nvr',
-    'koji-build-cs': 'nvr',
-    'redhat-module': 'nsvc',
-    'copr-build': 'component',
-    'productmd-compose': 'compose_id',
-    'redhat-container': 'id',
+    'brew-build': 'NVR',
+    'copr-build': 'Component',
+    'koji-build-cs': 'NVR',
+    'koji-build': 'NVR',
+    'productmd-compose': 'Compose ID',
+    'redhat-container': 'ID',
+    'redhat-module': 'NSVC',
 };
 
 const known_aid_meaning = {
-    'brew-build': 'task id',
-    'koji-build': 'task id',
-    'koji-build-cs': 'task id',
-    'redhat-module': 'mbs id',
-    'copr-build': 'id',
-    'productmd-compose': 'compose',
-    'redhat-container': 'id',
+    'brew-build': 'Task ID',
+    'copr-build': 'ID',
+    'koji-build-cs': 'Task ID',
+    'koji-build': 'Task ID',
+    'productmd-compose': 'Compose',
+    'redhat-container': 'ID',
+    'redhat-module': 'MBS ID',
 };
 
 export function getArtifactName(artifact: Artifact): string | undefined {

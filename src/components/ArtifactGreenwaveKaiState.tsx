@@ -64,19 +64,20 @@ interface GreenwaveKaiStateActionsProps {
     artifact: Artifact;
     state: StateGreenwaveKaiType;
 }
+
 export const GreenwaveKaiStateActions: React.FC<
     GreenwaveKaiStateActionsProps
 > = (props) => {
     const { state, artifact } = props;
-    const items: JSX.Element[] = [];
-    items.push(<WaiveButton state={state.gs} artifact={artifact} />);
-    items.push(<KaiReTestButton state={state.ks} />);
     return (
         <StateDetailsEntry caption="Actions">
             <Flex>
-                {_.map(items, (i, k) => (
-                    <FlexItem key={k}>{i}</FlexItem>
-                ))}
+                <FlexItem>
+                    <WaiveButton state={state.gs} artifact={artifact} />
+                </FlexItem>
+                <FlexItem>
+                    <KaiReTestButton state={state.ks} />
+                </FlexItem>
             </Flex>
         </StateDetailsEntry>
     );
@@ -85,6 +86,7 @@ export const GreenwaveKaiStateActions: React.FC<
 export interface ArtifactGreenwaveKaiStateProps extends ArtifactStateProps {
     state: StateGreenwaveKaiType;
 }
+
 export const ArtifactGreenwaveKaiState: React.FC<
     ArtifactGreenwaveKaiStateProps
 > = (props) => {
@@ -108,6 +110,7 @@ export const ArtifactGreenwaveKaiState: React.FC<
             setExpandedResult('');
         }
     };
+
     /** Note for info test results */
     const key = state.gs.testcase;
     const resultClasses = classnames(styles['helpSelect'], styles['level2']);
@@ -141,21 +144,21 @@ export const ArtifactGreenwaveKaiState: React.FC<
                 />
             </DataListItemRow>
             <DataListContent
-                aria-label="Primary Content Result Details"
+                aria-label="Detailed information on test result"
                 id="ex-result-expand1"
                 isHidden={!forceExpand}
             >
                 {forceExpand && (
                     <>
-                        <GreenwaveKaiStateActions
-                            state={state}
-                            artifact={artifact}
-                        />
                         <GreenwaveWaiver state={state.gs} />
                         <GreenwaveResultInfo state={state.gs} />
                         <GreenwaveRequirement state={state.gs} />
                         <KaiStateMapping state={state.ks} artifact={artifact} />
                         <KaiStateXunit state={state.ks} artifact={artifact} />
+                        <GreenwaveKaiStateActions
+                            state={state}
+                            artifact={artifact}
+                        />
                     </>
                 )}
             </DataListContent>

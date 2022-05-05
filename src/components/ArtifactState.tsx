@@ -56,6 +56,7 @@ import {
 
 type StateDetailsEntryPropsWithChildren =
     React.PropsWithChildren<React.ReactNode> & { caption: string };
+
 export const StateDetailsEntry = (
     props: StateDetailsEntryPropsWithChildren,
 ) => {
@@ -83,6 +84,7 @@ interface StateLinkProps {
     state: StateType;
     artifactDashboardUrl: string;
 }
+
 export const StateLink: React.FC<StateLinkProps> = (props) => {
     const { state, artifactDashboardUrl } = props;
     let href: string;
@@ -157,7 +159,7 @@ export const LinkifyNewTab = (props: LinkifyNewTabPropsWithChildren) => {
     return (
         <Linkify
             componentDecorator={(decoratedHref, decoratedText, key) => (
-                <a target="blank" href={decoratedHref} key={key}>
+                <a target="_blank" href={decoratedHref} key={key}>
                     {decoratedText}
                 </a>
             )}
@@ -168,12 +170,12 @@ export const LinkifyNewTab = (props: LinkifyNewTabPropsWithChildren) => {
 };
 
 export interface ArtifactStateProps {
-    state: StateType;
     artifact: Artifact;
-    stateName: StateExtendedNameType;
+    artifactDashboardUrl: string;
     forceExpand: boolean;
     setExpandedResult: React.Dispatch<React.SetStateAction<string>>;
-    artifactDashboardUrl: string;
+    state: StateType;
+    stateName: StateExtendedNameType;
 }
 
 export const ArtifactState: React.FC<ArtifactStateProps> = (props) => {
