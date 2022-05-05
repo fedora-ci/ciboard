@@ -63,21 +63,34 @@ import {
     StageNameStateNameStatesType,
 } from '../utils/stages_states';
 
-const artifactDashboardUrl = (artifact: Artifact) => {
-    return `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
-};
+const artifactDashboardUrl = (artifact: Artifact) =>
+    `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
 
 interface StageAndStateProps {
     stageName: StageNameType;
     stateName: StateExtendedNameType;
 }
 
+function mkStageStateTitle(
+    stage: StageNameType,
+    state: StateExtendedNameType,
+): string {
+    if (stage === 'greenwave') {
+        if (state === 'test-result-failed') return 'Failed required tests';
+        if (state === 'test-result-missing') return 'Missing required tests';
+        if (state === 'test-result-passed') return 'Passed required tests';
+        if (state === 'additional-tests')
+            return 'Additional tests (not required for gating)';
+    }
+    return `${stage} / ${state}`;
+}
+
 const StageAndState: React.FC<StageAndStateProps> = (props) => {
     const { stageName, stateName } = props;
-    const content = `${stageName} / ${stateName}`;
+    const title = mkStageStateTitle(stageName, stateName);
     return (
         <DataListItem
-            key={content}
+            key={title}
             aria-labelledby="artifact-item-result"
             style={{ borderBottom: 'none' }}
         >
@@ -91,7 +104,7 @@ const StageAndState: React.FC<StageAndStateProps> = (props) => {
                         >
                             <TextContent>
                                 <Text component={TextVariants.small}>
-                                    {content}
+                                    {title}
                                 </Text>
                             </TextContent>
                         </DataListCell>,
@@ -148,7 +161,6 @@ interface ArtifactResultsListProps {
 }
 
 export function ArtifactStatesList(props: ArtifactResultsListProps) {
-    const client = useApolloClient();
     const { artifact: artifactParent } = props;
     const { loading: loadingCurrentState, data: dataCurrentState } = useQuery(
         ArtifactsCompleteQuery,
@@ -202,20 +214,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
     const focusOn = _.isString(focusOnParam) ? focusOnParam : '';
     var artifact: Artifact | null = null;
     if (haveData) {
-        /**
-         * readQuery() - always read data from cache, never makes request to server.
-         * create 1 object artifact that holds all data.
-         */
-        const reply = client.readQuery({
-            query: ArtifactsCompleteQuery,
-            variables: {
-                limit: 1,
-                dbFieldName1: 'aid',
-                atype: artifactParent.type,
-                dbFieldValues1: [artifactParent.aid],
-            },
-        });
-        artifact = _.get(reply, 'artifacts.artifacts[0]');
+        artifact = _.get(dataCurrentState, 'artifacts.artifacts[0]');
     }
     if (loadingCurrentState) {
         return (
@@ -234,6 +233,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
     }
     const resultRows: React.ReactNode[] = [];
     for (const [stageName, stateName, statesList] of stagesAndStates) {
+        if (stateName === 'fetched-gating-yaml') continue;
         const key = `${stageName} / ${stateName}`;
         resultRows.push(
             <StageAndState
