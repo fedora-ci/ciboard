@@ -31,12 +31,6 @@ import {
     CardHeader,
     Spinner,
 } from '@patternfly/react-core';
-import { useQuery } from '@apollo/client';
-
-import { config } from '../config';
-import { PageCommon } from './PageCommon';
-import WaiverdbInfoQuery from '../queries/WaiverdbInfo';
-import WaiverdbPermissionsQuery from '../queries/WaiverdbPermissions';
 import {
     ICell,
     IRow,
@@ -45,26 +39,13 @@ import {
     TableHeader,
     TableVariant,
 } from '@patternfly/react-table';
+import { useQuery } from '@apollo/client';
 
-const mkSeparatedList = (
-    elements: React.ReactNode[],
-    separator: React.ReactNode = ', ',
-) => {
-    if (_.isNil(elements)) return null;
-    return elements.reduce(
-        (acc, el) =>
-            acc === null ? (
-                el
-            ) : (
-                <>
-                    {acc}
-                    {separator}
-                    {el}
-                </>
-            ),
-        null,
-    );
-};
+import { config } from '../config';
+import { PageCommon } from './PageCommon';
+import WaiverdbInfoQuery from '../queries/WaiverdbInfo';
+import WaiverdbPermissionsQuery from '../queries/WaiverdbPermissions';
+import { mkSeparatedList } from '../utils/artifactsTable';
 
 const Help = () => (
     <Grid hasGutter>

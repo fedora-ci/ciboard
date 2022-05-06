@@ -396,3 +396,23 @@ export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
     }
     return rows;
 };
+
+export function mkSeparatedList(
+    elements: React.ReactNode[],
+    separator: React.ReactNode = ', ',
+) {
+    if (_.isNil(elements)) return null;
+    return elements.reduce(
+        (acc, el) =>
+            acc === null ? (
+                el
+            ) : (
+                <>
+                    {acc}
+                    {separator}
+                    {el}
+                </>
+            ),
+        null,
+    );
+}

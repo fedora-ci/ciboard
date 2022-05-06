@@ -56,6 +56,7 @@ import {
 import { Artifact, StateKaiType } from '../artifact';
 import { renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
+import { mkSeparatedList } from '../utils/artifactsTable';
 
 type TestCaseType = {
     _uuid: string;
@@ -193,25 +194,21 @@ const TestCaseLogs: React.FC<TestCaseLogsProps> = (props) => {
     );
 };
 
-const mkLogsLinks = (logs: TestCaseLogsType[]): JSX.Element => {
+const mkLogsLinks = (logs: TestCaseLogsType[]): JSX.Element[] => {
     /** logs[0].log - [log1, log2, log3] */
     if (!logs[0] || !logs[0].log) {
-        return <></>;
+        return [];
     }
-    const links: JSX.Element[] = [];
-    _.map(logs[0].log, (l) =>
-        links.push(
-            <a
-                key={l.$.name}
-                href={l.$.href}
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                {l.$.name}
-            </a>,
-        ),
-    );
-    return <>{links}</>;
+    return logs[0].log.map((l) => (
+        <a
+            key={l.$.name}
+            href={l.$.href}
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            {l.$.name}
+        </a>
+    ));
 };
 
 const mkPhase = (phase: TestCasePhasesEntryType): IRow => {
@@ -219,7 +216,7 @@ const mkPhase = (phase: TestCasePhasesEntryType): IRow => {
         cells: [
             renderStatusIcon(phase.$.result),
             phase.$.name,
-            mkLogsLinks(phase.logs),
+            mkSeparatedList(mkLogsLinks(phase.logs)),
         ],
     };
 };
