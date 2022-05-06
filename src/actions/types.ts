@@ -21,6 +21,7 @@
 import qs from 'qs';
 import { AlertVariant } from '@patternfly/react-core';
 import { Artifact, StateType } from '../artifact';
+import React from 'react';
 
 export const SST_PAGE = 'SST_PAGE';
 export const SST_MENU = 'SUBMIT_MENU';
@@ -67,7 +68,7 @@ export interface IStateFilters {
 export interface IStateAlerts {
     alerts: {
         key: number;
-        title: string;
+        title: React.ReactNode;
         variant: keyof typeof AlertVariant;
     }[];
 }
@@ -97,7 +98,7 @@ export interface ActionPushAlert {
     type: typeof PUSH_ALERT;
     payload: {
         key: number;
-        title: string;
+        title: React.ReactNode;
         variant: keyof typeof AlertVariant;
     };
 }

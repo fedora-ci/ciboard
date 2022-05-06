@@ -48,9 +48,8 @@ type PageCommonProps = React.PropsWithChildren<React.ReactNode> & {
 
 export function ToastAlertGroup() {
     const dispatch = useDispatch();
-    const onClick = () => {
-        // XXX key -- was param
-        dispatch(popAlert(123));
+    const onClick = (key: number) => {
+        dispatch(popAlert(key));
     };
     const { alerts } = useSelector<RootStateType, IStateAlerts>(
         (state) => state.alerts,
@@ -64,9 +63,8 @@ export function ToastAlertGroup() {
                     title={title}
                     actionClose={
                         <AlertActionCloseButton
-                            title={title}
-                            variantLabel={`${variant} alert`}
-                            onClose={() => onClick()} // XXX
+                            title="Dismiss this alert"
+                            onClose={() => onClick(key)}
                         />
                     }
                     key={key}

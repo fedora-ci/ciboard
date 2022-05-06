@@ -45,7 +45,7 @@ import {
     CustomRowWrapper,
     OnCollapseEventType,
 } from '../utils/artifactsTable';
-import WaiveForm from './WaiveForm';
+import { WaiveModal } from './WaiveForm';
 
 interface ArtifactsTableProps {
     onArtifactsLoaded?(artifacts: Artifact[]): void;
@@ -297,7 +297,7 @@ export function PageByMongoField() {
         <PageCommon title={pageTitle}>
             <ArtifactsTable onArtifactsLoaded={onArtifactsLoaded} />
             <ToastAlertGroup />
-            <WaiveForm />
+            <WaiveModal />
         </PageCommon>
     );
 }

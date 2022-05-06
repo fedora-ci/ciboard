@@ -75,9 +75,16 @@ export const bumpGatingSearchEpoch = (): ActionGABumpSearchEpoch => {
 
 type AlertVariantType = 'success' | 'danger' | 'warning' | 'info' | 'default';
 
+/**
+ * Push a new alert to the alerts queue.
+ * @param variant Variant of the alert component, e.g. `success` or `warning`.
+ * @param title Text of the alert.
+ * @param autoRm If `true`, automatically remove the alert after 3 seconds.
+ * @returns Promise that resolves after a succesful event dispatch.
+ */
 export const pushAlert = (
     variant: AlertVariantType,
-    title: string,
+    title: React.ReactNode,
     autoRm: boolean = true,
 ) => {
     return async (dispatch: DispatchType) => {
@@ -172,7 +179,10 @@ export const createWaiver = (
             dispatch(
                 pushAlert(
                     'warning',
-                    'Please login before create a waiver.',
+                    <>
+                        Please <a href="/login">log in</a> before creating a
+                        waiver.
+                    </>,
                 ) as any,
             );
             return;
@@ -260,7 +270,7 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
             /* XXX run query to update artifacts */
         } catch (error) {
             if (_.isError(error)) {
-                waiveError = `Could not submit waiver: ${error.message}`;
+                waiveError = error.message;
             } else {
                 waiveError = _.toString(error);
             }

@@ -22,22 +22,24 @@ import * as React from 'react';
 import { useState } from 'react';
 import {
     ActionGroup,
+    Alert,
     Button,
     Form,
     FormGroup,
     FormGroupProps,
     Modal,
-    Spinner,
     Text,
+    TextArea,
     TextContent,
-    TextInput,
     TextVariants,
     Title,
-    Tooltip,
 } from '@patternfly/react-core';
 import { useApolloClient } from '@apollo/client';
 import { useSelector, useDispatch } from 'react-redux';
-import { WarningTriangleIcon, HelpIcon } from '@patternfly/react-icons';
+import {
+    ExternalLinkSquareAltIcon,
+    WarningTriangleIcon,
+} from '@patternfly/react-icons';
 
 import { docs } from '../config';
 import { createWaiver, submitWaiver, resetWaiverReply } from '../actions';
@@ -46,7 +48,7 @@ import { RootStateType } from '../reducers';
 import { getTestcaseName } from '../utils/artifactUtils';
 import _ from 'lodash';
 
-const WaiveForm = () => {
+const WaiveForm: React.FC<{}> = () => {
     const dispatch = useDispatch();
     const client = useApolloClient();
     const waive = useSelector<RootStateType, IStateWaiver>(
@@ -59,6 +61,7 @@ const WaiveForm = () => {
     const [madeRequest, setMadeRequest] = useState(false);
 
     const handleTextInputChange = (value: string) => {
+        /* Require that the waiver message have at least three words as a gross proxy. */
         const isValid = value.trim().split(/\s+/).length > 2;
         const validated = isValid ? 'success' : 'error';
         setValue(value);
@@ -92,66 +95,62 @@ const WaiveForm = () => {
             </TextContent>
             <Form onSubmit={(event) => event.preventDefault()}>
                 <FormGroup
-                    label="Reason"
-                    isRequired
+                    fieldId="reason"
                     helperText={helperText}
                     helperTextInvalid={invalidText}
-                    fieldId="reason"
+                    isRequired
+                    label="Reason"
                     validated={validated}
                 >
-                    <TextInput
+                    <TextArea
+                        aria-describedby="age-helper"
+                        className="pf-m-resize-vertical"
+                        id="reason"
+                        onChange={handleTextInputChange}
                         validated={validated}
                         value={value}
-                        id="reason"
-                        aria-describedby="age-helper"
-                        onChange={handleTextInputChange}
                     />
                 </FormGroup>
                 <ActionGroup>
                     <Button
-                        variant="primary"
                         isDisabled={!isValid}
+                        isLoading={madeRequest && !waiveError && !timestamp}
                         onClick={onClickSubmit}
+                        variant="primary"
                     >
                         Submit
                     </Button>
                     <Button variant="secondary" onClick={onClickCancel}>
                         Cancel
                     </Button>
-                    <Tooltip content={<div>Go to waiving documentation.</div>}>
-                        <>
-                            <a
-                                href={docs.waiving}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <HelpIcon
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                    }}
-                                    style={{
-                                        color: 'var(--pf-global--info-color--100)',
-                                    }}
-                                />
-                            </a>
-                            {waiveError && (
-                                <TextContent>
-                                    <Text>{waiveError}</Text>
-                                </TextContent>
-                            )}
-                            {madeRequest && !waiveError && !timestamp && (
-                                <Spinner size="md" />
-                            )}
-                        </>
-                    </Tooltip>
+                    <Button
+                        className="pf-u-ml-auto"
+                        component="a"
+                        href={docs.waiving}
+                        icon={<ExternalLinkSquareAltIcon />}
+                        iconPosition="right"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        variant="link"
+                    >
+                        Waiving documentation
+                    </Button>
                 </ActionGroup>
+                {waiveError && (
+                    <Alert
+                        isInline
+                        title="Could not submit waiver"
+                        variant="danger"
+                    >
+                        {waiveError}
+                    </Alert>
+                )}
             </Form>
         </>
     );
 };
 
-const WaiveModal = () => {
+export const WaiveModal: React.FC<{}> = () => {
     const dispatch = useDispatch();
     const waive = useSelector<RootStateType, IStateWaiver>(
         (store) => store.waive,
@@ -160,21 +159,21 @@ const WaiveModal = () => {
         <Title headingLevel="h4" size="md">
             <WarningTriangleIcon />
             <span className="pf-u-pl-sm">
-                You take responsibility for this action. Kerberos ID will be
-                recorded.
+                You take full responsibility for this action. Your username
+                (Kerberos ID) will be recorded along with the waiver.
             </span>
         </Title>
     );
     const { state, artifact, timestamp } = waive;
-    const showWaiveForm = state && artifact && !timestamp ? true : false;
+    const showWaiveForm = state && artifact && !timestamp;
     const onClose = () => {
         dispatch(createWaiver(undefined, undefined));
     };
     return (
         <>
             <Modal
-                variant="large"
-                title="Waive test result"
+                variant="medium"
+                title="Waive test tesult"
                 isOpen={showWaiveForm}
                 onClose={onClose}
                 footer={footer}
@@ -184,5 +183,3 @@ const WaiveModal = () => {
         </>
     );
 };
-
-export default WaiveModal;

@@ -46,7 +46,7 @@ import { IStateFilters } from '../actions/types';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { ArtifactsListByFilters } from './ArtifactsListByFilters';
 import { addFilter, deleteFilter, setOptionsForFilters } from '../actions';
-import WaiveForm from './WaiveForm';
+import { WaiveModal } from './WaiveForm';
 
 /**
  * These are default search-field for each artifact type
@@ -313,7 +313,7 @@ export function PageByFilters() {
             <SearchToolbar />
             <ArtifactsListByFilters />
             <ToastAlertGroup />
-            <WaiveForm />
+            <WaiveModal />
         </PageCommon>
     );
 }
