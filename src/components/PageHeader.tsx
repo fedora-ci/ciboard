@@ -20,7 +20,7 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { css } from '@patternfly/react-styles';
 import {
@@ -159,13 +159,9 @@ const HeaderToolbar = () => {
 
 export const DashboardPageHeader = () => {
     const location = useLocation();
-    let history = useHistory();
     const [activeItem, setActiveItem] = useState<string | number>(
         'grp-1_itm-1',
     );
-    const navigateTo = (href: string) => {
-        history.push(href);
-    };
     /** Event handlers */
     const onNavSelect = (result: SelectedItemType) => {
         /** activeItem -- holds name of selected item. XXX: remove this code */
@@ -177,8 +173,8 @@ export const DashboardPageHeader = () => {
         <NavItem
             itemId={item.key}
             key={item.key}
+            to={`#${item.to}`}
             isActive={item.to === location.pathname}
-            onClick={() => navigateTo(item.to)}
         >
             {item.title}
         </NavItem>
