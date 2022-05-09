@@ -356,6 +356,16 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
     );
 };
 
+const NoDetailedResults: React.FC<{}> = () => {
+    return (
+        <Alert isInline isPlain title="No details available" variant="info">
+            The CI system did not provide detailed results for this test. To
+            find out more, please interrogate the log files or inspect the
+            produced test artifacts.
+        </Alert>
+    );
+};
+
 interface TestsuiteProps {
     suite: TestSuiteType;
 }
@@ -403,18 +413,7 @@ const TestSuite: React.FC<TestsuiteProps> = (props) => {
     };
 
     if (_.isEmpty(suite.tests)) {
-        return (
-            <Alert
-                isInline
-                isPlain
-                title="No details available"
-                variant="warning"
-            >
-                The CI system did not provide detailed results for this test.
-                Please interrogate the log files and inspect the produced test
-                artifacts.
-            </Alert>
-        );
+        return <NoDetailedResults />;
     }
 
     return (
@@ -455,15 +454,6 @@ const TestSuite: React.FC<TestsuiteProps> = (props) => {
                     ))}
             </DataList>
         </>
-    );
-};
-
-const NoXunit = () => {
-    return (
-        <Alert isInline isPlain variant="info" title="No results in xunit">
-            Test does not provide detailed results via xunit. Please go to the
-            log and investigate the produced test artifacts.
-        </Alert>
     );
 };
 
@@ -538,11 +528,11 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     }
     if (msgError) return <>{msgError}</>;
     if (_.isEmpty(xunit)) {
-        return <NoXunit />;
+        return <NoDetailedResults />;
     }
     const parsedXunit = xunitParser(xunit);
     if (_.isEmpty(parsedXunit)) {
-        return <NoXunit />;
+        return <NoDetailedResults />;
     }
     /* TODO XXX: remove / generalize */
     if (
