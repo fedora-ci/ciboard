@@ -44,6 +44,7 @@ import {
     StateKaiType,
     StateType,
 } from '../artifact';
+import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon';
 
 export function isKaiState(
     state: StateType | undefined,
@@ -311,17 +312,19 @@ export const getXunit = (broker_msg_body: BrokerMessagesType) => {
     return null;
 };
 
-export const renderStatusIcon = (
-    type: string,
-    mod: modifyType = 'test',
-    size = '1em',
-) => {
+export interface IconProps {
+    className: string;
+    icon: React.ComponentClass<SVGIconProps, any>;
+    label: string;
+}
+
+export function mapTypeToIconsProps(type: string): IconProps | null {
     const icons = {
         missing: {
             pick: type === 'missing' || type === 'test-result-missing',
-            color: '--pf-global--disabled-color--100',
+            className: 'pf-u-disabled-color-100',
             icon: GhostIcon,
-            aria: 'Result is missing.',
+            label: 'Result is missing.',
         },
         ok: {
             pick:
@@ -333,9 +336,9 @@ export const renderStatusIcon = (
                 type === 'test-result-passed' ||
                 type === 'fetched-gating-yaml' ||
                 type === 'true',
-            color: '--pf-global--success-color--100',
+            className: 'pf-u-success-color-100',
             icon: CheckCircleIcon,
-            aria: 'Result is OK.',
+            label: 'Result is OK.',
         },
         error: {
             pick:
@@ -349,9 +352,9 @@ export const renderStatusIcon = (
                 type === 'invalid-gating-yaml' ||
                 type === 'missing-gating-yaml' ||
                 type === 'false',
-            color: '--pf-global--danger-color--100',
+            className: 'pf-u-danger-color-100',
             icon: TimesCircleIcon,
-            aria: 'Test has failed.',
+            label: 'Test has failed.',
         },
         warning: {
             pick:
@@ -362,68 +365,81 @@ export const renderStatusIcon = (
                 type === 'test-result-missing-waived' ||
                 type === 'test-result-errored-waived' ||
                 type === 'failed-fetch-gating-yaml-waived',
-            color: '--pf-global--warning-color--100',
+            className: 'pf-u-warning-color-100',
             icon: ExclamationTriangleIcon,
-            aria: 'Test run resulted in an error.',
+            label: 'Test run resulted in an error.',
         },
         progress: {
             pick: type === 'running',
-            color: '--pf-global--link--Color',
+            className: 'pf-u-link-color',
             icon: InProgressIcon,
-            aria: 'Test is in progress.',
+            label: 'Test is in progress.',
         },
         history: {
             pick: type === 'queued',
-            color: '--pf-global--warning-color--200',
+            className: 'pf-u-warning-color-100',
             icon: HistoryIcon,
-            aria: 'Test is queued.',
+            label: 'Test is queued.',
         },
         info: {
             pick:
                 type === 'info' ||
                 type === 'excluded' ||
                 type === 'blacklisted',
-            color: '--pf-global--info-color--100',
+            className: 'pf-u-info-color-100',
             icon: InfoIcon,
-            aria: 'Result has additinal info.',
+            label: 'Result has additinal info.',
         },
         skip: {
             pick: type === 'skip',
-            color: '--pf-global--warning-color--200',
+            className: 'pf-u-warning-color-100',
             icon: UnlinkIcon,
-            aria: 'Test was skipped.',
+            label: 'Test was skipped.',
         },
         not_applicable: {
             pick: type === 'not_applicable',
-            color: '--pf-global--info-color--100',
+            className: 'pf-u-info-color-100',
             icon: InfoIcon,
-            aria: 'Test was skipped.',
+            label: 'Test was skipped.',
         },
     };
+
     type KnownIconsType = keyof typeof icons;
     const name = _.findKey(icons, (i) => i.pick);
-    if (!name) {
+    if (!name) return null;
+    return _.pick(icons[name as KnownIconsType], [
+        'className',
+        'icon',
+        'label',
+    ]);
+}
+
+export const renderStatusIcon = (
+    type: string,
+    mod: modifyType = 'test',
+    size = '1em',
+) => {
+    const iconProps = mapTypeToIconsProps(type);
+    if (!iconProps) {
         console.warn('Asked to render icon with unknown type:', type);
         return (
             <OutlinedQuestionCircleIcon aria-label="Result is unknown type." />
         );
     }
-    let useIcon = icons[name as KnownIconsType];
-    let Icon = useIcon.icon;
+    let Icon = iconProps.icon;
     if (mod === 'gating') {
         Icon = TrafficLightIcon;
     }
-    const color = useIcon.color;
     const style = {
-        color: `var(${color})`,
         height: size,
     };
     return (
         <Icon
-            aria-label={useIcon.aria}
-            title={useIcon.aria}
+            aria-label={iconProps.label}
+            className={iconProps.className}
             size="sm"
             style={style}
+            title={iconProps.label}
         />
     );
 };

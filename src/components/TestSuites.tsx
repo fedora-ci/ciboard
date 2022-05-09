@@ -28,35 +28,36 @@ import { useQuery } from '@apollo/client';
 import { useState, memo, useEffect } from 'react';
 import { xunitParser } from '../utils/xunitParser';
 import {
-    Flex,
-    Text,
     Alert,
-    Title,
-    Spinner,
-    TextContent,
-    FlexItem,
     Checkbox,
     DataList,
-    DataListItem,
-    DataListItemRow,
     DataListCell,
-    DataListToggle,
     DataListContent,
+    DataListItem,
     DataListItemCells,
+    DataListItemRow,
+    DataListToggle,
+    Flex,
+    FlexItem,
+    Spinner,
+    TextContent,
+    Title,
 } from '@patternfly/react-core';
 import {
+    IRow,
     Table,
-    cellWidth,
     TableBody,
     TableHeader,
     TableVariant,
-    IRow,
+    cellWidth,
 } from '@patternfly/react-table';
 
 import { Artifact, StateKaiType } from '../artifact';
-import { renderStatusIcon } from '../utils/artifactUtils';
+import { mapTypeToIconsProps, renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 import { mkSeparatedList } from '../utils/artifactsTable';
+import { OutlinedClockIcon } from '@patternfly/react-icons';
+import classNames from 'classnames';
 
 type TestCaseType = {
     _uuid: string;
@@ -72,21 +73,29 @@ type TestCaseType = {
 
 type TestCaseStatusNameType = 'error' | 'fail' | 'pass' | 'skip';
 
-type TestCaseLogsType = { log: TestCaseLogsEntryType[] };
-type TestCaseLogsEntryType = { $: { name: string; href: string } };
+interface TestCaseLogsEntryType {
+    $: { name: string; href: string };
+}
+interface TestCaseLogsType {
+    log: TestCaseLogsEntryType[];
+}
 
-type TestCaseTestOutputsType = {
+interface TestCaseTestOutputsType {
     'test-output': TestCaseTestOutputsEntryType[];
-};
-type TestCaseTestOutputsEntryType = {
-    $: { result: string; remedy: string; message: string };
-};
+}
 
-type TestCasePhasesType = { phase: TestCasePhasesEntryType[] };
-type TestCasePhasesEntryType = {
+interface TestCaseTestOutputsEntryType {
+    $: { message: string; remedy: string; result: string };
+}
+
+interface TestCasePhasesEntryType {
     $: { name: string; result: string };
     logs: TestCaseLogsType[];
-};
+}
+
+interface TestCasePhasesType {
+    phase: TestCasePhasesEntryType[];
+}
 
 type TestCasePropertiesType = { property: TestCasePropertiesEntryType[] };
 type TestCasePropertiesEntryType = { $: { name: string; value: string } };
@@ -136,7 +145,7 @@ const Testsuites: React.FC<TestsuitesProps> = (props) => {
                     </TextContent>
                 </FlexItem>
                 <FlexItem>
-                    <Testsuite suite={suite} />
+                    <TestSuite suite={suite} />
                 </FlexItem>
             </Flex>,
         );
@@ -144,71 +153,31 @@ const Testsuites: React.FC<TestsuitesProps> = (props) => {
     return <>{testsuites}</>;
 };
 
-const getProperty = (
-    properties: Array<TestCasePropertiesType | TestSuitePropertiesType>,
-    propertyName: string,
-) => {
-    if (!properties) return null;
-    for (const property of properties[0].property) {
-        if (property.$.name === propertyName) return property.$.value;
-    }
-    return null;
-};
-
-const mkLogName = (log: TestCaseLogsEntryType): IRow => {
-    return {
-        cells: [
-            <>
-                <a href={log.$.href} target="_blank" rel="noopener noreferrer">
-                    {log.$.name}
-                </a>
-            </>,
-        ],
-    };
-};
+const mkLogLink = (log: TestCaseLogsEntryType): JSX.Element => (
+    <a
+        href={log.$.href}
+        key={log.$.name}
+        rel="noopener noreferrer"
+        target="_blank"
+    >
+        {log.$.name}
+    </a>
+);
 
 interface TestCaseLogsProps {
     logs: TestCaseLogsType[];
 }
 
-const TestCaseLogs: React.FC<TestCaseLogsProps> = (props) => {
-    const { logs } = props;
-    if (!logs || !logs[0].log) {
-        return null;
-    }
-    const all_logs = logs[0].log;
-    const rows: IRow[] = [];
-    _.map(all_logs, (log) => rows.push(mkLogName(log)));
-    return (
-        <Table
-            aria-label="Test logs"
-            variant={TableVariant.compact}
-            borders={false}
-            sortBy={{}}
-            cells={[{ title: 'Logs' }]}
-            rows={rows}
-        >
-            <TableHeader />
-            <TableBody />
-        </Table>
-    );
+const TestCaseLogs: React.FC<TestCaseLogsProps> = ({ logs }) => {
+    if (!logs || _.isEmpty(logs[0].log)) return null;
+    const logsLinks = mkSeparatedList(mkLogsLinks(logs));
+    return <p>Log files: {logsLinks}</p>;
 };
 
 const mkLogsLinks = (logs: TestCaseLogsType[]): JSX.Element[] => {
     /** logs[0].log - [log1, log2, log3] */
-    if (!logs[0] || !logs[0].log) {
-        return [];
-    }
-    return logs[0].log.map((l) => (
-        <a
-            key={l.$.name}
-            href={l.$.href}
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            {l.$.name}
-        </a>
-    ));
+    if (!logs[0] || _.isEmpty(logs[0].log)) return [];
+    return logs[0].log.map((log) => mkLogLink(log));
 };
 
 const mkPhase = (phase: TestCasePhasesEntryType): IRow => {
@@ -218,6 +187,7 @@ const mkPhase = (phase: TestCasePhasesEntryType): IRow => {
             phase.$.name,
             mkSeparatedList(mkLogsLinks(phase.logs)),
         ],
+        key: phase.$.name,
     };
 };
 
@@ -225,26 +195,21 @@ interface TestCasePhasesProps {
     phases: TestCasePhasesType[];
 }
 
-const TestCasePhases: React.FC<TestCasePhasesProps> = (props) => {
-    const { phases } = props;
-    if (!phases || !phases[0].phase) {
-        return null;
-    }
-    const all_phases = phases[0].phase;
-    const rows: IRow[] = [];
-    _.map(all_phases, (phase) => rows.push(mkPhase(phase)));
+const TestCasePhases: React.FC<TestCasePhasesProps> = ({ phases }) => {
+    if (!phases || _.isEmpty(phases[0].phase)) return null;
+    const rows: IRow[] = phases[0].phase.map((phase) => mkPhase(phase));
     return (
         <Table
-            aria-label="Test phases"
-            variant={TableVariant.compact}
+            aria-label="Table of individual phases within this test"
             borders={false}
-            sortBy={{}}
             cells={[
                 { title: '', transforms: [cellWidth(10)] },
-                { title: 'Phases', transforms: [cellWidth(50)] },
-                { title: 'Links' },
+                { title: 'Test phase', transforms: [cellWidth(50)] },
+                { title: 'Log files' },
             ]}
             rows={rows}
+            sortBy={{}}
+            variant={TableVariant.compact}
         >
             <TableHeader />
             <TableBody />
@@ -252,25 +217,21 @@ const TestCasePhases: React.FC<TestCasePhasesProps> = (props) => {
     );
 };
 
-const mkTestOutput = (output: TestCaseTestOutputsEntryType): IRow => {
-    /** $.message / $.remedy / $.result */
-    return {
-        cells: [
-            <>{output.$.result}</>,
-            <>{output.$.message}</>,
-            <>{output.$.remedy}</>,
-        ],
-    };
-};
+const mkTestOutput = (output: TestCaseTestOutputsEntryType): IRow => ({
+    cells: [
+        <>{output.$.result}</>,
+        <>{output.$.message}</>,
+        <>{output.$.remedy}</>,
+    ],
+});
 
 interface TestCaseOutputProps {
     outputs: TestCaseTestOutputsType[];
 }
+
 const TestCaseOutput: React.FC<TestCaseOutputProps> = (props) => {
     const { outputs } = props;
-    if (!outputs || !outputs[0]['test-output']) {
-        return null;
-    }
+    if (!outputs || _.isEmpty(outputs[0]['test-output'])) return null;
     const all_outputs = outputs[0]['test-output'];
     const rows: IRow[] = [];
     _.map(all_outputs, (output) => rows.push(mkTestOutput(output)));
@@ -293,45 +254,12 @@ const TestCaseOutput: React.FC<TestCaseOutputProps> = (props) => {
     );
 };
 
-function mkProperties(property: TestCasePropertiesEntryType) {
-    /** property == [{}, {}, {}, {}] == [{$: {name: xxx, value: yyy}}] */
-    return {
-        cells: [
-            <Text>{property.$.name}</Text>,
-            <Text>{property.$.value}</Text>,
-        ],
-    };
-}
-
-interface TestCasePropertiesProps {
-    properties: TestCasePropertiesType[];
-}
-
-const TestCaseProperties: React.FC<TestCasePropertiesProps> = (props) => {
-    const { properties } = props;
-    if (!properties || !properties[0].property) {
-        return null;
-    }
-    const all_properties = properties[0].property;
-    const rows: IRow[] = [];
-    _.map(all_properties, (p) => rows.push(mkProperties(p)));
+function hasTestCaseContent(testCase: TestCaseType): boolean {
     return (
-        <Table
-            aria-label="Properties"
-            variant={TableVariant.compact}
-            borders={false}
-            sortBy={{}}
-            cells={[
-                { title: 'Property', transforms: [cellWidth(20)] },
-                { title: 'Value' },
-            ]}
-            rows={rows}
-        >
-            <TableHeader />
-            <TableBody />
-        </Table>
+        !_.isEmpty(_.get(testCase, 'phases[0].phase')) ||
+        !_.isEmpty(_.get(testCase, 'outputs[0][test-output]'))
     );
-};
+}
 
 interface TestCaseContentProps {
     test: TestCaseType;
@@ -342,9 +270,7 @@ const TestCaseContent: React.FC<TestCaseContentProps> = (props) => {
     return (
         <>
             <TestCaseOutput outputs={test['test-outputs']} />
-            <TestCaseLogs logs={test.logs} />
             <TestCasePhases phases={test.phases} />
-            <TestCaseProperties properties={test.properties} />
         </>
     );
 };
@@ -356,52 +282,76 @@ interface TestCaseProps {
 const TestCase: React.FC<TestCaseProps> = (props) => {
     const { test } = props;
     const [expanded, setExpanded] = useState(false);
-    const version = getProperty(test.properties, 'baseosci.beaker-version');
     const time = test.time
         ? moment
               .duration(parseInt(test.time, 10), 'seconds')
               .format('hh:mm:ss', { trim: false })
-        : '';
+        : null;
 
     const toggle = () => {
         setExpanded(!expanded);
     };
 
+    const hasContent = hasTestCaseContent(test);
+    const iconProps = mapTypeToIconsProps(test.status);
+    const nameClassName = classNames(
+        'pf-u-text-nowrap',
+        'pf-u-font-weight-bold',
+        iconProps ? iconProps.className : '',
+    );
+
+    const summaryCell: React.ReactNode = (
+        <DataListCell>
+            <Flex
+                direction={{ default: 'column' }}
+                grow={{ default: 'grow' }}
+                key="primary content"
+                spaceItems={{ default: 'spaceItemsSm' }}
+            >
+                <Flex>
+                    <FlexItem>{renderStatusIcon(test.status)}</FlexItem>
+                    <FlexItem className={nameClassName}>{test.name}</FlexItem>
+                    {time && (
+                        <FlexItem
+                            align={{ default: 'alignRight' }}
+                            className="pf-u-color-200"
+                            style={{ fontFamily: 'monospace' }}
+                        >
+                            <OutlinedClockIcon title="Elapsed time" /> {time}
+                        </FlexItem>
+                    )}
+                </Flex>
+                <TestCaseLogs logs={test.logs} />
+            </Flex>
+        </DataListCell>
+    );
+
     return (
         <DataListItem isExpanded={expanded}>
             <DataListItemRow>
-                <DataListToggle
-                    id={test._uuid}
-                    isExpanded={expanded}
-                    onClick={toggle}
-                />
-                <DataListItemCells
-                    className="pf-u-m-0 pf-u-p-0"
-                    dataListCells={
-                        <>
-                            <DataListCell isIcon>
-                                {renderStatusIcon(test.status)}
-                            </DataListCell>
-                            <DataListCell wrapModifier="nowrap">
-                                <TextContent>
-                                    <Text>{test.name}</Text>
-                                </TextContent>
-                            </DataListCell>
-                            <DataListCell>{version}</DataListCell>
-                            <DataListCell alignRight={true} isFilled={false}>
-                                {time}
-                            </DataListCell>
-                        </>
-                    }
-                />
+                {hasContent && (
+                    <DataListToggle
+                        aria-label={
+                            expanded
+                                ? 'Hide test case details'
+                                : 'Show test case details'
+                        }
+                        id={test._uuid}
+                        isExpanded={expanded}
+                        onClick={toggle}
+                    />
+                )}
+                <DataListItemCells dataListCells={[summaryCell]} />
             </DataListItemRow>
-            <DataListContent
-                aria-label="Test case content"
-                id={test._uuid}
-                isHidden={!expanded}
-            >
-                <TestCaseContent test={test} />
-            </DataListContent>
+            {hasContent && (
+                <DataListContent
+                    aria-label="Test case details"
+                    id={test._uuid}
+                    isHidden={!expanded}
+                >
+                    <TestCaseContent test={test} />
+                </DataListContent>
+            )}
         </DataListItem>
     );
 };
@@ -419,7 +369,24 @@ const default_toggle_state: ToggleStateType = {
     error: true,
 };
 
-const Testsuite: React.FC<TestsuiteProps> = (props) => {
+function compareTestCases(tc1: TestCaseType, tc2: TestCaseType) {
+    // Failures before everything.
+    if (tc1.status === 'fail' && tc2.status !== 'fail') return -1;
+    if (tc1.status !== 'fail' && tc2.status === 'fail') return 1;
+    // Infra errors before the rest.
+    if (tc1.status === 'error' && tc2.status !== 'error') return -1;
+    if (tc1.status !== 'error' && tc2.status === 'error') return 1;
+    // Compare the remaining tests on time elapsed.
+    const time1 = Number(tc1.time);
+    const time2 = Number(tc2.time);
+    if (isNaN(time1) || isNaN(time2)) {
+        // Sort by name if no time was provided.
+        return tc1.name.localeCompare(tc2.name);
+    }
+    return time2 - time1;
+}
+
+const TestSuite: React.FC<TestsuiteProps> = (props) => {
     const { suite } = props;
 
     const initialToggleState = _.pickBy(
@@ -435,14 +402,21 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
         setToggleState({ ...toggleState, [outcome]: !isChecked });
     };
 
-    if (!suite.tests || suite.tests.length === 0) {
+    if (_.isEmpty(suite.tests)) {
         return (
-            <Alert isInline isPlain variant="warning" title="No xunit">
-                Test does not provide detailed results via xunit. Please go to
-                the CI system log and investigate the produced test artifacts.
+            <Alert
+                isInline
+                isPlain
+                title="No details available"
+                variant="warning"
+            >
+                The CI system did not provide detailed results for this test.
+                Please interrogate the log files and inspect the produced test
+                artifacts.
             </Alert>
         );
     }
+
     return (
         <>
             <Flex>
@@ -473,11 +447,12 @@ const Testsuite: React.FC<TestsuiteProps> = (props) => {
             </Flex>
 
             <DataList aria-label="Test suite items" isCompact>
-                {_.map(suite.tests, (test, index) => {
-                    if (toggleState[test.status]) {
-                        return <TestCase key={index} test={test} />;
-                    }
-                })}
+                {suite.tests
+                    .filter((test) => toggleState[test.status])
+                    .sort(compareTestCases)
+                    .map((test, index) => (
+                        <TestCase key={index} test={test} />
+                    ))}
             </DataList>
         </>
     );
@@ -496,6 +471,7 @@ interface TestSuitesProps {
     state: StateKaiType;
     artifact: Artifact;
 }
+
 const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     const { state, artifact } = props;
     const { kai_state } = state;
