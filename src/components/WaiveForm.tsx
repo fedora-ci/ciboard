@@ -139,6 +139,7 @@ const WaiveForm: React.FC<{}> = () => {
                 {waiveError && (
                     <Alert
                         isInline
+                        isPlain
                         title="Could not submit waiver"
                         variant="danger"
                     >
