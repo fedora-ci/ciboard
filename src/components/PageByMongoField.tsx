@@ -67,7 +67,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     onArtifactsLoaded,
 }) => {
     const scrollRef = useRef<HTMLTableRowElement>(null);
-    var artifacts: Artifact[] = [];
+    let artifacts: Artifact[] = [];
     /**
      * Pagination vars
      */
@@ -221,14 +221,14 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     if (!_.isEmpty(missing) && haveData) {
         rows_errors = mkSpecialRows({
             title: `No data for ${artifactsType} with ${dbFieldName}`,
-            body: <>{missing.toString()}</>,
+            body: missing.toString(),
             type: 'error',
         });
     }
     var rows_loading: IRow[] = [];
     if (isLoading) {
         rows_loading = mkSpecialRows({
-            title: 'Loading data.',
+            title: 'Loading artifact data…',
             body: 'Please wait.',
             type: 'loading',
         });
@@ -273,23 +273,27 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
 
 export function PageByMongoField() {
     const [pageTitle, setPageTitle] = useState<string | undefined>();
+
     /**
      * Display the artifact's NVR/NVSC/whatever and gating status (if available) in
      * the page title once the artifact info is loaded.
+     *
+     * XXX: We only handle the single-artifact case for now.
+     * TODO: Support multiple artifacts per page. Perhaps only display info for
+     * the currently expanded row?
      */
     const onArtifactsLoaded = (artifacts: Artifact[]) => {
-        /**
-         * XXX: We only handle the single-artifact case for now.
-         * TODO: Support multiple artifacts per page. Perhaps only display info for
-         * the currently expanded row?
-         */
-        if (artifacts?.length !== 1) return;
-        const artifact = artifacts[0];
-        let title = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
-        if (artifact.greenwave_decision?.summary) {
-            if (artifact.greenwave_decision.policies_satisfied)
-                title = `✅ ${title}`;
-            else title = `❌ ${title}`;
+        // A generic title for the general case.
+        let title = `Artifact search results | ${config.defaultTitle}`;
+        if (artifacts.length === 1) {
+            // Construct a specific title for the single-artifact case.
+            const artifact = artifacts[0];
+            title = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
+            if (artifact.greenwave_decision?.summary) {
+                if (artifact.greenwave_decision.policies_satisfied)
+                    title = `✅ ${title}`;
+                else title = `❌ ${title}`;
+            }
         }
         setPageTitle(title);
     };
