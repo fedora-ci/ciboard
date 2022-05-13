@@ -56,6 +56,7 @@ import styles from '../custom.module.css';
 import { Artifact } from '../artifact';
 import { ArtifactStatesList } from '../components/ArtifactStatesList';
 import { ArtifactDetailedInfo } from '../components/ArtifactDetailedInfo';
+import { ArtifactGreenwaveStatesSummary } from '../components/GatingStatus';
 
 interface ArtifactNameProps {
     artifact: Artifact;
@@ -187,6 +188,11 @@ export const tableColumns = (buildType: any): TableProps['cells'] => {
             cellTransforms: [nowrap],
         },
         {
+            title: 'Gating status',
+            transforms: [fitContent],
+            cellTransforms: [nowrap],
+        },
+        {
             title: 'Packager',
             transforms: [fitContent],
             cellTransforms: [nowrap],
@@ -301,7 +307,10 @@ export const mkSpecialRows = (args: InputRowType): IRow[] => {
     ];
 };
 
-export const mkArtifactRow = (artifact: Artifact): IRow => {
+export const mkArtifactRow = (
+    artifact: Artifact,
+    gatingDecisionIsLoading: boolean,
+): IRow => {
     const packager: string = _.get(
         artifact,
         'payload.issuer',
@@ -316,6 +325,14 @@ export const mkArtifactRow = (artifact: Artifact): IRow => {
         },
         {
             title: <ArtifactDestination artifact={artifact} />,
+        },
+        {
+            title: (
+                <ArtifactGreenwaveStatesSummary
+                    artifact={artifact}
+                    isLoading={gatingDecisionIsLoading}
+                />
+            ),
         },
         {
             title: <div style={{ whiteSpace: 'nowrap' }}>{packager}</div>,
@@ -343,16 +360,17 @@ export type InputArtifactRowType = {
     queryString?: string;
     body?: JSX.Element;
     waitForRef?: React.MutableRefObject<any>;
+    gatingDecisionIsLoading: boolean;
 };
 
 export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
-    const { artifacts, opened } = args;
+    const { artifacts, opened, gatingDecisionIsLoading } = args;
     if (_.isEmpty(artifacts)) {
         return [];
     }
     var rows: IRow[] = _.chain(artifacts)
         .map((artifact, index: number) => [
-            mkArtifactRow(artifact),
+            mkArtifactRow(artifact, gatingDecisionIsLoading),
             {
                 parent: index * 2,
                 isOpen: false,

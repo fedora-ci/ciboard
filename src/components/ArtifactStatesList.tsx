@@ -30,7 +30,6 @@ import {
     Text,
     Spinner,
     DataList,
-    FlexItem,
     TitleSizes,
     TextContent,
     TextVariants,
@@ -42,10 +41,8 @@ import {
 import {
     isKaiState,
     getThreadID,
-    resultColor,
     getTestcaseName,
     isGreenwaveState,
-    renderStatusIcon,
 } from '../utils/artifactUtils';
 import {
     StateType,
@@ -267,83 +264,14 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         }
     }
     return (
-        <>
-            <ArtifactGreenwaveStatesSummary artifact={artifact} />
-            <br />
-            <DataList
-                aria-label="Expandable data list with artifacts"
-                style={{
-                    borderTop: 0,
-                }}
-                isCompact
-            >
-                {resultRows}
-            </DataList>
-        </>
+        <DataList
+            aria-label="Expandable data list with artifacts"
+            style={{
+                borderTop: 0,
+            }}
+            isCompact
+        >
+            {resultRows}
+        </DataList>
     );
 }
-
-interface PrintRequirementsSizeProps {
-    allReqs: { [key: string]: number };
-    reqName: string;
-}
-const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
-    const { reqName, allReqs } = props;
-    const color = resultColor(reqName);
-    const style = { color: `var(${color})` };
-    return (
-        <Title style={style} headingLevel="h1" size={TitleSizes['md']}>
-            {allReqs[reqName]} {reqName}
-        </Title>
-    );
-};
-interface ArtifactGreenwaveStatesSummaryProps {
-    artifact: Artifact;
-}
-export const ArtifactGreenwaveStatesSummary: React.FC<
-    ArtifactGreenwaveStatesSummaryProps
-> = (props) => {
-    const decision: GreenwaveDecisionReplyType | undefined =
-        props.artifact.greenwave_decision;
-    if (_.isNil(decision) || !_.isBoolean(decision?.policies_satisfied)) {
-        return null;
-    }
-    const reqSummary: { [name: string]: number } = {};
-    const satisfied = decision?.satisfied_requirements?.length;
-    const unSatisfied = decision?.unsatisfied_requirements?.length;
-    if (satisfied) {
-        reqSummary['satisfied'] = satisfied;
-    }
-    if (unSatisfied) {
-        reqSummary['unsatisfied'] = unSatisfied;
-    }
-    return (
-        <Flex>
-            <FlexItem spacer={{ default: 'spacerMd' }} key="1"></FlexItem>
-            <FlexItem key="2">
-                <Title headingLevel="h1" size={TitleSizes['md']}>
-                    Gating:
-                </Title>
-            </FlexItem>
-            {_.map(reqSummary, (_len, reqName) => (
-                <FlexItem key={reqName} spacer={{ default: 'spacerMd' }}>
-                    <PrintRequirementsSize
-                        reqName={reqName}
-                        allReqs={reqSummary}
-                    />
-                </FlexItem>
-            ))}
-            <FlexItem key="3">
-                <TextContent>
-                    <Text>
-                        {renderStatusIcon(
-                            _.toString(decision.policies_satisfied),
-                            'gating',
-                            '1.2em',
-                        )}
-                    </Text>
-                </TextContent>
-            </FlexItem>
-        </Flex>
-    );
-};

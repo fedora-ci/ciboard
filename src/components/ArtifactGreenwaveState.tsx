@@ -78,9 +78,13 @@ export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
         dispatch(createWaiver(artifact, state));
     };
     return (
-        <Button variant="tertiary" onClick={onClick}>
-            <OutlinedThumbsUpIcon />
-            <span className={styles.waive}>waive</span>
+        <Button
+            variant="control"
+            onClick={onClick}
+            isSmall
+            className={styles.actionButton}
+        >
+            <OutlinedThumbsUpIcon /> <span>waive</span>
         </Button>
     );
 };
@@ -107,13 +111,14 @@ export const GreenwaveReTestButton: React.FC<GreenwaveReTestButtonProps> = (
             rel="noopener noreferrer"
         >
             <Button
-                variant="tertiary"
+                variant="control"
+                className={styles.actionButton}
+                isSmall
                 onClick={(e) => {
                     e.stopPropagation();
                 }}
             >
-                <RedoIcon />
-                <span className={styles.waive}>rerun</span>
+                <RedoIcon style={{ height: '0.8em' }} /> <span>rerun</span>
             </Button>
         </a>
     );
@@ -129,16 +134,14 @@ export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
 ) => {
     const { state, artifact } = props;
     return (
-        <StateDetailsEntry caption="Actions">
-            <Flex>
-                <FlexItem>
-                    <WaiveButton state={state} artifact={artifact} />
-                </FlexItem>
-                <FlexItem>
-                    <GreenwaveReTestButton state={state} />
-                </FlexItem>
+        <Flex style={{ minWidth: '15em' }}>
+            <Flex flex={{ default: 'flex_1' }}>
+                <WaiveButton state={state} artifact={artifact} />
             </Flex>
-        </StateDetailsEntry>
+            <Flex flex={{ default: 'flex_1' }}>
+                <GreenwaveReTestButton state={state} />
+            </Flex>
+        </Flex>
     );
 };
 
@@ -344,7 +347,7 @@ interface FaceForGreenwaveStateProps {
 export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     props,
 ) => {
-    const { state, artifactDashboardUrl } = props;
+    const { artifact, state, artifactDashboardUrl } = props;
     const { waiver } = state;
     const isWaived = _.isNumber(waiver?.id);
     const isGatingResult = _.isString(state.requirement?.testcase);
@@ -374,21 +377,28 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
         _.get(state, 'result.outcome', 'unknown'),
     ).toLocaleLowerCase();
     const element = (
-        <Flex style={{ minHeight: '34px' }}>
-            <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
-            <Flex flexWrap={{ default: 'nowrap' }}>
-                <TextContent>
-                    <Text>{state.testcase}</Text>
-                </TextContent>
+        <Flex>
+            <Flex flex={{ default: 'flex_1' }}>
+                <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
+                <Flex flexWrap={{ default: 'nowrap' }}>
+                    <TextContent>
+                        <Text>{state.testcase}</Text>
+                    </TextContent>
+                </Flex>
+                <Flex>
+                    <FlexItem>{labels}</FlexItem>
+                </Flex>
             </Flex>
-            <Flex>
-                <FlexItem>{labels}</FlexItem>
-            </Flex>
-            <Flex>
-                <StateLink
-                    state={state}
-                    artifactDashboardUrl={artifactDashboardUrl}
-                />
+            <Flex flex={{ default: 'flex_1' }}>
+                <Flex>
+                    <GreenwaveStateActions state={state} artifact={artifact} />
+                </Flex>
+                <Flex>
+                    <StateLink
+                        state={state}
+                        artifactDashboardUrl={artifactDashboardUrl}
+                    />
+                </Flex>
             </Flex>
         </Flex>
     );
@@ -456,10 +466,6 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
             >
                 {forceExpand && (
                     <>
-                        <GreenwaveStateActions
-                            state={state}
-                            artifact={artifact}
-                        />
                         <GreenwaveResultInfo state={state} />
                         <GreenwaveWaiver state={state} />
                         <GreenwaveResultData state={state} />

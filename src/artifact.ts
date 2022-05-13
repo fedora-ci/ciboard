@@ -68,6 +68,26 @@ export interface PayloadMBSBuildType {
     gate_tag_name: string;
 }
 
+/**
+ * TypeScript guards
+ */
+export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRPM {
+    return artifact.type === 'brew-build' || artifact.type === 'koji-build';
+}
+export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMBS {
+    return artifact.type === 'redhat-module';
+}
+export function isArtifactCompose(
+    artifact: Artifact,
+): artifact is ArtifactCompose {
+    return artifact.type === 'productmd-compose';
+}
+export function isArtifactContainer(
+    artifact: Artifact,
+): artifact is ArtifactContainer {
+    return artifact.type === 'redhat-container';
+}
+
 export type PayloadsType =
     | PayloadComposeBuildType
     | PayloadMBSBuildType
@@ -85,13 +105,27 @@ export interface ArtifactBase {
     resultsdb_testscase: number[];
 }
 
-export type Artifact = ArtifactBase &
-    (
-        | { type: ComposeArtifactType; payload: PayloadComposeBuildType }
-        | { type: ContainerArtifactType }
-        | { type: MBSArtifactType; payload: PayloadMBSBuildType }
-        | { type: RPMArtifactType; payload: PayloadRPMBuildType }
-    );
+export type ArtifactRPM = ArtifactBase & {
+    type: RPMArtifactType;
+    payload: PayloadRPMBuildType;
+};
+export type ArtifactMBS = ArtifactBase & {
+    type: MBSArtifactType;
+    payload: PayloadMBSBuildType;
+};
+export type ArtifactContainer = ArtifactBase & {
+    type: ContainerArtifactType;
+};
+export type ArtifactCompose = ArtifactBase & {
+    type: ComposeArtifactType;
+    payload: PayloadComposeBuildType;
+};
+
+export type Artifact =
+    | ArtifactRPM
+    | ArtifactMBS
+    | ArtifactContainer
+    | ArtifactCompose;
 
 /**
  * Decision requirements types

@@ -102,13 +102,14 @@ export const KaiReTestButton: React.FC<KaiReTestButtonProps> = (props) => {
             rel="noopener noreferrer"
         >
             <Button
-                variant="tertiary"
+                variant="control"
+                className={styles.actionButton}
+                isSmall
                 onClick={(e) => {
                     e.stopPropagation();
                 }}
             >
-                <RedoIcon />
-                <span className={styles.waive}>rerun</span>
+                <RedoIcon style={{ height: '0.8em' }} /> <span>rerun</span>
             </Button>
         </a>
     );
@@ -238,13 +239,12 @@ export const KaiStateActions: React.FC<KaiStateActionsProps> = (props) => {
         return null;
     }
     return (
-        <StateDetailsEntry caption="Actions">
-            <Flex>
-                <FlexItem>
-                    <KaiReTestButton state={state} />
-                </FlexItem>
+        <Flex style={{ minWidth: '15em' }}>
+            <Flex flex={{ default: 'flex_1' }}></Flex>
+            <Flex flex={{ default: 'flex_1' }}>
+                <KaiReTestButton state={state} />
             </Flex>
-        </StateDetailsEntry>
+        </Flex>
     );
 };
 
@@ -278,16 +278,23 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
     const { artifactDashboardUrl, state } = props;
     const { kai_state } = state;
     const element = (
-        <Flex style={{ minHeight: '34px' }}>
-            <FlexItem>{renderStatusIcon(kai_state.state)}</FlexItem>
-            <Flex flexWrap={{ default: 'nowrap' }}>
-                <StageName state={state} />
+        <Flex>
+            <Flex flex={{ default: 'flex_1' }}>
+                <Flex>{renderStatusIcon(kai_state.state)}</Flex>
+                <Flex flexWrap={{ default: 'nowrap' }}>
+                    <StageName state={state} />
+                </Flex>
             </Flex>
-            <Flex>
-                <StateLink
-                    artifactDashboardUrl={artifactDashboardUrl}
-                    state={state}
-                />
+            <Flex flex={{ default: 'flex_1' }}>
+                <Flex>
+                    <KaiStateActions state={state} />
+                </Flex>
+                <Flex>
+                    <StateLink
+                        artifactDashboardUrl={artifactDashboardUrl}
+                        state={state}
+                    />
+                </Flex>
             </Flex>
         </Flex>
     );
@@ -358,7 +365,6 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
             >
                 {forceExpand && (
                     <>
-                        <KaiStateActions state={state} />
                         <KaiStateMapping state={state} artifact={artifact} />
                         <KaiStateXunit state={state} artifact={artifact} />
                     </>

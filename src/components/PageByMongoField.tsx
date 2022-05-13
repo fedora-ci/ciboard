@@ -212,6 +212,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     const rows_artifacts = mkArtifactsRows({
         artifacts,
         opened: indexToOpen,
+        gatingDecisionIsLoading: false,
     });
     const forceExpandErrors = haveErrorNoData ? true : false;
     const foundValues = _.map(artifacts, _.property(dbFieldPath));

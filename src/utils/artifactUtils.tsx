@@ -46,6 +46,9 @@ import {
 } from '../artifact';
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon';
 
+/**
+ *Typescript guards
+ */
 export function isKaiState(
     state: StateType | undefined,
 ): state is StateKaiType {
@@ -214,6 +217,9 @@ export const resultColors = {
         'Pass',
         'PASS',
         true,
+        'ok',
+        'OK',
+        'Ok',
         'satisfied',
     ],
     '--pf-global--danger-color--100': [
@@ -223,6 +229,10 @@ export const resultColors = {
         'FAIL',
         'missing',
         false,
+        'Err',
+        'err',
+        'error',
+        'Error',
         'unsatisfied',
     ],
     '--pf-global--warning-color--100': ['error', 'waived'],

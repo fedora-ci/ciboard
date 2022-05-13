@@ -31,7 +31,10 @@ import {
     TableVariant,
 } from '@patternfly/react-table';
 
-import { ArtifactsListByFiltersQuery1 } from '../queries/Artifacts';
+import {
+    ArtifactsCompleteQuery,
+    ArtifactsListByFiltersQuery,
+} from '../queries/Artifacts';
 import {
     ShowErrors,
     tableColumns,
@@ -44,6 +47,7 @@ import {
 import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
 import { PaginationToolbar } from './PaginationToolbar';
+import { Artifact } from '../artifact';
 
 const ArtifactsTable: React.FC = () => {
     const queryString = ''; // XXX : delme
@@ -133,7 +137,7 @@ const ArtifactsTable: React.FC = () => {
         loading: isLoading,
         error,
         data,
-    } = useQuery(ArtifactsListByFiltersQuery1, {
+    } = useQuery(ArtifactsListByFiltersQuery, {
         variables: {
             dbFieldValues1: regexs,
             aid_offset,
@@ -145,11 +149,16 @@ const ArtifactsTable: React.FC = () => {
         notifyOnNetworkStatusChange: true,
         skip: _.isEmpty(regexs),
     });
+
     /** Even there is an error there could be data */
     const haveData = !isLoading && data && !_.isEmpty(data.artifacts.artifacts);
     const haveErrorNoData = !isLoading && error && !haveData;
+    const aidsAtPage: string[] = [];
     if (haveData) {
         artifacts = data.artifacts.artifacts;
+        _.forEach(artifacts, (a: Artifact) => {
+            aidsAtPage.push(a.aid);
+        });
         has_next = data.artifacts.has_next;
         const aid_offset: string = _.last(artifacts).aid;
         if (!_.includes(known_pages, aid_offset)) {
@@ -159,6 +168,30 @@ const ArtifactsTable: React.FC = () => {
                 aid_offset,
             );
         }
+    }
+    const {
+        loading: isCompleteLoading,
+        error: errorComplete,
+        data: dataComplete,
+    } = useQuery(ArtifactsCompleteQuery, {
+        variables: {
+            dbFieldName1: 'aid',
+            dbFieldValues1: aidsAtPage,
+            aid_offset,
+            options: searchOptions,
+            atype: artifactsType,
+        },
+        fetchPolicy: 'cache-first',
+        errorPolicy: 'all',
+        notifyOnNetworkStatusChange: true,
+        skip: _.isEmpty(aidsAtPage),
+    });
+    const haveCompleteData =
+        !isCompleteLoading &&
+        dataComplete &&
+        !_.isEmpty(dataComplete.artifacts.artifacts);
+    if (haveCompleteData) {
+        artifacts = dataComplete.artifacts.artifacts;
     }
     if (known_pages.length && _.size(artifacts)) {
         const aid_offset = _.last(artifacts).aid;
@@ -187,6 +220,7 @@ const ArtifactsTable: React.FC = () => {
         artifacts,
         waitForRef,
         queryString,
+        gatingDecisionIsLoading: isCompleteLoading,
     });
     const known_rows = _.concat(rows_artifacts, rows_errors);
     const forceExpandErrors = haveErrorNoData ? true : false;

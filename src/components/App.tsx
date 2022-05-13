@@ -48,11 +48,11 @@ const httpLink = new HttpLink({
      * prod instance: Apollo client assumes that graphql on express side is listening on server /graphql
      */
     // uri: '/graphql',
-    uri: 'https://dashboard.dev.osci.redhat.com/graphql',
+    // uri: 'https://dashboard.dev.osci.redhat.com/graphql',
     /**
      * local development and local server can be accessed with:
      */
-    // uri: 'http://localhost:5000/graphql',
+    uri: 'http://localhost:5000/graphql',
     /**
      * You a making request to the same url that browser is currently on. This will add existing cookies to requests!
      */

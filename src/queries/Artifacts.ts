@@ -180,7 +180,7 @@ export const ArtifactsCompleteQuery = gql`
     ${greenwaveDecisionFragment}
 `;
 
-export const ArtifactsListByFiltersQuery1 = gql`
+export const ArtifactsListByFiltersQuery = gql`
     query ArtifactsListByFiltersQuery1(
         $limit: Int
         $atype: String!

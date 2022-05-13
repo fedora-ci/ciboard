@@ -22,7 +22,10 @@ import _ from 'lodash';
 import * as React from 'react';
 import {
     Flex,
+    Text,
+    Label,
     FlexItem,
+    TextContent,
     DataListCell,
     DataListItem,
     DataListToggle,
@@ -33,22 +36,21 @@ import {
 
 import styles from '../custom.module.css';
 import { Artifact, StateGreenwaveKaiType } from '../artifact';
-import { timestampForUser } from '../utils/artifactUtils';
-import { ArtifactStateProps } from './ArtifactState';
+import { renderStatusIcon } from '../utils/artifactUtils';
+import { ArtifactStateProps, StateLink } from './ArtifactState';
 import {
     WaiveButton,
     GreenwaveWaiver,
     GreenwaveResultInfo,
     GreenwaveRequirement,
-    FaceForGreenwaveState,
 } from './ArtifactGreenwaveState';
 import {
     KaiStateXunit,
     KaiReTestButton,
     KaiStateMapping,
 } from './ArtifactKaiState';
-import { StateDetailsEntry } from './ArtifactState';
 import classnames from 'classnames';
+import { RegisteredIcon, WeeblyIcon } from '@patternfly/react-icons';
 
 interface GreenwaveKaiStateActionsProps {
     artifact: Artifact;
@@ -60,17 +62,85 @@ export const GreenwaveKaiStateActions: React.FC<
 > = (props) => {
     const { state, artifact } = props;
     return (
-        <StateDetailsEntry caption="Actions">
-            <Flex>
-                <FlexItem>
-                    <WaiveButton state={state.gs} artifact={artifact} />
-                </FlexItem>
-                <FlexItem>
-                    <KaiReTestButton state={state.ks} />
-                </FlexItem>
+        <Flex style={{ minWidth: '15em' }}>
+            <Flex flex={{ default: 'flex_1' }}>
+                <WaiveButton state={state.gs} artifact={artifact} />
             </Flex>
-        </StateDetailsEntry>
+            <Flex flex={{ default: 'flex_1' }}>
+                <KaiReTestButton state={state.ks} />
+            </Flex>
+        </Flex>
     );
+};
+
+interface FaceForGreenwaveKaiStateProps {
+    state: StateGreenwaveKaiType;
+    artifact: Artifact;
+    artifactDashboardUrl: string;
+}
+
+export const FaceForGreenwaveKaiState: React.FC<
+    FaceForGreenwaveKaiStateProps
+> = (props) => {
+    const { artifact, state, artifactDashboardUrl } = props;
+    const { waiver } = state.gs;
+    const isWaived = _.isNumber(waiver?.id);
+    const isGatingResult = _.isString(state.gs.requirement?.testcase);
+    const labels: JSX.Element[] = [];
+    if (isGatingResult) {
+        labels.push(
+            <Label
+                color="blue"
+                isCompact
+                key="required"
+                icon={<RegisteredIcon />}
+            >
+                required for gating
+            </Label>,
+        );
+    }
+    if (isWaived) {
+        labels.push(
+            <Label color="red" isCompact key="waived" icon={<WeeblyIcon />}>
+                waived
+            </Label>,
+        );
+    }
+    const iconName: string = _.get(
+        state,
+        'requirement.type',
+        _.get(state, 'result.outcome', 'unknown'),
+    ).toLocaleLowerCase();
+    const element = (
+        <Flex>
+            <Flex flex={{ default: 'flex_1' }}>
+                <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
+                <Flex flexWrap={{ default: 'nowrap' }}>
+                    <TextContent>
+                        <Text>{state.gs.testcase}</Text>
+                    </TextContent>
+                </Flex>
+                <Flex>
+                    <FlexItem>{labels}</FlexItem>
+                </Flex>
+            </Flex>
+            <Flex flex={{ default: 'flex_1' }}>
+                <Flex>
+                    <GreenwaveKaiStateActions
+                        state={state}
+                        artifact={artifact}
+                    />
+                </Flex>
+                <Flex>
+                    <StateLink
+                        state={state}
+                        artifactDashboardUrl={artifactDashboardUrl}
+                    />
+                </Flex>
+            </Flex>
+        </Flex>
+    );
+    return element;
 };
 
 export interface ArtifactGreenwaveKaiStateProps extends ArtifactStateProps {
@@ -124,8 +194,8 @@ export const ArtifactGreenwaveKaiState: React.FC<
                             className="pf-u-m-0 pf-u-p-0"
                             key="secondary content"
                         >
-                            <FaceForGreenwaveState
-                                state={state.gs}
+                            <FaceForGreenwaveKaiState
+                                state={state}
                                 artifact={artifact}
                                 artifactDashboardUrl={artifactDashboardUrl}
                             />
@@ -145,10 +215,6 @@ export const ArtifactGreenwaveKaiState: React.FC<
                         <GreenwaveRequirement state={state.gs} />
                         <KaiStateMapping state={state.ks} artifact={artifact} />
                         <KaiStateXunit state={state.ks} artifact={artifact} />
-                        <GreenwaveKaiStateActions
-                            state={state}
-                            artifact={artifact}
-                        />
                     </>
                 )}
             </DataListContent>

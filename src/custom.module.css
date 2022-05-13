@@ -79,6 +79,11 @@
     line-height: 1;
 }
 
+.actionButton {
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
 .pageHeaderNav {
     /* Stretch the horizontal navbar in page header over the available space. */
     flex: 1 1 auto;
