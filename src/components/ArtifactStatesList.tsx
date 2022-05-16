@@ -26,11 +26,9 @@ import { useQuery } from '@apollo/client';
 import { useState, useRef, useEffect } from 'react';
 import {
     Flex,
-    Title,
     Text,
     Spinner,
     DataList,
-    TitleSizes,
     TextContent,
     TextVariants,
     DataListItem,
@@ -49,7 +47,6 @@ import {
     Artifact,
     StageNameType,
     StateExtendedNameType,
-    GreenwaveDecisionReplyType,
 } from '../artifact';
 import { RootStateType } from '../reducers';
 import { ArtifactState } from './ArtifactState';

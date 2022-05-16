@@ -169,23 +169,22 @@ const ArtifactsTable: React.FC = () => {
             );
         }
     }
-    const {
-        loading: isCompleteLoading,
-        error: errorComplete,
-        data: dataComplete,
-    } = useQuery(ArtifactsCompleteQuery, {
-        variables: {
-            dbFieldName1: 'aid',
-            dbFieldValues1: aidsAtPage,
-            aid_offset,
-            options: searchOptions,
-            atype: artifactsType,
+    const { loading: isCompleteLoading, data: dataComplete } = useQuery(
+        ArtifactsCompleteQuery,
+        {
+            variables: {
+                dbFieldName1: 'aid',
+                dbFieldValues1: aidsAtPage,
+                aid_offset,
+                options: searchOptions,
+                atype: artifactsType,
+            },
+            fetchPolicy: 'cache-first',
+            errorPolicy: 'all',
+            notifyOnNetworkStatusChange: true,
+            skip: _.isEmpty(aidsAtPage),
         },
-        fetchPolicy: 'cache-first',
-        errorPolicy: 'all',
-        notifyOnNetworkStatusChange: true,
-        skip: _.isEmpty(aidsAtPage),
-    });
+    );
     const haveCompleteData =
         !isCompleteLoading &&
         dataComplete &&

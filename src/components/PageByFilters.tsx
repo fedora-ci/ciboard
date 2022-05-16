@@ -169,7 +169,7 @@ const SearchToolbar = () => {
             return;
         }
         const atype = _.get(menuTypes, statusSelected);
-        if (inputValue && _.size(inputValue)) {
+        if (inputValue && !_.isEmpty(inputValue)) {
             setInputValue('');
             dispatch(addFilter(inputValue, atype));
         } else if (_.isEmpty(inputValue) && filters.type !== atype) {

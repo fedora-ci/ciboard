@@ -83,7 +83,7 @@ export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
             isSmall
             variant="control"
             onClick={onClick}
-            className={styles.actionButton}
+            className={resultClasses}
         >
             <OutlinedThumbsUpIcon /> <span>waive</span>
         </Button>
