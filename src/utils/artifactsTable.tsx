@@ -45,18 +45,18 @@ import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
 import { nowrap, expandable, fitContent } from '@patternfly/react-table';
 import { ExclamationCircleIcon, LinkIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
+
 import {
     aidMeaningForType,
     artifactUrl,
     getArtifactName,
     nameFieldForType,
 } from './artifactUtils';
-import styles from '../custom.module.css';
-
 import { Artifact } from '../artifact';
 import { ArtifactStatesList } from '../components/ArtifactStatesList';
 import { ArtifactDetailedInfo } from '../components/ArtifactDetailedInfo';
 import { ArtifactGreenwaveStatesSummary } from '../components/GatingStatus';
+import styles from '../custom.module.css';
 
 interface ArtifactNameProps {
     artifact: Artifact;
@@ -142,11 +142,7 @@ export const CustomRowWrapper = (
     }
     const isOpenParent = firstCell.props.children.props.isOpen;
     const ref = isOpenParent ? scrollRef : undefined;
-    const opened = isOpenParent || row?.isExpanded;
-    let resultClasses = classNames(
-        giveHint ? styles.giveHint : styles.noHint,
-        opened ? styles.level1Opened : styles.level1Closed,
-    );
+    let resultClasses = classNames(giveHint ? styles.giveHint : styles.noHint);
     return (
         <tr
             ref={ref}

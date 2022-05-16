@@ -26,7 +26,6 @@ import { Buffer } from 'buffer';
 import 'moment-duration-format';
 import { useQuery } from '@apollo/client';
 import { useState, memo, useEffect } from 'react';
-import { xunitParser } from '../utils/xunitParser';
 import {
     Alert,
     Checkbox,
@@ -58,8 +57,10 @@ import { Artifact, StateKaiType } from '../artifact';
 import { mapTypeToIconsProps, renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 import { mkSeparatedList } from '../utils/artifactsTable';
+import { xunitParser } from '../utils/xunitParser';
+import styles from '../custom.module.css';
 
-type TestCaseType = {
+interface TestCaseType {
     _uuid: string;
     name: string;
     time: string;
@@ -69,7 +70,7 @@ type TestCaseType = {
     message: string;
     properties: TestCasePropertiesType[];
     'test-outputs': TestCaseTestOutputsType[];
-};
+}
 
 type TestCaseStatusNameType = 'error' | 'fail' | 'pass' | 'skip';
 
@@ -326,8 +327,10 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
         </DataListCell>
     );
 
+    const className = classNames({ [styles.expandedTestsuite]: expanded });
+
     return (
-        <DataListItem isExpanded={expanded}>
+        <DataListItem className={className} isExpanded={expanded}>
             <DataListItemRow>
                 {hasContent && (
                     <DataListToggle

@@ -19,14 +19,13 @@
     background: var(--pf-global--info-color--100);
 }
 
-.expandedResult {
+:global(.pf-c-data-list__item.pf-m-expanded).expandedResult {
     background-color: floralwhite;
 }
 
-.expandedTestsuite {
+:global(.pf-c-data-list__item.pf-m-expanded).expandedTestsuite {
     background-color: oldlace;
 }
-
 
 .sstNVR {
     max-width: 25ch;
@@ -80,8 +79,7 @@
 }
 
 /* https://www.w3schools.com/cssref/css_selectors.asp */
-.actionButton:global(.pf-c-button.pf-m-control) 
-{
+.actionButton:global(.pf-c-button.pf-m-control) {
     padding-top: 0px;
     padding-bottom: 0px;
 }

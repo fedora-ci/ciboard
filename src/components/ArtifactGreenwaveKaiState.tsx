@@ -173,7 +173,7 @@ export const ArtifactGreenwaveKaiState: React.FC<
 
     /** Note for info test results */
     const key = state.gs.testcase;
-    const resultClasses = classNames(styles.helpSelect, styles.level2, {
+    const resultClasses = classNames(styles.helpSelect, {
         [styles.expandedResult]: forceExpand,
     });
     const toRender = (

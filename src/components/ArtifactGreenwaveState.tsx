@@ -430,7 +430,7 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
         setExpandedResult(forceExpand ? '' : testcase);
     };
     /** Note for info test results */
-    const resultClasses = classNames(styles.helpSelect, styles.level2, {
+    const resultClasses = classNames(styles.helpSelect, {
         [styles.expandedResult]: forceExpand,
     });
     const toRender = (
