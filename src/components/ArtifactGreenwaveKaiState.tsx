@@ -19,6 +19,7 @@
  */
 
 import _ from 'lodash';
+import classNames from 'classnames';
 import * as React from 'react';
 import {
     Flex,
@@ -49,7 +50,6 @@ import {
     KaiReTestButton,
     KaiStateMapping,
 } from './ArtifactKaiState';
-import classnames from 'classnames';
 import { RegisteredIcon, WeeblyIcon } from '@patternfly/react-icons';
 
 interface GreenwaveKaiStateActionsProps {
@@ -173,7 +173,9 @@ export const ArtifactGreenwaveKaiState: React.FC<
 
     /** Note for info test results */
     const key = state.gs.testcase;
-    const resultClasses = classnames(styles['helpSelect'], styles['level2']);
+    const resultClasses = classNames(styles.helpSelect, styles.level2, {
+        [styles.expandedResult]: forceExpand,
+    });
     const toRender = (
         <DataListItem
             key={key}

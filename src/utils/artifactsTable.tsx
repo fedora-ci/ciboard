@@ -144,13 +144,8 @@ export const CustomRowWrapper = (
     const ref = isOpenParent ? scrollRef : undefined;
     const opened = isOpenParent || row?.isExpanded;
     let resultClasses = classNames(
-        {},
-        {
-            [styles['giveHint']]: giveHint,
-            [styles['noHint']]: !giveHint,
-            [styles['level1Opened']]: opened,
-            [styles['level1Closed']]: !opened,
-        },
+        giveHint ? styles.giveHint : styles.noHint,
+        opened ? styles.level1Opened : styles.level1Closed,
     );
     return (
         <tr

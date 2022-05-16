@@ -19,6 +19,7 @@
  */
 
 import _ from 'lodash';
+import classNames from 'classnames';
 import * as React from 'react';
 import { useDispatch } from 'react-redux';
 import {
@@ -59,7 +60,6 @@ import {
     mkPairs,
 } from './ArtifactState';
 import { createWaiver } from '../actions';
-import classnames from 'classnames';
 
 interface WaiveButtonProps {
     artifact: Artifact;
@@ -430,7 +430,9 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
         setExpandedResult(forceExpand ? '' : testcase);
     };
     /** Note for info test results */
-    const resultClasses = classnames(styles['helpSelect'], styles['level2']);
+    const resultClasses = classNames(styles.helpSelect, styles.level2, {
+        [styles.expandedResult]: forceExpand,
+    });
     const toRender = (
         <DataListItem
             key={testcase}

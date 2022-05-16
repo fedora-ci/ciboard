@@ -51,13 +51,13 @@ import {
     TableVariant,
     cellWidth,
 } from '@patternfly/react-table';
+import { OutlinedClockIcon } from '@patternfly/react-icons';
+import classNames from 'classnames';
 
 import { Artifact, StateKaiType } from '../artifact';
 import { mapTypeToIconsProps, renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 import { mkSeparatedList } from '../utils/artifactsTable';
-import { OutlinedClockIcon } from '@patternfly/react-icons';
-import classNames from 'classnames';
 
 type TestCaseType = {
     _uuid: string;
@@ -301,7 +301,7 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
     );
 
     const summaryCell: React.ReactNode = (
-        <DataListCell>
+        <DataListCell key="summary">
             <Flex
                 direction={{ default: 'column' }}
                 grow={{ default: 'grow' }}

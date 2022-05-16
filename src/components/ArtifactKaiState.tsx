@@ -19,6 +19,7 @@
  */
 
 import _ from 'lodash';
+import classNames from 'classnames';
 import * as React from 'react';
 import {
     Flex,
@@ -55,7 +56,6 @@ import {
     mkPairs,
 } from './ArtifactState';
 import { ArtifactStateProps } from './ArtifactState';
-import classnames from 'classnames';
 
 interface KaiStateXunitProps {
     state: StateKaiType;
@@ -329,7 +329,9 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
     };
     /** Note for info test results */
     const thread_id = getThreadID({ broker_msg_body });
-    const resultClasses = classnames(styles['helpSelect'], styles['level2']);
+    const resultClasses = classNames(styles.helpSelect, styles.level2, {
+        [styles.expandedResult]: forceExpand,
+    });
     const toRender = (
         <DataListItem
             key={thread_id}
