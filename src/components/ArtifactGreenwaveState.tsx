@@ -77,7 +77,7 @@ export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
         e.stopPropagation();
         dispatch(createWaiver(artifact, state));
     };
-    const resultClasses = classnames(styles['actionButton']);
+    const resultClasses = classNames(styles['actionButton']);
     return (
         <Button
             isSmall
