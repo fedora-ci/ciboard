@@ -556,3 +556,11 @@ export const timestampForUser = (inp: string, fromNow = false): string => {
     const ret = time + ' (' + passed + ')';
     return ret;
 };
+
+/**
+ * Should we display a waive button for this result in the dashboard?
+ * Show the button only if the test is blocking gating.
+ * @param state The state object of the test result in question.
+ */
+export const isResultWaivable = (state: StateGreenwaveType): boolean =>
+    !['INFO', 'NOT_APPLICABLE', 'PASSED'].includes(state.result?.outcome || '');

@@ -37,18 +37,18 @@ import {
 
 import styles from '../custom.module.css';
 import { Artifact, StateGreenwaveKaiType } from '../artifact';
-import { renderStatusIcon } from '../utils/artifactUtils';
+import { isResultWaivable, renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactStateProps, StateLink } from './ArtifactState';
 import {
-    WaiveButton,
-    GreenwaveWaiver,
     GreenwaveResultInfo,
     GreenwaveRequirement,
+    GreenwaveWaiver,
+    WaiveButton,
 } from './ArtifactGreenwaveState';
 import {
-    KaiStateXunit,
     KaiReTestButton,
     KaiStateMapping,
+    KaiStateXunit,
 } from './ArtifactKaiState';
 import { RegisteredIcon, WeeblyIcon } from '@patternfly/react-icons';
 
@@ -61,10 +61,13 @@ export const GreenwaveKaiStateActions: React.FC<
     GreenwaveKaiStateActionsProps
 > = (props) => {
     const { state, artifact } = props;
+    const showWaiveButton = isResultWaivable(state.gs);
     return (
         <Flex style={{ minWidth: '15em' }}>
             <Flex flex={{ default: 'flex_1' }}>
-                <WaiveButton state={state.gs} artifact={artifact} />
+                {showWaiveButton && (
+                    <WaiveButton artifact={artifact} state={state.gs} />
+                )}
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <KaiReTestButton state={state.ks} />

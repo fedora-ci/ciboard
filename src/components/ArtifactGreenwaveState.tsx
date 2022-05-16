@@ -49,7 +49,11 @@ import {
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
-import { renderStatusIcon, timestampForUser } from '../utils/artifactUtils';
+import {
+    isResultWaivable,
+    renderStatusIcon,
+    timestampForUser,
+} from '../utils/artifactUtils';
 import { Artifact, StateGreenwaveType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
@@ -134,10 +138,13 @@ export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
     props,
 ) => {
     const { state, artifact } = props;
+    const showWaiveButton = isResultWaivable(state);
     return (
         <Flex style={{ minWidth: '15em' }}>
             <Flex flex={{ default: 'flex_1' }}>
-                <WaiveButton state={state} artifact={artifact} />
+                {showWaiveButton && (
+                    <WaiveButton artifact={artifact} state={state} />
+                )}
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <GreenwaveReTestButton state={state} />
