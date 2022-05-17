@@ -19,24 +19,24 @@
  */
 
 import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { css } from '@patternfly/react-styles';
 import {
-    Nav,
     Button,
+    ButtonVariant,
+    Dropdown,
+    DropdownItem,
+    DropdownToggle,
+    Nav,
     NavItem,
     NavList,
     NavProps,
-    Dropdown,
     PageHeader,
-    ButtonVariant,
-    DropdownToggle,
     PageHeaderTools,
-    PageHeaderToolsItem,
     PageHeaderToolsGroup,
-    DropdownItem,
+    PageHeaderToolsItem,
 } from '@patternfly/react-core';
 import {
     AutomationIcon,
@@ -191,14 +191,14 @@ export const DashboardPageHeader = () => {
     );
     return (
         <PageHeader
+            headerTools={<HeaderToolbar />}
             logo={
                 <>
                     <AutomationIcon size="lg" className="pf-u-mr-sm" /> CI
                     Dashboard
                 </>
             }
-            headerTools={<HeaderToolbar />}
-            logoComponent="div"
+            logoComponent={Link}
             logoProps={logoProps}
             topNav={PageNav}
         />
