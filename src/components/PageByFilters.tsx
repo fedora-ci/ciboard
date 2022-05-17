@@ -96,7 +96,7 @@ const SearchToolbar = () => {
         setIsExpanded(isExpanded);
     };
     const onStatusSelect = (
-        event: React.MouseEvent | React.ChangeEvent,
+        _event: React.MouseEvent | React.ChangeEvent,
         selection: string | SelectOptionObject,
         isPlaceholder?: boolean | undefined,
     ) => {
@@ -227,21 +227,19 @@ const SearchToolbar = () => {
         </>
     );
     const toolbarItems = (
-        <React.Fragment>
-            <ToolbarGroup variant="icon-button-group">
-                {toggleGroupItems}
-                <ToolbarItem></ToolbarItem>
-                <ToolbarItem>
-                    <Checkbox
-                        label="Skip scratch builds"
-                        isChecked={filters.options.skipScratch}
-                        onChange={toggleScratch}
-                        aria-label="checkbox for scratch"
-                        id="toggle-scratch"
-                    />
-                </ToolbarItem>
-            </ToolbarGroup>
-        </React.Fragment>
+        <ToolbarGroup variant="icon-button-group">
+            {toggleGroupItems}
+            <ToolbarItem></ToolbarItem>
+            <ToolbarItem>
+                <Checkbox
+                    label="Skip scratch builds"
+                    isChecked={filters.options.skipScratch}
+                    onChange={toggleScratch}
+                    aria-label="checkbox for scratch"
+                    id="toggle-scratch"
+                />
+            </ToolbarItem>
+        </ToolbarGroup>
     );
     const toolBar = (
         <Flex
@@ -263,13 +261,13 @@ const SearchToolbar = () => {
     );
 
     const url = new URL(window.location.href);
-    const filters_bin = url.searchParams.get('filters');
+    const filtersEncoded = url.searchParams.get('filters');
     if (!_.isEmpty(filters.active)) {
-        let url_filters = {};
-        if (filters_bin) {
-            url_filters = JSON.parse(atob(filters_bin));
+        let urlFilters = {};
+        if (filtersEncoded) {
+            urlFilters = JSON.parse(atob(filtersEncoded));
         }
-        if (!_.isEqual(url_filters, filters)) {
+        if (!_.isEqual(urlFilters, filters)) {
             /** Update URL with new filters param. */
             let filtersParam = JSON.stringify(filters);
             let updateFilters = false;

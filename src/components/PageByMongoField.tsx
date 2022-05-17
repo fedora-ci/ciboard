@@ -48,6 +48,9 @@ import {
 import { WaiveModal } from './WaiveForm';
 
 interface ArtifactsTableProps {
+    artifactType: string;
+    fieldName: string;
+    fieldValues: string[];
     onArtifactsLoaded?(artifacts: Artifact[]): void;
 }
 
@@ -63,51 +66,28 @@ interface ArtifactsTableProps {
  * - embedded - used for embedded view
  * - focus - used to focus on a specific test for a single artifact view
  */
-const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
-    onArtifactsLoaded,
-}) => {
+const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
+    const { artifactType, fieldName, fieldValues, onArtifactsLoaded } = props;
     const scrollRef = useRef<HTMLTableRowElement>(null);
     let artifacts: Artifact[] = [];
-    /**
-     * Pagination vars
-     */
+    // Pagination vars
     const aid_offset_pages = useRef<string[]>([]);
-    /**
-     * array of sorted 'aid' from the bottom of each known page
-     */
+    // Array of sorted 'aid' from the bottom of each known page
     const known_pages = aid_offset_pages.current;
-    /**
-     * aid_offset -- entry from 'known_pages'
+    /* aid_offset -- entry from 'known_pages'
      * Set when user clicks on 'prev' or 'next'
      * Maps to page number
      */
     const [aid_offset, setAidOffset] = useState<string | undefined>(undefined);
-    /**
-     * has_next -- returned by query from backend
-     */
+    // has_next -- returned by query from backend
     let hasNext = false;
-    /**
-     * currentPage -- index in known pages
-     */
+    // currentPage -- index in known pages
     let currentPage: number = 1;
     let loadNextIsDisabled = true;
     let loadPrevIsDisabled = true;
-    /**
-     * From url
-     */
-    type MongoFieldsParams = {
-        type: string;
-        search: string;
-        value: string;
-    };
-    const {
-        type: artifactsType,
-        search: dbFieldName,
-        value: dbFieldValuesString,
-    } = useParams<MongoFieldsParams>();
-    const dbFieldValues = dbFieldValuesString.split(',');
-    /** Index of the currently expanded artifact row within the `artifacts` list. */
+    // Index of the currently expanded artifact row within the `artifacts` list.
     const [opened, setOpened] = useState<number | null>(null);
+
     /** page navigation */
     const onClickLoadNext = () => {
         const new_aid_offset = _.last(artifacts)?.aid;
@@ -130,25 +110,26 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
         setAidOffset(new_aid_offset);
     };
     /** Frontend need to ask exact DB field, with its full path */
-    const dbFieldPath = _.includes(['aid'], dbFieldName)
-        ? dbFieldName
-        : `payload.${dbFieldName}`;
+    const fieldPath = _.includes(['aid'], fieldName)
+        ? fieldName
+        : `payload.${fieldName}`;
+
     const {
         loading: isLoading,
         error,
         data,
     } = useQuery(ArtifactsCompleteQuery, {
         variables: {
-            atype: artifactsType,
+            atype: artifactType,
             aid_offset,
-            dbFieldName1: dbFieldPath,
-            dbFieldValues1: dbFieldValues,
+            dbFieldName1: fieldPath,
+            dbFieldValues1: fieldValues,
         },
         /** https://www.apollographql.com/docs/react/api/core/ApolloClient/ */
         fetchPolicy: 'cache-first',
         notifyOnNetworkStatusChange: true,
         errorPolicy: 'all',
-        skip: _.isEmpty(dbFieldValues),
+        skip: _.isEmpty(fieldValues),
     });
     const haveData = !isLoading && data && !_.isEmpty(data.artifacts.artifacts);
     const haveErrorNoData = !isLoading && error && !haveData;
@@ -199,7 +180,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
         /** Always open if only 1 entry */
         indexToOpen = 0;
     }
-    const columns = tableColumns(artifactsType);
+    const columns = tableColumns(artifactType);
     let rowsErrors: IRow[] = [];
     if (haveErrorNoData) {
         const errorMsg: InputRowType = {
@@ -215,12 +196,12 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
         gatingDecisionIsLoading: false,
     });
     const forceExpandErrors = haveErrorNoData ? true : false;
-    const foundValues = _.map(artifacts, _.property(dbFieldPath));
-    const missing = _.difference(dbFieldValues, foundValues);
+    const foundValues = _.map(artifacts, _.property(fieldPath));
+    const missing = _.difference(fieldValues, foundValues);
     let rowsMissing: IRow[] = [];
     if (!_.isEmpty(missing) && haveData) {
         rowsErrors = mkSpecialRows({
-            title: `No data for ${artifactsType} with ${dbFieldName}`,
+            title: `No data for ${artifactType} with ${fieldName}`,
             body: missing.toString(),
             type: 'error',
         });
@@ -247,6 +228,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
         onClickLoadPrev,
         onClickLoadNext,
     };
+
     return (
         <>
             <Table
@@ -269,6 +251,12 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
         </>
     );
 };
+
+interface MongoFieldsParams {
+    type: string;
+    search: string;
+    value: string;
+}
 
 export function PageByMongoField() {
     const [pageTitle, setPageTitle] = useState<string | undefined>();
@@ -297,9 +285,18 @@ export function PageByMongoField() {
         setPageTitle(title);
     };
 
+    // From url
+    const params = useParams<MongoFieldsParams>();
+    const fieldValues = params.value.split(',');
+
     return (
         <PageCommon title={pageTitle}>
-            <ArtifactsTable onArtifactsLoaded={onArtifactsLoaded} />
+            <ArtifactsTable
+                artifactType={params.type}
+                fieldName={params.search}
+                fieldValues={fieldValues}
+                onArtifactsLoaded={onArtifactsLoaded}
+            />
             <ToastAlertGroup />
             <WaiveModal />
         </PageCommon>
