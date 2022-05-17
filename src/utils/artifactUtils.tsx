@@ -169,25 +169,25 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
      * Release can have many dots.
      */
     const release = getReleaseFromNvr(nvr);
-    var os_version;
+    let osVersion;
     if (artifactType === 'redhat-module') {
         if (/-f\d\d-/.test(nvr)) {
             /** Fedora module - take 2 digits. */
-            os_version = release.substring(0, 2);
+            osVersion = release.substring(0, 2);
         } else {
             /** RHEL based. Take 1 digit. */
-            os_version = release.substring(0, 1);
+            osVersion = release.substring(0, 1);
         }
     } else {
         /**
          * Release : 1.fc32_2
          * We discussed with dcantrell@ : and for now solution is to search for pattern: \.(el|fc)[0-9]+
          */
-        var dist_tag = release.match(/\.(el|fc)[0-9]+/g)?.toString();
-        os_version = dist_tag?.replace(/\.(el|fc)/, '');
+        const distTag = release.match(/\.(el|fc)[0-9]+/g)?.toString();
+        osVersion = distTag?.replace(/\.(el|fc)/, '');
     }
-    console.log('nvr: %s, has os version: %s', nvr, os_version);
-    return os_version;
+    console.log('nvr: %s, has os version: %s', nvr, osVersion);
+    return osVersion;
 };
 
 export const artifactUrl = (artifact: Artifact) => {
@@ -269,21 +269,21 @@ export const getThreadID = (args: {
 };
 
 export const getTestcaseName = (state: StateType): string => {
-    var test_case_name: string | undefined;
+    let testCaseName: string | undefined;
     if (isKaiState(state)) {
         const { kai_state } = state;
         if (kai_state?.test_case_name) {
-            test_case_name = kai_state.test_case_name;
+            testCaseName = kai_state.test_case_name;
         }
         const broker_msg_body: BrokerMessagesType = state.broker_msg_body;
-        if (broker_msg_body && _.isEmpty(test_case_name)) {
+        if (broker_msg_body && _.isEmpty(testCaseName)) {
             if (MSG_V_0_1.isMsg(broker_msg_body)) {
                 if (
                     broker_msg_body.namespace &&
                     broker_msg_body.type &&
                     broker_msg_body.category
                 )
-                    test_case_name = `${broker_msg_body.namespace}.${broker_msg_body.type}.${broker_msg_body.category}`;
+                    testCaseName = `${broker_msg_body.namespace}.${broker_msg_body.type}.${broker_msg_body.category}`;
             }
             if (MSG_V_1.isMsg(broker_msg_body)) {
                 if (
@@ -291,24 +291,24 @@ export const getTestcaseName = (state: StateType): string => {
                     broker_msg_body.test.type &&
                     broker_msg_body.test.category
                 )
-                    test_case_name = `${broker_msg_body.test.namespace}.${broker_msg_body.test.type}.${broker_msg_body.test.category}`;
+                    testCaseName = `${broker_msg_body.test.namespace}.${broker_msg_body.test.type}.${broker_msg_body.test.category}`;
             }
         }
     }
     if (isGreenwaveState(state)) {
         if (state.testcase) {
-            test_case_name = state.testcase;
+            testCaseName = state.testcase;
         }
     }
     if (isGreenwaveKaiState(state)) {
         if (state.gs.testcase) {
-            test_case_name = state.gs.testcase;
+            testCaseName = state.gs.testcase;
         }
     }
-    if (_.isUndefined(test_case_name)) {
-        test_case_name = 'uknown testcase - please report an issue';
+    if (_.isUndefined(testCaseName)) {
+        testCaseName = 'uknown testcase - please report an issue';
     }
-    return test_case_name;
+    return testCaseName;
 };
 
 export const getXunit = (broker_msg_body: BrokerMessagesType) => {

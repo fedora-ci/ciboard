@@ -26,15 +26,15 @@ import { PageHelp } from './components/PageHelp';
 import { PageNewIssue } from './components/PageNewIssue';
 import { PageSST } from './components/PageSST';
 
-export type menuEntryType = {
+export interface MenuEntry {
     title: string;
     key: string;
     to: string;
     route?: string;
     render: (props: any) => JSX.Element;
-};
+}
 
-const menuRoutes: menuEntryType[] = [
+export const menuRoutes: MenuEntry[] = [
     {
         title: 'Search test results',
         key: 'artifact-search',
@@ -69,7 +69,7 @@ const menuRoutes: menuEntryType[] = [
     },
 ];
 
-const otherRoutes: menuEntryType[] = [
+export const otherRoutes: MenuEntry[] = [
     {
         title: '',
         key: 'artifact',
@@ -77,5 +77,3 @@ const otherRoutes: menuEntryType[] = [
         render: (props) => <PageByMongoField {...props} />,
     },
 ];
-
-export { menuRoutes, otherRoutes };

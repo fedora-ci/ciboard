@@ -160,7 +160,7 @@ export function gateArtifactsReducer(
                 buildType: type,
                 ignoreCiSystem,
             };
-            var nstate = state;
+            let nstate = state;
             let property: keyof ActionGASetSearchOptions['payload'];
             for (property in update_set) {
                 if (!_.isNil(update_set[property])) {

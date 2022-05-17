@@ -91,13 +91,16 @@ const getKaiState = (
     stateNameReq: StateExtendedNameType,
     runUrl: string,
 ): StateKaiType | undefined => {
-    const s = _.find(states, ([_stageName, stateName, _states]) => {
-        return _.isEqual(_.toUpper(stateNameReq), _.toUpper(stateName));
-    });
+    const s = _.find(
+        states,
+        ([_stageName, stateName, _states]) =>
+            stateNameReq.toLocaleLowerCase() === stateName.toLocaleLowerCase(),
+    );
     if (_.isNil(s)) return;
     const [_stageName, _stateName, kaiStates] = s;
-    var kaiState = _.find(kaiStates as StateKaiType[], (state) =>
-        _.isEqual(runUrl, _.get(state.broker_msg_body, 'run.url')),
+    const kaiState = _.find(
+        kaiStates as StateKaiType[],
+        (state) => runUrl === state.broker_msg_body.run.url,
     );
     return kaiState;
 };
@@ -150,8 +153,10 @@ const mkStagesKaiStates = (
     states: StatesByCategoryType;
 }[] => {
     const stageStates = [];
-    var buildStates = transformKaiStates(artifact.states, 'build');
-    buildStates = _.omitBy(buildStates, (x) => _.isEmpty(x));
+    const buildStates = _.omitBy(
+        transformKaiStates(artifact.states, 'build'),
+        (x) => _.isEmpty(x),
+    );
     if (_.some(_.values(buildStates), 'length')) {
         const stage: StageNameType = 'build';
         stageStates.push({ stage, states: buildStates });
@@ -371,7 +376,7 @@ const getTestCompleteResult = (
     ) {
         return undefined;
     }
-    var testResult: string | undefined;
+    let testResult: string | undefined;
     if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
         const broker_msg =
             state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;

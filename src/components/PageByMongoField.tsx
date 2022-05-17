@@ -85,13 +85,13 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     /**
      * has_next -- returned by query from backend
      */
-    var has_next = false;
+    let hasNext = false;
     /**
      * currentPage -- index in known pages
      */
-    var currentPage: number = 1;
-    var loadNextIsDisabled = true;
-    var loadPrevIsDisabled = true;
+    let currentPage: number = 1;
+    let loadNextIsDisabled = true;
+    let loadPrevIsDisabled = true;
     /**
      * From url
      */
@@ -154,7 +154,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     const haveErrorNoData = !isLoading && error && !haveData;
     if (haveData) {
         artifacts = data.artifacts.artifacts;
-        has_next = data.artifacts.has_next;
+        hasNext = data.artifacts.has_next;
         if (onArtifactsLoaded) {
             onArtifactsLoaded(artifacts);
         }
@@ -178,7 +178,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     if (currentPage > 1) {
         loadPrevIsDisabled = false;
     }
-    if (has_next) {
+    if (hasNext) {
         loadNextIsDisabled = false;
     }
     const onCollapse: OnCollapseEventType = (
@@ -194,20 +194,20 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
         }
         setOpened(rowKey);
     };
-    var indexToOpen = opened;
+    let indexToOpen = opened;
     if (_.size(artifacts) === 1) {
         /** Always open if only 1 entry */
         indexToOpen = 0;
     }
     const columns = tableColumns(artifactsType);
-    var rows_errors: IRow[] = [];
+    let rowsErrors: IRow[] = [];
     if (haveErrorNoData) {
         const errorMsg: InputRowType = {
             title: 'Cannot fetch data',
             body: <>{error?.toString()}</>,
             type: 'error',
         };
-        rows_errors = mkSpecialRows(errorMsg);
+        rowsErrors = mkSpecialRows(errorMsg);
     }
     const rows_artifacts = mkArtifactsRows({
         artifacts,
@@ -217,17 +217,17 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     const forceExpandErrors = haveErrorNoData ? true : false;
     const foundValues = _.map(artifacts, _.property(dbFieldPath));
     const missing = _.difference(dbFieldValues, foundValues);
-    var rows_missing: IRow[] = [];
+    let rowsMissing: IRow[] = [];
     if (!_.isEmpty(missing) && haveData) {
-        rows_errors = mkSpecialRows({
+        rowsErrors = mkSpecialRows({
             title: `No data for ${artifactsType} with ${dbFieldName}`,
             body: missing.toString(),
             type: 'error',
         });
     }
-    var rows_loading: IRow[] = [];
+    let rowsLoading: IRow[] = [];
     if (isLoading) {
-        rows_loading = mkSpecialRows({
+        rowsLoading = mkSpecialRows({
             title: 'Loading artifact data…',
             body: 'Please wait.',
             type: 'loading',
@@ -235,9 +235,9 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
     }
     const known_rows = _.concat(
         rows_artifacts,
-        rows_errors,
-        rows_missing,
-        rows_loading,
+        rowsErrors,
+        rowsMissing,
+        rowsLoading,
     );
     const paginationProps: PaginationToolbarProps = {
         isLoading,
@@ -247,7 +247,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
         onClickLoadPrev,
         onClickLoadNext,
     };
-    const element = (
+    return (
         <>
             <Table
                 header={<PaginationToolbar {...paginationProps} />}
@@ -268,7 +268,6 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = ({
             <ShowErrors error={error} forceExpand={forceExpandErrors} />
         </>
     );
-    return element;
 };
 
 export function PageByMongoField() {

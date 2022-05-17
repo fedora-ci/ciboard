@@ -71,11 +71,11 @@ const ArtifactsTable: React.FC = () => {
         regex.startsWith('^') ? regex : `^${regex}`,
     );
     /** XXX */
-    var artifacts: any[] = [];
-    var has_next = false;
-    var currentPage: number = 1;
-    var loadNextIsDisabled = true;
-    var loadPrevIsDisabled = true;
+    let artifacts: any[] = [];
+    let hasNext = false;
+    let currentPage: number = 1;
+    let loadNextIsDisabled = true;
+    let loadPrevIsDisabled = true;
     useEffect(() => {
         /**
          * didMount, didUpdated => after render() => 'opened' changed =>
@@ -159,7 +159,7 @@ const ArtifactsTable: React.FC = () => {
         _.forEach(artifacts, (a: Artifact) => {
             aidsAtPage.push(a.aid);
         });
-        has_next = data.artifacts.has_next;
+        hasNext = data.artifacts.has_next;
         const aid_offset: string = _.last(artifacts).aid;
         if (!_.includes(known_pages, aid_offset)) {
             known_pages.splice(
@@ -202,17 +202,17 @@ const ArtifactsTable: React.FC = () => {
     if (currentPage > 1) {
         loadPrevIsDisabled = false;
     }
-    if (has_next) {
+    if (hasNext) {
         loadNextIsDisabled = false;
     }
-    var rows_errors: IRow[] = [];
+    let rowsErrors: IRow[] = [];
     if (haveErrorNoData) {
         const errorMsg: InputRowType = {
             title: 'Cannot fetch data',
             body: <div>{error?.toString()}</div>,
             type: 'error',
         };
-        rows_errors = mkSpecialRows(errorMsg);
+        rowsErrors = mkSpecialRows(errorMsg);
     }
     const rows_artifacts = mkArtifactsRows({
         opened,
@@ -221,7 +221,7 @@ const ArtifactsTable: React.FC = () => {
         queryString,
         gatingDecisionIsLoading: isCompleteLoading,
     });
-    const known_rows = _.concat(rows_artifacts, rows_errors);
+    const known_rows = _.concat(rows_artifacts, rowsErrors);
     const forceExpandErrors = haveErrorNoData ? true : false;
     const paginationProps = {
         isLoading,

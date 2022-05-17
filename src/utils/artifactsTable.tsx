@@ -222,7 +222,7 @@ export const ShowErrors = ({ error, forceExpand }: any) => {
     const onToggle = (isExpanded: boolean) => {
         setExpanded(isExpanded);
     };
-    var toggleText = 'Show errors';
+    let toggleText = 'Show errors';
     if (forceExpand) {
         toggleText = '';
     } else if (isExpanded) {
@@ -262,7 +262,7 @@ export type OnDropdownSelectType = Extract<DropdownProps['onSelect'], Function>;
 export const mkSpecialRows = (args: InputRowType): IRow[] => {
     const default_args = { type: 'error' };
     const { title, body, type }: any = { ...default_args, ...args };
-    var Icon = () => <></>;
+    let Icon = () => <></>;
     if (type === 'error') {
         Icon = () => (
             <EmptyStateIcon
@@ -359,26 +359,23 @@ export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
     if (_.isEmpty(artifacts)) {
         return [];
     }
-    var rows: IRow[] = _.chain(artifacts)
-        .map((artifact, index: number) => [
-            mkArtifactRow(artifact, gatingDecisionIsLoading),
-            {
-                parent: index * 2,
-                isOpen: false,
-                fullWidth: true,
-                noPadding: true,
-                cells: [
-                    {
-                        title: <>'loading'</>,
-                        transforms: [fitContent],
-                        cellTransforms: [nowrap],
-                        cellFormatters: [expandable],
-                    },
-                ],
-            },
-        ])
-        .flatten()
-        .value();
+    let rows: IRow[] = artifacts.flatMap((artifact, index: number) => [
+        mkArtifactRow(artifact, gatingDecisionIsLoading),
+        {
+            parent: index * 2,
+            isOpen: false,
+            fullWidth: true,
+            noPadding: true,
+            cells: [
+                {
+                    title: 'Loading…',
+                    transforms: [fitContent],
+                    cellTransforms: [nowrap],
+                    cellFormatters: [expandable],
+                },
+            ],
+        },
+    ]);
     if (!_.isNil(opened)) {
         const aOpen = opened / 2;
         rows[opened].isOpen = true;

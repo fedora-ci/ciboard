@@ -271,16 +271,16 @@ const SearchToolbar = () => {
         }
         if (!_.isEqual(url_filters, filters)) {
             /** Update URL with new filters param. */
-            var filters_param = JSON.stringify(filters);
-            var update_filters = false;
+            let filtersParam = JSON.stringify(filters);
+            let updateFilters = false;
             try {
-                filters_param = btoa(filters_param);
-                update_filters = true;
+                filtersParam = btoa(filtersParam);
+                updateFilters = true;
             } catch {
                 console.log('Cannot set filters %o', filters);
             }
-            if (update_filters) {
-                url.searchParams.set('filters', filters_param);
+            if (updateFilters) {
+                url.searchParams.set('filters', filtersParam);
                 window.history.replaceState('', 'filter', url.href);
             }
         }

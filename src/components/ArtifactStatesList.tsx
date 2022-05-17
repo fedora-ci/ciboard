@@ -209,7 +209,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         '',
     );
     const focusOn = _.isString(focusOnParam) ? focusOnParam : '';
-    var artifact: Artifact | null = null;
+    let artifact: Artifact | null = null;
     if (haveData) {
         artifact = _.get(dataCurrentState, 'artifacts.artifacts[0]');
     }

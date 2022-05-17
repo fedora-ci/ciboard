@@ -190,7 +190,7 @@ export interface KaiStateMappingProps extends PropsWithKaiState {
 export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
     const { artifact, state } = props;
     const { broker_msg_body, kai_state } = state;
-    var pairs: string[][] = [];
+    let pairs: string[][] = [];
     if (MSG_V_1.isMsg(broker_msg_body)) {
         pairs = mkPairs(schemaMappingV1, state.broker_msg_body);
     } else if (MSG_V_0_1.isMsg(broker_msg_body)) {

@@ -141,7 +141,7 @@ export const addFilter = (newval = '', type = '') => {
     return async (dispatch: DispatchType, getState: GetStateType) => {
         const cur_type = getState().filters.type;
         const cur_filters = getState().filters.active;
-        var rforeign = /[^\u0000-\u007f]/;
+        const rforeign = /[^\u0000-\u007f]/;
         if (rforeign.test(newval)) {
             console.log('Ignoring filter with no-latin character:', newval);
             return null;
