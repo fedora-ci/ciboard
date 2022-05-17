@@ -39,7 +39,6 @@ import {
     Flex,
     FlexItem,
     Spinner,
-    TextContent,
     Title,
 } from '@patternfly/react-core';
 import {
@@ -129,29 +128,29 @@ interface TestsuitesProps {
     xunit: TestSuiteType[];
 }
 
-const Testsuites: React.FC<TestsuitesProps> = (props) => {
+const TestSuitesInternal: React.FC<TestsuitesProps> = (props) => {
     const { xunit } = props;
-    const testsuites = [];
-    if (xunit.length === 0) {
-        testsuites.push(<p>Error: unable to parse xunit, seems invalid.</p>);
-    }
-    for (const suite of xunit) {
-        testsuites.push(
-            <Flex key={suite._uuid}>
-                <FlexItem>
-                    <TextContent>
-                        <Title headingLevel="h4" size="lg">
-                            {suite.name}
-                        </Title>
-                    </TextContent>
-                </FlexItem>
-                <FlexItem>
-                    <TestSuite suite={suite} />
-                </FlexItem>
-            </Flex>,
+    if (_.isEmpty(xunit)) {
+        return (
+            <Alert
+                isInline
+                isPlain
+                key="error"
+                title="Could not parse detialed results"
+                variant="danger"
+            >
+                We were unable to parse the detailed test results as provided by
+                the CI system.
+            </Alert>
         );
     }
-    return <>{testsuites}</>;
+    const testSuites = xunit.map((suite) => (
+        <Flex direction={{ default: 'column' }} key={suite._uuid}>
+            <Title headingLevel="h4">{suite.name}</Title>
+            <TestSuite suite={suite} />
+        </Flex>
+    ));
+    return <>{testSuites}</>;
 };
 
 const mkLogLink = (log: TestCaseLogsEntryType): JSX.Element => (
@@ -390,10 +389,10 @@ function compareTestCases(tc1: TestCaseType, tc2: TestCaseType) {
     if (tc1.status === 'error' && tc2.status !== 'error') return -1;
     if (tc1.status !== 'error' && tc2.status === 'error') return 1;
     // Compare the remaining tests on time elapsed.
-    const time1 = Number(tc1.time);
-    const time2 = Number(tc2.time);
-    if (isNaN(time1) || isNaN(time2)) {
-        // Sort by name if no time was provided.
+    const time1 = Math.trunc(Number(tc1.time));
+    const time2 = Math.trunc(Number(tc2.time));
+    // Sort by name if no time was provided or if the times are equal.
+    if (isNaN(time1) || isNaN(time2) || time1 === time2) {
         return tc1.name.localeCompare(tc2.name);
     }
     return time2 - time1;
@@ -523,10 +522,11 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     if (loading || inflating) {
         const text = loading ? 'Fetching test results…' : 'Inflating…';
         return (
-            <>
-                <Spinner size="md" />
-                {text}
-            </>
+            <Flex className="pf-u-p-sm">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-sm" size="md" /> {text}
+                </FlexItem>
+            </Flex>
         );
     }
     if (msgError) return <>{msgError}</>;
@@ -555,7 +555,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
             </div>
         );
     }
-    return <Testsuites xunit={parsedXunit} />;
+    return <TestSuitesInternal xunit={parsedXunit} />;
 };
 
 export const TestSuites = memo(
