@@ -25,36 +25,39 @@ import { useSelector } from 'react-redux';
 import { useQuery } from '@apollo/client';
 import { useState, useRef, useEffect } from 'react';
 import {
-    Flex,
-    Text,
-    Spinner,
+    Alert,
     DataList,
+    DataListCell,
+    DataListItem,
+    DataListItemCells,
+    DataListItemRow,
+    Flex,
+    FlexItem,
+    Spinner,
+    Text,
     TextContent,
     TextVariants,
-    DataListItem,
-    DataListCell,
-    DataListItemRow,
-    DataListItemCells,
 } from '@patternfly/react-core';
+
 import {
-    isKaiState,
-    getThreadID,
-    getTestcaseName,
-    isGreenwaveState,
-} from '../utils/artifactUtils';
-import {
-    StateType,
     Artifact,
-    StageNameType,
     StateExtendedNameType,
+    StageNameType,
+    StateType,
 } from '../artifact';
+import {
+    getTestcaseName,
+    getThreadID,
+    isGreenwaveState,
+    isKaiState,
+} from '../utils/artifactUtils';
 import { RootStateType } from '../reducers';
 import { ArtifactState } from './ArtifactState';
 import { IStateQueryString } from '../actions/types';
 import { ArtifactsCompleteQuery } from '../queries/Artifacts';
 import {
-    mkStagesAndStates,
     StageNameStateNameStatesType,
+    mkStagesAndStates,
 } from '../utils/stages_states';
 
 const artifactDashboardUrl = (artifact: Artifact) =>
@@ -84,8 +87,8 @@ const StageAndState: React.FC<StageAndStateProps> = (props) => {
     const title = mkStageStateTitle(stageName, stateName);
     return (
         <DataListItem
-            key={title}
             aria-labelledby="artifact-item-result"
+            key={title}
             style={{ borderBottom: 'none' }}
         >
             <DataListItemRow>
@@ -212,13 +215,27 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
     }
     if (loadingCurrentState) {
         return (
-            <Flex>
-                <Spinner size="sm" />
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading test
+                    results…
+                </FlexItem>
             </Flex>
         );
     }
     if (!artifact) {
-        return <div>Cannot fetch artifact info.</div>;
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Alert
+                        isInline
+                        isPlain
+                        title="Could not load test results"
+                        variant="warning"
+                    />
+                </FlexItem>
+            </Flex>
+        );
     }
     const stagesAndStates: StageNameStateNameStatesType[] =
         mkStagesAndStates(artifact);

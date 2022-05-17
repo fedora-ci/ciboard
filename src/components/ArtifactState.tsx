@@ -21,28 +21,23 @@
 import _ from 'lodash';
 import * as React from 'react';
 import {
+    DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
     Flex,
     Label,
-    Title,
-    FlexItem,
-    TitleSizes,
     LabelProps,
-    DescriptionListTerm,
-    DescriptionListGroup,
-    DescriptionListDescription,
+    Title,
 } from '@patternfly/react-core';
-
-import Linkify from 'react-linkify';
-
 import { LinkIcon } from '@patternfly/react-icons';
 
 import {
-    isKaiState,
+    LinkifyNewTab,
     getThreadID,
-    isGreenwaveState,
     isGreenwaveKaiState,
+    isGreenwaveState,
+    isKaiState,
 } from '../utils/artifactUtils';
-
 import { StateType, Artifact, StateExtendedNameType } from '../artifact';
 import { ArtifactKaiState, ArtifactKaiStateProps } from './ArtifactKaiState';
 import {
@@ -61,19 +56,18 @@ export const StateDetailsEntry = (
     props: StateDetailsEntryPropsWithChildren,
 ) => {
     const { children, caption } = props;
-    if (_.isNil(children)) {
-        return null;
-    }
+    if (_.isNil(children)) return null;
     return (
         <Flex direction={{ default: 'column' }}>
-            <Flex>
-                <Title headingLevel="h1" size={TitleSizes['lg']}>
-                    {caption}
-                </Title>
-            </Flex>
-            <Flex>
-                <FlexItem spacer={{ default: 'spacerXl' }} />
-                <FlexItem grow={{ default: 'grow' }}>{children}</FlexItem>
+            <Title headingLevel="h1" size="lg">
+                {caption}
+            </Title>
+            <Flex
+                direction={{ default: 'column' }}
+                grow={{ default: 'grow' }}
+                spaceItems={{ default: 'spaceItemsLg' }}
+            >
+                {children}
             </Flex>
             <Flex />
         </Flex>
@@ -151,27 +145,6 @@ export const mkPairs = (mapping: ResultMappingType, dict: Object) => {
         pairsNameValue.push([name, v]);
     });
     return pairsNameValue;
-};
-
-type LinkifyNewTabPropsWithChildren = React.PropsWithChildren<React.ReactNode>;
-export const LinkifyNewTab = (props: LinkifyNewTabPropsWithChildren) => {
-    const { children } = props;
-    return (
-        <Linkify
-            componentDecorator={(decoratedHref, decoratedText, key) => (
-                <a
-                    href={decoratedHref}
-                    key={key}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
-                    {decoratedText}
-                </a>
-            )}
-        >
-            {children}
-        </Linkify>
-    );
 };
 
 export interface ArtifactStateProps {

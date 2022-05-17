@@ -24,6 +24,7 @@ import moment from 'moment';
 import { useQuery } from '@apollo/client';
 import { useState } from 'react';
 import {
+    Alert,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
@@ -43,7 +44,7 @@ import {
 import styles from '../custom.module.css';
 import { TabClickHandlerType } from '../types';
 import { ArtifactsDetailedInfoKojiTask } from '../queries/Artifacts';
-import { koji_instance, Artifact } from '../artifact';
+import { Artifact, koji_instance } from '../artifact';
 import {
     mkCommitHashFromSource,
     mkLinkKojiWebBuildId,
@@ -51,6 +52,7 @@ import {
     mkLinkKojiWebUserId,
     mkLinkPkgsDevelFromSource,
 } from '../utils/artifactUtils';
+import { ExternalLink } from './ExternalLink';
 
 /**
  * Different artifact types have different detailed info.
@@ -81,10 +83,12 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
     );
     if (loadingCurrentState) {
         return (
-            <>
-                Loading build info
-                <Spinner size="md" />
-            </>
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading build
+                    info…
+                </FlexItem>
+            </Flex>
         );
     }
     const haveData =
@@ -93,23 +97,28 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
         !_.isEmpty(dataKojiTask.koji_task?.builds);
 
     if (!haveData) {
-        /** No additional info */
-        return <></>;
+        return (
+            <Flex className="pf-u-p-lg">
+                <Alert
+                    isInline
+                    isPlain
+                    title="No build information available"
+                    variant="info"
+                />
+            </Flex>
+        );
     }
     const build = _.get(dataKojiTask, 'koji_task.builds.0');
     /** build time */
-    const b_time = moment.unix(build.completion_ts).local();
-    const build_time = b_time.format('YYYY-MM-DD, HH:mm');
-    const build_zone_shift = b_time.format('ZZ');
+    const buildTimeLocal = moment.unix(build.completion_ts).local();
+    const buildTimeWithTz = buildTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
     /** commit time */
     const c_time = moment
         .unix(build.commit_obj?.committer_date_seconds)
         .local();
-    var commit_time = 'n/a';
-    var commit_zone_shift = 'n/a';
+    let commitTimeWithTz = 'n/a';
     if (c_time.isValid()) {
-        commit_time = c_time.format('YYYY-MM-DD, HH:mm');
-        commit_zone_shift = c_time.format('ZZ');
+        commitTimeWithTz = c_time.format('YYYY-MM-DD HH:mm ZZ');
     }
     const element = (
         <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
@@ -137,9 +146,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                         </DescriptionListDescription>
                     </DescriptionListGroup>
                     <DescriptionListGroup>
-                        <DescriptionListTerm>
-                            Dist-git commit
-                        </DescriptionListTerm>
+                        <DescriptionListTerm>Git commit</DescriptionListTerm>
                         <DescriptionListDescription>
                             <a
                                 className={styles['buildInfoCommitHash']}
@@ -185,7 +192,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                         <DescriptionListDescription
                             className={styles['buildInfoTimestamp']}
                         >
-                            {build_time} {build_zone_shift}
+                            {buildTimeWithTz}
                         </DescriptionListDescription>
                     </DescriptionListGroup>
                     <DescriptionListGroup>
@@ -193,7 +200,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                         <DescriptionListDescription
                             className={styles['buildInfoTimestamp']}
                         >
-                            {commit_time} {commit_zone_shift}
+                            {commitTimeWithTz}
                         </DescriptionListDescription>
                     </DescriptionListGroup>
                 </DescriptionList>
@@ -203,34 +210,17 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                 title={<TabTitleText>Active Koji Tags</TabTitleText>}
             >
                 <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
-                    <FlexItem
-                        style={{
-                            height: '10em',
-                            overflow: 'auto',
-                        }}
-                    >
-                        <List
-                            component={ListComponent.ol}
-                            type={OrderType.number}
-                        >
-                            {_.map(build.tags, (tag) => {
-                                return (
-                                    <ListItem key={tag.id}>
-                                        <a
-                                            href={mkLinkKojiWebTagId(
-                                                tag.id,
-                                                instance,
-                                            )}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {tag.name}
-                                        </a>
-                                    </ListItem>
-                                );
-                            })}
-                        </List>
-                    </FlexItem>
+                    <List component={ListComponent.ol} type={OrderType.number}>
+                        {build.tags.map((tag: any) => (
+                            <ListItem key={tag.id}>
+                                <ExternalLink
+                                    href={mkLinkKojiWebTagId(tag.id, instance)}
+                                >
+                                    {tag.name}
+                                </ExternalLink>
+                            </ListItem>
+                        ))}
+                    </List>
                 </Flex>
             </Tab>
             <Tab eventKey={2} title={<TabTitleText>Koji History</TabTitleText>}>

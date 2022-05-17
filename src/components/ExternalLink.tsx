@@ -27,7 +27,7 @@ export function ExternalLink(
     props: React.PropsWithChildren<ExternalLinkProps>,
 ) {
     return (
-        <a target="_blank" rel="noopener noreferrer" href={props.href}>
+        <a href={props.href} target="_blank" rel="noopener noreferrer">
             {props.children}
         </a>
     );

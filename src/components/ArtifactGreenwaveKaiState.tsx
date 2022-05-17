@@ -22,18 +22,19 @@ import _ from 'lodash';
 import classNames from 'classnames';
 import * as React from 'react';
 import {
-    Flex,
-    Text,
-    Label,
-    FlexItem,
-    TextContent,
     DataListCell,
-    DataListItem,
-    DataListToggle,
-    DataListItemRow,
     DataListContent,
+    DataListItem,
     DataListItemCells,
+    DataListItemRow,
+    DataListToggle,
+    Flex,
+    FlexItem,
+    Label,
+    Text,
+    TextContent,
 } from '@patternfly/react-core';
+import { RegisteredIcon, WeeblyIcon } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
 import { Artifact, StateGreenwaveKaiType } from '../artifact';
@@ -41,16 +42,14 @@ import { isResultWaivable, renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactStateProps, StateLink } from './ArtifactState';
 import {
     GreenwaveResultInfo,
-    GreenwaveRequirement,
     GreenwaveWaiver,
     WaiveButton,
 } from './ArtifactGreenwaveState';
 import {
-    KaiReTestButton,
+    KaiDetailedResults,
+    KaiRerunButton,
     KaiStateMapping,
-    KaiStateXunit,
 } from './ArtifactKaiState';
-import { RegisteredIcon, WeeblyIcon } from '@patternfly/react-icons';
 
 interface GreenwaveKaiStateActionsProps {
     artifact: Artifact;
@@ -61,6 +60,7 @@ export const GreenwaveKaiStateActions: React.FC<
     GreenwaveKaiStateActionsProps
 > = (props) => {
     const { state, artifact } = props;
+    const rerunUrl = state.ks.broker_msg_body.run.rebuild;
     const showWaiveButton = isResultWaivable(state.gs);
     return (
         <Flex style={{ minWidth: '15em' }}>
@@ -70,7 +70,7 @@ export const GreenwaveKaiStateActions: React.FC<
                 )}
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <KaiReTestButton state={state.ks} />
+                <KaiRerunButton rerunUrl={rerunUrl} />
             </Flex>
         </Flex>
     );
@@ -85,27 +85,22 @@ interface FaceForGreenwaveKaiStateProps {
 export const FaceForGreenwaveKaiState: React.FC<
     FaceForGreenwaveKaiStateProps
 > = (props) => {
-    const { artifact, state, artifactDashboardUrl } = props;
+    const { artifact, artifactDashboardUrl, state } = props;
     const { waiver } = state.gs;
     const isWaived = _.isNumber(waiver?.id);
     const isGatingResult = _.isString(state.gs.requirement?.testcase);
     const labels: JSX.Element[] = [];
     if (isGatingResult) {
         labels.push(
-            <Label
-                color="blue"
-                isCompact
-                key="required"
-                icon={<RegisteredIcon />}
-            >
-                required for gating
+            <Label color="blue" icon={<RegisteredIcon />} isCompact>
+                Required for gating
             </Label>,
         );
     }
     if (isWaived) {
         labels.push(
-            <Label color="red" isCompact key="waived" icon={<WeeblyIcon />}>
-                waived
+            <Label color="orange" icon={<WeeblyIcon />} isCompact>
+                Waived
             </Label>,
         );
     }
@@ -116,36 +111,29 @@ export const FaceForGreenwaveKaiState: React.FC<
         state.gs.result?.outcome ||
         'unknown'
     ).toLocaleLowerCase();
-    const element = (
-        <Flex>
+    return (
+        <Flex
+            alignContent={{ default: 'alignContentCenter' }}
+            style={{ minHeight: '2.5em' }}
+        >
             <Flex flex={{ default: 'flex_1' }}>
                 <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
-                <Flex flexWrap={{ default: 'nowrap' }}>
-                    <TextContent>
-                        <Text>{state.gs.testcase}</Text>
-                    </TextContent>
-                </Flex>
-                <Flex>
-                    <FlexItem>{labels}</FlexItem>
-                </Flex>
+                <TextContent>
+                    <Text className="pf-u-text-nowrap">
+                        {state.gs.testcase}
+                    </Text>
+                </TextContent>
+                <Flex spaceItems={{ default: 'spaceItemsXs' }}>{labels}</Flex>
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <Flex>
-                    <GreenwaveKaiStateActions
-                        state={state}
-                        artifact={artifact}
-                    />
-                </Flex>
-                <Flex>
-                    <StateLink
-                        state={state}
-                        artifactDashboardUrl={artifactDashboardUrl}
-                    />
-                </Flex>
+                <GreenwaveKaiStateActions artifact={artifact} state={state} />
+                <StateLink
+                    artifactDashboardUrl={artifactDashboardUrl}
+                    state={state}
+                />
             </Flex>
         </Flex>
     );
-    return element;
 };
 
 export interface ArtifactGreenwaveKaiStateProps extends ArtifactStateProps {
@@ -168,11 +156,11 @@ export const ArtifactGreenwaveKaiState: React.FC<
      * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
      */
     const onToggle = () => {
-        if (!forceExpand) {
+        if (forceExpand) {
+            setExpandedResult('');
+        } else {
             const key = state.gs.testcase;
             setExpandedResult(key);
-        } else if (forceExpand) {
-            setExpandedResult('');
         }
     };
 
@@ -183,16 +171,16 @@ export const ArtifactGreenwaveKaiState: React.FC<
     });
     const toRender = (
         <DataListItem
-            key={key}
-            isExpanded={forceExpand}
-            className={resultClasses}
             aria-labelledby="artifact-item-result"
+            className={resultClasses}
+            isExpanded={forceExpand}
+            key={key}
         >
             <DataListItemRow>
                 <DataListToggle
                     id="toggle"
-                    onClick={onToggle}
                     isExpanded={forceExpand}
+                    onClick={onToggle}
                 />
                 <DataListItemCells
                     className="pf-u-m-0 pf-u-p-0"
@@ -202,9 +190,9 @@ export const ArtifactGreenwaveKaiState: React.FC<
                             key="secondary content"
                         >
                             <FaceForGreenwaveKaiState
-                                state={state}
                                 artifact={artifact}
                                 artifactDashboardUrl={artifactDashboardUrl}
+                                state={state}
                             />
                         </DataListCell>,
                     ]}
@@ -218,10 +206,12 @@ export const ArtifactGreenwaveKaiState: React.FC<
                 {forceExpand && (
                     <>
                         <GreenwaveWaiver state={state.gs} />
-                        <KaiStateXunit state={state.ks} artifact={artifact} />
+                        <KaiDetailedResults
+                            artifact={artifact}
+                            state={state.ks}
+                        />
                         <GreenwaveResultInfo state={state.gs} />
-                        <GreenwaveRequirement state={state.gs} />
-                        <KaiStateMapping state={state.ks} artifact={artifact} />
+                        <KaiStateMapping artifact={artifact} state={state.ks} />
                     </>
                 )}
             </DataListContent>

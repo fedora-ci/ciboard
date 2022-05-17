@@ -23,6 +23,7 @@ import classNames from 'classnames';
 import * as React from 'react';
 import { useDispatch } from 'react-redux';
 import {
+    Alert,
     Button,
     DataListCell,
     DataListContent,
@@ -43,13 +44,14 @@ import {
 
 import {
     OutlinedThumbsUpIcon,
-    RedoIcon,
     RegisteredIcon,
+    ThumbsUpIcon,
     WeeblyIcon,
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
 import {
+    LinkifyNewTab,
     isResultWaivable,
     renderStatusIcon,
     timestampForUser,
@@ -57,26 +59,27 @@ import {
 import { Artifact, StateGreenwaveType } from '../artifact';
 import { ArtifactStateProps } from './ArtifactState';
 import {
-    LinkifyNewTab,
     StateDetailsEntry,
     StateLink,
     mkLabel,
     mkPairs,
 } from './ArtifactState';
 import { createWaiver } from '../actions';
+import { KaiRerunButton } from './ArtifactKaiState';
 
-interface WaiveButtonProps {
-    artifact: Artifact;
+export interface PropsWithGreenwaveState {
     state: StateGreenwaveType;
+}
+
+export interface WaiveButtonProps extends PropsWithGreenwaveState {
+    artifact: Artifact;
 }
 
 export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     const { state, artifact } = props;
     const { requirement } = state;
     const dispatch = useDispatch();
-    if (_.isNil(requirement?.testcase)) {
-        return null;
-    }
+    if (_.isNil(requirement?.testcase)) return null;
     const onClick: React.MouseEventHandler = (e) => {
         e.stopPropagation();
         dispatch(createWaiver(artifact, state));
@@ -84,60 +87,25 @@ export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     const resultClasses = classNames(styles['actionButton']);
     return (
         <Button
-            isSmall
-            variant="control"
-            onClick={onClick}
             className={resultClasses}
+            isSmall
+            onClick={onClick}
+            variant="control"
         >
             <OutlinedThumbsUpIcon /> <span>waive</span>
         </Button>
     );
 };
 
-interface GreenwaveReTestButtonProps {
-    state: StateGreenwaveType;
-}
-
-export const GreenwaveReTestButton: React.FC<GreenwaveReTestButtonProps> = (
-    props,
-) => {
-    const { state } = props;
-    const { result } = state;
-    const rebuildUrl: string | undefined = _.get(result, 'data.rebuild[0]');
-    if (_.isNil(rebuildUrl)) {
-        return null;
-    }
-    return (
-        <a
-            href={rebuildUrl}
-            key={result?.testcase.name}
-            target="_blank"
-            title="Rerun testing. Note login to the linked system might be required."
-            rel="noopener noreferrer"
-        >
-            <Button
-                variant="control"
-                className={styles.actionButton}
-                isSmall
-                onClick={(e) => {
-                    e.stopPropagation();
-                }}
-            >
-                <RedoIcon style={{ height: '0.8em' }} /> <span>rerun</span>
-            </Button>
-        </a>
-    );
-};
-
-interface GreenwaveStateActionsProps {
+export interface GreenwaveStateActionsProps extends PropsWithGreenwaveState {
     artifact: Artifact;
-    state: StateGreenwaveType;
 }
 
 export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
     props,
 ) => {
-    const { state, artifact } = props;
+    const { artifact, state } = props;
+    const rerunUrl = _.first(state.result?.data.rebuild);
     const showWaiveButton = isResultWaivable(state);
     return (
         <Flex style={{ minWidth: '15em' }}>
@@ -147,7 +115,7 @@ export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
                 )}
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <GreenwaveReTestButton state={state} />
+                <KaiRerunButton rerunUrl={rerunUrl} />
             </Flex>
         </Flex>
     );
@@ -167,22 +135,14 @@ const resultMapping = [
     ['testcase.ref_url', 'testcase info'],
 ];
 
-interface GreenwaveResultInfoProps {
-    state: StateGreenwaveType;
-}
-
-export const GreenwaveResultInfo: React.FC<GreenwaveResultInfoProps> = (
+export const GreenwaveResultInfo: React.FC<PropsWithGreenwaveState> = (
     props,
 ) => {
-    const { state } = props;
-    if (!state.result) {
-        return null;
-    }
-    const pairs = mkPairs(resultMapping, state.result);
-    if (_.isEmpty(pairs)) {
-        return null;
-    }
-    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
+    const { result } = props.state;
+    if (!result) return null;
+    const pairs = mkPairs(resultMapping, result);
+    if (_.isEmpty(pairs)) return null;
+    const elements: JSX.Element[] = pairs.map(([name, value]) =>
         mkLabel(name, value, 'orange'),
     );
     return (
@@ -204,89 +164,31 @@ export const GreenwaveResultInfo: React.FC<GreenwaveResultInfoProps> = (
     );
 };
 
-const waiverMapping = [
-    ['comment', 'comment'],
-    ['id', 'id'],
-    ['scenario', 'scenario'],
-    ['timestamp', 'time', _.partialRight(timestampForUser, true)],
-    ['username', 'username'],
-    ['waived', 'waived'],
-];
-
-interface GreenwaveWaiverProps {
-    state: StateGreenwaveType;
-}
-
-export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
-    const { state } = props;
-    if (!state.waiver) {
-        return null;
-    }
-    const pairs = mkPairs(waiverMapping, state.waiver);
-    if (_.isEmpty(pairs)) {
-        return null;
-    }
-    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
-        mkLabel(name, value, 'red'),
-    );
+export const GreenwaveWaiver: React.FC<PropsWithGreenwaveState> = (props) => {
+    const { waiver } = props.state;
+    if (!waiver) return null;
+    const humanTime = timestampForUser(waiver.timestamp);
     return (
-        <StateDetailsEntry caption="Waiver info">
-            <Flex>
-                <FlexItem>
-                    <DescriptionList
-                        isCompact
-                        isHorizontal
-                        columnModifier={{
-                            default: '2Col',
-                        }}
-                    >
-                        {elements}
-                    </DescriptionList>
-                </FlexItem>
-            </Flex>
-        </StateDetailsEntry>
+        <Alert
+            customIcon={<ThumbsUpIcon />}
+            isInline
+            title="Test result waived"
+            variant="warning"
+        >
+            <TextContent className="pf-u-font-size-sm">
+                <Text component="p">
+                    This test result was waived by <b>{waiver.username}</b> on{' '}
+                    {humanTime} with the following comment:
+                </Text>
+                <Text component="p">
+                    <LinkifyNewTab>{waiver.comment}</LinkifyNewTab>
+                </Text>
+            </TextContent>
+        </Alert>
     );
 };
 
-interface GreenwaveRequirementProps {
-    state: StateGreenwaveType;
-}
-
-export const GreenwaveRequirement: React.FC<GreenwaveRequirementProps> = (
-    props,
-) => {
-    const { state } = props;
-    const pairs = mkPairs(waiverMapping, state);
-    if (_.isEmpty(pairs)) {
-        return null;
-    }
-    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
-        mkLabel(name, value, 'blue'),
-    );
-    return (
-        <StateDetailsEntry caption="Requirement info">
-            <Flex>
-                <FlexItem>
-                    <DescriptionList
-                        isCompact
-                        isHorizontal
-                        columnModifier={{
-                            default: '2Col',
-                        }}
-                    >
-                        {elements}
-                    </DescriptionList>
-                </FlexItem>
-            </Flex>
-        </StateDetailsEntry>
-    );
-};
-
-interface GreenwaveResultDataProps {
-    state: StateGreenwaveType;
-}
-
-export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
+export const GreenwaveResultData: React.FC<PropsWithGreenwaveState> = (
     props,
 ) => {
     const { state } = props;
@@ -330,24 +232,21 @@ export const GreenwaveResultData: React.FC<GreenwaveResultDataProps> = (
     return (
         <StateDetailsEntry caption="Result data">
             <Flex>
-                <FlexItem>
-                    <DescriptionList
-                        isCompact
-                        isHorizontal
-                        columnModifier={{
-                            default: '2Col',
-                        }}
-                    >
-                        {items}
-                    </DescriptionList>
-                </FlexItem>
+                <DescriptionList
+                    columnModifier={{
+                        default: '2Col',
+                    }}
+                    isCompact
+                    isHorizontal
+                >
+                    {items}
+                </DescriptionList>
             </Flex>
         </StateDetailsEntry>
     );
 };
 
-interface FaceForGreenwaveStateProps {
-    state: StateGreenwaveType;
+export interface FaceForGreenwaveStateProps extends PropsWithGreenwaveState {
     artifact: Artifact;
     artifactDashboardUrl: string;
 }
@@ -355,67 +254,55 @@ interface FaceForGreenwaveStateProps {
 export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     props,
 ) => {
-    const { artifact, state, artifactDashboardUrl } = props;
+    const { artifact, artifactDashboardUrl, state } = props;
     const { waiver } = state;
     const isWaived = _.isNumber(waiver?.id);
     const isGatingResult = _.isString(state.requirement?.testcase);
     const labels: JSX.Element[] = [];
     if (isGatingResult) {
         labels.push(
-            <Label
-                color="blue"
-                isCompact
-                key="required"
-                icon={<RegisteredIcon />}
-            >
-                required for gating
+            <Label color="blue" icon={<RegisteredIcon />} isCompact>
+                Required for gating
             </Label>,
         );
     }
     if (isWaived) {
         labels.push(
-            <Label color="red" isCompact key="waived" icon={<WeeblyIcon />}>
-                waived
+            <Label color="orange" icon={<WeeblyIcon />} isCompact>
+                Waived
             </Label>,
         );
     }
-    const iconName: string = _.get(
-        state,
-        'requirement.type',
-        _.get(state, 'result.outcome', 'unknown'),
+    const iconName = (
+        state.requirement?.type ||
+        state.result?.outcome ||
+        'unknown'
     ).toLocaleLowerCase();
-    const element = (
-        <Flex>
+    return (
+        <Flex
+            alignContent={{ default: 'alignContentCenter' }}
+            style={{ minHeight: '2.5em' }}
+        >
             <Flex flex={{ default: 'flex_1' }}>
                 <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
-                <Flex flexWrap={{ default: 'nowrap' }}>
-                    <TextContent>
-                        <Text>{state.testcase}</Text>
-                    </TextContent>
-                </Flex>
-                <Flex>
-                    <FlexItem>{labels}</FlexItem>
-                </Flex>
+                <TextContent>
+                    <Text className="pf-u-text-nowrap">{state.testcase}</Text>
+                </TextContent>
+                <Flex spaceItems={{ default: 'spaceItemsXs' }}>{labels}</Flex>
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <Flex>
-                    <GreenwaveStateActions state={state} artifact={artifact} />
-                </Flex>
-                <Flex>
-                    <StateLink
-                        state={state}
-                        artifactDashboardUrl={artifactDashboardUrl}
-                    />
-                </Flex>
+                <GreenwaveStateActions artifact={artifact} state={state} />
+                <StateLink
+                    artifactDashboardUrl={artifactDashboardUrl}
+                    state={state}
+                />
             </Flex>
         </Flex>
     );
-    return element;
 };
 
-export interface ArtifactGreenwaveStateProps extends ArtifactStateProps {
-    state: StateGreenwaveType;
-}
+export type ArtifactGreenwaveStateProps = ArtifactStateProps &
+    PropsWithGreenwaveState;
 
 export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
     props,
@@ -461,9 +348,9 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
                             key="secondary content"
                         >
                             <FaceForGreenwaveState
-                                state={state}
                                 artifact={artifact}
                                 artifactDashboardUrl={artifactDashboardUrl}
+                                state={state}
                             />
                         </DataListCell>,
                     ]}
@@ -479,7 +366,6 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
                         <GreenwaveResultInfo state={state} />
                         <GreenwaveWaiver state={state} />
                         <GreenwaveResultData state={state} />
-                        <GreenwaveRequirement state={state} />
                     </>
                 )}
             </DataListContent>

@@ -22,19 +22,19 @@ import _ from 'lodash';
 import classNames from 'classnames';
 import * as React from 'react';
 import {
-    Flex,
-    Text,
     Alert,
     Button,
-    FlexItem,
-    TextContent,
     DataListCell,
+    DataListContent,
     DataListItem,
+    DataListItemCells,
+    DataListItemRow,
     DataListToggle,
     DescriptionList,
-    DataListItemRow,
-    DataListItemCells,
-    DataListContent,
+    Flex,
+    FlexItem,
+    Text,
+    TextContent,
 } from '@patternfly/react-core';
 
 import { RedoIcon } from '@patternfly/react-icons';
@@ -43,8 +43,8 @@ import styles from '../custom.module.css';
 import { mappingDatagrepperUrl } from '../config';
 import { TestSuites } from './TestSuites';
 import {
-    getThreadID,
     getTestcaseName,
+    getThreadID,
     renderStatusIcon,
 } from '../utils/artifactUtils';
 import { MSG_V_1, MSG_V_0_1 } from '../types';
@@ -57,21 +57,24 @@ import {
 } from './ArtifactState';
 import { ArtifactStateProps } from './ArtifactState';
 
-interface KaiStateXunitProps {
+export interface PropsWithKaiState {
     state: StateKaiType;
+}
+
+export interface KaiDetailedResultsProps extends PropsWithKaiState {
     artifact: Artifact;
 }
 
-export const KaiStateXunit: React.FC<KaiStateXunitProps> = (props) => {
+export const KaiDetailedResults: React.FC<KaiDetailedResultsProps> = (
+    props,
+) => {
     const { state, artifact } = props;
     const { kai_state } = state;
     /* [OSCI-1861]: info messages also can have xunit */
     const stateName = kai_state.state;
     /* https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-common.yaml#_120 */
     const showFor: StateNameType[] = ['error', 'queued', 'running', 'complete'];
-    if (!_.includes(showFor, stateName)) {
-        return null;
-    }
+    if (!_.includes(showFor, stateName)) return null;
     const render = (
         <StateDetailsEntry caption="Test results">
             <TestSuites state={state} artifact={artifact} />
@@ -80,38 +83,29 @@ export const KaiStateXunit: React.FC<KaiStateXunitProps> = (props) => {
     return render;
 };
 
-interface KaiReTestButtonProps {
-    state: StateKaiType;
+export interface KaiRerunButtonProps {
+    rerunUrl?: string;
 }
 
-export const KaiReTestButton: React.FC<KaiReTestButtonProps> = (props) => {
-    const {
-        state: { kai_state, broker_msg_body },
-    } = props;
-    const href = _.get(broker_msg_body, 'run.rebuild');
-    const key = kai_state.thread_id;
-    if (_.isNil(href)) {
-        return null;
-    }
+export const KaiRerunButton: React.FC<KaiRerunButtonProps> = (props) => {
+    const { rerunUrl } = props;
+    if (_.isEmpty(rerunUrl)) return null;
     return (
-        <a
-            href={href}
-            key={key}
+        <Button
+            className={styles.actionButton}
+            component="a"
+            href={rerunUrl}
+            isSmall
+            onClick={(e) => {
+                e.stopPropagation();
+            }}
+            rel="noopener noreferrer"
             target="_blank"
             title="Rerun testing. Note login to the linked system might be required."
-            rel="noopener noreferrer"
+            variant="control"
         >
-            <Button
-                variant="control"
-                className={styles.actionButton}
-                isSmall
-                onClick={(e) => {
-                    e.stopPropagation();
-                }}
-            >
-                <RedoIcon style={{ height: '0.8em' }} /> <span>rerun</span>
-            </Button>
-        </a>
+            <RedoIcon style={{ height: '0.8em' }} /> <span>rerun</span>
+        </Button>
     );
 };
 
@@ -145,36 +139,32 @@ const schemaMappingV01 = [
     ['reason', 'error reason'],
 ];
 
-interface StateExplainProps {
-    state: StateKaiType;
-}
-
-const StateExplain: React.FC<StateExplainProps> = (props) => {
+const StateExplain: React.FC<PropsWithKaiState> = (props) => {
     const { state } = props;
     const explain: { [key in StateNameType]?: JSX.Element } = {
         running: (
-            <Alert isInline isPlain variant="info" title="Test running.">
+            <Alert isInline isPlain title="Test running" variant="info">
                 Testing has been started and is in progress.
             </Alert>
         ),
         queued: (
-            <Alert isInline isPlain variant="info" title="Queued test">
-                Testing has been queued, but not yet started.
+            <Alert isInline isPlain title="Test queued" variant="info">
+                Test has been queued, but has not yet started.
             </Alert>
         ),
         error: (
-            <Alert isInline isPlain variant="info" title="Test error.">
-                Testing has aborted, it was not finished, e.g. because of
-                infrastructure error, CI system error, etc. Note that a test
-                failure is not an error.
+            <Alert isInline isPlain title="Test error." variant="warning">
+                Testing was aborted due to an error in the pipeline. This might
+                be, for instance, an infrastructure error or a CI system error.
+                Please, contact the CI system maintainers for further
+                information.
             </Alert>
         ),
     };
     return _.get(explain, state.kai_state.state, null);
 };
 
-interface KaiStateMappingProps {
-    state: StateKaiType;
+export interface KaiStateMappingProps extends PropsWithKaiState {
     artifact: Artifact;
 }
 
@@ -223,36 +213,21 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
     );
 };
 
-interface KaiStateActionsProps {
-    state: StateKaiType;
-}
-
-export const KaiStateActions: React.FC<KaiStateActionsProps> = (props) => {
-    const { state } = props;
-    const { broker_msg_body } = state;
-    var hideWidget = true;
-    const rebuildUrl = _.get(broker_msg_body, 'run.rebuild');
-    if (!_.isNil(rebuildUrl)) {
-        hideWidget = false;
-    }
-    if (hideWidget) {
-        return null;
-    }
+export const KaiStateActions: React.FC<PropsWithKaiState> = (props) => {
+    const { broker_msg_body } = props.state;
+    const rerunUrl = broker_msg_body.run.rebuild;
+    if (!_.isEmpty(rerunUrl)) return null;
     return (
         <Flex style={{ minWidth: '15em' }}>
             <Flex flex={{ default: 'flex_1' }}></Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <KaiReTestButton state={state} />
+                <KaiRerunButton rerunUrl={rerunUrl} />
             </Flex>
         </Flex>
     );
 };
 
-interface StageNameProps {
-    state: StateKaiType;
-}
-
-const StageName: React.FC<StageNameProps> = (props) => {
+const StageName: React.FC<PropsWithKaiState> = (props) => {
     const { state } = props;
     const { kai_state } = state;
     if (kai_state.stage === 'dispatch') {
@@ -269,9 +244,8 @@ const StageName: React.FC<StageNameProps> = (props) => {
     );
 };
 
-interface FaceForKaiStateProps {
+interface FaceForKaiStateProps extends PropsWithKaiState {
     artifactDashboardUrl: string;
-    state: StateKaiType;
 }
 
 const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
@@ -301,9 +275,7 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
     return element;
 };
 
-export interface ArtifactKaiStateProps extends ArtifactStateProps {
-    state: StateKaiType;
-}
+export type ArtifactKaiStateProps = ArtifactStateProps & PropsWithKaiState;
 
 export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
     const {
@@ -320,11 +292,11 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
      * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
      */
     const onToggle = () => {
-        if (!forceExpand) {
+        if (forceExpand) {
+            setExpandedResult('');
+        } else {
             const key = kai_state.msg_id || kai_state.test_case_name;
             setExpandedResult(key);
-        } else if (forceExpand) {
-            setExpandedResult('');
         }
     };
     /** Note for info test results */
@@ -367,7 +339,7 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
             >
                 {forceExpand && (
                     <>
-                        <KaiStateXunit state={state} artifact={artifact} />
+                        <KaiDetailedResults state={state} artifact={artifact} />
                         <KaiStateMapping state={state} artifact={artifact} />
                     </>
                 )}

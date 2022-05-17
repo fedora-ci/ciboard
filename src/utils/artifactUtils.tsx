@@ -19,7 +19,6 @@
  */
 
 import _ from 'lodash';
-import moment from 'moment';
 import {
     CheckCircleIcon,
     ExclamationTriangleIcon,
@@ -32,6 +31,8 @@ import {
     TrafficLightIcon,
     UnlinkIcon,
 } from '@patternfly/react-icons';
+import moment from 'moment';
+import Linkify from 'react-linkify';
 
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
@@ -547,16 +548,6 @@ export const mkLinkKojiWebTagId = (
     }
 };
 
-export const timestampForUser = (inp: string, fromNow = false): string => {
-    const time = moment.utc(inp).local().format('YYYY-MM-DD HH:mm Z');
-    if (!fromNow) {
-        return time;
-    }
-    const passed = moment.utc(inp).local().fromNow();
-    const ret = time + ' (' + passed + ')';
-    return ret;
-};
-
 /**
  * Should we display a waive button for this result in the dashboard?
  * Show the button only if the test is blocking gating.
@@ -564,3 +555,35 @@ export const timestampForUser = (inp: string, fromNow = false): string => {
  */
 export const isResultWaivable = (state: StateGreenwaveType): boolean =>
     !['INFO', 'NOT_APPLICABLE', 'PASSED'].includes(state.result?.outcome || '');
+
+export const timestampForUser = (
+    timestamp: string,
+    includeRelative = false,
+): string => {
+    const localTime = moment.utc(timestamp).local();
+    const timestampWithTz = localTime.format('YYYY-MM-DD HH:mm Z');
+    if (!includeRelative) {
+        return timestampWithTz;
+    }
+    const fromNow = localTime.fromNow();
+    return `${timestampWithTz} (${fromNow})`;
+};
+
+export type LinkifyNewTabProps = React.PropsWithChildren<React.ReactNode>;
+
+export const LinkifyNewTab = (props: LinkifyNewTabProps) => (
+    <Linkify
+        componentDecorator={(decoratedHref, decoratedText, key) => (
+            <a
+                href={decoratedHref}
+                key={key}
+                rel="noopener noreferrer"
+                target="_blank"
+            >
+                {decoratedText}
+            </a>
+        )}
+    >
+        {props.children}
+    </Linkify>
+);
