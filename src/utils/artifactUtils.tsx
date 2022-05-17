@@ -342,8 +342,6 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
                 type === 'complete' ||
                 type === 'passed' ||
                 type === 'pass' ||
-                type === 'Pass' ||
-                type === 'PASS' ||
                 type === 'test-result-passed' ||
                 type === 'fetched-gating-yaml' ||
                 type === 'true',
@@ -355,8 +353,6 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
             pick:
                 type === 'failed' ||
                 type === 'fail' ||
-                type === 'Fail' ||
-                type === 'FAIL' ||
                 type === 'test-result-errored' ||
                 type === 'failed-fetch-gating-yaml' ||
                 type === 'test-result-failed' ||
@@ -370,6 +366,7 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
         warning: {
             pick:
                 type === 'error' ||
+                type === 'needs_inspection' ||
                 type === 'invalid-gating-yaml-waived' ||
                 type === 'missing-gating-yaml-waived' ||
                 type === 'test-result-failed-waived' ||
@@ -430,7 +427,8 @@ export const renderStatusIcon = (
     mod: modifyType = 'test',
     size = '1em',
 ) => {
-    const iconProps = mapTypeToIconsProps(type);
+    const typeLC = _.toLower(type);
+    const iconProps = mapTypeToIconsProps(typeLC);
     if (!iconProps) {
         console.warn('Asked to render icon with unknown type:', type);
         return (

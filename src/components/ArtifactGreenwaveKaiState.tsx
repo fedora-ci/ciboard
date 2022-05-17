@@ -105,13 +105,9 @@ export const FaceForGreenwaveKaiState: React.FC<
             </Label>,
         );
     }
-    /* TODO: Take Kai (extended) state into consideration before
-     * returning 'unknown'. */
-    const iconName: string = (
-        state.gs.requirement?.type ||
-        state.gs.result?.outcome ||
-        'unknown'
-    ).toLocaleLowerCase();
+    const resultOutcome = state.gs.result?.outcome;
+    const requimentType = state.gs.requirement?.type;
+    const iconName = _.compact([resultOutcome, requimentType, 'unknown'])[0];
     return (
         <Flex
             alignContent={{ default: 'alignContentCenter' }}

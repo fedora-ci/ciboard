@@ -273,11 +273,9 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
             </Label>,
         );
     }
-    const iconName = (
-        state.requirement?.type ||
-        state.result?.outcome ||
-        'unknown'
-    ).toLocaleLowerCase();
+    const resultOutcome = state.result?.outcome;
+    const requimentType = state.requirement?.type;
+    const iconName = _.compact([resultOutcome, requimentType, 'unknown'])[0];
     return (
         <Flex
             alignContent={{ default: 'alignContentCenter' }}
