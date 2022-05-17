@@ -20,26 +20,26 @@
 import _ from 'lodash';
 
 import {
-    isKaiState,
     getTestcaseName,
-    isGreenwaveState,
     isGreenwaveKaiState,
+    isGreenwaveState,
+    isKaiState,
 } from './artifactUtils';
 import {
-    StateType,
     Artifact,
-    StageNameType,
-    StateKaiType,
-    StateNameType,
-    KnownKaiStates,
-    StateGreenwaveType,
+    GreenwaveDecisionReplyType,
+    GreenwaveRequirementType,
+    GreenwaveRequirementTypesType,
     GreenwaveResultType,
-    StatesByCategoryType,
+    KnownKaiStates,
+    StageNameType,
     StateExtendedNameType,
     StateGreenwaveKaiType,
-    GreenwaveRequirementType,
-    GreenwaveDecisionReplyType,
-    GreenwaveRequirementTypesType,
+    StateGreenwaveType,
+    StateKaiType,
+    StateNameType,
+    StatesByCategoryType,
+    StateType,
 } from '../artifact';
 import { MSG_V_0_1, MSG_V_1 } from '../types';
 
@@ -249,22 +249,17 @@ const mkResultStatesGreenwave = (
         satisfied_requirements,
         unsatisfied_requirements,
     );
-    const resultsToShow: GreenwaveResultType[] = _.filter(results, (result) =>
-        _.isUndefined(
-            _.find(requirements, (req) =>
-                _.isEqual(result.testcase.name, req.testcase),
-            ),
-        ),
+    const resultsToShow: GreenwaveResultType[] = results.filter(
+        (result) =>
+            !requirements.some((req) => result.testcase.name === req.testcase),
     );
-    const resultStates: StateGreenwaveType[] = _.map(
-        resultsToShow,
+    const resultStates: StateGreenwaveType[] = resultsToShow.map(
         (res): StateGreenwaveType => ({
             testcase: res.testcase.name,
             result: res,
         }),
     );
-    const stateName: StateExtendedNameType = 'additional-tests';
-    return { [stateName]: resultStates };
+    return { 'additional-tests': resultStates };
 };
 
 /*
@@ -298,17 +293,17 @@ const mergeKaiAndGreenwaveState = (
     stageStatesArray: StageNameStateNameStatesType[],
 ): void => {
     /**
-     * Add kai state to greenwave state if both apply:
-     * 1) greenwaveState.result.outcome == kai extended state
-     * 2) greenwaveState.result.ref_url == kai message run.url
+     * Add Kai state to Greenwave state if both apply:
+     * 1) greenwaveState.result.outcome == Kai extended state
+     * 2) greenwaveState.result.ref_url == Kai message run.url
      */
     const greenwaveStageStates = filterByStageName(
         'greenwave',
         stageStatesArray,
     );
     const kaiStageStates = filterByStageName('test', stageStatesArray);
-    _.forEach(greenwaveStageStates, ([_stageName, _stateName, states]) =>
-        _.forEach(states as StateGreenwaveType[], (greenwaveState) => {
+    greenwaveStageStates.forEach(([_stageName, _stateName, states]) =>
+        (states as StateGreenwaveType[]).forEach((greenwaveState) => {
             const outcome = greenwaveState.result?.outcome;
             const refUrl = greenwaveState.result?.ref_url;
             if (_.isNil(outcome) || _.isNil(refUrl)) {
