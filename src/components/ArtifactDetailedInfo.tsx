@@ -43,8 +43,11 @@ import {
 
 import styles from '../custom.module.css';
 import { TabClickHandlerType } from '../types';
-import { ArtifactsDetailedInfoKojiTask } from '../queries/Artifacts';
-import { Artifact, koji_instance } from '../artifact';
+import {
+    ArtifactsDetailedInfoKojiTask,
+    ArtifactsDetailedInfoKojiTaskData,
+} from '../queries/Artifacts';
+import { Artifact, KojiBuildTagging, koji_instance } from '../artifact';
 import {
     mkCommitHashFromSource,
     mkLinkKojiWebBuildId,
@@ -69,18 +72,19 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
         setActiveTabKey(tabIndex);
     };
     const instance = koji_instance(artifact.type);
-    const { loading: loadingCurrentState, data: dataKojiTask } = useQuery(
-        ArtifactsDetailedInfoKojiTask,
-        {
-            variables: {
-                task_id: _.toNumber(artifact.aid),
-                koji_instance: instance,
-                distgit_instance: instance,
+    const { loading: loadingCurrentState, data: dataKojiTask } =
+        useQuery<ArtifactsDetailedInfoKojiTaskData>(
+            ArtifactsDetailedInfoKojiTask,
+            {
+                variables: {
+                    task_id: _.toNumber(artifact.aid),
+                    koji_instance: instance,
+                    distgit_instance: instance,
+                },
+                errorPolicy: 'all',
+                notifyOnNetworkStatusChange: true,
             },
-            errorPolicy: 'all',
-            notifyOnNetworkStatusChange: true,
-        },
-    );
+        );
     if (loadingCurrentState) {
         return (
             <Flex className="pf-u-p-lg">
@@ -108,19 +112,24 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
             </Flex>
         );
     }
-    const build = _.get(dataKojiTask, 'koji_task.builds.0');
-    /** build time */
+    const build = _.first(dataKojiTask?.koji_task?.builds);
+    if (_.isNil(build)) {
+        console.error('No build found in data.');
+        return null;
+    }
+    /* Time of build */
     const buildTimeLocal = moment.unix(build.completion_ts).local();
     const buildTimeWithTz = buildTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
-    /** commit time */
-    const c_time = moment
-        .unix(build.commit_obj?.committer_date_seconds)
-        .local();
+    /* Time of commit */
     let commitTimeWithTz = 'n/a';
-    if (c_time.isValid()) {
-        commitTimeWithTz = c_time.format('YYYY-MM-DD HH:mm ZZ');
+    if (build.commit_obj) {
+        const commitTimeLocal = moment
+            .unix(build.commit_obj.committer_date_seconds)
+            .local();
+        if (commitTimeLocal.isValid())
+            commitTimeWithTz = commitTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
     }
-    const element = (
+    return (
         <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
             <Tab eventKey={0} title={<TabTitleText>Build Info</TabTitleText>}>
                 <DescriptionList
@@ -211,7 +220,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
             >
                 <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
                     <List component={ListComponent.ol} type={OrderType.number}>
-                        {build.tags.map((tag: any) => (
+                        {build.tags.map((tag) => (
                             <ListItem key={tag.id}>
                                 <ExternalLink
                                     href={mkLinkKojiWebTagId(tag.id, instance)}
@@ -231,71 +240,32 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                             overflow: 'auto',
                         }}
                     >
-                        <HistoryList history={build.history} />
+                        <HistoryList history={build.history?.tag_listing} />
                     </FlexItem>
                 </Flex>
             </Tab>
         </Tabs>
     );
-    return element;
 };
 
-/**
- * "tag_name": "rhel-8.5.0-candidate",
- * "active": null,
- * "creator_name": "jenkins/baseos-jenkins.rhev-ci-vms.eng.rdu2.redhat.com",
- * "create_ts": 1620283840.18954,
- * "creator_id": 2863,
- * "revoke_ts": 1621935173.47965,
- * "revoker_name": "astepano",
- * "revoker_id": 2951
- *
- * Create a list similar:
- *
- * brew list-history --build hostname-3.20-7.el8
- * Thu May  6 07:39:55 2021 hostname-3.20-7.el8 tagged into rhel-8.5.0-gate by pzhukov
- * Thu May  6 08:50:40 2021 hostname-3.20-7.el8 untagged from rhel-8.5.0-gate by jenkins/baseos-jenkins.rhev-ci-vms.eng.rdu2.redhat.com
- */
-interface HistoryListProps {
-    history: {
-        tag_listing: KojiBuildTagType[];
-    };
-}
-
-type TagActionHistoryType = {
-    time: number;
+interface TagActionHistoryType {
     action: string;
     active: boolean;
-    tag_name: string;
     person_id: number;
     person_name: string;
-};
-
-type KojiBuildTagType = {
-    active: boolean;
-    build_state: number;
-    build_id: number;
-    create_event: number;
-    create_ts: number;
-    creator_id: number;
-    creator_name: string;
-    epoch: string;
-    name: string;
-    release: string;
-    revoke_event: string;
-    revoke_ts: number;
-    revoker_id: number;
-    revoker_name: string;
     tag_name: string;
-    tag_id: number;
-};
+    time: number;
+}
+
+interface HistoryListProps {
+    history?: KojiBuildTagging[];
+}
 
 const HistoryList: React.FC<HistoryListProps> = (props) => {
-    const {
-        history: { tag_listing },
-    } = props;
+    const { history } = props;
+    if (_.isNil(history)) return null;
     const lines: TagActionHistoryType[] = [];
-    _.forEach(tag_listing, (e) => {
+    history.forEach((e) => {
         lines.push({
             action: 'tagged into',
             active: e.active,
@@ -308,10 +278,10 @@ const HistoryList: React.FC<HistoryListProps> = (props) => {
             lines.push({
                 action: 'untagged from',
                 active: false,
-                time: e.revoke_ts,
+                time: e.revoke_ts!,
                 tag_name: e.tag_name,
-                person_id: e.revoker_id,
-                person_name: e.revoker_name,
+                person_id: e.revoker_id!,
+                person_name: e.revoker_name!,
             });
         }
     });
@@ -332,17 +302,19 @@ const HistoryList: React.FC<HistoryListProps> = (props) => {
 interface HistoryListEntryProps {
     entry: TagActionHistoryType;
 }
+
 const HistoryListEntry: React.FC<HistoryListEntryProps> = (props) => {
     const {
         entry: { action, active, person_name, tag_name, time },
     } = props;
-    const event_time = moment.unix(time).local();
-    const local_time = event_time.format('YYYY-MM-DD, HH:mm');
-    const shift = event_time.format('ZZ');
+    const eventTimeLocal = moment.unix(time).local();
+    const eventTimeWithTz = eventTimeLocal.format('YYYY-MM-DD, HH:mm');
+    const shift = eventTimeLocal.format('ZZ');
     const flag = active ? '[still active]' : '';
     return (
         <div style={{ whiteSpace: 'nowrap' }}>
-            {local_time} {shift} {action} {tag_name} by {person_name} {flag}
+            {eventTimeWithTz} {shift} {action} {tag_name} by {person_name}{' '}
+            {flag}
         </div>
     );
 };

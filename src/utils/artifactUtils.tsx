@@ -498,7 +498,7 @@ export const mkLinkPkgsDevelFromSource = (
 };
 
 export const mkLinkKojiWebBuildId = (
-    buildId: string,
+    buildId: number | string,
     instance: KojiInstanceType,
 ) => {
     switch (instance) {
@@ -515,7 +515,7 @@ export const mkLinkKojiWebBuildId = (
 };
 
 export const mkLinkKojiWebUserId = (
-    userId: string,
+    userId: number | string,
     instance: KojiInstanceType,
 ) => {
     switch (instance) {
@@ -532,7 +532,7 @@ export const mkLinkKojiWebUserId = (
 };
 
 export const mkLinkKojiWebTagId = (
-    tagId: string,
+    tagId: number | string,
     instance: KojiInstanceType,
 ) => {
     switch (instance) {

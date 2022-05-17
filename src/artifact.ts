@@ -394,3 +394,52 @@ export const koji_instance = (type: ArtifactType): KojiInstanceType => {
             throw new Error(`Unknown type: ${type}`);
     }
 };
+
+export interface CommitObject {
+    commit_message: string;
+    committer_date_seconds: number;
+    committer_email: string;
+    committer_name: string;
+}
+
+export interface KojiBuildTag {
+    id: number;
+    name: string;
+}
+
+export interface KojiBuildTagging {
+    active: boolean;
+    create_ts: number;
+    creator_id: number;
+    creator_name: string;
+    revoke_ts?: number;
+    revoker_id?: number;
+    revoker_name?: string;
+    tag_id: number;
+    tag_name: string;
+}
+
+export interface KojiHistory {
+    tag_listing: KojiBuildTagging[];
+}
+
+export interface KojiBuildInfo {
+    build_id: number;
+    commit_obj?: CommitObject;
+    completion_time: string;
+    completion_ts: number;
+    history?: KojiHistory;
+    name: string;
+    nvr: string;
+    owner_id: number;
+    owner_name: string;
+    package_id?: number;
+    release?: string;
+    source: string;
+    tags: KojiBuildTag[];
+    version?: string;
+}
+
+export interface KojiTaskInfo {
+    builds?: KojiBuildInfo[];
+}

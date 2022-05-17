@@ -19,7 +19,7 @@
  */
 
 import { gql } from '@apollo/client';
-import { Artifact, ComponentMapping } from '../artifact';
+import { Artifact, ComponentMapping, KojiTaskInfo } from '../artifact';
 
 const stateEntryFragment = gql`
     fragment StateEntryFragment on StateType {
@@ -98,6 +98,10 @@ const greenwaveDecisionFragment = gql`
         }
     }
 `;
+
+export interface ArtifactsDetailedInfoKojiTaskData {
+    koji_task?: KojiTaskInfo;
+}
 
 export const ArtifactsDetailedInfoKojiTask = gql`
     query ArtifactsDetailedInfoKojiBuild(
