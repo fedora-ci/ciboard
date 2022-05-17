@@ -49,6 +49,7 @@ import {
     KaiDetailedResults,
     KaiRerunButton,
     KaiStateMapping,
+    ResultNote,
 } from './ArtifactKaiState';
 
 interface GreenwaveKaiStateActionsProps {
@@ -206,6 +207,7 @@ export const ArtifactGreenwaveKaiState: React.FC<
                 {forceExpand && (
                     <>
                         <GreenwaveWaiver state={state.gs} />
+                        <ResultNote state={state.ks} />
                         <KaiDetailedResults
                             artifact={artifact}
                             state={state.ks}

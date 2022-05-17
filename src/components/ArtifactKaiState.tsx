@@ -61,6 +61,25 @@ export interface PropsWithKaiState {
     state: StateKaiType;
 }
 
+/**
+ * Display the note associated with a result as provided by the CI system if available.
+ */
+export function ResultNote(props: PropsWithKaiState) {
+    const { broker_msg_body } = props.state;
+    let note: string | undefined;
+    if (MSG_V_0_1.isMsg(broker_msg_body)) {
+        note = broker_msg_body.note;
+    } else if (MSG_V_1.isMsg(broker_msg_body)) {
+        note = broker_msg_body.test.note;
+    }
+    if (_.isEmpty(note)) return null;
+    return (
+        <Alert isInline title="Note from CI system" variant="info">
+            {note}
+        </Alert>
+    );
+}
+
 export interface KaiDetailedResultsProps extends PropsWithKaiState {
     artifact: Artifact;
 }
@@ -184,7 +203,7 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
         mappingDatagrepperUrl[artifact.type],
     ).toString();
     pairs.push(['broker msg', brokerMsgUrl]);
-    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
+    const elements: JSX.Element[] = pairs.map(([name, value]) =>
         mkLabel(name, value, 'green'),
     );
     return (
@@ -339,6 +358,7 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
             >
                 {forceExpand && (
                     <>
+                        <ResultNote state={state} />
                         <KaiDetailedResults state={state} artifact={artifact} />
                         <KaiStateMapping state={state} artifact={artifact} />
                     </>

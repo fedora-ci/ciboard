@@ -363,8 +363,8 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
             >
                 {forceExpand && (
                     <>
-                        <GreenwaveResultInfo state={state} />
                         <GreenwaveWaiver state={state} />
+                        <GreenwaveResultInfo state={state} />
                         <GreenwaveResultData state={state} />
                     </>
                 )}
