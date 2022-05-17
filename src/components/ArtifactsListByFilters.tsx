@@ -47,7 +47,7 @@ import {
 import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
 import { PaginationToolbar } from './PaginationToolbar';
-import { Artifact } from '../artifact';
+import { Artifact, isArtifactMBS, isArtifactRPM } from '../artifact';
 
 const ArtifactsTable: React.FC = () => {
     const queryString = ''; // XXX : delme
@@ -157,7 +157,12 @@ const ArtifactsTable: React.FC = () => {
     if (haveData) {
         artifacts = data.artifacts.artifacts;
         _.forEach(artifacts, (a: Artifact) => {
-            aidsAtPage.push(a.aid);
+            if (
+                (isArtifactRPM(a) || isArtifactMBS(a)) &&
+                a.payload.gate_tag_name
+            ) {
+                aidsAtPage.push(a.aid);
+            }
         });
         hasNext = data.artifacts.has_next;
         const aid_offset: string = _.last(artifacts).aid;
@@ -190,7 +195,11 @@ const ArtifactsTable: React.FC = () => {
         dataComplete &&
         !_.isEmpty(dataComplete.artifacts.artifacts);
     if (haveCompleteData) {
-        artifacts = dataComplete.artifacts.artifacts;
+        const withGating = dataComplete.artifacts.artifacts;
+        artifacts = _.map(artifacts, (a) => {
+            const updated = _.find(withGating, ['aid', a.aid]);
+            return updated ? updated : a;
+        });
     }
     if (known_pages.length && _.size(artifacts)) {
         const aid_offset = _.last(artifacts).aid;

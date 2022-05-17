@@ -93,14 +93,19 @@ export const FaceForGreenwaveKaiState: React.FC<
     const labels: JSX.Element[] = [];
     if (isGatingResult) {
         labels.push(
-            <Label color="blue" icon={<RegisteredIcon />} isCompact>
+            <Label
+                key="gating"
+                color="blue"
+                icon={<RegisteredIcon />}
+                isCompact
+            >
                 Required for gating
             </Label>,
         );
     }
     if (isWaived) {
         labels.push(
-            <Label color="orange" icon={<WeeblyIcon />} isCompact>
+            <Label key="waived" color="orange" icon={<WeeblyIcon />} isCompact>
                 Waived
             </Label>,
         );

@@ -66,7 +66,12 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     ArtifactGreenwaveStatesSummaryProps
 > = (props) => {
     const { artifact, isLoading } = props;
-    if (!isArtifactRPM(artifact) && !isArtifactMBS(artifact)) {
+    if (
+        !(
+            (isArtifactRPM(artifact) || isArtifactMBS(artifact)) &&
+            _.size(artifact.payload.gate_tag_name)
+        )
+    ) {
         return null;
     }
     const decision: GreenwaveDecisionReplyType | undefined =
@@ -75,10 +80,8 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     if (isScratch) {
         return null;
     }
-    if (_.isNil(decision) || !_.isBoolean(decision?.policies_satisfied)) {
-        if (!isLoading) {
-            return null;
-        }
+    if (_.isNil(decision) && !isLoading) {
+        return null;
     }
     const reqSummary: { [name: string]: number } = {};
     const satisfied = decision?.satisfied_requirements?.length;
@@ -87,7 +90,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
         reqSummary['ok'] = satisfied;
     }
     if (unSatisfied) {
-        reqSummary['err'] = unSatisfied;
+        reqSummary['unsatisfied'] = unSatisfied;
     }
     const iconColor = isLoading
         ? 'info'
