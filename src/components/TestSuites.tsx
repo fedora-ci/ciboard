@@ -112,6 +112,7 @@ type TestSuiteType = {
     tests: TestCaseType[];
     status: string;
     properties: TestSuitePropertiesType[];
+    /** Number of test cases with each of the possible statuses. */
     count: {
         pass?: number;
         fail?: number;
@@ -284,7 +285,7 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
     const [expanded, setExpanded] = useState(false);
     const time = test.time
         ? moment
-              .duration(parseInt(test.time, 10), 'seconds')
+              .duration(Number(test.time), 'seconds')
               .format('hh:mm:ss', { trim: false })
         : null;
 
@@ -374,7 +375,7 @@ interface TestsuiteProps {
 
 type ToggleStateType = Partial<Record<TestSuiteCountNamesType, boolean>>;
 
-const default_toggle_state: ToggleStateType = {
+const DEFAULT_TOGGLE_STATE: ToggleStateType = {
     fail: true,
     skip: true,
     pass: false,
@@ -402,21 +403,35 @@ const TestSuite: React.FC<TestsuiteProps> = (props) => {
     const { suite } = props;
 
     const initialToggleState = _.pickBy(
-        default_toggle_state,
+        DEFAULT_TOGGLE_STATE,
         (_value, key) =>
-            _.toNumber(suite.count[key as TestSuiteCountNamesType]) > 0,
-    ) as ToggleStateType;
+            Number(suite.count[key as TestSuiteCountNamesType]) > 0,
+    );
+    if (
+        !_.values(initialToggleState).some((toggled) => toggled) &&
+        !_.isEmpty(initialToggleState)
+    ) {
+        /* If no items were to be displayed with the default toggle settings,
+         * toggle the first state in the list to show cases with that result.
+         * For example, it is often useful to show the passed results if no
+         * test cases failed.
+         */
+        const firstKey = Object.keys(
+            initialToggleState,
+        )[0] as TestSuiteCountNamesType;
+        initialToggleState[firstKey] = true;
+    }
 
     const [toggleState, setToggleState] =
         useState<ToggleStateType>(initialToggleState);
 
-    const toggle = (outcome: TestSuiteCountNamesType, isChecked: boolean) => {
-        setToggleState({ ...toggleState, [outcome]: !isChecked });
-    };
-
     if (_.isEmpty(suite.tests)) {
         return <NoDetailedResults />;
     }
+
+    const onToggle = (outcome: TestSuiteCountNamesType, isChecked: boolean) => {
+        setToggleState({ ...toggleState, [outcome]: !isChecked });
+    };
 
     return (
         <>
@@ -439,7 +454,9 @@ const TestSuite: React.FC<TestsuiteProps> = (props) => {
                                     isChecked={isChecked}
                                     label={label}
                                     name={outcome}
-                                    onChange={() => toggle(outcome, isChecked)}
+                                    onChange={() =>
+                                        onToggle(outcome, isChecked)
+                                    }
                                 />
                             </FlexItem>
                         );
