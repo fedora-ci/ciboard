@@ -38,6 +38,8 @@ import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     Artifact,
     ArtifactType,
+    isArtifactMBS,
+    isArtifactRPM,
     KaiStateType,
     KojiInstanceType,
     StateGreenwaveKaiType,
@@ -421,6 +423,13 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
         'label',
     ]);
 }
+
+export const isGatingArtifact = (artifact: Artifact): boolean => {
+    return (
+        (isArtifactRPM(artifact) || isArtifactMBS(artifact)) &&
+        _.size(artifact.payload.gate_tag_name) > 0
+    );
+};
 
 export const renderStatusIcon = (
     type: string,

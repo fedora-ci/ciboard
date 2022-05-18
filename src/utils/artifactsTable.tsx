@@ -50,6 +50,7 @@ import {
     aidMeaningForType,
     artifactUrl,
     getArtifactName,
+    isGatingArtifact,
     nameFieldForType,
 } from './artifactUtils';
 import { Artifact } from '../artifact';
@@ -379,6 +380,17 @@ export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
     if (!_.isNil(opened)) {
         const aOpen = opened / 2;
         rows[opened].isOpen = true;
+        let title: JSX.Element;
+        if (isGatingArtifact(artifacts[aOpen]) && gatingDecisionIsLoading) {
+            title = <Spinner size="sm" />;
+        } else {
+            title = (
+                <>
+                    <ArtifactDetailedInfo artifact={artifacts[aOpen]} />
+                    <ArtifactStatesList artifact={artifacts[aOpen]} />
+                </>
+            );
+        }
         rows[opened + 1] = {
             /** 1, 3, 5, 7, 9, ... */
             parent: opened,
@@ -387,12 +399,7 @@ export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
             noPadding: true,
             cells: [
                 {
-                    title: (
-                        <>
-                            <ArtifactDetailedInfo artifact={artifacts[aOpen]} />
-                            <ArtifactStatesList artifact={artifacts[aOpen]} />
-                        </>
-                    ),
+                    title,
                     transforms: [fitContent],
                     cellTransforms: [nowrap],
                     cellFormatters: [expandable],

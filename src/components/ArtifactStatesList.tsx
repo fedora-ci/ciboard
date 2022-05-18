@@ -158,22 +158,7 @@ interface ArtifactResultsListProps {
 }
 
 export function ArtifactStatesList(props: ArtifactResultsListProps) {
-    const { artifact: artifactParent } = props;
-    const { loading: loadingCurrentState, data: dataCurrentState } = useQuery(
-        ArtifactsCompleteQuery,
-        {
-            variables: {
-                limit: 1,
-                dbFieldName1: 'aid',
-                atype: artifactParent.type,
-                dbFieldValues1: [artifactParent.aid],
-            },
-            errorPolicy: 'all',
-            notifyOnNetworkStatusChange: true,
-        },
-    );
-    const haveData =
-        !loadingCurrentState && _.has(dataCurrentState, 'artifacts.artifacts');
+    const { artifact } = props;
     const queryString = useSelector<RootStateType, IStateQueryString>(
         (store) => store.queryString,
     );
@@ -209,20 +194,6 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         '',
     );
     const focusOn = _.isString(focusOnParam) ? focusOnParam : '';
-    let artifact: Artifact | null = null;
-    if (haveData) {
-        artifact = _.get(dataCurrentState, 'artifacts.artifacts[0]');
-    }
-    if (loadingCurrentState) {
-        return (
-            <Flex className="pf-u-p-lg">
-                <FlexItem>
-                    <Spinner className="pf-u-mr-md" size="md" /> Loading test
-                    results…
-                </FlexItem>
-            </Flex>
-        );
-    }
     if (!artifact) {
         return (
             <Flex className="pf-u-p-lg">

@@ -29,7 +29,7 @@ import {
     Spinner,
 } from '@patternfly/react-core';
 
-import { resultColor } from '../utils/artifactUtils';
+import { isGatingArtifact, resultColor } from '../utils/artifactUtils';
 import { renderStatusIcon } from '../utils/artifactUtils';
 import {
     Artifact,
@@ -66,12 +66,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     ArtifactGreenwaveStatesSummaryProps
 > = (props) => {
     const { artifact, isLoading } = props;
-    if (
-        !(
-            (isArtifactRPM(artifact) || isArtifactMBS(artifact)) &&
-            _.size(artifact.payload.gate_tag_name)
-        )
-    ) {
+    if (!isGatingArtifact(artifact)) {
         return null;
     }
     const decision: GreenwaveDecisionReplyType | undefined =
