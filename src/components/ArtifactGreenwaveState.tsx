@@ -277,10 +277,7 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     const requimentType = state.requirement?.type;
     const iconName = _.compact([resultOutcome, requimentType, 'unknown'])[0];
     return (
-        <Flex
-            alignContent={{ default: 'alignContentCenter' }}
-            style={{ minHeight: '2.5em' }}
-        >
+        <Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
                 <TextContent>
