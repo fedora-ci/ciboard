@@ -74,7 +74,8 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
     const aid_offset_pages = useRef<string[]>([]);
     // Array of sorted 'aid' from the bottom of each known page
     const known_pages = aid_offset_pages.current;
-    /* aid_offset -- entry from 'known_pages'
+    /*
+     * aid_offset -- entry from 'known_pages'
      * Set when user clicks on 'prev' or 'next'
      * Maps to page number
      */
