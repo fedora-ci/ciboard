@@ -411,7 +411,8 @@ const TestSuite: React.FC<TestsuiteProps> = (props) => {
         !_.values(initialToggleState).some((toggled) => toggled) &&
         !_.isEmpty(initialToggleState)
     ) {
-        /* If no items were to be displayed with the default toggle settings,
+        /*
+         * If no items were to be displayed with the default toggle settings,
          * toggle the first state in the list to show cases with that result.
          * For example, it is often useful to show the passed results if no
          * test cases failed.
