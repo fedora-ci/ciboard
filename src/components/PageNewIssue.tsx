@@ -89,7 +89,7 @@ function WaiverDbPermissions() {
         return <div className="pf-u-danger-color-100">{error.message}</div>;
     }
     const perms = data!.waiver_db_permissions as WaiverDbPermission[];
-    const rows: IRow[] = perms.map((permission) => mkRow(permission));
+    const rows: IRow[] = _.map(perms, (permission) => mkRow(permission));
     const columns: ICell[] = [
         { title: 'Test case patterns' },
         { title: 'Users' },

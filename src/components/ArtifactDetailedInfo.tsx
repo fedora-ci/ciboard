@@ -220,7 +220,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
             >
                 <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
                     <List component={ListComponent.ol} type={OrderType.number}>
-                        {build.tags.map((tag) => (
+                        {_.map(build.tags, (tag) => (
                             <ListItem key={tag.id}>
                                 <ExternalLink
                                     href={mkLinkKojiWebTagId(tag.id, instance)}
@@ -265,7 +265,7 @@ const HistoryList: React.FC<HistoryListProps> = (props) => {
     const { history } = props;
     if (_.isNil(history)) return null;
     const lines: TagActionHistoryType[] = [];
-    history.forEach((e) => {
+    _.forEach(history, (e) => {
         lines.push({
             action: 'tagged into',
             active: e.active,
