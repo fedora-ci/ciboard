@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import _ from 'lodash';
 import qs from 'qs';
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -56,7 +57,7 @@ export function ToastAlertGroup() {
     );
     return (
         <AlertGroup isToast>
-            {alerts.map(({ key, title, variant }) => (
+            {_.map(alerts, ({ key, title, variant }) => (
                 <Alert
                     isLiveRegion
                     variant={AlertVariant[variant]}

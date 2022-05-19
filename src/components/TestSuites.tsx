@@ -145,7 +145,7 @@ const TestSuitesInternal: React.FC<TestsuitesProps> = (props) => {
             </Alert>
         );
     }
-    const testSuites = xunit.map((suite) => (
+    const testSuites = _.map(xunit, (suite) => (
         <Flex direction={{ default: 'column' }} key={suite._uuid}>
             <Title headingLevel="h4">{suite.name}</Title>
             <TestSuite suite={suite} />
@@ -178,7 +178,7 @@ const TestCaseLogs: React.FC<TestCaseLogsProps> = ({ logs }) => {
 const mkLogsLinks = (logs: TestCaseLogsType[]): JSX.Element[] => {
     /** logs[0].log - [log1, log2, log3] */
     if (!logs[0] || _.isEmpty(logs[0].log)) return [];
-    return logs[0].log.map((log) => mkLogLink(log));
+    return _.map(logs[0].log, (log) => mkLogLink(log));
 };
 
 const mkPhase = (phase: TestCasePhasesEntryType): IRow => {
@@ -198,7 +198,7 @@ interface TestCasePhasesProps {
 
 const TestCasePhases: React.FC<TestCasePhasesProps> = ({ phases }) => {
     if (!phases || _.isEmpty(phases[0].phase)) return null;
-    const rows: IRow[] = phases[0].phase.map((phase) => mkPhase(phase));
+    const rows: IRow[] = _.map(phases[0].phase, (phase) => mkPhase(phase));
     return (
         <Table
             aria-label="Table of individual phases within this test"

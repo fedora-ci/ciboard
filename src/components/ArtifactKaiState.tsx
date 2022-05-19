@@ -203,7 +203,7 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
         mappingDatagrepperUrl[artifact.type],
     ).toString();
     pairs.push(['broker msg', brokerMsgUrl]);
-    const elements: JSX.Element[] = pairs.map(([name, value]) =>
+    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'green'),
     );
     return (

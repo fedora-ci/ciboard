@@ -254,11 +254,13 @@ const mkResultStatesGreenwave = (
         satisfied_requirements,
         unsatisfied_requirements,
     );
-    const resultsToShow: GreenwaveResultType[] = results.filter(
+    const resultsToShow: GreenwaveResultType[] = _.filter(
+        results,
         (result) =>
             !requirements.some((req) => result.testcase.name === req.testcase),
     );
-    const resultStates: StateGreenwaveType[] = resultsToShow.map(
+    const resultStates: StateGreenwaveType[] = _.map(
+        resultsToShow,
         (res): StateGreenwaveType => ({
             testcase: res.testcase.name,
             result: res,
@@ -307,8 +309,8 @@ const mergeKaiAndGreenwaveState = (
         stageStatesArray,
     );
     const kaiStageStates = filterByStageName('test', stageStatesArray);
-    greenwaveStageStates.forEach(([_stageName, _stateName, states]) =>
-        (states as StateGreenwaveType[]).forEach((greenwaveState) => {
+    _.forEach(greenwaveStageStates, ([_stageName, _stateName, states]) =>
+        _.forEach(states as StateGreenwaveType[], (greenwaveState) => {
             const outcome = greenwaveState.result?.outcome;
             const refUrl = greenwaveState.result?.ref_url;
             if (_.isNil(outcome) || _.isNil(refUrl)) {

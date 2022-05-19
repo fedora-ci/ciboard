@@ -142,7 +142,7 @@ export const GreenwaveResultInfo: React.FC<PropsWithGreenwaveState> = (
     if (!result) return null;
     const pairs = mkPairs(resultMapping, result);
     if (_.isEmpty(pairs)) return null;
-    const elements: JSX.Element[] = pairs.map(([name, value]) =>
+    const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'orange'),
     );
     return (
