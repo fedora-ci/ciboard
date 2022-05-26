@@ -21,11 +21,19 @@
 import { getOSVersionFromNvr } from './utils/artifactUtils';
 import { ArtifactType } from './artifact';
 
-/*
- *  CI Dashboard configuration file
+/**
+ * CI Dashboard global configuration.
  */
 export const config = {
     defaultTitle: 'CI Dashboard',
+    graphQlServerUrl:
+        /*
+         * By default, we assume the GraphQL server endpoint is located at `/graphql`
+         * on the same server as the frontend. For local development, one may use
+         * the internal development instance of the GraphQL server. This URL can be
+         * overriden using the `REACT_APP_GRAPHQL_SERVER_URL` environment variable.
+         */
+        process.env.REACT_APP_GRAPHQL_SERVER_URL ?? '/graphql',
     kai: {
         url: 'https://kai.osci.redhat.com',
     },

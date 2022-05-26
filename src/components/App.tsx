@@ -36,23 +36,16 @@ import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
 import '@patternfly/react-styles/css/utilities/Text/text.css';
 
+import { config } from '../config';
 import { menuRoutes, otherRoutes } from '../routes';
 
 /**
  * By default GraphQL for query doesn't attach existing cookies.
- * GraphiQL attaches cookies to query.
- * need to instruct Gragphql to send existing cookies along with each single request.
+ * GraphQL attaches cookies to query.
+ * need to instruct GragphQL to send existing cookies along with each single request.
  */
 const httpLink = new HttpLink({
-    /**
-     * prod instance: Apollo client assumes that graphql on express side is listening on server /graphql
-     */
-    uri: '/graphql',
-    // uri: 'https://dashboard.dev.osci.redhat.com/graphql',
-    /**
-     * local development and local server can be accessed with:
-     */
-    //uri: 'http://localhost:5000/graphql',
+    uri: config.graphQlServerUrl,
     /**
      * You a making request to the same url that browser is currently on. This will add existing cookies to requests!
      */
