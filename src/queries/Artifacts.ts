@@ -19,7 +19,11 @@
  */
 
 import { gql } from '@apollo/client';
-import { Artifact, ComponentMapping, KojiTaskInfo } from '../artifact';
+import {
+    Artifact,
+    ComponentComponentMappingType,
+    KojiTaskInfo,
+} from '../artifact';
 
 const stateEntryFragment = gql`
     fragment StateEntryFragment on StateType {
@@ -270,7 +274,7 @@ export interface PageGatingArtifactsData {
     artifacts: {
         has_next: boolean;
         artifacts: Artifact[] & {
-            component_mapping: ComponentMapping;
+            component_mapping: ComponentComponentMappingType;
         };
     };
 }
@@ -307,6 +311,7 @@ export const PageGatingArtifacts = gql`
             has_next
             artifacts {
                 ...MainFragment
+                ...StatesFragment
                 component_mapping {
                     component_name
                     def_assignee
@@ -322,4 +327,5 @@ export const PageGatingArtifacts = gql`
         }
     }
     ${mainFragment}
+    ${statesFragment}
 `;

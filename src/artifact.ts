@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import _ from 'lodash';
 import { BrokerMessagesType } from './types';
 
 export type ComposeArtifactType = 'productmd-compose';
@@ -87,6 +88,9 @@ export function isArtifactContainer(
 ): artifact is ArtifactContainer {
     return artifact.type === 'redhat-container';
 }
+export function isStateKai(state: StateType): state is StateKaiType {
+    return _.has(state, 'kai_state');
+}
 
 export type PayloadsType =
     | PayloadComposeBuildType
@@ -101,6 +105,7 @@ export interface ArtifactBase {
     states: StateKaiType[];
     type: ArtifactType;
     payload?: {};
+    component_mapping?: ComponentComponentMappingType;
     greenwave_decision?: GreenwaveDecisionReplyType;
     resultsdb_testscase: number[];
 }
@@ -305,15 +310,18 @@ export type StateNameType = 'error' | 'queued' | 'running' | 'complete';
  * - needs_inspection
  * - not_applicable
  */
-export type StateExtendedNameType =
+export type StateExtendedKaiNameType =
     | 'passed'
     | 'failed'
     | 'info'
     | 'needs_inspection'
     | 'not_applicable'
+    | StateNameType;
+
+export type StateExtendedNameType =
     /* greenwave result */
     | 'additional-tests'
-    | StateNameType
+    | StateExtendedKaiNameType
     | GreenwaveRequirementTypesType;
 
 export type StateGreenwaveKaiType = {
@@ -365,17 +373,17 @@ export const KnownKaiStates: StateNameType[] = [
     'complete',
 ];
 
-export interface ComponentMapping {
+export type ComponentComponentMappingType = {
     component_name: string;
-    default_assignee: string;
-    default_assignee_name: string;
-    description: string;
     product_id: number;
-    sst_name: string;
+    description: string;
+    def_assignee: string;
+    def_assignee_name: string;
     qa_contact: string;
     qa_contact_name: string;
+    sst_team_name: string;
     _updated: string;
-}
+};
 
 /**
  * GraphQL KojiInstanceInputType

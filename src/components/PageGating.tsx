@@ -79,10 +79,14 @@ import {
 } from '../reducers/gateArtifactsReducer';
 import {
     Artifact,
+    isStateKai,
     ArtifactType,
-    ComponentMapping,
     StageNameType,
-    StateNameType,
+    ComponentComponentMappingType,
+    StatesByCategoryType,
+    StateExtendedKaiNameType,
+    isArtifactRPM,
+    isArtifactMBS,
 } from '../artifact';
 import { mkSpecialRows } from '../utils/artifactsTable';
 import { PageCommon } from './PageCommon';
@@ -93,7 +97,12 @@ import {
     PageGatingGetSSTTeams,
 } from '../queries/Artifacts';
 import { PaginationToolbar } from './PaginationToolbar';
-import { artifactUrl, getArtifactName } from '../utils/artifactUtils';
+import {
+    artifactUrl,
+    getArtifactName,
+    getTestcaseName,
+} from '../utils/artifactUtils';
+import { transformKaiStates } from '../utils/stages_states';
 
 interface CiSystem {
     ciSystemName: string;
@@ -101,19 +110,12 @@ interface CiSystem {
     order?: number;
     result: string;
     stage?: StageNameType;
-    state: StateNameType;
+    state: StateExtendedKaiNameType;
     status?: string;
     test?: {
         resuls: string;
     };
     textClasses?: string;
-}
-
-interface CiSystemsTableProps {
-    currentState: {
-        [key in StateNameType]: CiSystem[];
-    };
-    searchParams: StateGatingTests;
 }
 
 interface GatingSearchQuery {
@@ -134,10 +136,6 @@ interface GatingSearchQuery {
         valuesAreRegex2?: boolean;
         valuesAreRegex3?: boolean;
     };
-}
-
-interface MappingInfoProps {
-    mapping?: ComponentMapping;
 }
 
 const ciSystems: string[] = [
@@ -179,83 +177,66 @@ const columns = (buildType: string): ICell[] => {
 const artifactDashboardUrl = ({ aid, type }: Artifact) =>
     `${window.location.origin}/#/artifact/${type}/aid/${aid}`;
 
+interface CiSystemsTableProps {
+    currentState: StatesByCategoryType;
+    searchParams: StateGatingTests;
+}
 const CiSystemsTable = (props: CiSystemsTableProps) => {
     const { currentState, searchParams } = props;
     const ciSystemsNames: CiSystem[] = [];
-    for (const state of [
-        'complete',
-        'error',
-        'queued',
+    const kaiStatesNames: StateExtendedKaiNameType[] = [
         'running',
-    ] as StateNameType[]) {
-        if (!_.has(currentState, state)) {
+        'queued',
+        'error',
+        'failed',
+        'passed',
+        'info',
+        'needs_inspection',
+        'not_applicable',
+    ];
+    for (const state of kaiStatesNames) {
+        const kaiStates = currentState[state];
+        if (_.isUndefined(kaiStates)) {
             continue;
         }
-        for (const ciSystem of currentState[state]) {
-            if (ciSystem.stage !== 'test') {
+        for (const kaiState of kaiStates) {
+            if (!isStateKai(kaiState)) {
                 continue;
             }
-            let ciSystemName: string;
+            let ciSystemName: string = getTestcaseName(kaiState);
             let result = '';
-            const parts_v1 = [];
-            const parts_v2 = [];
-            for (const part of ['namespace', 'type', 'category']) {
-                parts_v1.push(_.get(ciSystem, part, null));
-                parts_v2.push(_.get(_.get(ciSystem, 'test', {}), part, null));
-            }
-            if (_.every(parts_v1)) {
-                ciSystemName = _.join(parts_v1, '.');
-            } else if (_.every(parts_v2)) {
-                ciSystemName = _.join(parts_v2, '.');
-            } else {
-                console.log('Cannot construct CI system name', ciSystem);
-                continue;
-            }
             const re = new RegExp(searchParams.ciSystem, 'gi');
             if (searchParams.ciSystem && !ciSystemName.match(re)) {
                 continue;
             }
-            if (ciSystem.status) {
-                // v1
-                result = ciSystem.status;
-            }
-            if (ciSystem.test && ciSystem.test.resuls) {
-                // v2
-                result = ciSystem.test.resuls;
-            }
             ciSystemsNames.push({
                 ciSystemName,
-                generatedAt: ciSystem.generatedAt,
+                generatedAt: _.toString(kaiState.broker_msg_body.generated_at),
                 result,
                 state,
             });
         }
     }
-    _.forEach(ciSystemsNames, (ciSystem, index) => {
+    _.forEach(ciSystemsNames, (ciSystem) => {
         const { state, result } = ciSystem;
         let isPassed = false;
         let isInfo = false;
         let isFailed = false;
         let isOther = false;
         let order;
-        if (state === 'running' || state === 'queued') {
+        if (state === 'running' || state === 'queued' || state === 'info') {
             isInfo = true;
             order = 1;
-        } else if (state === 'error') {
+        } else if (state === 'error' || state === 'failed') {
             isFailed = true;
             order = 2;
+        } else if (state === 'passed') {
+            isPassed = true;
+            order = 0;
         } else {
-            // complete
-            if (result.match(/pass/gi)) {
-                isPassed = true;
-                order = 0;
-            } else if (result.match(/fail/gi)) {
-                isFailed = true;
-                order = 2;
-            } else {
-                isOther = true;
-                order = 3;
-            }
+            /** state === 'needs_inspection' || state === 'not_applicable' */
+            isOther = true;
+            order = 3;
         }
         const textClasses = classNames(styles.sstStatus, {
             [styles.statusPassed]: isPassed,
@@ -360,17 +341,21 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
     );
 };
 
+interface MappingInfoProps {
+    mapping: ComponentComponentMappingType | undefined;
+}
+
 const MappingInfo = (props: MappingInfoProps) => {
     const { mapping } = props;
     if (!mapping?.product_id) return null;
-    const { default_assignee, qa_contact, sst_name } = mapping;
+    const { def_assignee, qa_contact, sst_team_name } = mapping;
     return (
         <>
-            Team: {sst_name}
+            Team: {sst_team_name}
             <br />
             QA: {qa_contact}
             <br />
-            Owner: {default_assignee}
+            Owner: {def_assignee}
         </>
     );
 };
@@ -379,6 +364,9 @@ function mkArtifactRow(
     artifact: Artifact,
     searchParams: StateGatingTests,
 ): IRow {
+    if (!(isArtifactRPM(artifact) || isArtifactMBS(artifact))) {
+        return {};
+    }
     const isScratch = _.get(artifact, 'payload.scratch', false);
     const artifactLink = (
         <div style={{ whiteSpace: 'nowrap' }}>
@@ -413,29 +401,25 @@ function mkArtifactRow(
         },
         {
             title: (
-                /*
-                TODO: Component mapping not yet supported.
                 <div style={{ whiteSpace: 'nowrap' }}>
                     builder: {artifact.payload.issuer}
                     <br />
-                    <MappingInfo
-                        mapping={artifact.component_mapping}
-                    />
+                    <MappingInfo mapping={artifact.component_mapping} />
                 </div>
-                */
-                <p>MappingInfo</p>
             ),
         },
         {
-            /*
+            title: (
                 <div>
                     <CiSystemsTable
-                        currentState={transformKaiStates(artifact.states, 'test')}
+                        currentState={transformKaiStates(
+                            artifact.states,
+                            'test',
+                        )}
                         searchParams={searchParams}
                     />
                 </div>
-            */
-            title: <p>CiSystemsTable</p>,
+            ),
         },
         {
             title: (
@@ -806,11 +790,12 @@ function GatingResults() {
      * Special index is present:
      * db.artifacts.createIndex({"type" : 1, "aid" : -1, "gate_tag_name" : 1}, { collation: { locale: "en_US", numericOrdering : true} })
      */
-    const dbFieldName1 = 'gate_tag_name';
+    const dbFieldName1 = 'payload.gate_tag_name';
     const dbFieldValues1 = _.trim(searchParams.gateTag);
-    const dbFieldName2 = 'resultsdb_testcase';
+    /** resultsdb_testcase */
+    const dbFieldName2 = 'states.kai_state.test_case_name';
     const dbFieldValues2 = _.trim(searchParams.ciSystem);
-    const dbFieldName3 = 'issuer';
+    const dbFieldName3 = 'payload.issuer';
     const dbFieldValues3 = _.trim(searchParams.packager);
     const dbFieldNameComponentMapping1 = 'sst_team_name';
     const dbFieldValuesComponentMapping1 = searchParams.sstTeams;
