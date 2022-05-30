@@ -45,6 +45,7 @@ import { TestSuites } from './TestSuites';
 import {
     getTestcaseName,
     getThreadID,
+    LinkifyNewTab,
     renderStatusIcon,
 } from '../utils/artifactUtils';
 import { MSG_V_1, MSG_V_0_1 } from '../types';
@@ -141,7 +142,6 @@ const schemaMappingV1 = [
     ['contact.slack', 'ci slack'],
     ['contact.version', 'ci version'],
     ['notification.recipients', 'recipients'],
-    ['error.reason', 'error reason'],
     ['test.category', 'test category'],
     ['test.docs', 'test docs'],
     ['test.label', 'test label'],
@@ -160,6 +160,7 @@ const schemaMappingV01 = [
 
 const StateExplain: React.FC<PropsWithKaiState> = (props) => {
     const { state } = props;
+    const { broker_msg_body, kai_state } = state;
     const explain: { [key in StateNameType]?: JSX.Element } = {
         running: (
             <Alert isInline isPlain title="Test running" variant="info">
@@ -180,7 +181,38 @@ const StateExplain: React.FC<PropsWithKaiState> = (props) => {
             </Alert>
         ),
     };
-    return _.get(explain, state.kai_state.state, null);
+    const columns: JSX.Element[] = [];
+    const stateExplanation = _.get(explain, kai_state.state, null);
+    if (stateExplanation) {
+        columns.push(stateExplanation);
+    }
+    let errorReason: string | undefined;
+    let errorIssueUrl: string | undefined;
+    if (MSG_V_1.isMsg(broker_msg_body)) {
+        errorReason = _.get(broker_msg_body, 'error.reason');
+        errorIssueUrl = _.get(broker_msg_body, 'error.issue_url');
+    } else if (MSG_V_0_1.isMsg(broker_msg_body)) {
+        errorReason = _.get(broker_msg_body, 'reason');
+        errorIssueUrl = _.get(broker_msg_body, 'issue_url');
+    }
+    if (!_.isNil(errorReason)) {
+        const jsxElement = (
+            <Alert isInline isPlain title="CI system error" variant="warning">
+                {errorReason} <LinkifyNewTab>{errorIssueUrl}</LinkifyNewTab>
+            </Alert>
+        );
+        columns.push(jsxElement);
+    }
+    if (_.size(columns)) {
+        return (
+            <Flex direction={{ default: 'column' }}>
+                {_.map(columns, (c) => (
+                    <FlexItem>{c}</FlexItem>
+                ))}
+            </Flex>
+        );
+    }
+    return null;
 };
 
 export interface KaiStateMappingProps extends PropsWithKaiState {
@@ -235,7 +267,7 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
 export const KaiStateActions: React.FC<PropsWithKaiState> = (props) => {
     const { broker_msg_body } = props.state;
     const rerunUrl = broker_msg_body.run.rebuild;
-    if (!_.isEmpty(rerunUrl)) return null;
+    if (_.isEmpty(rerunUrl)) return null;
     return (
         <Flex style={{ minWidth: '15em' }}>
             <Flex flex={{ default: 'flex_1' }}></Flex>
