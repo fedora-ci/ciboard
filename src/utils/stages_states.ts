@@ -215,6 +215,21 @@ const mkGreenwaveStageStates = (
     return { stage: 'greenwave', states };
 };
 
+function printify(obj: any) {
+    var cache: any[] = [];
+    function circular_ok(key: string, value: any) {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+                return;
+            }
+            cache.push(value);
+        }
+        return value;
+    }
+    var answer = JSON.stringify(obj, circular_ok);
+    return JSON.parse(answer);
+}
+
 const mkReqStatesGreenwave = (
     decision: GreenwaveDecisionReplyType,
 ): StatesByCategoryType => {
@@ -309,8 +324,8 @@ const mergeKaiAndGreenwaveState = (
         stageStatesArray,
     );
     const kaiStageStates = filterByStageName('test', stageStatesArray);
-    _.forEach(greenwaveStageStates, ([_stageName, _stateName, states]) =>
-        _.forEach(states as StateGreenwaveType[], (greenwaveState) => {
+    _.forEach(greenwaveStageStates, ([_stageName, _stateName, states]) => {
+        _.forEach(states as StateGreenwaveType[], (greenwaveState, index) => {
             const outcome = greenwaveState.result?.outcome;
             const refUrl = greenwaveState.result?.ref_url;
             if (_.isNil(outcome) || _.isNil(refUrl)) {
@@ -324,14 +339,13 @@ const mergeKaiAndGreenwaveState = (
             if (_.isNil(kaiState)) {
                 return;
             }
-            _.pull(states, greenwaveState);
             const newState: StateGreenwaveKaiType = {
                 gs: greenwaveState,
                 ks: kaiState,
             };
-            states.push(newState);
-        }),
-    );
+            states[index] = newState;
+        });
+    });
 };
 
 /**

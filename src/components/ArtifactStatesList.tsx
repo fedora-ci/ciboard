@@ -54,7 +54,6 @@ import {
 import { RootStateType } from '../reducers';
 import { ArtifactState } from './ArtifactState';
 import { IStateQueryString } from '../actions/types';
-import { ArtifactsCompleteQuery } from '../queries/Artifacts';
 import {
     StageNameStateNameStatesType,
     mkStagesAndStates,
