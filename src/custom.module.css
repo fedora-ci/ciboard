@@ -98,16 +98,6 @@
     transform: none;
 }
 
-.giveHint {
-    border-bottom: var(--pf-c-table--border-width--base) solid
-        var(--pf-global--disabled-color--200) !important;
-}
-
-.noHint {
-    border-bottom: var(--pf-c-table--border-width--base) solid
-        var(--pf-global--BackgroundColor--200) !important;
-}
-
 .buildInfoCommitHash,
 .buildInfoTimestamp {
     font-size: 0.85em;
@@ -124,7 +114,17 @@
  * > -- says must be follow immediatelly
  * Some element must be svg
  */
-.giveHint :global(.pf-c-table__toggle > .pf-c-button:not(.pf-m-expanded)) svg {
+.withHint {
+    --pf-c-table--BorderColor: var(--pf-global--BackgroundColor--200);
+}
+
+.withHint:hover {
+    --pf-c-table--BorderColor: var(--pf-global--disabled-color--200);
+}
+
+.withHint:hover
+    :global(.pf-c-table__toggle > .pf-c-button:not(.pf-m-expanded))
+    svg {
     color: var(--pf-global--link--Color);
     box-shadow: var(--pf-global--BoxShadow--lg);
 }

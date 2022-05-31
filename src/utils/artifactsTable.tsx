@@ -136,22 +136,18 @@ export const CustomRowWrapper = (
     if (!(children instanceof Array)) {
         throw new Error('Expect array of rows');
     }
-    const [giveHint, setGiveHint] = useState(false);
     const firstCell: React.ReactNode = children[0];
     if (!React.isValidElement(firstCell)) {
         throw new Error('Child must be valid element');
     }
-    const isOpenParent = firstCell.props.children.props.isOpen;
+    const isOpenParent: boolean = firstCell.props.children.props.isOpen;
     const ref = isOpenParent ? scrollRef : undefined;
-    let resultClasses = classNames(giveHint ? styles.giveHint : styles.noHint);
     return (
         <tr
-            ref={ref}
-            onMouseEnter={() => setGiveHint(true)}
-            onMouseLeave={() => setGiveHint(false)}
-            className={resultClasses}
-            hidden={row?.isExpanded !== undefined && !row.isExpanded}
             children={children}
+            className={styles.withHint}
+            hidden={row?.isExpanded !== undefined && !row.isExpanded}
+            ref={ref}
         />
     );
 };
