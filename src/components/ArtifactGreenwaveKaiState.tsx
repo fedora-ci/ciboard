@@ -206,12 +206,12 @@ export const ArtifactGreenwaveKaiState: React.FC<
                     <>
                         <GreenwaveWaiver state={state.gs} />
                         <ResultNote state={state.ks} />
+                        <GreenwaveResultInfo state={state.gs} />
+                        <KaiStateMapping artifact={artifact} state={state.ks} />
                         <KaiDetailedResults
                             artifact={artifact}
                             state={state.ks}
                         />
-                        <GreenwaveResultInfo state={state.gs} />
-                        <KaiStateMapping artifact={artifact} state={state.ks} />
                     </>
                 )}
             </DataListContent>
