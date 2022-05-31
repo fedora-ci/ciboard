@@ -401,28 +401,11 @@ function compareTestCases(tc1: TestCaseType, tc2: TestCaseType) {
 
 const TestSuite: React.FC<TestsuiteProps> = (props) => {
     const { suite } = props;
-
     const initialToggleState = _.pickBy(
         DEFAULT_TOGGLE_STATE,
         (_value, key) =>
             Number(suite.count[key as TestSuiteCountNamesType]) > 0,
     );
-    if (
-        !_.values(initialToggleState).some((toggled) => toggled) &&
-        !_.isEmpty(initialToggleState)
-    ) {
-        /*
-         * If no items were to be displayed with the default toggle settings,
-         * toggle the first state in the list to show cases with that result.
-         * For example, it is often useful to show the passed results if no
-         * test cases failed.
-         */
-        const firstKey = Object.keys(
-            initialToggleState,
-        )[0] as TestSuiteCountNamesType;
-        initialToggleState[firstKey] = true;
-    }
-
     const [toggleState, setToggleState] =
         useState<ToggleStateType>(initialToggleState);
 
