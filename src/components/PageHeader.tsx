@@ -78,7 +78,7 @@ const LoginLink = () => {
     return (
         <Button
             component="a"
-            href={'/login'}
+            href="/login"
             id="default-example-uid-01"
             aria-label="Log in to CI Dashboard"
             icon={<ExternalLinkSquareAltIcon />}
