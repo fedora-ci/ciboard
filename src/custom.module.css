@@ -129,6 +129,14 @@
     box-shadow: var(--pf-global--BoxShadow--lg);
 }
 
+.artifactsTable {
+    --pf-c-table--BackgroundColor: transparent !important;
+}
+
+.artifactsTable :global(.pf-m-expanded) {
+    background: var(--pf-global--BackgroundColor--100);
+}
+
 .helpSelect:hover
     :global(.pf-c-data-list__toggle > .pf-c-button:not(.pf-m-expanded))
     svg {

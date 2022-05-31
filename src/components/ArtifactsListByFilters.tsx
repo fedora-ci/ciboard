@@ -48,6 +48,7 @@ import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
 import { PaginationToolbar } from './PaginationToolbar';
 import { Artifact, isArtifactMBS, isArtifactRPM } from '../artifact';
+import styles from '../custom.module.css';
 
 const ArtifactsTable: React.FC = () => {
     const queryString = ''; // XXX : delme
@@ -243,6 +244,7 @@ const ArtifactsTable: React.FC = () => {
     const results = (
         <>
             <Table
+                className={styles.artifactsTable}
                 header={<PaginationToolbar {...paginationProps} />}
                 variant={TableVariant.compact}
                 cells={columns}

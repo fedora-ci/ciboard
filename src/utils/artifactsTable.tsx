@@ -20,7 +20,6 @@
 
 import _ from 'lodash';
 import * as React from 'react';
-import classNames from 'classnames';
 import { LegacyRef, useState } from 'react';
 import {
     Bullseye,
