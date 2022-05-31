@@ -406,6 +406,21 @@ const TestSuite: React.FC<TestsuiteProps> = (props) => {
         (_value, key) =>
             Number(suite.count[key as TestSuiteCountNamesType]) > 0,
     );
+    if (
+        !_.values(initialToggleState).some((toggled) => toggled) &&
+        !_.isEmpty(initialToggleState)
+    ) {
+        /*
+         * If no items were to be displayed with the default toggle settings,
+         * toggle the first state in the list to show cases with that result.
+         * For example, it is often useful to show the passed results if no
+         * test cases failed.
+         */
+        const firstKey = _.first(_.keys(
+            initialToggleState,
+        )) as TestSuiteCountNamesType;
+        initialToggleState[firstKey] = true;
+    }
     const [toggleState, setToggleState] =
         useState<ToggleStateType>(initialToggleState);
 
