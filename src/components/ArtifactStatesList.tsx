@@ -111,31 +111,14 @@ const StageAndState: React.FC<StageAndStateProps> = (props) => {
     );
 };
 
-const mustExpandResult = (
-    state: StateType,
-    focusOn: string,
-    expandedResult: string,
-    canExpand: boolean,
-): boolean => {
+const mustExpandState = (state: StateType, expandedResult: string): boolean => {
+    /*
+     * expandedResult - is set to testcase-name by state-widget, when it handles click for expanding
+     * State-widget uses call-back to set this param.
+     */
     const testcase = getTestcaseName(state);
     if (testcase === expandedResult) {
         return true;
-    }
-    if (focusOn === `tc:${testcase}`) {
-        if (canExpand) {
-            return true;
-        }
-    }
-    if (isKaiState(state)) {
-        const { broker_msg_body, kai_state } = state;
-        if (focusOn === `id:${getThreadID({ broker_msg_body })}`) {
-            if (canExpand) {
-                return true;
-            }
-        }
-        if (kai_state.msg_id === expandedResult) {
-            return true;
-        }
     }
     return false;
 };
@@ -162,37 +145,22 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         (store) => store.queryString,
     );
     const focusedRef = useRef<HTMLDivElement>(null);
-    /**
-     * canScroll Used in logic when URL has hasFocus.
-     * canScroll is set to false when scrolled, to scroll only once
-     */
-    const [canScroll, setCanScroll] = useState(true);
-    /** canExpand == was not expanded */
-    const [canExpand, setCanExpand] = useState(true);
+    /** canExpandURLState == was not expanded */
+    const [wasExpandedForURLParam, setWasExpandedForURLParam] = useState(false);
     /**
      * Only one result can be expanded.
      * Result sets that it is expanded with help of setExpandedResult()
-     * expandedResult - holds msg_id or result., getTestcaseNametestcase
+     * expandedResult - holds test case name
      */
     const [expandedResult, setExpandedResult] = useState('');
     useEffect(() => {
-        if (focusedRef.current && canScroll) {
+        if (focusedRef.current) {
             focusedRef.current.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start',
             });
-            setCanScroll(false);
         }
-        if (!canScroll) {
-            setCanExpand(false);
-        }
-    }, [expandedResult, canScroll]);
-    const focusOnParam: qs.ParsedQs[keyof qs.ParsedQs] = _.get(
-        queryString.queryString,
-        'focus',
-        '',
-    );
-    const focusOn = _.isString(focusOnParam) ? focusOnParam : '';
+    }, [expandedResult]);
     if (!artifact) {
         return (
             <Flex className="pf-u-p-lg">
@@ -206,6 +174,17 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
                 </FlexItem>
             </Flex>
         );
+    }
+    const focusOnParam: qs.ParsedQs[keyof qs.ParsedQs] = _.get(
+        queryString.queryString,
+        'focus',
+        '',
+    );
+    const focusOnFromURL = _.isString(focusOnParam) ? focusOnParam : '';
+    if (!_.isEmpty(focusOnFromURL) && !wasExpandedForURLParam) {
+        const testCaseName = focusOnFromURL.replace(/^(tc:)/, '');
+        setExpandedResult(testCaseName);
+        setWasExpandedForURLParam(true);
     }
     const stagesAndStates: StageNameStateNameStatesType[] =
         mkStagesAndStates(artifact);
@@ -225,12 +204,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         );
         for (const state of statesList) {
             /** testcase match. Can match multiple as is not unique */
-            const forceExpand: boolean = mustExpandResult(
-                state,
-                focusOn,
-                expandedResult,
-                canExpand,
-            );
+            const forceExpand: boolean = mustExpandState(state, expandedResult);
             const key = mkStateKey(state);
             const ref = forceExpand ? focusedRef : undefined;
             resultRows.push(

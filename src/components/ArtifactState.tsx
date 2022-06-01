@@ -37,6 +37,7 @@ import {
     isGreenwaveKaiState,
     isGreenwaveState,
     isKaiState,
+    getTestcaseName,
 } from '../utils/artifactUtils';
 import { StateType, Artifact, StateExtendedNameType } from '../artifact';
 import { ArtifactKaiState, ArtifactKaiStateProps } from './ArtifactKaiState';
@@ -82,8 +83,8 @@ interface StateLinkProps {
 export const StateLink: React.FC<StateLinkProps> = (props) => {
     const { state, artifactDashboardUrl } = props;
     let href: string;
-    if (isGreenwaveState(state)) {
-        const { testcase } = state;
+    if (isGreenwaveState(state) || isGreenwaveKaiState(state)) {
+        const testcase = getTestcaseName(state);
         href = `${artifactDashboardUrl}?focus=tc:${testcase}`;
     } else if (isKaiState(state)) {
         const { broker_msg_body } = state;
@@ -124,7 +125,7 @@ export const mkLabel = (
                     variant="filled"
                     isTruncated
                 >
-                    <LinkifyNewTab>{value}</LinkifyNewTab>
+                    <LinkifyNewTab>{value.toString()}</LinkifyNewTab>
                 </Label>
             </DescriptionListDescription>
         </DescriptionListGroup>

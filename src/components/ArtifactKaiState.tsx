@@ -340,13 +340,13 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
     const { broker_msg_body, kai_state } = state;
     /*
      * Expand a specific testcase according to query string and scroll to it
-     * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
+     * ?focus=tc:<test-case-name>
      */
     const onToggle = () => {
         if (forceExpand) {
             setExpandedResult('');
         } else {
-            const key = kai_state.msg_id || kai_state.test_case_name;
+            const key = kai_state.test_case_name;
             setExpandedResult(key);
         }
     };
