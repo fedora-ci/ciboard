@@ -42,6 +42,7 @@ import { RootStateType } from '../reducers';
 import { popAlert, setQueryString } from '../actions';
 import { IStateAlerts } from '../actions/types';
 import { DashboardPageHeader } from './PageHeader';
+import { useEffect } from 'react';
 
 type PageCommonProps = React.PropsWithChildren<React.ReactNode> & {
     title?: string;
@@ -81,9 +82,17 @@ export function PageCommon(props: PageCommonProps) {
     const queryString = qs.parse(location.search, {
         ignoreQueryPrefix: true,
     });
-    dispatch(setQueryString(queryString));
+    useEffect(() => {
+        /*
+         * This code is side-effect. There-fore must be called in useEffect. Otherwise will be thrown:
+         * Cannot update a component (`ArtifactStatesList`) while rendering a different component (`PageCommon`).
+         * To locate the bad setState() call inside `PageCommon`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+         */
+        dispatch(setQueryString(queryString));
+    }, [queryString]);
 
-    useTitle(props.title || config.defaultTitle);
+    const title = props.title || config.defaultTitle;
+    useTitle(title);
 
     const pageId = 'main-content-page-layout-horizontal-nav';
     let to_render: JSX.Element;

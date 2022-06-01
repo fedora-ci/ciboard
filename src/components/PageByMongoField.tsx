@@ -20,7 +20,7 @@
 
 import _ from 'lodash';
 import { useParams } from 'react-router-dom';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import {
     IRow,
@@ -137,9 +137,6 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
     if (haveData) {
         artifacts = data.artifacts.artifacts;
         hasNext = data.artifacts.has_next;
-        if (onArtifactsLoaded) {
-            onArtifactsLoaded(artifacts);
-        }
         const aid_at_bottom = _.last(artifacts)?.aid;
         if (!_.includes(known_pages, aid_at_bottom) && aid_at_bottom) {
             known_pages.splice(
@@ -153,6 +150,17 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
             );
         }
     }
+    useEffect(() => {
+        /*
+         * This is side-effect, and this code must stay in useEffect
+         * Otherwise Error will be thrown:
+         * Warning: Cannot update a component (`PageByMongoField`) while rendering a different component (`ArtifactsTable`).
+         * To locate the bad setState() call inside `ArtifactsTable`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+         */
+        if (onArtifactsLoaded && !_.isEmpty(artifacts)) {
+            onArtifactsLoaded(artifacts);
+        }
+    }, [artifacts]);
     if (known_pages.length && _.size(artifacts)) {
         const aidAtBottom = _.last(artifacts)?.aid;
         currentPage = 1 + _.findIndex(known_pages, (x) => x === aidAtBottom);
