@@ -110,7 +110,7 @@ const HeaderToolbar = () => {
     const [isDropdownOpen, setDropDownOpen] = useState(false);
     useEffect(() => {
         dispatch(fetchUser());
-    }, []);
+    }, [dispatch]);
     const onDropdownToggle: OnDropdownToggleType = (
         isDropdownOpen: boolean,
     ) => {

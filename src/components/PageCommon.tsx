@@ -89,7 +89,7 @@ export function PageCommon(props: PageCommonProps) {
          * To locate the bad setState() call inside `PageCommon`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
          */
         dispatch(setQueryString(queryString));
-    }, [queryString]);
+    }, [dispatch, queryString]);
 
     const title = props.title || config.defaultTitle;
     useTitle(title);

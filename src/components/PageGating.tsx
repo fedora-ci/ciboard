@@ -204,7 +204,6 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
                 continue;
             }
             let ciSystemName: string = getTestcaseName(kaiState);
-            let result = '';
             const re = new RegExp(searchParams.ciSystem, 'gi');
             if (searchParams.ciSystem && !ciSystemName.match(re)) {
                 continue;
@@ -212,13 +211,13 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
             ciSystemsNames.push({
                 ciSystemName,
                 generatedAt: _.toString(kaiState.broker_msg_body.generated_at),
-                result,
+                result: '',
                 state,
             });
         }
     }
     _.forEach(ciSystemsNames, (ciSystem) => {
-        const { state, result } = ciSystem;
+        const { state } = ciSystem;
         let isPassed = false;
         let isInfo = false;
         let isFailed = false;
@@ -756,7 +755,7 @@ function GatingResults() {
             /** reset pages */
             setAidOffset(undefined);
         }
-    }, [reduxState.searchEpoch]);
+    }, [knownPages, reduxState, searchParams.searchEpoch]);
     /**
      * has_next -- returned by query from backend
      */

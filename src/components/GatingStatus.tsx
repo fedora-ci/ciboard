@@ -31,12 +31,7 @@ import {
 
 import { isGatingArtifact, resultColor } from '../utils/artifactUtils';
 import { renderStatusIcon } from '../utils/artifactUtils';
-import {
-    Artifact,
-    GreenwaveDecisionReplyType,
-    isArtifactMBS,
-    isArtifactRPM,
-} from '../artifact';
+import { Artifact, GreenwaveDecisionReplyType } from '../artifact';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
