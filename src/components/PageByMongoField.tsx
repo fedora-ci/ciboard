@@ -20,7 +20,13 @@
 
 import _ from 'lodash';
 import { useParams } from 'react-router-dom';
-import React, { useState, useRef, useEffect } from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { useQuery } from '@apollo/client';
 import {
     IRow,
@@ -70,7 +76,12 @@ interface ArtifactsTableProps {
 const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
     const { artifactType, fieldName, fieldValues, onArtifactsLoaded } = props;
     const scrollRef = useRef<HTMLTableRowElement>(null);
-    let artifacts: Artifact[] = [];
+    /*
+     * List of matching artifacts from the database. Note that we have to use
+     * the `useMemo()` hook here so that the assignment doesn't trigger the
+     * `useEffect()` callback further down below on every render.
+     */
+    let artifacts = useMemo<Artifact[]>(() => [], []);
     // Pagination vars
     const aid_offset_pages = useRef<string[]>([]);
     // Array of sorted 'aid' from the bottom of each known page
@@ -161,7 +172,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
         if (onArtifactsLoaded && !_.isEmpty(artifacts)) {
             onArtifactsLoaded(artifacts);
         }
-    }, [artifacts]);
+    }, [artifacts, onArtifactsLoaded]);
     if (known_pages.length && _.size(artifacts)) {
         const aidAtBottom = _.last(artifacts)?.aid;
         currentPage = 1 + _.findIndex(known_pages, (x) => x === aidAtBottom);
@@ -278,8 +289,11 @@ export function PageByMongoField() {
      * XXX: We only handle the single-artifact case for now.
      * TODO: Support multiple artifacts per page. Perhaps only display info for
      * the currently expanded row?
+     *
+     * Note the empty dependencies array to `useCallback()` ensures that the function
+     * is created once and never changes.
      */
-    const onArtifactsLoaded = (artifacts: Artifact[]) => {
+    const onArtifactsLoaded = useCallback((artifacts: Artifact[]) => {
         // A generic title for the general case.
         let title = `Artifact search results | ${config.defaultTitle}`;
         if (artifacts.length === 1) {
@@ -293,7 +307,7 @@ export function PageByMongoField() {
             }
         }
         setPageTitle(title);
-    };
+    }, []);
 
     // From url
     const params = useParams<MongoFieldsParams>();

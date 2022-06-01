@@ -22,7 +22,6 @@ import * as React from 'react';
 import _ from 'lodash';
 import qs from 'qs';
 import { useSelector } from 'react-redux';
-import { useQuery } from '@apollo/client';
 import { useState, useRef, useEffect } from 'react';
 import {
     Alert,
@@ -33,7 +32,6 @@ import {
     DataListItemRow,
     Flex,
     FlexItem,
-    Spinner,
     Text,
     TextContent,
     TextVariants,
@@ -47,7 +45,6 @@ import {
 } from '../artifact';
 import {
     getTestcaseName,
-    getThreadID,
     isGreenwaveState,
     isKaiState,
 } from '../utils/artifactUtils';
