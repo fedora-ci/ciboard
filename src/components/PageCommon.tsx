@@ -115,7 +115,7 @@ export function PageCommon(props: PageCommonProps) {
                             >
                                 old one
                             </a>{' '}
-                            on June 1, 2022. For missing features or feedback
+                            on June 13, 2022. For missing features or feedback
                             please{' '}
                             <a
                                 href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12325047&issuetype=1&components=12339807&priority=3&labels=user_request&labels=osci-dashboard&customfield_12311140=OSCI-3089"
