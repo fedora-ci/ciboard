@@ -99,7 +99,7 @@ export const greenwave = {
 
 export const docs = {
     waiving:
-        'https://mojo.redhat.com/docs/DOC-1166445#jive_content_id_Waiving_via_CI_Dashboard',
+        'https://source.redhat.com/groups/public/factory-2/factory_20_wiki/waiving_test_failures_greenwave_waiverdb_and_resultsdb#jive_content_id_Waiving_via_CI_Dashboard',
 };
 
 export const waiverdb = {
