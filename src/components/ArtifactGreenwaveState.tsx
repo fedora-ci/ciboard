@@ -38,6 +38,8 @@ import {
     Flex,
     FlexItem,
     Label,
+    List,
+    ListItem,
     Text,
     TextContent,
 } from '@patternfly/react-core';
@@ -57,6 +59,7 @@ import {
     timestampForUser,
 } from '../utils/artifactUtils';
 import { Artifact, StateGreenwaveType } from '../artifact';
+import { isResultMissing } from '../utils/artifactUtils';
 import { ArtifactStateProps } from './ArtifactState';
 import {
     StateDetailsEntry,
@@ -66,6 +69,8 @@ import {
 } from './ArtifactState';
 import { createWaiver } from '../actions';
 import { KaiRerunButton } from './ArtifactKaiState';
+import { docs } from '../config';
+import { ExternalLink } from './ExternalLink';
 
 export interface PropsWithGreenwaveState {
     state: StateGreenwaveType;
@@ -301,6 +306,69 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     );
 };
 
+export const GreenwaveMissingHints: React.FC<{}> = (props) => (
+    <Alert isInline variant="info" title="Required gating test">
+        <TextContent className="pf-u-font-size-sm">
+            <Text component="p">
+                This required gating test has missing results. If this situation
+                persists for more then few minutes, it can mean the following:
+            </Text>
+            <List component="ol">
+                <ListItem>
+                    It s a manual testcase and it is waiting to be submitted via
+                    the{' '}
+                    <ExternalLink href={docs.manual_gating_workflow}>
+                        manual gating workflow
+                    </ExternalLink>
+                    .
+                </ListItem>
+                <ListItem>
+                    <p>
+                        Your <code>gating.yaml</code> file is misconfigured and
+                        gating is expecting a testcase that will never run for
+                        the artifact. Make sure all testcases are configured
+                        correctly in the <code>gating.yaml</code> file. For a
+                        list of possible testcases see the{' '}
+                        <ExternalLink href={docs.gating_tests_overview}>
+                            gating documentation.
+                        </ExternalLink>
+                    </p>
+                    <p>
+                        Note that some of the tests are configured globally,
+                        like
+                        <code>
+                            osci.brew-build.installability.functional
+                        </code>{' '}
+                        or
+                        <code>osci.brew-build.rpmdeplint.functional</code>.
+                        Missing tests for these are expected for older builds.
+                    </p>
+                </ListItem>
+                <ListItem>
+                    If this is <code>leapp.brew-build.upgrade.distro</code>{' '}
+                    test, it might depend on an unfinished dependent test{' '}
+                    <code>osci.brew-build.test-compose.integration</code>.
+                </ListItem>
+                <ListItem>
+                    There is an outage or significant load affecting CI systems
+                    or Gating.
+                </ListItem>
+                <ListItem>
+                    There is some other problem. Contact the OSCI team for help
+                    – <code>#osci</code> on IRC or email at{' '}
+                    <code>osci-list@redhat.com</code>.
+                </ListItem>
+                <ListItem>
+                    If this cannot wait,{' '}
+                    <ExternalLink href={docs.waiving}>
+                        waive the missing test via CLI.
+                    </ExternalLink>
+                </ListItem>
+            </List>
+        </TextContent>
+    </Alert>
+);
+
 export type ArtifactGreenwaveStateProps = ArtifactStateProps &
     PropsWithGreenwaveState;
 
@@ -364,6 +432,7 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
                 {forceExpand && (
                     <>
                         <GreenwaveWaiver state={state} />
+                        {isResultMissing(state) && <GreenwaveMissingHints />}
                         <GreenwaveResultInfo state={state} />
                         <GreenwaveResultData state={state} />
                     </>

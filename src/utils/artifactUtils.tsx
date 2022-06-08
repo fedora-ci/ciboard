@@ -561,7 +561,23 @@ export const mkLinkKojiWebTagId = (
  * @param state The state object of the test result in question.
  */
 export const isResultWaivable = (state: StateGreenwaveType): boolean =>
-    !['INFO', 'NOT_APPLICABLE', 'PASSED'].includes(state.result?.outcome || '');
+    !_.includes(['INFO', 'NOT_APPLICABLE', 'PASSED'], state.result?.outcome);
+
+/**
+ * Check if the Greenwave state is missing the required test result.
+ * @param state The Greenwave state to check.
+ * @returns `true` if the required result is missing in Greenwave, `false` otherwise.
+ */
+export const isResultMissing = (state: StateGreenwaveType): boolean =>
+    _.includes(
+        [
+            'missing-gating-yaml',
+            'missing-gating-yaml-waived',
+            'test-result-missing',
+            'test-result-missing-waived',
+        ],
+        state.requirement?.type,
+    );
 
 export const timestampForUser = (
     timestamp: string,
