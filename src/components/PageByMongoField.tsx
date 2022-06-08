@@ -46,6 +46,7 @@ import {
     OnCollapseEventType,
 } from '../utils/artifactsTable';
 import { WaiveModal } from './WaiveForm';
+import styles from '../custom.module.css';
 
 interface ArtifactsTableProps {
     artifactType: string;
@@ -241,9 +242,9 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
     return (
         <>
             <Table
+                className={styles.artifactsTable}
                 header={<PaginationToolbar {...paginationProps} />}
                 variant={TableVariant.compact}
-                borders={false}
                 cells={columns}
                 rows={known_rows}
                 aria-label="table with results"
