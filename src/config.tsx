@@ -98,6 +98,10 @@ export const greenwave = {
 };
 
 export const docs = {
+    gating_tests_overview:
+        'https://docs.engineering.redhat.com/display/RHELPLAN/Available+tests+and+gating+overview',
+    manual_gating_workflow:
+        'https://docs.engineering.redhat.com/display/RHELPLAN/Manual+Gating+workflow',
     waiving:
         'https://source.redhat.com/groups/public/factory-2/factory_20_wiki/waiving_test_failures_greenwave_waiverdb_and_resultsdb#jive_content_id_Waiving_via_CI_Dashboard',
 };
