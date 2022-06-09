@@ -112,7 +112,11 @@ export function App() {
             <div className="pf-u-h-100vh">
                 <HashRouter>
                     <Switch>
-                        <Redirect exact from="/" to="/search" />
+                        <Route
+                            exact
+                            path="/"
+                            render={() => <Redirect to="/search" />}
+                        />
                         <Content />
                     </Switch>
                 </HashRouter>

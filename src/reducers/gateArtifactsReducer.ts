@@ -118,7 +118,7 @@ export function gateArtifactsReducer(
                 'ic',
                 encodeURIComponent(state.ignoreCiSystem),
             );
-            window.history.replaceState('', 'update search params', url.href);
+            window.history.pushState(null, 'update search params', url.href);
             return nstate;
         }
         case GATE_ARTIFACTS_SET_SEARCH_OPTIONS: {

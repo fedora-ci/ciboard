@@ -124,8 +124,7 @@ const SearchToolbar = () => {
         ) {
             console.log('Remove filters from URL');
             url.searchParams.delete('filters');
-            //window.history.pushState('', 'remove filter', url.href);
-            window.history.replaceState('', 'filter', url.href);
+            window.history.pushState(null, 'remove filter', url.href);
         }
     }, [filters, prevFiltersLen]);
     useEffect(() => {
@@ -279,7 +278,7 @@ const SearchToolbar = () => {
             }
             if (updateFilters) {
                 url.searchParams.set('filters', filtersParam);
-                window.history.replaceState('', 'filter', url.href);
+                window.history.pushState(null, 'filter', url.href);
             }
         }
     }
