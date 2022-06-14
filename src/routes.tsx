@@ -29,11 +29,11 @@ import { PageNewIssue } from './components/PageNewIssue';
 import { PageSST } from './components/PageSST';
 
 export interface MenuEntry {
+    element: JSX.Element;
     title: string;
     key: string;
-    to: string;
+    path: string;
     route?: string;
-    render: (props: any) => JSX.Element;
     /* show entry only if required AuthZ flag is true */
     reqAuthzFlag?: string;
 }
@@ -42,41 +42,40 @@ export const menuRoutes: MenuEntry[] = [
     {
         title: 'Search test results',
         key: 'artifact-search',
-        to: '/search',
-        render: (props) => <PageByFilters {...props} />,
+        path: '/search',
+        element: <PageByFilters />,
     },
     {
         title: 'Subsystems',
         key: 'subsystems',
-        to: '/sst',
-        route: '/sst/:section?/:release?',
-        render: (props) => <PageSST {...props} />,
+        path: '/sst',
+        route: '/sst/*',
+        element: <PageSST />,
     },
     {
         title: 'Gating tests',
         key: 'gatingtests',
-        to: '/gating',
-        route: '/gating',
-        render: (props) => <PageGating {...props} />,
+        path: '/gating',
+        element: <PageGating />,
     },
     {
         title: 'Report issue',
         key: 'issue',
-        to: '/newissue',
-        render: (props) => <PageNewIssue {...props} />,
+        path: '/newissue',
+        element: <PageNewIssue />,
     },
     {
         title: 'Metadata',
         key: 'metadata',
-        to: '/metadata',
-        render: (props) => <PageMetadataList {...props} />,
+        path: '/metadata',
+        element: <PageMetadataList />,
         reqAuthzFlag: 'can_edit_metadata',
     },
     {
         title: 'Help',
         key: 'help',
-        to: '/help',
-        render: (props) => <PageHelp {...props} />,
+        path: '/help',
+        element: <PageHelp />,
     },
 ];
 
@@ -84,13 +83,13 @@ export const otherRoutes: MenuEntry[] = [
     {
         title: '',
         key: 'artifact',
-        to: '/artifact/:type/:search/:value',
-        render: (props) => <PageByMongoField {...props} />,
+        path: '/artifact/:type/:search/:value',
+        element: <PageByMongoField />,
     },
     {
         title: '',
         key: 'metadata-edit',
-        to: '/metadata/edit/:id?/:clone?',
-        render: (props) => <PageMetadataEdit {...props} />,
+        path: '/metadata/edit/:id?/:clone?',
+        element: <PageMetadataEdit />,
     },
 ];

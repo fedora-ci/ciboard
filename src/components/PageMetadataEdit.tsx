@@ -32,7 +32,7 @@ import {
 } from 'react';
 import validator from 'validator';
 import update from 'immutability-helper';
-import { Link, useHistory, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useLazyQuery } from '@apollo/client';
 import {
     Form,
@@ -1296,11 +1296,13 @@ interface MetadataRawResult {
     metadata_raw: MetadataRaw[];
 }
 
+type MetadataFormParams = 'clone' | 'id';
+
 export const MetadataForm: React.FunctionComponent = () => {
-    const { id, clone } = useParams<{ id?: string; clone?: string }>();
+    const { id, clone } = useParams<MetadataFormParams>();
     /* Note: `dispatch` won't change between re-renders */
     const [metadata, dispatch] = useReducer(metadataReducer, InitMetadata);
-    const history = useHistory();
+    const navigate = useNavigate();
 
     /* on page open */
     const [getMetadata, { loading: qLoading, error: qError, data: qData }] =
@@ -1388,7 +1390,7 @@ export const MetadataForm: React.FunctionComponent = () => {
     useEffect(() => {
         if (haveData) {
             /* data is saved, go back to the list */
-            history.push('/metadata');
+            navigate('/metadata');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [haveData]);

@@ -189,27 +189,24 @@ export const DashboardPageHeader = () => {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     /** Horizontal menu */
-    const menuElements = _(menuRoutes)
+    const menuElements = menuRoutes
+        .filter(
+            (item) =>
+                !item.reqAuthzFlag ||
+                _.get(authzData, `authz_mapping.${item.reqAuthzFlag}`, false),
+        )
         .map((item) => {
-            const show = item.reqAuthzFlag
-                ? _.get(authzData, `authz_mapping.${item.reqAuthzFlag}`, false)
-                : true;
-            if (!show) {
-                return null;
-            }
             return (
                 <NavItem
                     itemId={item.key}
                     key={item.key}
-                    to={`#${item.to}`}
-                    isActive={item.to === location.pathname}
+                    to={`#${item.path}`}
+                    isActive={item.path === location.pathname}
                 >
                     {item.title}
                 </NavItem>
             );
-        })
-        .compact()
-        .value();
+        });
     const PageNav = (
         <Nav
             className={styles['pageHeaderNav']}

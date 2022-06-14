@@ -19,7 +19,7 @@
  */
 
 import * as React from 'react';
-import { Route, Switch, Redirect, HashRouter } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import {
     HttpLink,
     ApolloLink,
@@ -91,34 +91,29 @@ const client = new ApolloClient({
      */
 });
 
-const Content = () => {
-    const level1 = menuRoutes
+export function App() {
+    const contentRoutes = menuRoutes
         .concat(otherRoutes)
-        .filter((item) => item.render)
+        .filter((item) => item.element)
         .map((item) => (
             <Route
-                exact
+                element={item.element}
                 key={item.key}
-                path={item.route || item.to}
-                render={item.render}
+                path={item.route || item.path}
             />
         ));
-    return <>{level1}</>;
-};
 
-export function App() {
     return (
         <ApolloProvider client={client}>
             <div className="pf-u-h-100vh">
                 <HashRouter>
-                    <Switch>
+                    <Routes>
                         <Route
-                            exact
                             path="/"
-                            render={() => <Redirect to="/search" />}
+                            element={<Navigate replace to="/search" />}
                         />
-                        <Content />
-                    </Switch>
+                        {contentRoutes}
+                    </Routes>
                 </HashRouter>
             </div>
         </ApolloProvider>
