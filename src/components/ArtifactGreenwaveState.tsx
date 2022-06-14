@@ -93,11 +93,12 @@ export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     return (
         <Button
             className={resultClasses}
+            icon={<OutlinedThumbsUpIcon />}
             isSmall
             onClick={onClick}
             variant="control"
         >
-            <OutlinedThumbsUpIcon /> <span>waive</span>
+            waive
         </Button>
     );
 };
@@ -335,19 +336,16 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
                     </p>
                     <p>
                         Note that some of the tests are configured globally,
-                        like
-                        <code>
-                            osci.brew-build.installability.functional
-                        </code>{' '}
-                        or
-                        <code>osci.brew-build.rpmdeplint.functional</code>.
+                        like{' '}
+                        <code>osci.brew-build.installability.functional</code>{' '}
+                        or <code>osci.brew-build.rpmdeplint.functional</code>.
                         Missing tests for these are expected for older builds.
                     </p>
                 </ListItem>
                 <ListItem>
                     If this is <code>leapp.brew-build.upgrade.distro</code>{' '}
                     test, it might depend on an unfinished dependent test{' '}
-                    <code>osci.brew-build.test-compose.integration</code>.
+                    <code>osci.brew-build.compose-ci.integration</code>.
                 </ListItem>
                 <ListItem>
                     There is an outage or significant load affecting CI systems
