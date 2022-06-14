@@ -115,6 +115,7 @@ export const KaiRerunButton: React.FC<KaiRerunButtonProps> = (props) => {
             className={styles.actionButton}
             component="a"
             href={rerunUrl}
+            icon={<RedoIcon />}
             isSmall
             onClick={(e) => {
                 e.stopPropagation();
@@ -124,7 +125,7 @@ export const KaiRerunButton: React.FC<KaiRerunButtonProps> = (props) => {
             title="Rerun testing. Note login to the linked system might be required."
             variant="control"
         >
-            <RedoIcon style={{ height: '0.8em' }} /> <span>rerun</span>
+            rerun
         </Button>
     );
 };
