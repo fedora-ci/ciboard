@@ -38,6 +38,7 @@ import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     Artifact,
     ArtifactType,
+    GreenwaveResultType,
     isArtifactMBS,
     isArtifactRPM,
     KaiStateType,
@@ -211,6 +212,34 @@ export const artifactUrl = (artifact: Artifact) => {
     };
     return urlMap[artifact.type];
 };
+
+/**
+ * Extract testcase documentation URL from a UMB message.
+ * @param brokerMessage UMB message from CI system.
+ * @returns URL to documentation as provided by the CI system or `undefined`.
+ */
+export function getUmbDocsUrl(
+    brokerMessage: BrokerMessagesType,
+): string | undefined {
+    if (MSG_V_0_1.isMsg(brokerMessage)) {
+        if (MSG_V_0_1.resultHasDocs(brokerMessage)) {
+            return brokerMessage.docs;
+        }
+        return brokerMessage.ci.docs;
+    }
+    if (MSG_V_1.isMsg(brokerMessage)) {
+        return brokerMessage.test.docs;
+    }
+    return;
+}
+
+/**
+ * Extract testcase documentation URL from Greenwave server response.
+ * @param state Gating state response from Greenwave.
+ * @returns URL to documentation as provided by the CI system or `undefined`.
+ */
+export const getGreenwaveDocsUrl = (state: StateGreenwaveType) =>
+    state.result?.testcase.ref_url;
 
 export const resultColors = {
     '--pf-global--success-color--100': [

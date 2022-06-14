@@ -338,6 +338,12 @@ export namespace MSG_V_0_1 {
     export function isMsg(msg: BrokerMessagesType): msg is MessagesType {
         return msg.version.startsWith('0.1.');
     }
+
+    export function resultHasDocs(
+        msg: BrokerMessagesType,
+    ): msg is MsgRPMBuildTestComplete | MsgRPMBuildTestError {
+        return _.has(msg, 'docs');
+    }
 }
 
 export type BrokerMessagesType = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;

@@ -57,6 +57,7 @@ import {
     isResultWaivable,
     renderStatusIcon,
     timestampForUser,
+    getGreenwaveDocsUrl,
 } from '../utils/artifactUtils';
 import { Artifact, StateGreenwaveType } from '../artifact';
 import { isResultMissing } from '../utils/artifactUtils';
@@ -68,7 +69,7 @@ import {
     mkPairs,
 } from './ArtifactState';
 import { createWaiver } from '../actions';
-import { KaiRerunButton } from './ArtifactKaiState';
+import { KaiDocsButton, KaiRerunButton } from './ArtifactKaiState';
 import { docs } from '../config';
 import { ExternalLink } from './ExternalLink';
 
@@ -111,10 +112,11 @@ export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
     props,
 ) => {
     const { artifact, state } = props;
+    const docsUrl = getGreenwaveDocsUrl(state);
     const rerunUrl = _.first(state.result?.data.rebuild);
     const showWaiveButton = isResultWaivable(state);
     return (
-        <Flex style={{ minWidth: '15em' }}>
+        <Flex style={{ minWidth: '20em' }}>
             <Flex flex={{ default: 'flex_1' }}>
                 {showWaiveButton && (
                     <WaiveButton artifact={artifact} state={state} />
@@ -122,6 +124,9 @@ export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <KaiRerunButton rerunUrl={rerunUrl} />
+            </Flex>
+            <Flex flex={{ default: 'flex_1' }}>
+                <KaiDocsButton docsUrl={docsUrl} />
             </Flex>
         </Flex>
     );

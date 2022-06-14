@@ -79,9 +79,9 @@
 }
 
 /* https://www.w3schools.com/cssref/css_selectors.asp */
-.actionButton:global(.pf-c-button.pf-m-control) {
-    padding-top: 0px;
-    padding-bottom: 0px;
+.actionButton:global(.pf-c-button) {
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .pageHeaderNav {
