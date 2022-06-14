@@ -38,7 +38,11 @@ import { RegisteredIcon, WeeblyIcon } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
 import { Artifact, StateGreenwaveKaiType } from '../artifact';
-import { isResultWaivable, renderStatusIcon } from '../utils/artifactUtils';
+import {
+    getUmbDocsUrl,
+    isResultWaivable,
+    renderStatusIcon,
+} from '../utils/artifactUtils';
 import { ArtifactStateProps, StateLink } from './ArtifactState';
 import {
     GreenwaveResultInfo,
@@ -47,6 +51,7 @@ import {
 } from './ArtifactGreenwaveState';
 import {
     KaiDetailedResults,
+    KaiDocsButton,
     KaiRerunButton,
     KaiStateMapping,
     ResultNote,
@@ -61,10 +66,11 @@ export const GreenwaveKaiStateActions: React.FC<
     GreenwaveKaiStateActionsProps
 > = (props) => {
     const { state, artifact } = props;
+    const docsUrl = getUmbDocsUrl(state.ks.broker_msg_body);
     const rerunUrl = state.ks.broker_msg_body.run.rebuild;
     const showWaiveButton = isResultWaivable(state.gs);
     return (
-        <Flex style={{ minWidth: '15em' }}>
+        <Flex style={{ minWidth: '20em' }}>
             <Flex flex={{ default: 'flex_1' }}>
                 {showWaiveButton && (
                     <WaiveButton artifact={artifact} state={state.gs} />
@@ -72,6 +78,9 @@ export const GreenwaveKaiStateActions: React.FC<
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <KaiRerunButton rerunUrl={rerunUrl} />
+            </Flex>
+            <Flex flex={{ default: 'flex_1' }}>
+                <KaiDocsButton docsUrl={docsUrl} />
             </Flex>
         </Flex>
     );

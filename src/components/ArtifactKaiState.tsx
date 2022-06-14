@@ -36,13 +36,13 @@ import {
     Text,
     TextContent,
 } from '@patternfly/react-core';
-
-import { RedoIcon } from '@patternfly/react-icons';
+import { BookIcon, RedoIcon } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
 import { mappingDatagrepperUrl } from '../config';
 import { TestSuites } from './TestSuites';
 import {
+    getUmbDocsUrl,
     getTestcaseName,
     getThreadID,
     LinkifyNewTab,
@@ -101,6 +101,30 @@ export const KaiDetailedResults: React.FC<KaiDetailedResultsProps> = (
         </StateDetailsEntry>
     );
     return render;
+};
+
+export interface KaiDocsButtonProps {
+    docsUrl?: string;
+}
+
+export const KaiDocsButton: React.FC<KaiDocsButtonProps> = (props) => {
+    const { docsUrl } = props;
+    if (_.isEmpty(docsUrl)) return null;
+    return (
+        <Button
+            className={styles.actionButton}
+            component="a"
+            href={docsUrl}
+            icon={<BookIcon />}
+            isSmall
+            rel="noopener noreferrer"
+            target="_blank"
+            title="Documentation for this test provided by the CI system."
+            variant="secondary"
+        >
+            docs
+        </Button>
+    );
 };
 
 export interface KaiRerunButtonProps {
@@ -267,13 +291,16 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
 
 export const KaiStateActions: React.FC<PropsWithKaiState> = (props) => {
     const { broker_msg_body } = props.state;
+    const docsUrl = getUmbDocsUrl(broker_msg_body);
     const rerunUrl = broker_msg_body.run.rebuild;
-    if (_.isEmpty(rerunUrl)) return null;
     return (
-        <Flex style={{ minWidth: '15em' }}>
+        <Flex style={{ minWidth: '20em' }}>
             <Flex flex={{ default: 'flex_1' }}></Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <KaiRerunButton rerunUrl={rerunUrl} />
+            </Flex>
+            <Flex flex={{ default: 'flex_1' }}>
+                <KaiDocsButton docsUrl={docsUrl} />
             </Flex>
         </Flex>
     );
