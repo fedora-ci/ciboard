@@ -22,7 +22,7 @@
 import _ from 'lodash';
 import * as React from 'react';
 import { useQuery } from '@apollo/client';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useParams } from 'react-router-dom';
 import {
     Nav,
     Text,
@@ -52,10 +52,7 @@ interface PageHeaderProps {
     sstList: SSTItem[];
 }
 
-interface PageSSTParams {
-    release?: string;
-    section?: string;
-}
+type PageSSTParams = 'release' | 'section';
 
 function PageHeader({ release, results, section, sstList }: PageHeaderProps) {
     const currentSst = _.find(sstList, (sst) => sst.name === section);
@@ -150,12 +147,19 @@ function PageHeader({ release, results, section, sstList }: PageHeaderProps) {
     );
 }
 
-export function PageSST() {
+function PageSSTInternal() {
     // Parameters from the URL -- /ssr/:section/:release
     const { release, section } = useParams<PageSSTParams>();
     // We don't try to load SST test results until both the section name
     // and release is specified.
     const skipResultsQuery = !release || !section;
+
+    /*
+     * This components assumes the following routes:
+     *   - /                   →  empty page, allow to pick SST
+     *   - /:section           →  selected SST, pick release
+     *   - /:section/:release  →  show results table for given SST and release
+     */
 
     const listQuery = useQuery(SSTListQuery);
     const resultsQuery = useQuery(SSTResultsQuery, {
@@ -236,5 +240,15 @@ export function PageSST() {
                 )}
             </PageSection>
         </PageCommon>
+    );
+}
+
+export function PageSST() {
+    return (
+        <Routes>
+            <Route path="/" element={<PageSSTInternal />} />
+            <Route path=":section" element={<PageSSTInternal />} />
+            <Route path=":section/:release" element={<PageSSTInternal />} />
+        </Routes>
     );
 }

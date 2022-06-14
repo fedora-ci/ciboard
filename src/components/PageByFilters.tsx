@@ -20,6 +20,7 @@
 
 import _ from 'lodash';
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Flex,
     Button,
@@ -80,6 +81,7 @@ function usePrevious(value: number) {
 const SearchToolbar = () => {
     const dispatch = useAppDispatch();
     const filters = useAppSelector((state) => state.filters);
+    const navigate = useNavigate();
     const [inputValue, setInputValue] = useState('');
     const [statusIsExpanded, setIsExpanded] = useState(false);
     const menu_default_entry = _.toPairs(menuTypes)[0][0];
@@ -113,17 +115,17 @@ const SearchToolbar = () => {
     };
     const prevFiltersLen = usePrevious(_.size(filters.active));
     useEffect(() => {
-        const url = new URL(window.location.href);
+        const searchParams = new URLSearchParams(window.location.search);
         if (
             _.isEmpty(filters.active) &&
-            url.searchParams.has('filters') &&
+            searchParams.has('filters') &&
             prevFiltersLen > 0
         ) {
             console.log('Remove filters from URL');
-            url.searchParams.delete('filters');
-            window.history.pushState(null, 'remove filter', url.href);
+            searchParams.delete('filters');
+            navigate('?' + searchParams.toString());
         }
-    }, [filters, prevFiltersLen]);
+    }, [filters, navigate, prevFiltersLen]);
     useEffect(() => {
         /** Check if there are filters. */
         const url = new URL(window.location.href);
@@ -254,8 +256,8 @@ const SearchToolbar = () => {
         </Flex>
     );
 
-    const url = new URL(window.location.href);
-    const filtersEncoded = url.searchParams.get('filters');
+    const searchParams = new URLSearchParams(window.location.search);
+    const filtersEncoded = searchParams.get('filters');
     if (!_.isEmpty(filters.active)) {
         let urlFilters = {};
         if (filtersEncoded) {
@@ -272,8 +274,8 @@ const SearchToolbar = () => {
                 console.log('Cannot set filters %o', filters);
             }
             if (updateFilters) {
-                url.searchParams.set('filters', filtersParam);
-                window.history.pushState(null, 'filter', url.href);
+                searchParams.set('filters', filtersParam);
+                navigate('?' + searchParams.toString());
             }
         }
     }

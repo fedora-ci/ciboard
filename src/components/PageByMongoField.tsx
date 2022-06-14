@@ -274,11 +274,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
     );
 };
 
-interface MongoFieldsParams {
-    type: string;
-    search: string;
-    value: string;
-}
+type MongoFieldsParams = 'search' | 'type' | 'value';
 
 export function PageByMongoField() {
     const [pageTitle, setPageTitle] = useState<string | undefined>();
@@ -312,14 +308,14 @@ export function PageByMongoField() {
 
     // From url
     const params = useParams<MongoFieldsParams>();
-    const fieldValues = params.value.split(',');
+    const fieldValues = params.value?.split(',');
 
     return (
         <PageCommon title={pageTitle}>
             <ArtifactsTable
-                artifactType={params.type}
-                fieldName={params.search}
-                fieldValues={fieldValues}
+                artifactType={params.type || ''}
+                fieldName={params.search || ''}
+                fieldValues={fieldValues || []}
                 onArtifactsLoaded={onArtifactsLoaded}
             />
             <ToastAlertGroup />
