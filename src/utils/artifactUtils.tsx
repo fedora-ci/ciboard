@@ -38,7 +38,6 @@ import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     Artifact,
     ArtifactType,
-    GreenwaveResultType,
     isArtifactMBS,
     isArtifactRPM,
     KaiStateType,

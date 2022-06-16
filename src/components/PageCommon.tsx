@@ -24,16 +24,13 @@ import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import {
+    Alert,
+    AlertActionCloseButton,
+    AlertGroup,
+    AlertVariant,
     Page,
     PageSection,
     PageSectionVariants,
-    Alert,
-    AlertGroup,
-    AlertVariant,
-    AlertActionCloseButton,
-    Flex,
-    FlexItem,
-    Banner,
 } from '@patternfly/react-core';
 
 import { config } from '../config';
@@ -98,10 +95,7 @@ export function PageCommon(props: PageCommonProps) {
     let to_render: JSX.Element;
     if (queryString.embedded !== 'true') {
         to_render = (
-            <Page
-                header={<DashboardPageHeader />}
-                mainContainerId={pageId}
-            >
+            <Page header={<DashboardPageHeader />} mainContainerId={pageId}>
                 <PageSection
                     variant={PageSectionVariants.default}
                     isFilled

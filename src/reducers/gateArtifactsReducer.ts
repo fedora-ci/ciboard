@@ -19,7 +19,8 @@
  */
 
 import _ from 'lodash';
-import update from 'react-addons-update';
+import update from 'immutability-helper';
+
 import {
     GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
     GATE_ARTIFACTS_SET_SEARCH_OPTIONS,

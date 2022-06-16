@@ -19,14 +19,15 @@
  */
 
 import _ from 'lodash';
+import update from 'immutability-helper';
+
 import {
+    ActionsWaiverType,
     IStateWaiver,
     WAIVER_CREATE,
-    WAIVER_RESULT,
-    ActionsWaiverType,
     WAIVER_RESET_REPLY,
+    WAIVER_RESULT,
 } from '../actions/types';
-import update from 'react-addons-update';
 
 /**
  * State - is the result to waive

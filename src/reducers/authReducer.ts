@@ -19,8 +19,9 @@
  */
 
 import _ from 'lodash';
+import update from 'immutability-helper';
+
 import { ActionAuthFetchUser, FETCH_USER, IStateAuth } from '../actions/types';
-import update from 'react-addons-update';
 
 const INITIAL_STATE: IStateAuth = {
     displayName: '',
