@@ -98,54 +98,18 @@ export function PageCommon(props: PageCommonProps) {
     let to_render: JSX.Element;
     if (queryString.embedded !== 'true') {
         to_render = (
-            <>
-                <Flex
-                    direction={{ default: 'column' }}
-                    flexWrap={{ default: 'nowrap' }}
-                    spaceItems={{ default: 'spaceItemsNone' }}
-                    style={{ height: '100%' }}
+            <Page
+                header={<DashboardPageHeader />}
+                mainContainerId={pageId}
+            >
+                <PageSection
+                    variant={PageSectionVariants.default}
+                    isFilled
+                    hasOverflowScroll
                 >
-                    <FlexItem>
-                        <Banner isSticky variant="warning">
-                            This dashboard will replace the{' '}
-                            <a
-                                href="https://dashboard.osci.redhat.com"
-                                rel="noopener noreferrer"
-                                target="_blank"
-                            >
-                                old one
-                            </a>{' '}
-                            on June 27, 2022. For missing features or feedback
-                            please{' '}
-                            <a
-                                href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12325047&issuetype=1&components=12339807&priority=3&labels=user_request&labels=osci-dashboard&customfield_12311140=OSCI-3089"
-                                rel="noopener noreferrer"
-                                target="_blank"
-                            >
-                                file a Jira ticket
-                            </a>
-                            .
-                        </Banner>
-                    </FlexItem>
-                    <FlexItem
-                        grow={{ default: 'grow' }}
-                        style={{ minHeight: 0 }}
-                    >
-                        <Page
-                            header={<DashboardPageHeader />}
-                            mainContainerId={pageId}
-                        >
-                            <PageSection
-                                variant={PageSectionVariants.default}
-                                isFilled
-                                hasOverflowScroll
-                            >
-                                {props.children}
-                            </PageSection>
-                        </Page>
-                    </FlexItem>
-                </Flex>
-            </>
+                    {props.children}
+                </PageSection>
+            </Page>
         );
     } else {
         to_render = <>{props.children}</>;
