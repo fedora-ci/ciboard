@@ -42,9 +42,10 @@ import styles from '../custom.module.css';
 import { mappingDatagrepperUrl } from '../config';
 import { TestSuites } from './TestSuites';
 import {
-    getUmbDocsUrl,
+    getKaiExtendedStatus,
     getTestcaseName,
     getThreadID,
+    getUmbDocsUrl,
     LinkifyNewTab,
     renderStatusIcon,
 } from '../utils/artifactUtils';
@@ -329,11 +330,11 @@ interface FaceForKaiStateProps extends PropsWithKaiState {
 
 const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
     const { artifactDashboardUrl, state } = props;
-    const { kai_state } = state;
-    const element = (
+    let result = getKaiExtendedStatus(state);
+    return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <Flex>{renderStatusIcon(kai_state.state)}</Flex>
+                <Flex>{renderStatusIcon(result)}</Flex>
                 <Flex flexWrap={{ default: 'nowrap' }}>
                     <StageName state={state} />
                 </Flex>
@@ -351,7 +352,6 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
             </Flex>
         </Flex>
     );
-    return element;
 };
 
 export type ArtifactKaiStateProps = ArtifactStateProps & PropsWithKaiState;

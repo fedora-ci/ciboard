@@ -42,6 +42,7 @@ import {
     isArtifactRPM,
     KaiStateType,
     KojiInstanceType,
+    StateExtendedKaiNameType,
     StateGreenwaveKaiType,
     StateGreenwaveType,
     StateKaiType,
@@ -638,3 +639,16 @@ export const LinkifyNewTab = (props: LinkifyNewTabProps) => (
         {props.children}
     </Linkify>
 );
+
+export function getKaiExtendedStatus(
+    state: StateKaiType,
+): StateExtendedKaiNameType {
+    const msg = state.broker_msg_body;
+    if (MSG_V_0_1.isMsg(msg) && 'status' in msg) {
+        return msg.status;
+    }
+    if (MSG_V_1.isMsg(msg) && 'test' in msg && 'result' in msg.test) {
+        return msg.test.result;
+    }
+    return state.kai_state.state;
+}
