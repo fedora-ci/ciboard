@@ -38,6 +38,7 @@ import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     Artifact,
     ArtifactType,
+    GreenwaveRequirementTypesType,
     isArtifactMBS,
     isArtifactRPM,
     KaiStateType,
@@ -585,12 +586,24 @@ export const mkLinkKojiWebTagId = (
 };
 
 /**
+ * List of Greenwave requirement types that are considered as satisfied.
+ * See [Greenwave documentation](https://gating-greenwave.readthedocs.io/en/latest/decision_requirements.html)
+ * for details.
+ */
+const SATISFIED_REQUIREMENT_TYPES: GreenwaveRequirementTypesType[] = [
+    'blacklisted',
+    'excluded',
+    'fetched-gating-yaml',
+    'test-result-passed',
+];
+
+/**
  * Should we display a waive button for this result in the dashboard?
  * Show the button only if the test is blocking gating.
  * @param state The state object of the test result in question.
  */
 export const isResultWaivable = (state: StateGreenwaveType): boolean =>
-    !_.includes(['INFO', 'NOT_APPLICABLE', 'PASSED'], state.result?.outcome);
+    !_.includes(SATISFIED_REQUIREMENT_TYPES, state.requirement?.type);
 
 /**
  * Check if the Greenwave state is missing the required test result.
