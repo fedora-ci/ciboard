@@ -303,39 +303,28 @@ export const getThreadID = (args: {
 export const getTestcaseName = (state: StateType): string => {
     let testCaseName: string | undefined;
     if (isKaiState(state)) {
-        const { kai_state } = state;
+        const { broker_msg_body, kai_state } = state;
         if (kai_state?.test_case_name) {
             testCaseName = kai_state.test_case_name;
         }
-        const broker_msg_body: BrokerMessagesType = state.broker_msg_body;
         if (broker_msg_body && _.isEmpty(testCaseName)) {
             if (MSG_V_0_1.isMsg(broker_msg_body)) {
-                if (
-                    broker_msg_body.namespace &&
-                    broker_msg_body.type &&
-                    broker_msg_body.category
-                )
-                    testCaseName = `${broker_msg_body.namespace}.${broker_msg_body.type}.${broker_msg_body.category}`;
+                const { category, namespace, type } = broker_msg_body;
+                if (category && namespace && type)
+                    testCaseName = `${namespace}.${type}.${category}`;
             }
             if (MSG_V_1.isMsg(broker_msg_body)) {
-                if (
-                    broker_msg_body.test.namespace &&
-                    broker_msg_body.test.type &&
-                    broker_msg_body.test.category
-                )
-                    testCaseName = `${broker_msg_body.test.namespace}.${broker_msg_body.test.type}.${broker_msg_body.test.category}`;
+                const { category, namespace, type } = broker_msg_body.test;
+                if (category && namespace && type)
+                    testCaseName = `${namespace}.${type}.${category}`;
             }
         }
     }
-    if (isGreenwaveState(state)) {
-        if (state.testcase) {
-            testCaseName = state.testcase;
-        }
+    if (isGreenwaveState(state) && state.testcase) {
+        testCaseName = state.testcase;
     }
-    if (isGreenwaveKaiState(state)) {
-        if (state.gs.testcase) {
-            testCaseName = state.gs.testcase;
-        }
+    if (isGreenwaveKaiState(state) && state.gs.testcase) {
+        testCaseName = state.gs.testcase;
     }
     if (_.isUndefined(testCaseName)) {
         testCaseName = 'uknown testcase - please report an issue';

@@ -324,12 +324,12 @@ export type StateExtendedNameType =
     | StateExtendedKaiNameType
     | GreenwaveRequirementTypesType;
 
-export type StateGreenwaveKaiType = {
+export interface StateGreenwaveKaiType {
     /* kai state */
     ks: StateKaiType;
     /* greenwave state */
     gs: StateGreenwaveType;
-};
+}
 
 export type StateType =
     | StateKaiType
@@ -340,12 +340,12 @@ export type StatesByCategoryType = {
     [key in StateExtendedNameType]?: StateType[];
 };
 
-export type StateGreenwaveType = {
+export interface StateGreenwaveType {
     testcase: string;
     waiver?: GreenwaveWaiveType;
     result?: GreenwaveResultType;
     requirement?: GreenwaveRequirementType;
-};
+}
 
 export interface KaiStateType {
     stage: StageNameType;

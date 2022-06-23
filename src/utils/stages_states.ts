@@ -59,31 +59,58 @@ export const mkStagesAndStates = (
         stage: StageNameType;
         states: StatesByCategoryType;
     }> = [];
+    // Preprocess Kai results into a list of results sorted by stage and state.
     const kaiStagesStates = mkStagesKaiStates(artifact);
     stagesStates.push(...kaiStagesStates);
-    /* Greenwave always produces structured-reply, check if this reply makes any sense */
+    /*
+     * Greenwave always produces structured-reply, check if this reply makes any sense.
+     * TODO: Move this into a parsing and validation module.
+     */
     if (
         artifact.greenwave_decision &&
         _.isBoolean(artifact.greenwave_decision?.policies_satisfied)
     ) {
+        /*
+         * Preprocess Greenwave response into a list of results sorted by state.
+         * The stage is fixed to 'greenwave' for all of them.
+         */
         const greenwaveStageStates = mkGreenwaveStageStates(
             artifact.greenwave_decision,
         );
         stagesStates.push(greenwaveStageStates);
+    } else {
+        console.warn('Greenwave response seems invalid');
     }
+    /*
+     * Merge all the results into a list of triples with the structure
+     *   [stage, state, [result1, ..., resultN]]
+     */
     const stageStatesArray = mkStageStatesArray(stagesStates);
+    /*
+     * Merge Kai and Greenwave results corresponding to the same test into a single
+     * consolidated structure.
+     */
     mergeKaiAndGreenwaveState(stageStatesArray);
+    /*
+     * Remove superfluous items left over after the merge.
+     */
     minimizeStagesStates(stageStatesArray);
     return stageStatesArray;
 };
 
+/**
+ * Find all stage-state combinations in the given stage.
+ * @param stage The result stage to looks for.
+ * @param stagesStates Array of stage-state combinations to traverse.
+ * @returns All items from the `stagesStates` array that are in the stage `stage`.
+ */
 const filterByStageName = (
     stage: StageNameType,
-    stageStatesArray: StageNameStateNameStatesType[],
+    stagesStates: StageNameStateNameStatesType[],
 ) =>
     _.filter(
-        stageStatesArray,
-        _.flow(_.identity, _.nth, _.partialRight(_.isEqual, stage)),
+        stagesStates,
+        ([stageName, _stateName, _state]) => stageName === stage,
     );
 
 const getKaiState = (
@@ -355,6 +382,7 @@ const minimizeStagesStates = (
     stageStatesArray: StageNameStateNameStatesType[],
 ): void => {
     const greenwave = filterByStageName('greenwave', stageStatesArray);
+    // Consolidate all Greenwave and Greenwave+Kai results into a single array.
     const greenwaveTestNames: string[] = [];
     _.forEach(greenwave, ([_stageName, _stateName, states]) =>
         _.forEach(states, (state) => {
@@ -366,6 +394,7 @@ const minimizeStagesStates = (
             }
         }),
     );
+    // Remove Kai results that appear in the above array.
     const test = filterByStageName('test', stageStatesArray);
     _.forEach(test, ([_stageName, _stateName, states]) => {
         _.remove(states, (state) => {
@@ -376,6 +405,7 @@ const minimizeStagesStates = (
             return _.includes(greenwaveTestNames, testCaseName);
         });
     });
+    // Remove stage-state combinations that have no results in them afterwards.
     _.remove(stageStatesArray, ([_stageName, _stateName, states]) =>
         _.isEmpty(states),
     );
