@@ -188,11 +188,11 @@ const Help = () => (
             Dashboard can be integrated with Brew web interfaces and Errata Tool
             by using a{' '}
             <a href="https://gitlab.cee.redhat.com/greasemonkey/ci-dashboard-integration/raw/master/ci-dashboard-integration.user.js">
-                Greasmonkey/Tampermonkey script in your browser.
+                Greasemonkey/Tampermonkey script in your browser.
             </a>
         </p>
         <p>
-            To enable it, install Greasmonkey or Tempermonkey extensions to your
+            To enable it, install Greasemonkey or Tampermonkey extensions to your
             browser and enable the above script. Bellow are example pictures how
             does the integration look like.
         </p>
@@ -208,7 +208,7 @@ const Help = () => (
         />
         <h3>Integration with Errata Tool</h3>
         <p>
-            For any Erratum you should see CI Dashobard section on the summary
+            For any Erratum you should see CI Dashboard section on the summary
             page.
         </p>
         <img
@@ -237,23 +237,37 @@ const Help = () => (
             Dashboard is built using React.js, Patternfly and other JS goodies.
         </p>
         <p>
-            The project is currently developed on {"CEE's"} gitlab.
+            The project is currently developed on github.
             Contributions are always welcome.
         </p>
-        <p className="padding-left-20">
-            <a href="https://gitlab.cee.redhat.com/osci/ci-dashboard">
-                https://gitlab.cee.redhat.com/osci/ci-dashboard
-            </a>
-        </p>
-        <p>
-            {"Dashboard's"} backend - Kai - is developed separately. You can
-            find the code here:
-        </p>
-        <p className="padding-left-20">
-            <a href="https://gitlab.cee.redhat.com/baseos-qe/kai">
-                https://gitlab.cee.redhat.com/baseos-qe/kai
-            </a>
-        </p>
+        <table style={{ width: '45%' }}>
+            <tbody>
+                <tr>
+                    <td>Fontend:</td>
+                    <td>
+                        <a href="https://github.com/fedora-ci/ciboard/">
+                            https://github.com/fedora-ci/ciboard/
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Backend:</td>
+                    <td>
+                        <a href="https://github.com/fedora-ci/ciboard-server/">
+                            https://github.com/fedora-ci/ciboard-server/
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kai:</td>
+                    <td>
+                        <a href="https://github.com/fedora-ci/kaijs/">
+                            https://github.com/fedora-ci/kaijs/
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
         <h2>Contacts</h2>
         <p>IRC: #osci or #baseosci</p>
         <p>Mailing list: osci-list@redhat.com baseos-ci@redhat.com</p>
