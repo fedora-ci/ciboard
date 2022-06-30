@@ -30,7 +30,7 @@ const Help = () => (
             CI Dashboard displays details of testing events, which happened for
             the supported artifacts. As the source of information it uses the{' '}
         </Text>
-        <a href="https://docs.google.com/document/d/16L5odC-B4L6iwb9dp8Ry0Xk5Sc49h9KvTHrG86fdfQM">
+        <a href="https://pagure.io/fedora-ci/messages">
             Factory 2.0 CI UMB messages
         </a>{' '}
         consumed from the Unified Message Bus (UMB). Currently it makes it
