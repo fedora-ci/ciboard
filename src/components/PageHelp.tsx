@@ -22,6 +22,7 @@ import { TextContent, Text } from '@patternfly/react-core';
 
 import { config } from '../config';
 import { PageCommon } from './PageCommon';
+import { ExternalLink } from './ExternalLink';
 
 const Help = () => (
     <TextContent>
@@ -30,9 +31,9 @@ const Help = () => (
             CI Dashboard displays details of testing events, which happened for
             the supported artifacts. As the source of information it uses the{' '}
         </Text>
-        <a href="https://pagure.io/fedora-ci/messages">
+        <ExternalLink href="https://pagure.io/fedora-ci/messages">
             Factory 2.0 CI UMB messages
-        </a>{' '}
+        </ExternalLink>{' '}
         consumed from the Unified Message Bus (UMB). Currently it makes it
         possible to discover testing events only.
         <h2>Supported artifacts</h2>
@@ -40,37 +41,37 @@ const Help = () => (
         <ul>
             <li>
                 Brew rpm builds - builds from the{' '}
-                <a href="https://brewweb.engineering.redhat.com">
+                <ExternalLink href="https://brewweb.engineering.redhat.com">
                     Brew build system
-                </a>
+                </ExternalLink>
             </li>
             <li>
                 Koji rpm builds - builds from the{' '}
-                <a href="https://koji.fedoraproject.org/koji">
+                <ExternalLink href="https://koji.fedoraproject.org/koji">
                     Koji build system
-                </a>
+                </ExternalLink>
             </li>
             <li>
                 Copr builds - build from the{' '}
-                <a href="https://copr.devel.redhat.com">
+                <ExternalLink href="https://copr.devel.redhat.com">
                     internal Copr build system
-                </a>{' '}
+                </ExternalLink>{' '}
                 or{' '}
-                <a href="https://copr.fedorainfracloud.org">
+                <ExternalLink href="https://copr.fedorainfracloud.org">
                     Fedora Copr build system
-                </a>
+                </ExternalLink>
             </li>
             <li>
                 Red Hat modules - build from{' '}
-                <a href="http://mbsweb.engineering.redhat.com">
+                <ExternalLink href="http://mbsweb.engineering.redhat.com">
                     Module Build Service
-                </a>
+                </ExternalLink>
             </li>
             <li>
                 Productmd composes - build from{' '}
-                <a href="http://mbsweb.engineering.redhat.com">
+                <ExternalLink href="http://mbsweb.engineering.redhat.com">
                     Module Build Service
-                </a>
+                </ExternalLink>
             </li>
         </ul>
         <h2>Search</h2>
@@ -99,21 +100,21 @@ const Help = () => (
             non-scratch only
         </p>
         <p className="padding-left-20">
-            <a
+            <ExternalLink
                 href={`${window.location.origin}/#/artifact/brew-build/issuer/plautrba,lvrabec?scratch=false`}
             >
                 {window.location.origin}
                 /#/artifact/brew-build/issuer/plautrba,lvrabec?scratch=false
-            </a>
+            </ExternalLink>
         </p>
         <p>Search events for modules with name httpd, nginx and llvm-toolset</p>
         <p className="padding-left-20">
-            <a
+            <ExternalLink
                 href={`${window.location.origin}/#/artifact/redhat-module/name/httpd,nginx,llvm-toolset`}
             >
                 {window.location.origin}
                 /#/artifact/redhat-module/name/httpd,nginx,llvm-toolset
-            </a>
+            </ExternalLink>
         </p>
         <h4>Possible values for ARTIFACT_NAME</h4>
         <ul>
@@ -187,9 +188,9 @@ const Help = () => (
         <p>
             Dashboard can be integrated with Brew web interfaces and Errata Tool
             by using a{' '}
-            <a href="https://gitlab.cee.redhat.com/greasemonkey/ci-dashboard-integration/raw/master/ci-dashboard-integration.user.js">
+            <ExternalLink href="https://gitlab.cee.redhat.com/greasemonkey/ci-dashboard-integration/raw/master/ci-dashboard-integration.user.js">
                 Greasemonkey/Tampermonkey script in your browser.
-            </a>
+            </ExternalLink>
         </p>
         <p>
             To enable it, install Greasemonkey or Tampermonkey extensions to your
@@ -245,25 +246,25 @@ const Help = () => (
                 <tr>
                     <td>Fontend:</td>
                     <td>
-                        <a href="https://github.com/fedora-ci/ciboard/">
+                        <ExternalLink href="https://github.com/fedora-ci/ciboard/">
                             https://github.com/fedora-ci/ciboard/
-                        </a>
+                        </ExternalLink>
                     </td>
                 </tr>
                 <tr>
                     <td>Backend:</td>
                     <td>
-                        <a href="https://github.com/fedora-ci/ciboard-server/">
+                        <ExternalLink href="https://github.com/fedora-ci/ciboard-server/">
                             https://github.com/fedora-ci/ciboard-server/
-                        </a>
+                        </ExternalLink>
                     </td>
                 </tr>
                 <tr>
                     <td>Kai:</td>
                     <td>
-                        <a href="https://github.com/fedora-ci/kaijs/">
+                        <ExternalLink href="https://github.com/fedora-ci/kaijs/">
                             https://github.com/fedora-ci/kaijs/
-                        </a>
+                        </ExternalLink>
                     </td>
                 </tr>
             </tbody>
