@@ -46,8 +46,10 @@ jobs:
         tags: |
             ${{ env.IMAGE_REGISTRY_GITHUB }}:${{ steps.vars.outputs.sha_short }}
             ${{ ( github.ref == 'refs/heads/main' && format('{0}:latest', env.IMAGE_REGISTRY_GITHUB) ) || '' }}
+            ${{ ( github.ref_type == 'tag' && format('{0}:{1}', env.IMAGE_REGISTRY_GITHUB, github.ref_name) ) || '' }}
             ${{ env.IMAGE_REGISTRY_QUAY }}:${{ steps.vars.outputs.sha_short }}
             ${{ ( github.ref == 'refs/heads/main' && format('{0}:latest', env.IMAGE_REGISTRY_QUAY) ) || '' }}
+            ${{ ( github.ref_type == 'tag' && format('{0}:{1}', env.IMAGE_REGISTRY_QUAY, github.ref_name) ) || '' }}
         containerfiles: |
           ./Dockerfile
 
