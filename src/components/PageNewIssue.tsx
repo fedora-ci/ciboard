@@ -147,24 +147,24 @@ const BaseOsCard: React.FC<{}> = () => (
     <Card>
         <CardHeader>
             <Title headingLevel="h3" size="2xl">
-                BaseOS
+                Testing Farm Team
             </Title>
         </CardHeader>
         <CardBody>
             <List>
                 <ListItem>
-                    <ExternalLink href="https://projects.engineering.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12404&issuetype=2&priority=3&labels=BaseOS-CI&description=Component:%0A%0AWhat+to+do:%0A%0ANotes:&summary=Change+of+configuration+for&components=18485&labels=user_request&labels=user_request_new">
+                    <ExternalLink href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12328572&issuetype=23&priority=3&summary=Change+of+configuration+for+&labels=BaseOS-CI&labels=user_request&labels=user_request_new&labels=config">
                         Request config change
                     </ExternalLink>
                 </ListItem>
                 <ListItem>
-                    <ExternalLink href="https://projects.engineering.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12404&issuetype=1&priority=3&labels=BaseOS-CI&labels=user_request&labels=user_request_new">
-                        New item
+                    <ExternalLink href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12328572&issuetype=1&priority=3&labels=BaseOS-CI">
+                        File a TFT bug
                     </ExternalLink>
                 </ListItem>
                 <ListItem>
-                    <ExternalLink href="https://projects.engineering.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12404&issuetype=2&priority=3&labels=BaseOS-CI&labels=user_request&labels=user_request_new">
-                        New RFE
+                    <ExternalLink href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12328572&issuetype=23&priority=3&labels=BaseOS-CI&labels=user_request&labels=user_request_new">
+                        File a TFT RFE
                     </ExternalLink>
                 </ListItem>
             </List>
@@ -192,7 +192,7 @@ const OsciCard: React.FC<{}> = () => (
                     </ExternalLink>
                 </ListItem>
                 <ListItem>
-                    <ExternalLink href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12325047&issuetype=6&priority=3&labels=user_request&labels=user_request_new">
+                    <ExternalLink href="https://issues.redhat.com/secure/CreateIssueDetails!init.jspa?pid=12325047&issuetype=3&priority=3&labels=user_request&labels=user_request_new">
                         File an OSCI RFE
                     </ExternalLink>
                 </ListItem>
