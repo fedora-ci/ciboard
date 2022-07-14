@@ -79,7 +79,10 @@ const Help = () => (
         <p>
             The dashboard provides a simple interface for searching. Currently
             you can search only by artifact name. The name is dependent on the
-            type of the artifact. For Brew/Koji rpm builds and Red Hat modules
+            type of the artifact.
+        </p>
+        <p>
+            For Brew/Koji rpm builds and Red Hat modules
             the search value is the component name. For Copr builds the artifact
             name consists from the repository name plus the package, e.g.
             @ksh/latest/ksh.
@@ -184,49 +187,6 @@ const Help = () => (
                 </tr>
             </tbody>
         </table>
-        <h2>Integrations</h2>
-        <p>
-            Dashboard can be integrated with Brew web interfaces and Errata Tool
-            by using a{' '}
-            <ExternalLink href="https://gitlab.cee.redhat.com/greasemonkey/ci-dashboard-integration/raw/master/ci-dashboard-integration.user.js">
-                Greasemonkey/Tampermonkey script in your browser.
-            </ExternalLink>
-        </p>
-        <p>
-            To enable it, install Greasemonkey or Tampermonkey extensions to your
-            browser and enable the above script. Bellow are example pictures how
-            does the integration look like.
-        </p>
-        <h3>Integration with Brew</h3>
-        <p>
-            The dashboard is currently integrated on the build info or task info
-            pages.
-        </p>
-        <img
-            src="/integration-brew.png"
-            alt="Example of integration with Brew"
-            className="integrations"
-        />
-        <h3>Integration with Errata Tool</h3>
-        <p>
-            For any Erratum you should see CI Dashboard section on the summary
-            page.
-        </p>
-        <img
-            src="/integration-errata.png"
-            alt="Example of integration with Errata Tool"
-            className="integrations"
-        />
-        <h3>Integration with Module Build Service</h3>
-        <p>
-            In the MBS web interface, on a module specific page, you should see
-            CI Dashboard section.
-        </p>
-        <img
-            src="/integration-mbs.png"
-            alt="Example of integration with MBS"
-            className="integrations"
-        />
         <h2>Onboarding</h2>
         <p>
             To onboard your system to the dashboard, just start sending out
