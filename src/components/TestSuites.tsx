@@ -38,6 +38,7 @@ import {
     DataListToggle,
     Flex,
     FlexItem,
+    Label,
     Spinner,
     Title,
 } from '@patternfly/react-core';
@@ -49,7 +50,7 @@ import {
     TableVariant,
     cellWidth,
 } from '@patternfly/react-table';
-import { OutlinedClockIcon } from '@patternfly/react-icons';
+import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
 import classNames from 'classnames';
 
 import { Artifact, StateKaiType } from '../artifact';
@@ -67,6 +68,7 @@ import {
     TestCaseTestOutputsEntry,
     TestSuite,
     TestSuiteStatus,
+    getProperty,
 } from '../testsuite';
 import styles from '../custom.module.css';
 
@@ -221,6 +223,26 @@ const TestCaseContent: React.FC<TestCaseContentProps> = (props) => {
     );
 };
 
+interface ArchitectureLabelProps {
+    architecture?: string;
+}
+
+const ArchitectureLabel: React.FC<ArchitectureLabelProps> = ({
+    architecture,
+}) => {
+    if (_.isEmpty(architecture)) return null;
+    return (
+        <Label
+            icon={<MicrochipIcon className="pf-u-color-200" />}
+            isCompact
+            title={`This test was run on the ${architecture} machine architecture`}
+            variant="outline"
+        >
+            {architecture}
+        </Label>
+    );
+};
+
 interface TestCaseItemProps {
     test: TestCase;
 }
@@ -245,6 +267,7 @@ const TestCaseItem: React.FC<TestCaseItemProps> = (props) => {
         'pf-u-font-weight-bold',
         iconProps ? iconProps.className : '',
     );
+    const machineArchitecture = getProperty(test, 'baseosci.arch');
 
     const summaryCell: React.ReactNode = (
         <DataListCell key="summary">
@@ -257,6 +280,9 @@ const TestCaseItem: React.FC<TestCaseItemProps> = (props) => {
                 <Flex>
                     <FlexItem>{renderStatusIcon(test.status)}</FlexItem>
                     <FlexItem className={nameClassName}>{test.name}</FlexItem>
+                    <FlexItem>
+                        <ArchitectureLabel architecture={machineArchitecture} />
+                    </FlexItem>
                     {time && (
                         <FlexItem
                             align={{ default: 'alignRight' }}
