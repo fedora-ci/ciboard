@@ -350,7 +350,8 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
                 <ListItem>
                     If this is <code>leapp.brew-build.upgrade.distro</code>{' '}
                     test, it might depend on an unfinished dependent test{' '}
-                    <code>osci.brew-build.compose-ci.integration</code>.
+                    <code>osci.brew-build.compose-ci.integration</code>{' '}
+                    or <code>osci.brew-build.test-compose.integration</code>{' '}.
                 </ListItem>
                 <ListItem>
                     There is an outage or significant load affecting CI systems
