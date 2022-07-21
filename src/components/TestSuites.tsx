@@ -25,7 +25,7 @@ import moment from 'moment';
 import { Buffer } from 'buffer';
 import 'moment-duration-format';
 import { useQuery } from '@apollo/client';
-import { useState, memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 import {
     Alert,
     Checkbox,
@@ -38,6 +38,7 @@ import {
     DataListToggle,
     Flex,
     FlexItem,
+    Label,
     Spinner,
     Title,
 } from '@patternfly/react-core';
@@ -49,7 +50,7 @@ import {
     TableVariant,
     cellWidth,
 } from '@patternfly/react-table';
-import { OutlinedClockIcon } from '@patternfly/react-icons';
+import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
 import classNames from 'classnames';
 
 import { Artifact, StateKaiType } from '../artifact';
@@ -57,79 +58,25 @@ import { mapTypeToIconsProps, renderStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 import { mkSeparatedList } from '../utils/artifactsTable';
 import { xunitParser } from '../utils/xunitParser';
+import {
+    TestCase,
+    TestCaseLogs,
+    TestCaseLogsEntry,
+    TestCasePhases,
+    TestCasePhasesEntry,
+    TestCaseTestOutputs,
+    TestCaseTestOutputsEntry,
+    TestSuite,
+    TestSuiteStatus,
+    getProperty,
+} from '../testsuite';
 import styles from '../custom.module.css';
 
-interface TestCaseType {
-    _uuid: string;
-    name: string;
-    time: string;
-    logs: TestCaseLogsType[];
-    status: TestCaseStatusNameType;
-    phases: TestCasePhasesType[];
-    message: string;
-    properties: TestCasePropertiesType[];
-    'test-outputs': TestCaseTestOutputsType[];
+interface TestSuitesInternalProps {
+    xunit: TestSuite[];
 }
 
-type TestCaseStatusNameType = 'error' | 'fail' | 'pass' | 'skip';
-
-interface TestCaseLogsEntryType {
-    $: { name: string; href: string };
-}
-interface TestCaseLogsType {
-    log: TestCaseLogsEntryType[];
-}
-
-interface TestCaseTestOutputsType {
-    'test-output': TestCaseTestOutputsEntryType[];
-}
-
-interface TestCaseTestOutputsEntryType {
-    $: { message: string; remedy: string; result: string };
-}
-
-interface TestCasePhasesEntryType {
-    $: { name: string; result: string };
-    logs: TestCaseLogsType[];
-}
-
-interface TestCasePhasesType {
-    phase: TestCasePhasesEntryType[];
-}
-
-type TestCasePropertiesType = { property: TestCasePropertiesEntryType[] };
-type TestCasePropertiesEntryType = { $: { name: string; value: string } };
-
-type TestSuitePropertiesType = {
-    property: TestSuitePropertiesEntryType[];
-};
-type TestSuitePropertiesEntryType = { $: { name: string; value: string } };
-
-type TestSuiteType = {
-    _uuid: string;
-    name: string;
-    time?: string;
-    tests: TestCaseType[];
-    status: string;
-    properties: TestSuitePropertiesType[];
-    /** Number of test cases with each of the possible statuses. */
-    count: {
-        pass?: number;
-        fail?: number;
-        skip?: number;
-        error?: number;
-        tests?: number;
-    };
-};
-
-type TestSuiteCountType = TestSuiteType['count'];
-type TestSuiteCountNamesType = keyof TestSuiteCountType;
-
-interface TestsuitesProps {
-    xunit: TestSuiteType[];
-}
-
-const TestSuitesInternal: React.FC<TestsuitesProps> = (props) => {
+const TestSuitesInternal: React.FC<TestSuitesInternalProps> = (props) => {
     const { xunit } = props;
     if (_.isEmpty(xunit)) {
         return (
@@ -148,13 +95,13 @@ const TestSuitesInternal: React.FC<TestsuitesProps> = (props) => {
     const testSuites = _.map(xunit, (suite) => (
         <Flex direction={{ default: 'column' }} key={suite._uuid}>
             <Title headingLevel="h4">{suite.name}</Title>
-            <TestSuite suite={suite} />
+            <TestSuiteDisplay suite={suite} />
         </Flex>
     ));
     return <>{testSuites}</>;
 };
 
-const mkLogLink = (log: TestCaseLogsEntryType): JSX.Element => (
+const mkLogLink = (log: TestCaseLogsEntry): JSX.Element => (
     <a
         href={log.$.href}
         key={log.$.name}
@@ -165,23 +112,23 @@ const mkLogLink = (log: TestCaseLogsEntryType): JSX.Element => (
     </a>
 );
 
-interface TestCaseLogsProps {
-    logs: TestCaseLogsType[];
+interface LogsLinksProps {
+    logs: TestCaseLogs[];
 }
 
-const TestCaseLogs: React.FC<TestCaseLogsProps> = ({ logs }) => {
+const LogsLinks: React.FC<LogsLinksProps> = ({ logs }) => {
     if (!logs || _.isEmpty(logs[0].log)) return null;
     const logsLinks = mkSeparatedList(mkLogsLinks(logs));
     return <p>Log files: {logsLinks}</p>;
 };
 
-const mkLogsLinks = (logs: TestCaseLogsType[]): JSX.Element[] => {
+const mkLogsLinks = (logs: TestCaseLogs[]): JSX.Element[] => {
     /** logs[0].log - [log1, log2, log3] */
     if (!logs[0] || _.isEmpty(logs[0].log)) return [];
     return _.map(logs[0].log, (log) => mkLogLink(log));
 };
 
-const mkPhase = (phase: TestCasePhasesEntryType): IRow => {
+const mkPhase = (phase: TestCasePhasesEntry): IRow => {
     return {
         cells: [
             renderStatusIcon(phase.$.result),
@@ -192,11 +139,11 @@ const mkPhase = (phase: TestCasePhasesEntryType): IRow => {
     };
 };
 
-interface TestCasePhasesProps {
-    phases: TestCasePhasesType[];
+interface PhasesProps {
+    phases: TestCasePhases[];
 }
 
-const TestCasePhases: React.FC<TestCasePhasesProps> = ({ phases }) => {
+const Phases: React.FC<PhasesProps> = ({ phases }) => {
     if (!phases || _.isEmpty(phases[0].phase)) return null;
     const rows: IRow[] = _.map(phases[0].phase, (phase) => mkPhase(phase));
     return (
@@ -218,7 +165,7 @@ const TestCasePhases: React.FC<TestCasePhasesProps> = ({ phases }) => {
     );
 };
 
-const mkTestOutput = (output: TestCaseTestOutputsEntryType): IRow => ({
+const mkTestOutput = (output: TestCaseTestOutputsEntry): IRow => ({
     cells: [
         <>{output.$.result}</>,
         <>{output.$.message}</>,
@@ -226,11 +173,11 @@ const mkTestOutput = (output: TestCaseTestOutputsEntryType): IRow => ({
     ],
 });
 
-interface TestCaseOutputProps {
-    outputs: TestCaseTestOutputsType[];
+interface OutputsTableProps {
+    outputs: TestCaseTestOutputs[];
 }
 
-const TestCaseOutput: React.FC<TestCaseOutputProps> = (props) => {
+const OutputsTable: React.FC<OutputsTableProps> = (props) => {
     const { outputs } = props;
     if (!outputs || _.isEmpty(outputs[0]['test-output'])) return null;
     const all_outputs = outputs[0]['test-output'];
@@ -255,7 +202,7 @@ const TestCaseOutput: React.FC<TestCaseOutputProps> = (props) => {
     );
 };
 
-function hasTestCaseContent(testCase: TestCaseType): boolean {
+function hasTestCaseContent(testCase: TestCase): boolean {
     return (
         !_.isEmpty(_.get(testCase, 'phases[0].phase')) ||
         !_.isEmpty(_.get(testCase, 'outputs[0][test-output]'))
@@ -263,24 +210,44 @@ function hasTestCaseContent(testCase: TestCaseType): boolean {
 }
 
 interface TestCaseContentProps {
-    test: TestCaseType;
+    test: TestCase;
 }
 
 const TestCaseContent: React.FC<TestCaseContentProps> = (props) => {
     const { test } = props;
     return (
         <>
-            <TestCaseOutput outputs={test['test-outputs']} />
-            <TestCasePhases phases={test.phases} />
+            <OutputsTable outputs={test['test-outputs']} />
+            <Phases phases={test.phases} />
         </>
     );
 };
 
-interface TestCaseProps {
-    test: TestCaseType;
+interface ArchitectureLabelProps {
+    architecture?: string;
 }
 
-const TestCase: React.FC<TestCaseProps> = (props) => {
+const ArchitectureLabel: React.FC<ArchitectureLabelProps> = ({
+    architecture,
+}) => {
+    if (_.isEmpty(architecture)) return null;
+    return (
+        <Label
+            icon={<MicrochipIcon className="pf-u-color-200" />}
+            isCompact
+            title={`This test was run on the ${architecture} machine architecture`}
+            variant="outline"
+        >
+            {architecture}
+        </Label>
+    );
+};
+
+interface TestCaseItemProps {
+    test: TestCase;
+}
+
+const TestCaseItem: React.FC<TestCaseItemProps> = (props) => {
     const { test } = props;
     const [expanded, setExpanded] = useState(false);
     const time = test.time
@@ -300,6 +267,7 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
         'pf-u-font-weight-bold',
         iconProps ? iconProps.className : '',
     );
+    const machineArchitecture = getProperty(test, 'baseosci.arch');
 
     const summaryCell: React.ReactNode = (
         <DataListCell key="summary">
@@ -312,6 +280,9 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
                 <Flex>
                     <FlexItem>{renderStatusIcon(test.status)}</FlexItem>
                     <FlexItem className={nameClassName}>{test.name}</FlexItem>
+                    <FlexItem>
+                        <ArchitectureLabel architecture={machineArchitecture} />
+                    </FlexItem>
                     {time && (
                         <FlexItem
                             align={{ default: 'alignRight' }}
@@ -322,7 +293,7 @@ const TestCase: React.FC<TestCaseProps> = (props) => {
                         </FlexItem>
                     )}
                 </Flex>
-                <TestCaseLogs logs={test.logs} />
+                <LogsLinks logs={test.logs} />
             </Flex>
         </DataListCell>
     );
@@ -369,11 +340,7 @@ const NoDetailedResults: React.FC<{}> = () => {
     );
 };
 
-interface TestsuiteProps {
-    suite: TestSuiteType;
-}
-
-type ToggleStateType = Partial<Record<TestSuiteCountNamesType, boolean>>;
+type ToggleStateType = Partial<Record<TestSuiteStatus, boolean>>;
 
 const DEFAULT_TOGGLE_STATE: ToggleStateType = {
     fail: true,
@@ -382,7 +349,7 @@ const DEFAULT_TOGGLE_STATE: ToggleStateType = {
     error: true,
 };
 
-function compareTestCases(tc1: TestCaseType, tc2: TestCaseType) {
+function compareTestCases(tc1: TestCase, tc2: TestCase) {
     // Failures before everything.
     if (tc1.status === 'fail' && tc2.status !== 'fail') return -1;
     if (tc1.status !== 'fail' && tc2.status === 'fail') return 1;
@@ -399,12 +366,15 @@ function compareTestCases(tc1: TestCaseType, tc2: TestCaseType) {
     return time2 - time1;
 }
 
-const TestSuite: React.FC<TestsuiteProps> = (props) => {
+interface TestSuiteDisplayProps {
+    suite: TestSuite;
+}
+
+const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
     const { suite } = props;
     const initialToggleState = _.pickBy(
         DEFAULT_TOGGLE_STATE,
-        (_value, key) =>
-            Number(suite.count[key as TestSuiteCountNamesType]) > 0,
+        (_value, key) => Number(suite.count[key as TestSuiteStatus]) > 0,
     );
     const [toggleState, setToggleState] =
         useState<ToggleStateType>(initialToggleState);
@@ -413,39 +383,33 @@ const TestSuite: React.FC<TestsuiteProps> = (props) => {
         return <NoDetailedResults />;
     }
 
-    const onToggle = (outcome: TestSuiteCountNamesType, isChecked: boolean) => {
+    const onToggle = (outcome: TestSuiteStatus, isChecked: boolean) => {
         setToggleState({ ...toggleState, [outcome]: !isChecked });
     };
 
     return (
         <>
             <Flex>
-                {_.map(
-                    toggleState,
-                    (isChecked, outcome: TestSuiteCountNamesType) => {
-                        if (_.isNil(isChecked)) return <></>;
-                        const label = (
-                            <>
-                                {renderStatusIcon(outcome)}{' '}
-                                {suite.count[outcome]}
-                            </>
-                        );
-                        return (
-                            <FlexItem key={outcome}>
-                                <Checkbox
-                                    aria-label={`Toggle display of results in status ${outcome}`}
-                                    id={`check-${outcome}-${suite._uuid}`}
-                                    isChecked={isChecked}
-                                    label={label}
-                                    name={outcome}
-                                    onChange={() =>
-                                        onToggle(outcome, isChecked)
-                                    }
-                                />
-                            </FlexItem>
-                        );
-                    },
-                )}
+                {_.map(toggleState, (isChecked, outcome: TestSuiteStatus) => {
+                    if (_.isNil(isChecked)) return <></>;
+                    const label = (
+                        <>
+                            {renderStatusIcon(outcome)} {suite.count[outcome]}
+                        </>
+                    );
+                    return (
+                        <FlexItem key={outcome}>
+                            <Checkbox
+                                aria-label={`Toggle display of results in status ${outcome}`}
+                                id={`check-${outcome}-${suite._uuid}`}
+                                isChecked={isChecked}
+                                label={label}
+                                name={outcome}
+                                onChange={() => onToggle(outcome, isChecked)}
+                            />
+                        </FlexItem>
+                    );
+                })}
             </Flex>
 
             <DataList aria-label="Test suite items" isCompact>
@@ -453,7 +417,7 @@ const TestSuite: React.FC<TestsuiteProps> = (props) => {
                     .filter((test) => toggleState[test.status])
                     .sort(compareTestCases)
                     .map((test, index) => (
-                        <TestCase key={index} test={test} />
+                        <TestCaseItem key={index} test={test} />
                     ))}
             </DataList>
         </>
