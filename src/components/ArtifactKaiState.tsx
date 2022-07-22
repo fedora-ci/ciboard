@@ -168,6 +168,8 @@ const schemaMappingV1 = [
     ['contact.slack', 'ci slack'],
     ['contact.version', 'ci version'],
     ['notification.recipients', 'recipients'],
+    ['run.url', 'run details'],
+    ['run.log', 'logs'],
     ['test.category', 'test category'],
     ['test.docs', 'test docs'],
     ['test.label', 'test label'],
