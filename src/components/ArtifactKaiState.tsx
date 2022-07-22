@@ -419,8 +419,8 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
                 {forceExpand && (
                     <>
                         <ResultNote state={state} />
-                        <KaiStateMapping state={state} artifact={artifact} />
                         <KaiDetailedResults state={state} artifact={artifact} />
+                        <KaiStateMapping state={state} artifact={artifact} />
                     </>
                 )}
             </DataListContent>
