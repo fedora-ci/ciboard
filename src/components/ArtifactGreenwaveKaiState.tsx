@@ -121,7 +121,8 @@ export const FaceForGreenwaveKaiState: React.FC<
     }
     const resultOutcome = state.gs.result?.outcome;
     const requimentType = state.gs.requirement?.type;
-    const iconName = _.compact([resultOutcome, requimentType, 'unknown'])[0];
+    // Prefer Greenwave's point of view over status from UMB message.
+    const iconName = requimentType || resultOutcome || 'unknown';
     return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>
