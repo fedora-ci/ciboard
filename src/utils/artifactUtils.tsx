@@ -374,7 +374,6 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
             pick:
                 type === 'failed' ||
                 type === 'fail' ||
-                type === 'test-result-errored' ||
                 type === 'failed-fetch-gating-yaml' ||
                 type === 'test-result-failed' ||
                 type === 'invalid-gating-yaml' ||
@@ -390,6 +389,7 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
                 type === 'needs_inspection' ||
                 type === 'invalid-gating-yaml-waived' ||
                 type === 'missing-gating-yaml-waived' ||
+                type === 'test-result-errored' ||
                 type === 'test-result-failed-waived' ||
                 type === 'test-result-missing-waived' ||
                 type === 'test-result-errored-waived' ||
