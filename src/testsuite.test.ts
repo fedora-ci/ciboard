@@ -21,7 +21,22 @@
 import { getProperty, TestCase } from './testsuite';
 
 describe('getProperty function', () => {
-    test('returns `undefined` when there are no properties', () => {
+    test('returns `undefined` when properties are not present', () => {
+        const testCase: TestCase = {
+            _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
+            name: '/test/basic',
+            time: '1658312226',
+            logs: [],
+            status: 'pass',
+            phases: [],
+            message: '',
+            // properties: undefined, // Not present in the input.
+            'test-outputs': [],
+        };
+        expect(getProperty(testCase, 'ci.arch')).toBeUndefined();
+    });
+
+    test('returns `undefined` when properties are empty', () => {
         const testCase: TestCase = {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',

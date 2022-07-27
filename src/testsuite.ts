@@ -67,7 +67,7 @@ export interface TestCase {
     status: TestCaseStatus;
     phases: TestCasePhases[];
     message: string;
-    properties: TestCaseProperties[];
+    properties?: TestCaseProperties[];
     'test-outputs': TestCaseTestOutputs[];
 }
 
@@ -97,5 +97,5 @@ export interface TestSuite {
 
 export const getProperty = (testCase: TestCase, propertyName: string) =>
     testCase.properties
-        .flatMap((property) => property.property)
+        ?.flatMap((property) => property.property)
         .find((property) => property.$.name === propertyName)?.$.value;
