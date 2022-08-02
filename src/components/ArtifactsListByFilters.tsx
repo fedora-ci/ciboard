@@ -182,7 +182,8 @@ const ArtifactsTable: React.FC = () => {
                 dbFieldName1: 'aid',
                 dbFieldValues1: aidsAtPage,
                 aid_offset,
-                options: searchOptions,
+                /* ask for exact set of known artifacts */
+                options: { ...searchOptions, valuesAreRegex1: false },
                 atype: artifactsType,
             },
             fetchPolicy: 'cache-first',
