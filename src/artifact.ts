@@ -207,6 +207,7 @@ export type GreenwaveResultType = {
         issuer: string[];
         item: string[];
         log: string[];
+        msg_id: string[];
         publisher_id: string[];
         rebuild: string[];
         scratch: string[];

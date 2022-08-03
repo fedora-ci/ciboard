@@ -117,6 +117,7 @@ const getKaiState = (
     states: StageNameStateNameStatesType[],
     stateNameReq: StateExtendedNameType,
     runUrl: string,
+    msgId: string | undefined,
 ): StateKaiType | undefined => {
     const s = _.find(
         states,
@@ -125,10 +126,20 @@ const getKaiState = (
     );
     if (_.isNil(s)) return;
     const [_stageName, _stateName, kaiStates] = s;
-    const kaiState = _.find(
-        kaiStates as StateKaiType[],
-        (state) => runUrl === state.broker_msg_body.run.url,
-    );
+    const kaiState = _.find(kaiStates as StateKaiType[], (state) => {
+        /* this is broken and should be removed */
+        const theSameRefUrl = runUrl === state.broker_msg_body.run.url;
+        /*
+         * Next test should stay. It must be the only 1 way to test Greenwave-to-Kai correspondance.
+         * It must be done by using by msg_id
+         * When https://issues.redhat.com/browse/OSCI-3605 is closed remove `theSameRefUrl` test.
+         */
+        const theSameMsgId =
+            _.isString(msgId) &&
+            !_.isEmpty(msgId) &&
+            msgId === state.kai_state.msg_id;
+        return theSameMsgId || theSameRefUrl;
+    });
     return kaiState;
 };
 
@@ -355,6 +366,7 @@ const mergeKaiAndGreenwaveState = (
         _.forEach(states as StateGreenwaveType[], (greenwaveState, index) => {
             const outcome = greenwaveState.result?.outcome;
             const refUrl = greenwaveState.result?.ref_url;
+            const msgId = greenwaveState.result?.data.msg_id?.[0];
             if (_.isNil(outcome) || _.isNil(refUrl)) {
                 return;
             }
@@ -362,6 +374,7 @@ const mergeKaiAndGreenwaveState = (
                 kaiStageStates,
                 _.toLower(outcome) as StateExtendedNameType,
                 refUrl,
+                msgId,
             );
             if (_.isNil(kaiState)) {
                 return;
