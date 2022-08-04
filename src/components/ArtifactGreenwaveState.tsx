@@ -348,10 +348,12 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
                     </p>
                 </ListItem>
                 <ListItem>
-                    If this is <code>leapp.brew-build.upgrade.distro</code>{' '}
-                    test, it might depend on an unfinished dependent test{' '}
-                    <code>osci.brew-build.compose-ci.integration</code>{' '}
-                    or <code>osci.brew-build.test-compose.integration</code>.
+                    If this is a <code>leapp.brew-build.upgrade.distro</code>{' '}
+                    test, it depends on a possibly unfinished or failed tests,{' '}
+                    <code>osci.brew-build.compose-ci.integration</code> (RHEL8){' '}
+                    or <code>osci.brew-build.test-compose.integration</code> (RHEL9),{' '}
+                    and therefore restart these tests or contact #osci for help
+                    with these tests.
                 </ListItem>
                 <ListItem>
                     There is an outage or significant load affecting CI systems
