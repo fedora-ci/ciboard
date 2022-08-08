@@ -120,9 +120,15 @@ export const FaceForGreenwaveKaiState: React.FC<
         );
     }
     const resultOutcome = state.gs.result?.outcome;
-    const requimentType = state.gs.requirement?.type;
-    // Prefer Greenwave's point of view over status from UMB message.
-    const iconName = requimentType || resultOutcome || 'unknown';
+    const requirementType = state.gs.requirement?.type;
+    /*
+     * green pass icon == outcome: test-result-passed + type: NEEDS_INSPECTION
+     * running icon == outcome: test-result-missing + type: RUNNING
+     * Take requimentType as main creteria, unless for specific cases.
+     */
+    const iconName = _.includes(['test-result-missing'], requirementType)
+        ? resultOutcome || requirementType || 'unknown'
+        : requirementType || resultOutcome || 'unknown';
     return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>

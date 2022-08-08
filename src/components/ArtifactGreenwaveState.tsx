@@ -290,8 +290,15 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
         );
     }
     const resultOutcome = state.result?.outcome;
-    const requimentType = state.requirement?.type;
-    const iconName = _.compact([resultOutcome, requimentType, 'unknown'])[0];
+    const requirementType = state.requirement?.type;
+    /*
+     * green pass icon == outcome: test-result-passed + type: NEEDS_INSPECTION
+     * running icon == outcome: test-result-missing + type: RUNNING
+     * Take requimentType as main creteria, unless for specific cases.
+     */
+    const iconName = _.includes(['test-result-missing'], requirementType)
+        ? resultOutcome || requirementType || 'unknown'
+        : requirementType || resultOutcome || 'unknown';
     return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>
@@ -351,9 +358,9 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
                     If this is a <code>leapp.brew-build.upgrade.distro</code>{' '}
                     test, it depends on a possibly unfinished or failed tests,{' '}
                     <code>osci.brew-build.compose-ci.integration</code> (RHEL8){' '}
-                    or <code>osci.brew-build.test-compose.integration</code> (RHEL9),{' '}
-                    and therefore restart these tests or contact #osci for help
-                    with these tests.
+                    or <code>osci.brew-build.test-compose.integration</code>{' '}
+                    (RHEL9), and therefore restart these tests or contact #osci
+                    for help with these tests.
                 </ListItem>
                 <ListItem>
                     There is an outage or significant load affecting CI systems

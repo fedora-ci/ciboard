@@ -70,7 +70,8 @@ function mkStageStateTitle(
 ): string {
     if (stage === 'greenwave') {
         if (state === 'test-result-failed') return 'Failed required tests';
-        if (state === 'test-result-missing') return 'Missing required tests';
+        /* running tests fall into 'test-result-missing' */
+        if (state === 'test-result-missing') return 'Awaiting for tests';
         if (state === 'test-result-passed') return 'Passed required tests';
         if (state === 'additional-tests')
             return 'Additional tests (not required for gating)';
