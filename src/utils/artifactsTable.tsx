@@ -413,7 +413,7 @@ export function mkSeparatedList(
     return elements.reduce(
         (acc, el) =>
             acc === null ? (
-                el
+                <>{el}</>
             ) : (
                 <>
                     {acc}

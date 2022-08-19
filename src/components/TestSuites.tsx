@@ -71,6 +71,7 @@ import {
     getProperty,
 } from '../testsuite';
 import styles from '../custom.module.css';
+import { ExternalLink } from './ExternalLink';
 
 interface TestSuitesInternalProps {
     xunit: TestSuite[];
@@ -102,14 +103,9 @@ const TestSuitesInternal: React.FC<TestSuitesInternalProps> = (props) => {
 };
 
 const mkLogLink = (log: TestCaseLogsEntry): JSX.Element => (
-    <a
-        href={log.$.href}
-        key={log.$.name}
-        rel="noopener noreferrer"
-        target="_blank"
-    >
+    <ExternalLink href={log.$.href} key={log.$.name}>
         {log.$.name}
-    </a>
+    </ExternalLink>
 );
 
 interface LogsLinksProps {
