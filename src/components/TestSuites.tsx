@@ -356,14 +356,8 @@ function compareTestCases(tc1: TestCase, tc2: TestCase) {
     // Infra errors before the rest.
     if (tc1.status === 'error' && tc2.status !== 'error') return -1;
     if (tc1.status !== 'error' && tc2.status === 'error') return 1;
-    // Compare the remaining tests on time elapsed.
-    const time1 = Math.trunc(Number(tc1.time));
-    const time2 = Math.trunc(Number(tc2.time));
-    // Sort by name if no time was provided or if the times are equal.
-    if (isNaN(time1) || isNaN(time2) || time1 === time2) {
-        return tc1.name.localeCompare(tc2.name);
-    }
-    return time2 - time1;
+    // Remaining tests order by default beaker task ordering.
+    return 0; // keep original order of tc1 and tc2
 }
 
 interface TestSuiteDisplayProps {
