@@ -35,24 +35,28 @@
 }
 
 .statusPassed {
-    color: var(--pf-global--success-color--200);
+    color: var(--pf-global--palette--white);
     background: var(--pf-global--success-color--100);
     width: auto;
+    padding-left: 0.5em;
 }
 .statusInfo {
     color: var(--pf-global--warning-color--100);
     background: var(--pf-global--warning-color--200);
     width: auto;
+    padding-left: 0.5em;
 }
 .statusFailed {
-    color: var(--pf-global--danger-color--300);
+    color: var(--pf-global--palette--white);
     background: var(--pf-global--danger-color--100);
     width: auto;
+    padding-left: 0.5em;
 }
 .statusOther {
     color: var(--pf-global--info-color--200);
     background: var(--pf-global--info-color--100);
     width: auto;
+    padding-left: 0.5em;
 }
 
 .ciSystemsList {
