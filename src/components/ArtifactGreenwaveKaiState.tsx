@@ -122,9 +122,10 @@ export const FaceForGreenwaveKaiState: React.FC<
     const resultOutcome = state.gs.result?.outcome;
     const requirementType = state.gs.requirement?.type;
     /*
-     * green pass icon == outcome: test-result-passed + type: NEEDS_INSPECTION
-     * running icon == outcome: test-result-missing + type: RUNNING
-     * Take requimentType as main creteria, unless for specific cases.
+     * Take requirementType as the main creterion, unless the result is missing
+     * in ResultsDB. For example:
+     * - green pass icon == outcome: test-result-passed + type: NEEDS_INSPECTION
+     * - running icon == outcome: test-result-missing + type: RUNNING
      */
     const iconName = _.includes(['test-result-missing'], requirementType)
         ? resultOutcome || requirementType || 'unknown'
