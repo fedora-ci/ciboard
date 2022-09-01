@@ -136,11 +136,11 @@ const mkPhase = (phase: TestCasePhasesEntry): IRow => {
 };
 
 interface PhasesProps {
-    phases: TestCasePhases[];
+    phases?: TestCasePhases[];
 }
 
 const Phases: React.FC<PhasesProps> = ({ phases }) => {
-    if (!phases || _.isEmpty(phases[0].phase)) return null;
+    if (!phases || _.isEmpty(phases[0]?.phase)) return null;
     const rows: IRow[] = _.map(phases[0].phase, (phase) => mkPhase(phase));
     return (
         <Table
@@ -170,7 +170,7 @@ const mkTestOutput = (output: TestCaseTestOutputsEntry): IRow => ({
 });
 
 interface OutputsTableProps {
-    outputs: TestCaseTestOutputs[];
+    outputs?: TestCaseTestOutputs[];
 }
 
 const OutputsTable: React.FC<OutputsTableProps> = (props) => {
