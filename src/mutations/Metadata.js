@@ -7,12 +7,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3 of the License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -20,37 +20,35 @@
 
 import { gql } from '@apollo/client';
 
-export default gql`
-    mutation WaiverdbNew(
-        $subject_type: String!
-        $subject_identifier: String!
-        $testcase: String!
-        $waived: Boolean!
-        $product_version: String!
-        $comment: String!
+export const MetadataUpdate = gql`
+    mutation MetadataUpdate(
+        $_id: ID
+        $testcase_name: String
+        $testcase_name_is_regex: Boolean
+        $priority: Int
+        $product_version: String
+        $payload: JSON
     ) {
-        waiver_db_new(
-            subject_type: $subject_type
-            subject_identifier: $subject_identifier
-            testcase: $testcase
-            waived: $waived
+        metadata_update(
+            _id: $_id
+            testcase_name: $testcase_name
+            testcase_name_is_regex: $testcase_name_is_regex
+            priority: $priority
             product_version: $product_version
-            comment: $comment
+            payload: $payload
         ) {
-            id
-            waived
-            comment
-            username
-            testcase
-            timestamp
-            proxied_by
-            subject_type
-            subject {
-                type
-                item
+            _id
+            _version
+            _updated
+            _update_history {
+                time
+                author
             }
+            payload
+            priority
+            testcase_name
             product_version
-            subject_identifier
+            testcase_name_is_regex
         }
     }
 `;

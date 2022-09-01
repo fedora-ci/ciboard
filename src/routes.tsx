@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,8 @@ import { PageByFilters } from './components/PageByFilters';
 import { PageByMongoField } from './components/PageByMongoField';
 import { PageGating } from './components/PageGating';
 import { PageHelp } from './components/PageHelp';
+import { PageMetadataEdit } from './components/PageMetadataEdit';
+import { PageMetadataList } from './components/PageMetadataList';
 import { PageNewIssue } from './components/PageNewIssue';
 import { PageSST } from './components/PageSST';
 
@@ -32,6 +34,8 @@ export interface MenuEntry {
     to: string;
     route?: string;
     render: (props: any) => JSX.Element;
+    /* show entry only if required AuthZ flag is true */
+    reqAuthzFlag?: string;
 }
 
 export const menuRoutes: MenuEntry[] = [
@@ -62,6 +66,13 @@ export const menuRoutes: MenuEntry[] = [
         render: (props) => <PageNewIssue {...props} />,
     },
     {
+        title: 'Metadata',
+        key: 'metadata',
+        to: '/metadata',
+        render: (props) => <PageMetadataList {...props} />,
+        reqAuthzFlag: 'can_edit_metadata',
+    },
+    {
         title: 'Help',
         key: 'help',
         to: '/help',
@@ -75,5 +86,11 @@ export const otherRoutes: MenuEntry[] = [
         key: 'artifact',
         to: '/artifact/:type/:search/:value',
         render: (props) => <PageByMongoField {...props} />,
+    },
+    {
+        title: '',
+        key: 'metadata-edit',
+        to: '/metadata/edit/:id?/:clone?',
+        render: (props) => <PageMetadataEdit {...props} />,
     },
 ];
