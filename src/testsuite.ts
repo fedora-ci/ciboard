@@ -65,10 +65,10 @@ export interface TestCase {
     time: string;
     logs: TestCaseLogs[];
     status: TestCaseStatus;
-    phases: TestCasePhases[];
+    phases?: TestCasePhases[];
     message: string;
     properties?: TestCaseProperties[];
-    'test-outputs': TestCaseTestOutputs[];
+    'test-outputs'?: TestCaseTestOutputs[];
 }
 
 export type TestSuiteStatus = 'error' | 'fail' | 'pass' | 'skip' | 'tests';
