@@ -200,7 +200,7 @@ const OutputsTable: React.FC<OutputsTableProps> = (props) => {
 
 function hasTestCaseContent(testCase: TestCase): boolean {
     return (
-        !_.isEmpty(testCase.phases[0]?.phase) ||
+        !_.isEmpty(testCase.phases?.[0]?.phase) ||
         !_.isEmpty(testCase['test-outputs'])
     );
 }
