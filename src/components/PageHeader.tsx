@@ -19,10 +19,12 @@
  */
 
 import * as React from 'react';
+import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { css } from '@patternfly/react-styles';
+import { useLazyQuery } from '@apollo/client';
 import {
     Button,
     ButtonVariant,
@@ -53,6 +55,7 @@ import {
     OnDropdownSelectType,
     OnDropdownToggleType,
 } from '../utils/artifactsTable';
+import { AuthzMappingQuery } from '../queries/Authz';
 
 const logoProps = {
     to: '/',
@@ -157,6 +160,12 @@ const HeaderToolbar = () => {
     return toolbar;
 };
 
+interface AuthzMapping {
+    authz_mapping: {
+        can_edit_metadata: boolean;
+    };
+}
+
 export const DashboardPageHeader = () => {
     const location = useLocation();
     const [activeItem, setActiveItem] = useState<string | number>(
@@ -168,17 +177,41 @@ export const DashboardPageHeader = () => {
         console.log('Selected: ', activeItem);
         setActiveItem(result.itemId);
     };
+    const [
+        getAuthz,
+        { loading: _authzLoading, error: _authzError, data: authzData },
+    ] = useLazyQuery<AuthzMapping>(AuthzMappingQuery, {
+        errorPolicy: 'all',
+        /* need to re-fetch each time when user press save/back button */
+        fetchPolicy: 'cache-and-network',
+        notifyOnNetworkStatusChange: true,
+    });
+    useEffect(() => {
+        getAuthz();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     /** Horizontal menu */
-    const menuElements = menuRoutes.map((item) => (
-        <NavItem
-            itemId={item.key}
-            key={item.key}
-            to={`#${item.to}`}
-            isActive={item.to === location.pathname}
-        >
-            {item.title}
-        </NavItem>
-    ));
+    const menuElements = _(menuRoutes)
+        .map((item) => {
+            const show = item.reqAuthzFlag
+                ? _.get(authzData, `authz_mapping.${item.reqAuthzFlag}`, false)
+                : true;
+            if (!show) {
+                return null;
+            }
+            return (
+                <NavItem
+                    itemId={item.key}
+                    key={item.key}
+                    to={`#${item.to}`}
+                    isActive={item.to === location.pathname}
+                >
+                    {item.title}
+                </NavItem>
+            );
+        })
+        .compact()
+        .value();
     const PageNav = (
         <Nav
             className={styles['pageHeaderNav']}
