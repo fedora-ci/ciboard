@@ -18,6 +18,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+import _ from 'lodash';
 
 export type TestCaseStatus = 'error' | 'fail' | 'pass' | 'skip';
 
@@ -99,3 +100,7 @@ export const getProperty = (testCase: TestCase, propertyName: string) =>
     testCase.properties
         ?.flatMap((property) => property.property)
         .find((property) => property.$.name === propertyName)?.$.value;
+
+export const hasTestCaseContent = (testCase: TestCase) =>
+    !_.isEmpty(testCase.phases?.[0]?.phase) ||
+    !_.isEmpty(testCase['test-outputs']);

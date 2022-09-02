@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { getProperty, TestCase } from './testsuite';
+import { getProperty, hasTestCaseContent, TestCase } from './testsuite';
 
 describe('getProperty function', () => {
     test('returns `undefined` when properties are not present', () => {
@@ -123,5 +123,110 @@ describe('getProperty function', () => {
             'test-outputs': [],
         };
         expect(getProperty(testCase, 'ci.arch')).toStrictEqual('aarch64');
+    });
+});
+
+describe('hasTestCaseContet function', () => {
+    test('returns false when no phases or outputs are present', () => {
+        const testCase: TestCase = {
+            _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
+            name: '/test/basic',
+            time: '1658312226',
+            logs: [],
+            status: 'pass',
+            message: '',
+        };
+        expect(hasTestCaseContent(testCase)).toStrictEqual(false);
+    });
+
+    test('returns false when phases and outputs are both empty', () => {
+        const testCase: TestCase = {
+            _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
+            name: '/test/basic',
+            time: '1658312226',
+            logs: [],
+            status: 'pass',
+            phases: [],
+            message: '',
+            'test-outputs': [],
+        };
+        expect(hasTestCaseContent(testCase)).toStrictEqual(false);
+    });
+
+    test('returns true when there is a phase', () => {
+        const testCase: TestCase = {
+            _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
+            name: '/test/basic',
+            time: '1658312226',
+            logs: [],
+            status: 'pass',
+            phases: [
+                {
+                    phase: [
+                        { $: { name: 'prepare', result: 'pass' }, logs: [] },
+                    ],
+                },
+            ],
+            message: '',
+            'test-outputs': [],
+        };
+        expect(hasTestCaseContent(testCase)).toStrictEqual(true);
+    });
+
+    test('returns true when there is an output', () => {
+        const testCase: TestCase = {
+            _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
+            name: '/test/basic',
+            time: '1658312226',
+            logs: [],
+            status: 'pass',
+            message: '',
+            'test-outputs': [
+                {
+                    'test-output': [
+                        {
+                            $: {
+                                message: 'Test case OK',
+                                remedy: '',
+                                result: 'pass',
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        expect(hasTestCaseContent(testCase)).toStrictEqual(true);
+    });
+
+    test('returns true when there is a phase and an output', () => {
+        const testCase: TestCase = {
+            _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
+            name: '/test/basic',
+            time: '1658312226',
+            logs: [],
+            status: 'pass',
+            phases: [
+                {
+                    phase: [
+                        { $: { name: 'prepare', result: 'pass' }, logs: [] },
+                    ],
+                },
+            ],
+            message: '',
+            'test-outputs': [
+                {
+                    'test-output': [
+                        {
+                            $: {
+                                message: 'Test case OK',
+                                remedy: '',
+                                result: 'pass',
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        expect(hasTestCaseContent(testCase)).toStrictEqual(true);
     });
 });

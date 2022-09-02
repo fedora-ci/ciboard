@@ -69,6 +69,7 @@ import {
     TestSuite,
     TestSuiteStatus,
     getProperty,
+    hasTestCaseContent,
 } from '../testsuite';
 import styles from '../custom.module.css';
 import { ExternalLink } from './ExternalLink';
@@ -197,13 +198,6 @@ const OutputsTable: React.FC<OutputsTableProps> = (props) => {
         </Table>
     );
 };
-
-function hasTestCaseContent(testCase: TestCase): boolean {
-    return (
-        !_.isEmpty(testCase.phases?.[0]?.phase) ||
-        !_.isEmpty(testCase['test-outputs'])
-    );
-}
 
 interface TestCaseContentProps {
     test: TestCase;
