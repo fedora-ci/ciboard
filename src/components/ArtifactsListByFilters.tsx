@@ -152,7 +152,7 @@ const ArtifactsTable: React.FC = () => {
     });
 
     /** Even there is an error there could be data */
-    const haveData = !isLoading && data && !_.isEmpty(data.artifacts.artifacts);
+    const haveData = !isLoading && data && !_.isEmpty(data.artifacts?.artifacts);
     const haveErrorNoData = !isLoading && error && !haveData;
     const aidsAtPage: string[] = [];
     if (haveData) {
