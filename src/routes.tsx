@@ -26,6 +26,7 @@ import { PageHelp } from './components/PageHelp';
 import { PageMetadataEdit } from './components/PageMetadataEdit';
 import { PageMetadataList } from './components/PageMetadataList';
 import { PageNewIssue } from './components/PageNewIssue';
+import { PageResultsNew } from './components/PageResultsNew';
 import { PageSST } from './components/PageSST';
 
 export interface MenuEntry {
@@ -91,5 +92,11 @@ export const otherRoutes: MenuEntry[] = [
         key: 'metadata-edit',
         path: '/metadata/edit/:id?/:clone?',
         element: <PageMetadataEdit />,
+    },
+    {
+        title: '',
+        key: 'resultsnew',
+        to: '/resultsnew',
+        render: (props) => <PageResultsNew {...props} />,
     },
 ];

@@ -738,7 +738,7 @@ const renderNewTabLink: (ir: IntermediateRepresentation) => React.ReactNode = ({
     </a>
 );
 
-export type LinkifyNewTabProps = React.PropsWithChildren<React.ReactNode>;
+export type LinkifyNewTabProps = React.PropsWithChildren<{}>;
 
 export const LinkifyNewTab = (props: LinkifyNewTabProps) => (
     <Linkify options={{ render: renderNewTabLink }}>{props.children}</Linkify>
