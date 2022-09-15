@@ -496,19 +496,22 @@ export const renderStatusIcon = (
         );
     }
     let Icon = iconProps.icon;
+    let label = iconProps.label;
     if (mod === 'gating') {
         Icon = TrafficLightIcon;
+        if (typeLC === 'fail') label = 'Gating is blocked';
+        else label = 'Gating has passed';
     }
     const style = {
         height: size,
     };
     return (
         <Icon
-            aria-label={iconProps.label}
+            aria-label={label}
             className={iconProps.className}
             size="sm"
             style={style}
-            title={iconProps.label}
+            title={label}
         />
     );
 };
@@ -709,7 +712,7 @@ const renderNewTabLink: (ir: IntermediateRepresentation) => React.ReactNode = ({
     </a>
 );
 
-export type LinkifyNewTabProps = React.PropsWithChildren<React.ReactNode>;
+export type LinkifyNewTabProps = React.PropsWithChildren<{}>;
 
 export const LinkifyNewTab = (props: LinkifyNewTabProps) => (
     <Linkify options={{ render: renderNewTabLink }}>{props.children}</Linkify>

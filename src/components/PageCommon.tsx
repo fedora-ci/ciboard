@@ -29,8 +29,6 @@ import {
     AlertGroup,
     AlertVariant,
     Page,
-    PageSection,
-    PageSectionVariants,
 } from '@patternfly/react-core';
 
 import { config } from '../config';
@@ -96,13 +94,14 @@ export function PageCommon(props: PageCommonProps) {
     if (queryString.embedded !== 'true') {
         to_render = (
             <Page header={<DashboardPageHeader />} mainContainerId={pageId}>
+                {/* TODO: Add this chunk to the old-style pages as necessary.
                 <PageSection
                     variant={PageSectionVariants.default}
                     isFilled
                     hasOverflowScroll
-                >
-                    {props.children}
-                </PageSection>
+                >*/}
+                {props.children}
+                {/* </PageSection> */}
             </Page>
         );
     } else {

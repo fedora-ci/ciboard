@@ -96,18 +96,22 @@
 /*
  * https://github.com/patternfly/patternfly/issues/2177
  */
-:global(.pf-c-data-list__item.pf-m-expanded
-        .issue_2177
-        .pf-c-data-list__toggle-icon) {
+:global(
+        .pf-c-data-list__item.pf-m-expanded
+            .issue_2177
+            .pf-c-data-list__toggle-icon
+    ) {
     transform: none;
 }
 
 dl.buildInfo {
-    column-gap: var(--pf-global--spacer--lg);
+    column-gap: var(--pf-global--spacer--xl);
+    row-gap: var(--pf-global--spacer--sm);
 }
 
 .buildInfoCommitHash,
 .buildInfoTimestamp {
+    --pf-c-description-list__description--FontSize: 0.85em;
     font-size: 0.85em;
     font-family: monospace;
 }
@@ -165,4 +169,9 @@ dl.buildInfo {
 :global(.pc-c-page__header-nav .pf-c-nav) {
     /* Stretch the horizontal navbar in page header over the available space. */
     flex: 1 1 auto;
+}
+
+:global(abbr[title]),
+:global(time[title]) {
+    text-decoration: underline dotted var(--pf-global--Color--200) 2px;
 }
