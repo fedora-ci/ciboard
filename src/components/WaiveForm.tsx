@@ -24,6 +24,7 @@ import {
     ActionGroup,
     Alert,
     Button,
+    Checkbox,
     Form,
     FormGroup,
     FormGroupProps,
@@ -32,13 +33,11 @@ import {
     TextArea,
     TextContent,
     TextVariants,
-    Title,
 } from '@patternfly/react-core';
 import { useApolloClient } from '@apollo/client';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     ExternalLinkSquareAltIcon,
-    WarningTriangleIcon,
 } from '@patternfly/react-icons';
 
 import { docs } from '../config';
@@ -55,6 +54,7 @@ const WaiveForm: React.FC<{}> = () => {
         (store) => store.waive,
     );
     const [value, setValue] = useState('');
+    const [checked, setChecked] = useState(false);
     const [isValid, setIsValid] = useState(false);
     const [validated, setValidated] =
         useState<FormGroupProps['validated']>('default');
@@ -83,6 +83,8 @@ const WaiveForm: React.FC<{}> = () => {
     const invalidText =
         'Reason must have detailed explanation. Provide links to issues, bugs, etc';
     const helperText = '';
+    const agreementText =
+        'I am aware about the impact of this action, and I take full responsibility if something happens. E.g., (broken builds may affect the release of RHEL), etc.';
     const { state, waiveError, timestamp } = waive;
     if (_.isNil(state)) {
         return null;
@@ -111,9 +113,24 @@ const WaiveForm: React.FC<{}> = () => {
                         value={value}
                     />
                 </FormGroup>
+                <FormGroup
+                    fieldId="rquired-agreement"
+                    isRequired
+                    label="Required agreement"
+                    style={{ color: 'red' }}
+                >
+                    <Checkbox
+                        label={agreementText}
+                        id="required-check"
+                        name="required-check"
+                        onChange={setChecked}
+                        isChecked={checked}
+                    />
+                </FormGroup>
+
                 <ActionGroup>
                     <Button
-                        isDisabled={!isValid}
+                        isDisabled={!isValid || !checked}
                         isLoading={madeRequest && !waiveError && !timestamp}
                         onClick={onClickSubmit}
                         variant="primary"
@@ -156,15 +173,6 @@ export const WaiveModal: React.FC<{}> = () => {
     const waive = useSelector<RootStateType, IStateWaiver>(
         (store) => store.waive,
     );
-    const footer = (
-        <Title headingLevel="h4" size="md">
-            <WarningTriangleIcon />
-            <span className="pf-u-pl-sm">
-                You take full responsibility for this action. Your username
-                (Kerberos ID) will be recorded along with the waiver.
-            </span>
-        </Title>
-    );
     const { state, artifact, timestamp } = waive;
     const showWaiveForm = state && artifact && !timestamp;
     const onClose = () => {
@@ -177,7 +185,6 @@ export const WaiveModal: React.FC<{}> = () => {
                 title="Waive test tesult"
                 isOpen={showWaiveForm}
                 onClose={onClose}
-                footer={footer}
             >
                 <WaiveForm />
             </Modal>
