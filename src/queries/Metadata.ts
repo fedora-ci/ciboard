@@ -44,3 +44,14 @@ export const MetadataRawQuery = gql`
         }
     }
 `;
+
+export const MetadataQuery = gql`
+    query MetadataQuery($testcase_name: String!, $product_version: String) {
+        metadata_consolidated(
+            testcase_name: $testcase_name
+            product_version: $product_version
+        ) {
+            payload
+        }
+    }
+`;

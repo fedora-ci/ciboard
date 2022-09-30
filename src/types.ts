@@ -437,3 +437,37 @@ export interface SSTResult {
     tag: string;
     tests_number: string;
 }
+
+export interface Metadata {
+    payload?: MetadataPayload;
+}
+
+export interface MetadataPayload {
+    contact?: MetadataContact;
+    description?: string;
+    dependency?: MetadataDependency[];
+    known_issues?: MetadataKnownIssue[];
+}
+
+export interface MetadataContact {
+    name?: string;
+    url?: string;
+    irc?: string;
+    team?: string;
+    docs?: string;
+    email?: string;
+    gchat_room_url?: string;
+    report_issue_url?: string;
+}
+
+export interface MetadataDependency {
+    comment: string;
+    dependency: 'is_required' | 'is_related_to';
+    testcase_name: string;
+}
+
+export interface MetadataKnownIssue {
+    info: string;
+    status: 'active' | 'fixed' | 'irrelevant';
+    severity: 'blocker' | 'critical' | 'major' | 'normal' | 'minor';
+}

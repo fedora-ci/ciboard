@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _ from 'lodash';
+import _, { isElement, isEmpty, isNil } from 'lodash';
 import {
     CheckCircleIcon,
     ExclamationTriangleIcon,
@@ -26,6 +26,7 @@ import {
     HistoryIcon,
     InfoIcon,
     InProgressIcon,
+    NimblrIconConfig,
     OutlinedQuestionCircleIcon,
     TimesCircleIcon,
     TrafficLightIcon,
@@ -296,6 +297,21 @@ export const getThreadID = (args: {
     }
     if (kai_state) {
         return kai_state.thread_id;
+    }
+    return null;
+};
+
+export const getArtifactProduct = (artifact: Artifact): string | null => {
+    if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
+        const { gate_tag_name } = artifact.payload;
+        if (isEmpty(gate_tag_name)) {
+            return null;
+        }
+        const product = gate_tag_name.match(/^.*(rhel-\d\d?)\.$/);
+        if (isNil(product)) {
+            return null;
+        }
+        return product[1];
     }
     return null;
 };

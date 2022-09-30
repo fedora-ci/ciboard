@@ -21,6 +21,8 @@
 import _ from 'lodash';
 import classNames from 'classnames';
 import * as React from 'react';
+import { useState } from 'react';
+import { useLazyQuery } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import {
     Alert,
@@ -40,13 +42,25 @@ import {
     Label,
     List,
     ListItem,
+    Spinner,
+    Tab,
+    Tabs,
+    TabsProps,
+    TabTitleIcon,
+    TabTitleText,
     Text,
     TextContent,
+    TextVariants,
 } from '@patternfly/react-core';
 
 import {
+    ExclamationCircleIcon,
+    ExclamationTriangleIcon,
+    InfoCircleIcon,
+    ListIcon,
     OutlinedThumbsUpIcon,
     RegisteredIcon,
+    RegistryIcon,
     ThumbsUpIcon,
     WeeblyIcon,
 } from '@patternfly/react-icons';
@@ -58,6 +72,8 @@ import {
     renderStatusIcon,
     timestampForUser,
     getGreenwaveDocsUrl,
+    getTestcaseName,
+    getArtifactProduct,
 } from '../utils/artifactUtils';
 import { Artifact, StateGreenwaveType } from '../artifact';
 import { isResultMissing } from '../utils/artifactUtils';
@@ -72,6 +88,14 @@ import { createWaiver } from '../actions';
 import { KaiDocsButton, KaiRerunButton } from './ArtifactKaiState';
 import { docs } from '../config';
 import { ExternalLink } from './ExternalLink';
+import { MetadataQuery } from '../queries/Metadata';
+import {
+    MetadataQueryResult,
+    TestDependency,
+    TestInfo,
+    TestKnownIssues,
+    useOnceCall,
+} from './MetadataInfo';
 
 export interface PropsWithGreenwaveState {
     state: StateGreenwaveType;
@@ -320,6 +344,182 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     );
 };
 
+interface BodyForGreenwaveStateProps {
+    state: StateGreenwaveType;
+    artifact: Artifact;
+    isVisible: boolean;
+}
+
+export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
+    props,
+) => {
+    const { artifact, isVisible, state } = props;
+    const [activeTabKey, setActiveTabKey] = useState<number | string>(
+        'InitialState',
+    );
+    const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
+        setActiveTabKey(tabIndex);
+    };
+
+    const testcase_name = getTestcaseName(state);
+    const product_version = getArtifactProduct(artifact);
+    const variables: any = { testcase_name };
+    if (!_.isNil(product_version)) {
+        variables.product_version = product_version;
+    }
+    const [getMetadata, { loading: metadataLoading, error: _error, data }] =
+        useLazyQuery<MetadataQueryResult>(MetadataQuery, {
+            variables,
+            errorPolicy: 'all',
+            /* need to re-fetch each time when user press save/back button */
+            fetchPolicy: 'cache-and-network',
+            notifyOnNetworkStatusChange: true,
+        });
+    useOnceCall(() => {
+        /* Fetch data only when ci-system is expanded. */
+        getMetadata();
+    }, isVisible);
+    if (!isVisible) {
+        return null;
+    }
+    if (metadataLoading) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading test
+                    information…
+                </FlexItem>
+            </Flex>
+        );
+    }
+    const metadata = data?.metadata_consolidated;
+    if (_.isNil(metadata) || _.isNil(metadata?.payload)) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>Cannot fetch metadata info.</FlexItem>
+            </Flex>
+        );
+    }
+    const { contact, dependency, description, known_issues } = metadata.payload;
+
+    const isTestResultsTabHidden = !isResultMissing(state) && !state.waiver;
+    const isTestKnownIssuesTabHidden = !known_issues;
+    const isTestDependencyTabHidden = !dependency;
+    const isTestInfoTabHidden = !description && !contact;
+    const isTestDetailsTabHidden = !state.result;
+    if (activeTabKey === 'InitialState') {
+        /* find first tab with info */
+        const activeTab = _.findIndex([
+            !isTestResultsTabHidden,
+            !isTestKnownIssuesTabHidden,
+            !isTestDependencyTabHidden,
+            !isTestInfoTabHidden,
+            !isTestDetailsTabHidden,
+        ]);
+        setActiveTabKey(activeTab);
+    }
+    return (
+        <>
+            <Tabs
+                activeKey={activeTabKey}
+                onSelect={handleTabClick}
+                isBox
+                aria-label="Tabs with ci-system info"
+                role="region"
+            >
+                <Tab
+                    eventKey={0}
+                    isHidden={isTestResultsTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <RegistryIcon />
+                            </TabTitleIcon>{' '}
+                            <TabTitleText>Result</TabTitleText>{' '}
+                        </>
+                    }
+                    aria-label="Tab with results info"
+                >
+                    <GreenwaveWaiver state={state} />
+                    {isResultMissing(state) && <GreenwaveMissingHints />}
+                </Tab>
+                <Tab
+                    eventKey={1}
+                    isHidden={isTestKnownIssuesTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ExclamationCircleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Known issues</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with known issues"
+                >
+                    <>
+                        <TestKnownIssues metadata={metadata} />
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={2}
+                    isHidden={isTestDependencyTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ExclamationTriangleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Dependency</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with dependency information"
+                >
+                    <>
+                        <TestDependency metadata={metadata} />
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={3}
+                    isHidden={isTestInfoTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <InfoCircleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Test info</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with test info"
+                >
+                    <>
+                        <TestInfo metadata={metadata} />
+                        <TextContent>
+                            <Text component={TextVariants.small}>
+                                CI owners can update info on metadata page.
+                            </Text>
+                        </TextContent>
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={4}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ListIcon />
+                            </TabTitleIcon>{' '}
+                            <TabTitleText>Details</TabTitleText>{' '}
+                        </>
+                    }
+                    isHidden={isTestDetailsTabHidden}
+                    aria-label="Tab with test details"
+                >
+                    <GreenwaveResultInfo state={state} />
+                    <GreenwaveResultData state={state} />
+                </Tab>
+            </Tabs>
+        </>
+    );
+};
+
 export const GreenwaveMissingHints: React.FC<{}> = (props) => (
     <Alert isInline variant="info" title="Required gating test">
         <TextContent className="pf-u-font-size-sm">
@@ -443,14 +643,11 @@ export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
                 id="ex-result-expand1"
                 isHidden={!forceExpand}
             >
-                {forceExpand && (
-                    <>
-                        <GreenwaveWaiver state={state} />
-                        {isResultMissing(state) && <GreenwaveMissingHints />}
-                        <GreenwaveResultInfo state={state} />
-                        <GreenwaveResultData state={state} />
-                    </>
-                )}
+                <BodyForGreenwaveState
+                    state={state}
+                    artifact={artifact}
+                    isVisible={forceExpand}
+                />
             </DataListContent>
         </DataListItem>
     );
