@@ -137,6 +137,10 @@
     --pf-c-table--BackgroundColor: transparent !important;
 }
 
+.metadataTable {
+    --pf-c-table--BackgroundColor: transparent !important;
+}
+
 .artifactsTable :global(.pf-m-expanded) {
     background: var(--pf-global--BackgroundColor--100);
 }

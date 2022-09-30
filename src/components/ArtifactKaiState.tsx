@@ -21,6 +21,8 @@
 import _ from 'lodash';
 import classNames from 'classnames';
 import * as React from 'react';
+import { useState } from 'react';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import {
     Alert,
     Button,
@@ -33,15 +35,31 @@ import {
     DescriptionList,
     Flex,
     FlexItem,
+    Spinner,
+    Tab,
+    Tabs,
+    TabsProps,
+    TabTitleIcon,
+    TabTitleText,
     Text,
     TextContent,
+    TextVariants,
 } from '@patternfly/react-core';
-import { BookIcon, RedoIcon } from '@patternfly/react-icons';
+import {
+    BookIcon,
+    ExclamationCircleIcon,
+    ExclamationTriangleIcon,
+    InfoCircleIcon,
+    ListIcon,
+    RedoIcon,
+    RegistryIcon,
+} from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
 import { mappingDatagrepperUrl } from '../config';
 import { TestSuites } from './TestSuites';
 import {
+    getArtifactProduct,
     getKaiExtendedStatus,
     getTestcaseName,
     getThreadID,
@@ -49,7 +67,7 @@ import {
     LinkifyNewTab,
     renderStatusIcon,
 } from '../utils/artifactUtils';
-import { MSG_V_1, MSG_V_0_1 } from '../types';
+import { MSG_V_1, MSG_V_0_1, Metadata } from '../types';
 import { Artifact, StateKaiType, StateNameType } from '../artifact';
 import {
     StateDetailsEntry,
@@ -58,9 +76,18 @@ import {
     mkPairs,
 } from './ArtifactState';
 import { ArtifactStateProps } from './ArtifactState';
+import {
+    MetadataQueryResult,
+    TestDependency,
+    TestInfo,
+    TestKnownIssues,
+    useOnceCall,
+} from './MetadataInfo';
+import { MetadataQuery } from '../queries/Metadata';
 
 export interface PropsWithKaiState {
     state: StateKaiType;
+    metadata?: Metadata;
 }
 
 /**
@@ -356,6 +383,160 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
     );
 };
 
+interface BodyForKaiStateProps {
+    state: StateKaiType;
+    artifact: Artifact;
+    isVisible: boolean;
+}
+
+export const BodyForKaiState: React.FC<BodyForKaiStateProps> = (props) => {
+    const { artifact, isVisible, state } = props;
+    const [activeTabKey, setActiveTabKey] = useState<number | string>(0);
+    const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
+        setActiveTabKey(tabIndex);
+    };
+    const testcase_name = getTestcaseName(state);
+    const product_version = getArtifactProduct(artifact);
+    const variables: any = { testcase_name };
+    if (!_.isNil(product_version)) {
+        variables.product_version = product_version;
+    }
+    const [getMetadata, { loading: metadataLoading, error: _error, data }] =
+        useLazyQuery<MetadataQueryResult>(MetadataQuery, {
+            variables,
+            errorPolicy: 'all',
+            /* need to re-fetch each time when user press save/back button */
+            fetchPolicy: 'cache-and-network',
+            notifyOnNetworkStatusChange: true,
+        });
+    useOnceCall(() => {
+        /* Fetch data only when ci-system is expanded. */
+        getMetadata();
+    }, isVisible);
+    if (!isVisible) {
+        return null;
+    }
+    if (metadataLoading) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading test
+                    information…
+                </FlexItem>
+            </Flex>
+        );
+    }
+    const metadata = data?.metadata_consolidated;
+    if (_.isNil(metadata) || _.isNil(metadata?.payload)) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>Cannot fetch metadata info.</FlexItem>
+            </Flex>
+        );
+    }
+    const { contact, dependency, description, known_issues } = metadata.payload;
+    const isTestKnownIssuesTabHidden = !known_issues;
+    const isTestDependencyTabHidden = !dependency;
+    const isTestInfoTabHidden = !description && !contact;
+    return (
+        <>
+            <Tabs
+                activeKey={activeTabKey}
+                onSelect={handleTabClick}
+                isBox
+                aria-label="Tabs with ci-system info"
+                role="region"
+            >
+                <Tab
+                    eventKey={0}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <RegistryIcon />
+                            </TabTitleIcon>{' '}
+                            <TabTitleText>Result</TabTitleText>{' '}
+                        </>
+                    }
+                    aria-label="Tab with results info"
+                >
+                    <ResultNote state={state} />
+                    <KaiDetailedResults state={state} artifact={artifact} />
+                </Tab>
+                <Tab
+                    eventKey={1}
+                    isHidden={isTestKnownIssuesTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ExclamationCircleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Known issues</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with known issues"
+                >
+                    <>
+                        <TestKnownIssues metadata={metadata} />
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={2}
+                    isHidden={isTestDependencyTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ExclamationTriangleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Dependency</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with dependency information"
+                >
+                    <>
+                        <TestDependency metadata={metadata} />
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={3}
+                    isHidden={isTestInfoTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <InfoCircleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Test info</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with test info"
+                >
+                    <>
+                        <TestInfo metadata={metadata} />
+                        <TextContent>
+                            <Text component={TextVariants.small}>
+                                CI owners can update info on metadata page.
+                            </Text>
+                        </TextContent>
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={4}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ListIcon />
+                            </TabTitleIcon>{' '}
+                            <TabTitleText>Details</TabTitleText>{' '}
+                        </>
+                    }
+                    aria-label="Tab with test details"
+                >
+                    <KaiStateMapping state={state} artifact={artifact} />
+                </Tab>
+            </Tabs>
+        </>
+    );
+};
+
 export type ArtifactKaiStateProps = ArtifactStateProps & PropsWithKaiState;
 
 export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
@@ -418,13 +599,11 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
                 id="ex-result-expand"
                 isHidden={!forceExpand}
             >
-                {forceExpand && (
-                    <>
-                        <ResultNote state={state} />
-                        <KaiStateMapping state={state} artifact={artifact} />
-                        <KaiDetailedResults state={state} artifact={artifact} />
-                    </>
-                )}
+                <BodyForKaiState
+                    state={state}
+                    artifact={artifact}
+                    isVisible={forceExpand}
+                />
             </DataListContent>
         </DataListItem>
     );

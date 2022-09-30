@@ -21,6 +21,7 @@
 import _ from 'lodash';
 import classNames from 'classnames';
 import * as React from 'react';
+import { useState } from 'react';
 import {
     DataListCell,
     DataListContent,
@@ -31,10 +32,27 @@ import {
     Flex,
     FlexItem,
     Label,
+    Spinner,
+    Tab,
+    TabProps,
+    Tabs,
+    TabsProps,
+    TabTitleIcon,
+    TabTitleText,
     Text,
     TextContent,
+    TextVariants,
 } from '@patternfly/react-core';
-import { RegisteredIcon, WeeblyIcon } from '@patternfly/react-icons';
+import { useLazyQuery, useQuery } from '@apollo/client';
+import {
+    ExclamationCircleIcon,
+    ExclamationTriangleIcon,
+    InfoCircleIcon,
+    ListIcon,
+    RegisteredIcon,
+    RegistryIcon,
+    WeeblyIcon,
+} from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
 import { Artifact, StateGreenwaveKaiType } from '../artifact';
@@ -56,6 +74,15 @@ import {
     KaiStateMapping,
     ResultNote,
 } from './ArtifactKaiState';
+import {
+    MetadataQueryResult,
+    TestDependency,
+    TestInfo,
+    TestKnownIssues,
+    useOnceCall,
+} from './MetadataInfo';
+import { MetadataQuery } from '../queries/Metadata';
+import { getTestcaseName, getArtifactProduct } from '../utils/artifactUtils';
 
 interface GreenwaveKaiStateActionsProps {
     artifact: Artifact;
@@ -152,6 +179,176 @@ export const FaceForGreenwaveKaiState: React.FC<
     );
 };
 
+interface BodyForGreenwaveKaiStateProps {
+    state: StateGreenwaveKaiType;
+    artifact: Artifact;
+    isVisible: boolean;
+}
+
+export const BodyForGreenwaveKaiState: React.FC<
+    BodyForGreenwaveKaiStateProps
+> = (props) => {
+    const { artifact, isVisible, state } = props;
+    const [activeTabKey, setActiveTabKey] = useState<number | string>(
+        'tab-test-xunit',
+    );
+    const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
+        setActiveTabKey(tabIndex);
+    };
+    const testcase_name = getTestcaseName(state);
+    const product_version = getArtifactProduct(artifact);
+    const variables: any = { testcase_name };
+    if (!_.isNil(product_version)) {
+        variables.product_version = product_version;
+    }
+    const [getMetadata, { loading: metadataLoading, error: _error, data }] =
+        useLazyQuery<MetadataQueryResult>(MetadataQuery, {
+            variables,
+            errorPolicy: 'all',
+            /* need to re-fetch each time when user press save/back button */
+            fetchPolicy: 'cache-and-network',
+            notifyOnNetworkStatusChange: true,
+        });
+    useOnceCall(() => {
+        /* Fetch data only when ci-system is expanded. */
+        getMetadata();
+    }, isVisible);
+    if (!isVisible) {
+        return null;
+    }
+    if (metadataLoading) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading test
+                    information…
+                </FlexItem>
+            </Flex>
+        );
+    }
+    const metadata = data?.metadata_consolidated;
+    if (_.isNil(metadata) || _.isNil(metadata?.payload)) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>Cannot fetch metadata info.</FlexItem>
+            </Flex>
+        );
+    }
+    const { contact, dependency, description, known_issues } = metadata.payload;
+    const isTestInfoTabHidden = !description && !contact;
+    const isTestKnownIssuesTabHidden = !known_issues;
+    const isTestDependencyTabHidden = !dependency;
+    return (
+        <>
+            <Tabs
+                activeKey={activeTabKey}
+                onSelect={handleTabClick}
+                isBox
+                aria-label="Tabs with ci-system info"
+                role="region"
+            >
+                <Tab
+                    eventKey={'tab-test-xunit'}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <RegistryIcon />
+                            </TabTitleIcon>{' '}
+                            <TabTitleText>Result</TabTitleText>{' '}
+                        </>
+                    }
+                    aria-label="Tab with xunit results"
+                >
+                    <GreenwaveWaiver state={state.gs} />
+                    <ResultNote state={state.ks} />
+                    <KaiDetailedResults artifact={artifact} state={state.ks} />
+                </Tab>
+                <Tab
+                    eventKey={'tab-test-known-issues'}
+                    isHidden={isTestKnownIssuesTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ExclamationCircleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Known issues</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with known issues"
+                >
+                    <>
+                        <TestKnownIssues metadata={metadata} />
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={'tab-test-deps'}
+                    isHidden={isTestDependencyTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ExclamationTriangleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Dependency</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with dependency information"
+                >
+                    <>
+                        <TestDependency metadata={metadata} />
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={'tab-test-info'}
+                    isHidden={isTestInfoTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <InfoCircleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Test info</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with test info"
+                >
+                    <>
+                        <TestInfo metadata={metadata} />
+                        <TextContent>
+                            <Text component={TextVariants.small}>
+                                CI owners can update info on metadata page.
+                            </Text>
+                        </TextContent>
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={'tab-test-details'}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ListIcon />
+                            </TabTitleIcon>{' '}
+                            <TabTitleText>Details</TabTitleText>{' '}
+                        </>
+                    }
+                    aria-label="Tab with test details"
+                >
+                    <GreenwaveResultInfo state={state.gs} />
+                    <KaiStateMapping artifact={artifact} state={state.ks} />
+                </Tab>
+            </Tabs>
+        </>
+    );
+};
+
+export const TabWithChildren = React.forwardRef(
+    (props: TabProps, ref: React.Ref<any>) => {
+        const { children } = props;
+        if (_.isNil(children)) {
+            return null;
+        }
+        return <Tab {...props} ref={ref} />;
+    },
+);
+
 export interface ArtifactGreenwaveKaiStateProps extends ArtifactStateProps {
     state: StateGreenwaveKaiType;
 }
@@ -185,6 +382,7 @@ export const ArtifactGreenwaveKaiState: React.FC<
     const resultClasses = classNames(styles.helpSelect, {
         [styles.expandedResult]: forceExpand,
     });
+
     const toRender = (
         <DataListItem
             aria-labelledby="artifact-item-result"
@@ -219,18 +417,11 @@ export const ArtifactGreenwaveKaiState: React.FC<
                 id="ex-result-expand1"
                 isHidden={!forceExpand}
             >
-                {forceExpand && (
-                    <>
-                        <GreenwaveWaiver state={state.gs} />
-                        <ResultNote state={state.ks} />
-                        <GreenwaveResultInfo state={state.gs} />
-                        <KaiStateMapping artifact={artifact} state={state.ks} />
-                        <KaiDetailedResults
-                            artifact={artifact}
-                            state={state.ks}
-                        />
-                    </>
-                )}
+                <BodyForGreenwaveKaiState
+                    state={state}
+                    artifact={artifact}
+                    isVisible={forceExpand}
+                />
             </DataListContent>
         </DataListItem>
     );
