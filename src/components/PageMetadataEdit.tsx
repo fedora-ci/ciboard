@@ -844,7 +844,7 @@ const FormGroupContactsEmail: FunctionComponent<FormGroupContactsEmailProps> = (
         <FormGroup
             label="Team's Email"
             fieldId="form-contacts-email"
-            helperText="URL format"
+            helperText="Email format"
             helperTextInvalid="Invalid email"
             helperTextInvalidIcon={<ExclamationCircleIcon />}
             validated={validated}

@@ -502,7 +502,7 @@ const MetadataList: FunctionComponent<{}> = () => {
 
 export function PageMetadataList() {
     return (
-        <PageCommon title={`Help | ${config.defaultTitle}`}>
+        <PageCommon title={`Metadata | ${config.defaultTitle}`}>
             <Flex grow={{ default: undefined }}>
                 <FlexItem>
                     <MetadataList />
