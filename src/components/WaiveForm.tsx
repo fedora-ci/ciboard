@@ -83,8 +83,11 @@ const WaiveForm: React.FC<{}> = () => {
     const invalidText =
         'Reason must have detailed explanation. Provide links to issues, bugs, etc';
     const helperText = '';
-    const agreementText =
-        'I am aware about the impact of this action, and I take full responsibility if something happens. E.g., (broken builds may affect the release of RHEL), etc.';
+    const agreementLabel = 'I agree and acknowledge the above information';
+    const agreementText = `Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
+    composes and unverified or failed builds can cause issues in system integration. Before waiving these tests it is good to check 
+    other possible options, in particular some CI-systems can fail due to outages and different circumstances. It is good to restart 
+    the test or to contact CI-owners for assistance. Proceed waiving test-result only when other efforts have not succeeded.`;
     const { state, waiveError, timestamp } = waive;
     if (_.isNil(state)) {
         return null;
@@ -96,6 +99,14 @@ const WaiveForm: React.FC<{}> = () => {
                 <Text component={TextVariants.h3}>{waiver_for}</Text>
             </TextContent>
             <Form onSubmit={(event) => event.preventDefault()}>
+                <TextContent>
+                    <Text
+                        style={{ marginTop: '0.5em' }}
+                        component={TextVariants.small}
+                    >
+                        {agreementText}
+                    </Text>
+                </TextContent>
                 <FormGroup
                     fieldId="reason"
                     helperText={helperText}
@@ -117,10 +128,9 @@ const WaiveForm: React.FC<{}> = () => {
                     fieldId="rquired-agreement"
                     isRequired
                     label="Required agreement"
-                    style={{ color: 'red' }}
                 >
                     <Checkbox
-                        label={agreementText}
+                        label={agreementLabel}
                         id="required-check"
                         name="required-check"
                         onChange={setChecked}
