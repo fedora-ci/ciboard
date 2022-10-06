@@ -103,6 +103,30 @@ const greenwaveDecisionFragment = gql`
     }
 `;
 
+const commitInfoFragment = gql`
+    fragment CommitInfoFragment on CommitObject {
+        committer_date_seconds
+        committer_email
+        committer_name
+    }
+`;
+
+const tagHistoryFragment = gql`
+    fragment TagHistoryFragment on KojiHistoryType {
+        tag_listing {
+            tag_name
+            tag_id
+            active
+            create_ts
+            creator_id
+            creator_name
+            revoke_ts
+            revoker_id
+            revoker_name
+        }
+    }
+`;
+
 export interface ArtifactsDetailedInfoKojiTaskData {
     koji_task?: KojiTaskInfo;
 }
@@ -131,27 +155,54 @@ export const ArtifactsDetailedInfoKojiTask = gql`
                     id
                 }
                 history(instance: $koji_instance) {
-                    tag_listing {
-                        tag_name
-                        tag_id
-                        active
-                        create_ts
-                        creator_id
-                        creator_name
-                        revoke_ts
-                        revoker_id
-                        revoker_name
-                    }
+                    ...TagHistoryFragment
                 }
                 commit_obj(instance: $distgit_instance) {
-                    committer_name
-                    committer_email
-                    committer_date_seconds
-                    commit_message
+                    ...CommitInfoFragment
                 }
             }
         }
     }
+    ${commitInfoFragment}
+    ${tagHistoryFragment}
+`;
+
+export interface ArtifactsDetailedInfoModuleBuildData {
+    // TODO: Import the appropriate types from backend.
+    mbs_build?: any;
+}
+
+export const ArtifactsDetailedInfoModuleBuild = gql`
+    query ArtifactsDetailedInfoModuleBuild(
+        $build_id: Int!
+        $mbs_instance: MbsInstanceInputType
+        $koji_instance: KojiInstanceInputType
+        $distgit_instance: DistGitInstanceInputType
+    ) {
+        mbs_build(build_id: $build_id, instance: $mbs_instance) {
+            commit(instance: $distgit_instance) {
+                ...CommitInfoFragment
+            }
+            id
+            name
+            owner
+            scmurl
+            tag_history(instance: $koji_instance) {
+                ...TagHistoryFragment
+            }
+            tags(instance: $koji_instance) {
+                id
+                name
+            }
+            tasks {
+                id
+                nvr
+            }
+            time_completed
+        }
+    }
+    ${commitInfoFragment}
+    ${tagHistoryFragment}
 `;
 
 export const ArtifactsCompleteQuery = gql`

@@ -46,6 +46,8 @@ import { TabClickHandlerType } from '../types';
 import {
     ArtifactsDetailedInfoKojiTask,
     ArtifactsDetailedInfoKojiTaskData,
+    ArtifactsDetailedInfoModuleBuild,
+    ArtifactsDetailedInfoModuleBuildData,
 } from '../queries/Artifacts';
 import { Artifact, KojiBuildTagging, koji_instance } from '../artifact';
 import {
@@ -235,12 +237,136 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
             <Tab eventKey={2} title={<TabTitleText>Koji History</TabTitleText>}>
                 <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
                     <FlexItem
+                        flex={{ default: 'flex_1' }}
                         style={{
                             height: '10em',
                             overflow: 'auto',
                         }}
                     >
                         <HistoryList history={build.history?.tag_listing} />
+                    </FlexItem>
+                </Flex>
+            </Tab>
+        </Tabs>
+    );
+};
+
+interface ArtifactDetailedInfoModuleBuildProps {
+    artifact: Artifact;
+}
+
+const ArtifactDetailedInfoModuleBuild: React.FC<
+    ArtifactDetailedInfoModuleBuildProps
+> = ({ artifact }) => {
+    const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
+    const handleTabClick: TabClickHandlerType = (_event, tabIndex) => {
+        setActiveTabKey(tabIndex);
+    };
+    const instance = koji_instance(artifact.type);
+
+    const { loading, data } = useQuery<ArtifactsDetailedInfoModuleBuildData>(
+        ArtifactsDetailedInfoModuleBuild,
+        {
+            variables: {
+                build_id: _.toNumber(artifact.aid),
+                mbs_instance: instance,
+                koji_instance: instance,
+                distgit_instance: instance,
+            },
+            errorPolicy: 'all',
+            notifyOnNetworkStatusChange: true,
+        },
+    );
+
+    if (loading) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading build
+                    info…
+                </FlexItem>
+            </Flex>
+        );
+    }
+
+    const haveData = !loading && data && !_.isEmpty(data.mbs_build);
+    if (!haveData) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <Alert
+                    isInline
+                    isPlain
+                    title="No build information available"
+                    variant="info"
+                />
+            </Flex>
+        );
+    }
+    const build = data.mbs_build;
+
+    return (
+        <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
+            <Tab eventKey={0} title={<TabTitleText>Build Info</TabTitleText>}>
+                Build ID, Build owner, committer, Git commit, etc. all here + a
+                link to the modulemd
+            </Tab>
+            <Tab eventKey={1} title={<TabTitleText>Components</TabTitleText>}>
+                <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
+                    <FlexItem
+                        flex={{ default: 'flex_1' }}
+                        style={{
+                            height: '10em',
+                            overflow: 'auto',
+                        }}
+                    >
+                        <List
+                            component={ListComponent.ol}
+                            type={OrderType.number}
+                        >
+                            {_.map(build.tasks, (task) => (
+                                <ListItem key={task.nvr}>
+                                    {task.nvr} (
+                                    <ExternalLink
+                                        // TODO: Use the correct URL to Koji task.
+                                        href="#"
+                                    >
+                                        task #{task.id}
+                                    </ExternalLink>
+                                    )
+                                </ListItem>
+                            ))}
+                        </List>
+                    </FlexItem>
+                </Flex>
+            </Tab>
+            <Tab eventKey={2} title={<TabTitleText>Active Tags</TabTitleText>}>
+                <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
+                    <List component={ListComponent.ol} type={OrderType.number}>
+                        {_.map(build.tags, (tag) => (
+                            <ListItem key={tag.id}>
+                                <ExternalLink
+                                    href={mkLinkKojiWebTagId(tag.id, instance)}
+                                >
+                                    {tag.name}
+                                </ExternalLink>
+                            </ListItem>
+                        ))}
+                    </List>
+                </Flex>
+            </Tab>
+            <Tab
+                eventKey={3}
+                title={<TabTitleText>Tagging History</TabTitleText>}
+            >
+                <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
+                    <FlexItem
+                        flex={{ default: 'flex_1' }}
+                        style={{
+                            height: '10em',
+                            overflow: 'auto',
+                        }}
+                    >
+                        <HistoryList history={build.tag_history?.tag_listing} />
                     </FlexItem>
                 </Flex>
             </Tab>
@@ -324,16 +450,9 @@ interface ArtifactDetailedInfoProps {
 }
 
 export function ArtifactDetailedInfo({ artifact }: ArtifactDetailedInfoProps) {
-    if (['brew-build', 'koji-build', 'koji-build-cs'].includes(artifact.type)) {
-        return (
-            <>
-                <ArtifactDetailedInfoKojiBuild
-                    key={artifact.aid}
-                    artifact={artifact}
-                />
-            </>
-        );
-    } else {
-        return <></>;
-    }
+    if (['brew-build', 'koji-build', 'koji-build-cs'].includes(artifact.type))
+        return <ArtifactDetailedInfoKojiBuild artifact={artifact} />;
+    else if (artifact.type === 'redhat-module')
+        return <ArtifactDetailedInfoModuleBuild artifact={artifact} />;
+    return null;
 }

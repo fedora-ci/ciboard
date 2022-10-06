@@ -418,6 +418,7 @@ export const koji_instance = (type: ArtifactType): KojiInstanceType => {
         case 'koji-build-cs':
             return 'cs';
         case 'brew-build':
+        case 'redhat-module':
             return 'rh';
         default:
             throw new Error(`Unknown type: ${type}`);
@@ -425,7 +426,6 @@ export const koji_instance = (type: ArtifactType): KojiInstanceType => {
 };
 
 export interface CommitObject {
-    commit_message: string;
     committer_date_seconds: number;
     committer_email: string;
     committer_name: string;
