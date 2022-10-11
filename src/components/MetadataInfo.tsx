@@ -39,7 +39,6 @@ import {
 } from '@patternfly/react-table';
 
 import styles from '../custom.module.css';
-import { Artifact, StateType } from '../artifact';
 import { LinkifyNewTab } from '../utils/artifactUtils';
 import { mkLabel, StateDetailsEntry } from './ArtifactState';
 import {
@@ -137,11 +136,6 @@ const KnownIssues: React.FC<KnownIssuesProps> = (props) => {
         info: 'Info',
         status: 'Status',
         severity: 'Severity',
-    };
-
-    const depReadable = {
-        is_required: 'Is required',
-        is_related_to: 'Is related to',
     };
 
     return (
