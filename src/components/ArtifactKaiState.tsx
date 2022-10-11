@@ -22,7 +22,7 @@ import _ from 'lodash';
 import classNames from 'classnames';
 import * as React from 'react';
 import { useState } from 'react';
-import { useLazyQuery, useQuery } from '@apollo/client';
+import { useLazyQuery } from '@apollo/client';
 import {
     Alert,
     Button,

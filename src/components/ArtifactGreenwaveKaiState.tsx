@@ -43,7 +43,7 @@ import {
     TextContent,
     TextVariants,
 } from '@patternfly/react-core';
-import { useLazyQuery, useQuery } from '@apollo/client';
+import { useLazyQuery } from '@apollo/client';
 import {
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
@@ -338,16 +338,6 @@ export const BodyForGreenwaveKaiState: React.FC<
         </>
     );
 };
-
-export const TabWithChildren = React.forwardRef(
-    (props: TabProps, ref: React.Ref<any>) => {
-        const { children } = props;
-        if (_.isNil(children)) {
-            return null;
-        }
-        return <Tab {...props} ref={ref} />;
-    },
-);
 
 export interface ArtifactGreenwaveKaiStateProps extends ArtifactStateProps {
     state: StateGreenwaveKaiType;

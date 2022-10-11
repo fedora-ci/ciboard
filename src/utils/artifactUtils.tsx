@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _, { isElement, isEmpty, isNil } from 'lodash';
+import _ from 'lodash';
 import {
     CheckCircleIcon,
     ExclamationTriangleIcon,
@@ -26,7 +26,6 @@ import {
     HistoryIcon,
     InfoIcon,
     InProgressIcon,
-    NimblrIconConfig,
     OutlinedQuestionCircleIcon,
     TimesCircleIcon,
     TrafficLightIcon,
@@ -302,13 +301,17 @@ export const getThreadID = (args: {
 };
 
 export const getArtifactProduct = (artifact: Artifact): string | null => {
+    /*
+     * Gating based on Brew tags is available only in RHEL.
+     * Cenots/Fedora doesn't have gating workflow.
+     */
     if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
         const { gate_tag_name } = artifact.payload;
-        if (isEmpty(gate_tag_name)) {
+        if (_.isEmpty(gate_tag_name)) {
             return null;
         }
         const product = gate_tag_name.match(/^.*(rhel-\d\d?)\.$/);
-        if (isNil(product)) {
+        if (_.isNil(product)) {
             return null;
         }
         return product[1];
