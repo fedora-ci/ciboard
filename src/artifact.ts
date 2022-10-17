@@ -480,3 +480,20 @@ export interface KojiBuildInfo {
 export interface KojiTaskInfo {
     builds?: KojiBuildInfo[];
 }
+
+export interface MbsTask {
+    id?: number;
+    nvr: string;
+}
+
+export interface MbsBuildInfo {
+    commit?: CommitObject;
+    id: number;
+    name: string;
+    owner: string;
+    scmurl?: string;
+    tag_history?: KojiHistory;
+    tags?: KojiBuildTag[];
+    tasks: MbsTask[];
+    time_completed?: string;
+}
