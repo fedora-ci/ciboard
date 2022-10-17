@@ -23,6 +23,7 @@ import {
     Artifact,
     ComponentComponentMappingType,
     KojiTaskInfo,
+    MbsBuildInfo,
 } from '../artifact';
 
 const stateEntryFragment = gql`
@@ -168,8 +169,7 @@ export const ArtifactsDetailedInfoKojiTask = gql`
 `;
 
 export interface ArtifactsDetailedInfoModuleBuildData {
-    // TODO: Import the appropriate types from backend.
-    mbs_build?: any;
+    mbs_build?: MbsBuildInfo;
 }
 
 export const ArtifactsDetailedInfoModuleBuild = gql`
