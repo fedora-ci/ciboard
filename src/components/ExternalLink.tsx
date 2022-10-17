@@ -20,14 +20,15 @@
  */
 
 export interface ExternalLinkProps {
-    href: string;
+    className?: string;
+    href?: string;
 }
 
 export function ExternalLink(
     props: React.PropsWithChildren<ExternalLinkProps>,
 ) {
     return (
-        <a href={props.href} target="_blank" rel="noopener noreferrer">
+        <a target="_blank" rel="noopener noreferrer" {...props}>
             {props.children}
         </a>
     );
