@@ -102,6 +102,10 @@
     transform: none;
 }
 
+dl.buildInfo {
+    column-gap: var(--pf-global--spacer--lg);
+}
+
 .buildInfoCommitHash,
 .buildInfoTimestamp {
     font-size: 0.85em;
