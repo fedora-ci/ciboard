@@ -409,7 +409,15 @@ export type ComponentComponentMappingType = {
 /**
  * GraphQL KojiInstanceInputType
  */
-export type KojiInstanceType = 'fp' | 'cs' | 'rh';
+export type KojiInstanceType = 'cs' | 'fp' | 'rh';
+/**
+ * GraphQL DistGitInstanceInputType
+ */
+export type DistGitInstanceType = KojiInstanceType;
+/**
+ * GraphQL MbsInstanceInputType
+ */
+export type MbsInstanceType = KojiInstanceType;
 
 export const koji_instance = (type: ArtifactType): KojiInstanceType => {
     switch (type) {
