@@ -53,9 +53,12 @@ import {
 import { Artifact, KojiBuildTagging, koji_instance } from '../artifact';
 import {
     mkCommitHashFromSource,
+    mkLinkFileInGit,
     mkLinkKojiWebBuildId,
     mkLinkKojiWebTagId,
+    mkLinkKojiWebTask,
     mkLinkKojiWebUserId,
+    mkLinkMbsBuild,
     mkLinkPkgsDevelFromSource,
 } from '../utils/artifactUtils';
 import { ExternalLink } from './ExternalLink';
@@ -266,9 +269,9 @@ interface ArtifactDetailedInfoModuleBuildProps {
 const ArtifactDetailedInfoModuleBuild: React.FC<
     ArtifactDetailedInfoModuleBuildProps
 > = ({ artifact }) => {
-    const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
+    const [activeTabKey, setActiveTabKey] = useState<string>('build-info');
     const handleTabClick: TabClickHandlerType = (_event, tabIndex) => {
-        setActiveTabKey(tabIndex);
+        setActiveTabKey(tabIndex.toString());
     };
     const instance = koji_instance(artifact.type);
 
@@ -310,15 +313,145 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
             </Flex>
         );
     }
+
     const build = data.mbs_build;
+    if (_.isNil(build)) {
+        console.error('No build found in data.');
+        return null;
+    }
+
+    const moduleName = build.name;
+
+    /* Time of build */
+    const buildTimeLocal = moment(build.time_completed).local();
+    const buildTimeWithTz = buildTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
+    /* Time of commit */
+    let commitTimeWithTz = 'n/a';
+    if (build.commit) {
+        const commitTimeLocal = moment
+            .unix(build.commit.committer_date_seconds)
+            .local();
+        if (commitTimeLocal.isValid())
+            commitTimeWithTz = commitTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
+    }
+
+    const buildWebUrl = mkLinkMbsBuild(build.id, instance);
+    const buildIdCell =
+        (buildWebUrl && (
+            <ExternalLink href={buildWebUrl}>{build.id}</ExternalLink>
+        )) ||
+        build.id.toString();
+
+    const gitCommitLink = build.scmurl && (
+        <ExternalLink
+            className={styles['buildInfoCommitHash']}
+            href={mkLinkPkgsDevelFromSource(build.scmurl, instance)}
+        >
+            {mkCommitHashFromSource(build.scmurl)}
+        </ExternalLink>
+    );
+
+    const modulemdLink = build.scmurl && (
+        <ExternalLink
+            href={mkLinkFileInGit(
+                moduleName,
+                'modules',
+                // Let's assume the Git URL is correct for now.
+                mkCommitHashFromSource(build.scmurl)!,
+                `${moduleName}.yaml`,
+                instance,
+            )}
+        >
+            {moduleName}.yaml
+        </ExternalLink>
+    );
+
+    const descListClassName = classNames(
+        'pf-u-px-lg',
+        'pf-u-py-md',
+        styles['buildInfo'],
+    );
 
     return (
         <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
-            <Tab eventKey={0} title={<TabTitleText>Build Info</TabTitleText>}>
-                Build ID, Build owner, committer, Git commit, etc. all here + a
-                link to the modulemd
+            <Tab
+                eventKey="build-info"
+                title={<TabTitleText>Build Info</TabTitleText>}
+            >
+                <DescriptionList
+                    className={descListClassName}
+                    columnModifier={{ default: '3Col' }}
+                    isAutoColumnWidths
+                    isCompact
+                    isHorizontal
+                >
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>Build ID</DescriptionListTerm>
+                        <DescriptionListDescription>
+                            {buildIdCell}
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>Git commit</DescriptionListTerm>
+                        <DescriptionListDescription>
+                            {gitCommitLink}
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>Modulemd</DescriptionListTerm>
+                        <DescriptionListDescription>
+                            {modulemdLink}
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>Build owner</DescriptionListTerm>
+                        <DescriptionListDescription>
+                            <ExternalLink
+                                href={mkLinkKojiWebUserId(
+                                    build.owner,
+                                    instance,
+                                )}
+                            >
+                                {build.owner}
+                            </ExternalLink>
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>Committer</DescriptionListTerm>
+                        <DescriptionListDescription>
+                            {build.commit?.committer_name || 'n/a'}
+                            &nbsp;&lt;
+                            {build.commit?.committer_email || 'n/a'}
+                            &gt;
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        {/* Intentionally left blank. */}
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>
+                            Build completed
+                        </DescriptionListTerm>
+                        <DescriptionListDescription
+                            className={styles['buildInfoTimestamp']}
+                        >
+                            {buildTimeWithTz}
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                    <DescriptionListGroup>
+                        <DescriptionListTerm>Commit time</DescriptionListTerm>
+                        <DescriptionListDescription
+                            className={styles['buildInfoTimestamp']}
+                        >
+                            {commitTimeWithTz}
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                </DescriptionList>
             </Tab>
-            <Tab eventKey={1} title={<TabTitleText>Components</TabTitleText>}>
+            <Tab
+                eventKey="components"
+                title={<TabTitleText>Components</TabTitleText>}
+            >
                 <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
                     <FlexItem
                         flex={{ default: 'flex_1' }}
@@ -333,21 +466,27 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
                         >
                             {_.map(build.tasks, (task) => (
                                 <ListItem key={task.nvr}>
-                                    {task.nvr} (
-                                    <ExternalLink
-                                        // TODO: Use the correct URL to Koji task.
-                                        href="#"
-                                    >
-                                        task #{task.id}
-                                    </ExternalLink>
-                                    )
+                                    {task.nvr}{' '}
+                                    {task.id && (
+                                        <ExternalLink
+                                            href={mkLinkKojiWebTask(
+                                                task.id,
+                                                instance,
+                                            )}
+                                        >
+                                            (task #{task.id})
+                                        </ExternalLink>
+                                    )}
                                 </ListItem>
                             ))}
                         </List>
                     </FlexItem>
                 </Flex>
             </Tab>
-            <Tab eventKey={2} title={<TabTitleText>Active Tags</TabTitleText>}>
+            <Tab
+                eventKey="active-tags"
+                title={<TabTitleText>Active Tags</TabTitleText>}
+            >
                 <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
                     <List component={ListComponent.ol} type={OrderType.number}>
                         {_.map(build.tags, (tag) => (
@@ -363,7 +502,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
                 </Flex>
             </Tab>
             <Tab
-                eventKey={3}
+                eventKey="tagging-history"
                 title={<TabTitleText>Tagging History</TabTitleText>}
             >
                 <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
