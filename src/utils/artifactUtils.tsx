@@ -38,11 +38,13 @@ import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     Artifact,
     ArtifactType,
+    DistGitInstanceType,
     GreenwaveRequirementTypesType,
     isArtifactMBS,
     isArtifactRPM,
     KaiStateType,
     KojiInstanceType,
+    MbsInstanceType,
     StateExtendedKaiNameType,
     StateGreenwaveKaiType,
     StateGreenwaveType,
@@ -552,6 +554,45 @@ export const mkLinkPkgsDevelFromSource = (
             return `https://pkgs.devel.redhat.com/cgit/${namespace}/${name}/commit/?id=${commit}`;
         default:
             console.warn(`Unknown Koji instance: ${instance}`);
+            return '';
+    }
+};
+
+export const mkLinkFileInGit = (
+    repoName: string,
+    namespace: 'rpms' | 'modules',
+    commit: string,
+    fileName: string,
+    instance: DistGitInstanceType,
+) => {
+    switch (instance) {
+        case 'cs':
+            return `https://gitlab.com/redhat/centos-stream/${namespace}/${repoName}/-/blob/${commit}/${fileName}`;
+        case 'fp':
+            return `https://src.fedoraproject.org/${namespace}/${repoName}/blob/${commit}/f/${fileName}`;
+        case 'rh':
+            return `https://pkgs.devel.redhat.com/cgit/${namespace}/${repoName}/tree/${fileName}?h=${commit}`;
+        default:
+            console.warn(`Unknown Dist-Git instance: ${instance}`);
+            return '';
+    }
+};
+
+export const mkLinkMbsBuild = (
+    buildId: number | string,
+    instance: MbsInstanceType,
+) => {
+    switch (instance) {
+        case 'fp':
+            // TODO: Substitute the MBS frontend instance for Fedora.
+            return `https://koji.fedoraproject.org/koji/buildinfo?buildID=${buildId}`;
+        case 'cs':
+            // TODO: Substitute the MBS frontend instance for CentOS.
+            return `https://kojihub.stream.centos.org/koji/buildinfo?buildID=${buildId}`;
+        case 'rh':
+            return `https://mbsweb.engineering.redhat.com/module/${buildId}`;
+        default:
+            console.warn(`Unknown MBS instance: ${instance}`);
             return '';
     }
 };
