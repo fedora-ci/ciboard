@@ -502,19 +502,29 @@ export const renderStatusIcon = (
     );
 };
 
-export const repoNameAndCommitFromSource = (
-    source: string,
-): [string, string | undefined] => {
-    // source.split() will always be nonempty as long as source is a string.
-    const tailSegment = _.last(source.split('rpms/'))!;
-    const [nameDotGit, commit] = tailSegment.split('#');
-    const name = nameDotGit.replace(/.git$/, '');
-    return [name, commit];
+const SCM_COMMIT_URL_REGEX =
+    /\/(rpms|modules)\/([\w-]+)(?:\.git)?\/?\??#([0-9a-fA-F]+)$/;
+
+export interface ScmUrlComponents {
+    commit: string;
+    name: string;
+    namespace: string;
+}
+
+export const parseScmUrl = (source: string): ScmUrlComponents | undefined => {
+    const match = SCM_COMMIT_URL_REGEX.exec(source);
+    if (!match) {
+        console.error(`Could not parse SCM URL: ${source}`);
+        return;
+    }
+    const [, namespace, name, commit] = match;
+    return { namespace, name, commit };
 };
 
 export const mkCommitHashFromSource = (source: string): string | undefined => {
-    const [_name, commit] = repoNameAndCommitFromSource(source);
-    return commit;
+    const components = parseScmUrl(source);
+    if (!components) return;
+    return components.commit;
 };
 
 /**
@@ -530,14 +540,16 @@ export const mkLinkPkgsDevelFromSource = (
     source: string,
     instance: KojiInstanceType,
 ) => {
-    const [name, commit] = repoNameAndCommitFromSource(source);
+    const components = parseScmUrl(source);
+    if (!components) return '';
+    const { namespace, name, commit } = components;
     switch (instance) {
         case 'cs':
-            return `https://gitlab.com/redhat/centos-stream/rpms/${name}/-/commit/${commit}`;
+            return `https://gitlab.com/redhat/centos-stream/${namespace}/${name}/-/commit/${commit}`;
         case 'fp':
-            return `https://src.fedoraproject.org/rpms/${name}/c/${commit}`;
+            return `https://src.fedoraproject.org/${namespace}/${name}/c/${commit}`;
         case 'rh':
-            return `http://pkgs.devel.redhat.com/cgit/rpms/${name}/commit/?id=${commit}`;
+            return `https://pkgs.devel.redhat.com/cgit/${namespace}/${name}/commit/?id=${commit}`;
         default:
             console.warn(`Unknown Koji instance: ${instance}`);
             return '';
@@ -556,7 +568,7 @@ export const mkLinkKojiWebBuildId = (
         case 'rh':
             return `https://brewweb.engineering.redhat.com/brew/buildinfo?buildID=${buildId}`;
         default:
-            console.log(`Unknown koji instance: ${instance}`);
+            console.warn(`Unknown koji instance: ${instance}`);
             return '';
     }
 };

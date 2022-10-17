@@ -20,7 +20,11 @@
  */
 
 import { StateGreenwaveType } from '../artifact';
-import { isResultWaivable } from './artifactUtils';
+import {
+    ScmUrlComponents,
+    isResultWaivable,
+    parseScmUrl,
+} from './artifactUtils';
 
 test('passed result is not waivable', () => {
     const grenwaveState: StateGreenwaveType = {
@@ -84,4 +88,36 @@ test('waived failed result is waivable', () => {
         },
     };
     expect(isResultWaivable(grenwaveState)).toStrictEqual(true);
+});
+
+test('parse Git URL from Brew', () => {
+    const scmUrl =
+        'git://pkgs.devel.redhat.com/rpms/bash.git#4053763aa726f25eea4c9b3cfc5f4cbab69d86f';
+    const expected: ScmUrlComponents = {
+        commit: '4053763aa726f25eea4c9b3cfc5f4cbab69d86f',
+        name: 'bash',
+        namespace: 'rpms',
+    };
+    expect(parseScmUrl(scmUrl)).toEqual(expected);
+});
+
+test('parse Git URL from MBS', () => {
+    const scmUrl =
+        'git://pkgs.devel.redhat.com/modules/postgresql?#5e4b83c1a1aee5aebf585f140b538b1c07db84';
+    const expected: ScmUrlComponents = {
+        commit: '5e4b83c1a1aee5aebf585f140b538b1c07db84',
+        name: 'postgresql',
+        namespace: 'modules',
+    };
+    expect(parseScmUrl(scmUrl)).toEqual(expected);
+});
+
+test('fail to parse Git URL with no commit', () => {
+    const scmUrl = 'git://pkgs.devel.redhat.com/rpms/bash.git';
+    expect(parseScmUrl(scmUrl)).toBeUndefined();
+});
+
+test('fail to parse non-Git URL', () => {
+    const scmUrl = 'https://git.example.com/unexpected.git#4053763aa726f25e';
+    expect(parseScmUrl(scmUrl)).toBeUndefined();
 });
