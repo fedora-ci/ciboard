@@ -40,6 +40,7 @@ import {
     TabTitleText,
     Tabs,
 } from '@patternfly/react-core';
+import classNames from 'classnames';
 
 import styles from '../custom.module.css';
 import { TabClickHandlerType } from '../types';
@@ -131,11 +132,18 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
         if (commitTimeLocal.isValid())
             commitTimeWithTz = commitTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
     }
+
+    const descListClassName = classNames(
+        'pf-u-px-lg',
+        'pf-u-py-md',
+        styles['buildInfo'],
+    );
+
     return (
         <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
             <Tab eventKey={0} title={<TabTitleText>Build Info</TabTitleText>}>
                 <DescriptionList
-                    className="pf-u-px-lg pf-u-py-md"
+                    className={descListClassName}
                     columnModifier={{ default: '2Col' }}
                     isAutoColumnWidths
                     isCompact
