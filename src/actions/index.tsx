@@ -238,7 +238,7 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
          */
         let artifactType = artifact!.type;
         if (artifactType === 'brew-build' && nvr.match(/.*-container-.*/)) {
-            artifactType = 'redhat-container';
+            artifactType = 'redhat-container-image';
         }
         let testcase: string = getTestcaseName(state);
         const product_version = greenwave.decision.product_version(
