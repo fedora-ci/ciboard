@@ -63,6 +63,7 @@ const menuTypes = {
     'Modularity NSVC': 'redhat-module',
     'CentOS Stream NVR': 'koji-build-cs',
     'Fedora NVR': 'koji-build',
+    'RedHat Containers': 'redhat-container-image',
     'Compose ID': 'productmd-compose',
 };
 

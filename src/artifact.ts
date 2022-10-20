@@ -22,7 +22,7 @@ import _ from 'lodash';
 import { BrokerMessagesType } from './types';
 
 export type ComposeArtifactType = 'productmd-compose';
-export type ContainerArtifactType = 'redhat-container';
+export type ContainerImageArtifactType = 'redhat-container-image';
 export type MBSArtifactType = 'redhat-module';
 export type RPMArtifactType =
     | 'brew-build'
@@ -32,7 +32,7 @@ export type RPMArtifactType =
 
 export type ArtifactType =
     | ComposeArtifactType
-    | ContainerArtifactType
+    | ContainerImageArtifactType
     | MBSArtifactType
     | RPMArtifactType;
 
@@ -52,6 +52,25 @@ export interface PayloadRPMBuildType {
     scratch: boolean;
     component: string;
     gate_tag_name: string;
+}
+
+/*
+ * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/redhat-container-image.yaml
+ */
+export interface PayloadContainerImageType {
+    id: string;
+    nvr: string;
+    tag: string;
+    name?: string;
+    source?: string;
+    issuer: string;
+    task_id: number;
+    build_id?: number;
+    scratch: boolean;
+    component: string;
+    namespace?: string;
+    full_names: string[];
+    registry_url: string;
 }
 
 export interface PayloadMBSBuildType {
@@ -83,10 +102,10 @@ export function isArtifactCompose(
 ): artifact is ArtifactCompose {
     return artifact.type === 'productmd-compose';
 }
-export function isArtifactContainer(
+export function isArtifactRedhatContainerImage(
     artifact: Artifact,
-): artifact is ArtifactContainer {
-    return artifact.type === 'redhat-container';
+): artifact is ArtifactContainerImage {
+    return artifact.type === 'redhat-container-image';
 }
 export function isStateKai(state: StateType): state is StateKaiType {
     return _.has(state, 'kai_state');
@@ -118,8 +137,9 @@ export type ArtifactMBS = ArtifactBase & {
     type: MBSArtifactType;
     payload: PayloadMBSBuildType;
 };
-export type ArtifactContainer = ArtifactBase & {
-    type: ContainerArtifactType;
+export type ArtifactContainerImage = ArtifactBase & {
+    type: ContainerImageArtifactType;
+    payload: PayloadContainerImageType;
 };
 export type ArtifactCompose = ArtifactBase & {
     type: ComposeArtifactType;
@@ -129,7 +149,7 @@ export type ArtifactCompose = ArtifactBase & {
 export type Artifact =
     | ArtifactRPM
     | ArtifactMBS
-    | ArtifactContainer
+    | ArtifactContainerImage
     | ArtifactCompose;
 
 /**

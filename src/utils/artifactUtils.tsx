@@ -78,6 +78,7 @@ export const db_field_from_atype = {
     'copr-build': 'Component',
     'koji-build-cs': 'NVR',
     'koji-build': 'NVR',
+    'redhat-container-image': 'NVR',
     'productmd-compose': 'Compose ID',
     'redhat-module': 'NSVC',
 };
@@ -87,8 +88,8 @@ const known_types = {
     'copr-build': 'Component',
     'koji-build-cs': 'NVR',
     'koji-build': 'NVR',
+    'redhat-container-image': 'NVR',
     'productmd-compose': 'Compose ID',
-    'redhat-container': 'ID',
     'redhat-module': 'NSVC',
 };
 
@@ -98,7 +99,7 @@ const known_aid_meaning = {
     'koji-build-cs': 'Task ID',
     'koji-build': 'Task ID',
     'productmd-compose': 'Compose',
-    'redhat-container': 'ID',
+    'redhat-container-image': 'Task ID',
     'redhat-module': 'MBS ID',
 };
 
@@ -107,6 +108,7 @@ export function getArtifactName(artifact: Artifact): string | undefined {
         case 'brew-build':
         case 'copr-build':
         case 'koji-build':
+        case 'redhat-container-image':
             return artifact.payload.nvr;
         case 'redhat-module':
             return artifact.payload.nsvc;
@@ -199,7 +201,7 @@ export const artifactUrl = (artifact: Artifact) => {
         'brew-build': `https://brewweb.engineering.redhat.com/brew/taskinfo?taskID=${artifact.aid}`,
         'koji-build': `https://koji.fedoraproject.org/koji/taskinfo?taskID=${artifact.aid}`,
         'koji-build-cs': `https://kojihub.stream.centos.org/koji/taskinfo?taskID=${artifact.aid}`,
-        'redhat-container': `https://fixme/${artifact.aid}`,
+        'redhat-container-image': `https://brewweb.engineering.redhat.com/brew/taskinfo?taskID=${artifact.aid}`,
         'copr-build': (() => {
             // XXX: fixme
             // const component = artifact.payload.component;
