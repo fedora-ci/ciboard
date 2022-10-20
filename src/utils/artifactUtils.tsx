@@ -31,10 +31,10 @@ import {
     TrafficLightIcon,
     UnlinkIcon,
 } from '@patternfly/react-icons';
+import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon';
 import moment from 'moment';
 import Linkify from 'react-linkify';
 
-import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 import {
     Artifact,
     ArtifactType,
@@ -51,7 +51,8 @@ import {
     StateKaiType,
     StateType,
 } from '../artifact';
-import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon';
+import { config } from '../config';
+import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 
 /**
  *Typescript guards
@@ -200,10 +201,10 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
 
 export const artifactUrl = (artifact: Artifact) => {
     const urlMap = {
-        'brew-build': `https://brewweb.engineering.redhat.com/brew/taskinfo?taskID=${artifact.aid}`,
-        'koji-build': `https://koji.fedoraproject.org/koji/taskinfo?taskID=${artifact.aid}`,
-        'koji-build-cs': `https://kojihub.stream.centos.org/koji/taskinfo?taskID=${artifact.aid}`,
-        'redhat-container-image': `https://brewweb.engineering.redhat.com/brew/taskinfo?taskID=${artifact.aid}`,
+        'brew-build': `${config.koji.rh.webUrl}/taskinfo?taskID=${artifact.aid}`,
+        'koji-build': `${config.koji.fp.webUrl}/taskinfo?taskID=${artifact.aid}`,
+        'koji-build-cs': `${config.koji.cs.webUrl}/taskinfo?taskID=${artifact.aid}`,
+        'redhat-container-image': `${config.koji.rh.webUrl}/taskinfo?taskID=${artifact.aid}`,
         'copr-build': (() => {
             // XXX: fixme
             // const component = artifact.payload.component;
@@ -212,7 +213,7 @@ export const artifactUrl = (artifact: Artifact) => {
             // return `https://copr.fedorainfracloud.org/coprs/${coprRepo}build/${bid}`;
             return 'fixme';
         })(),
-        'redhat-module': `https://mbsweb.engineering.redhat.com/module/${artifact.aid}`,
+        'redhat-module': `${config.mbs.rh.webUrl}/${artifact.aid}`,
         'productmd-compose': '',
     };
     return urlMap[artifact.type];
@@ -582,70 +583,64 @@ export const mkLinkMbsBuild = (
     buildId: number | string,
     instance: MbsInstanceType,
 ) => {
-    switch (instance) {
-        case 'fp':
-            // TODO: Substitute the MBS frontend instance for Fedora.
-            return `https://koji.fedoraproject.org/koji/buildinfo?buildID=${buildId}`;
-        case 'cs':
-            // TODO: Substitute the MBS frontend instance for CentOS.
-            return `https://kojihub.stream.centos.org/koji/buildinfo?buildID=${buildId}`;
-        case 'rh':
-            return `https://mbsweb.engineering.redhat.com/module/${buildId}`;
-        default:
-            console.warn(`Unknown MBS instance: ${instance}`);
-            return '';
+    if (!_.has(config.mbs, instance)) {
+        console.warn(`Unknown MBS instance: ${instance}`);
+        return;
     }
+    const mbsUrlPrefix = config.koji[instance].webUrl;
+    if (!mbsUrlPrefix) {
+        console.warn(`MBS web UI not available for ${instance}`);
+        return;
+    }
+    return `${mbsUrlPrefix}/module/${buildId}`;
 };
 
 export const mkLinkKojiWebBuildId = (
     buildId: number | string,
     instance: KojiInstanceType,
 ) => {
-    switch (instance) {
-        case 'fp':
-            return `https://koji.fedoraproject.org/koji/buildinfo?buildID=${buildId}`;
-        case 'cs':
-            return `https://kojihub.stream.centos.org/koji/buildinfo?buildID=${buildId}`;
-        case 'rh':
-            return `https://brewweb.engineering.redhat.com/brew/buildinfo?buildID=${buildId}`;
-        default:
-            console.warn(`Unknown koji instance: ${instance}`);
-            return '';
+    if (!_.has(config.koji, instance)) {
+        console.error(`Unknown Koji instance: ${instance}`);
+        return '';
     }
+    const kojiUrlPrefix = config.koji[instance].webUrl;
+    return `${kojiUrlPrefix}/buildinfo?buildID=${buildId}`;
+};
+
+export const mkLinkKojiWebTask = (
+    taskId: number | string,
+    instance: KojiInstanceType,
+) => {
+    if (!_.has(config.koji, instance)) {
+        console.error(`Unknown Koji instance: ${instance}`);
+        return '';
+    }
+    const kojiUrlPrefix = config.koji[instance].webUrl;
+    return `${kojiUrlPrefix}/taskinfo?taskID=${taskId}`;
 };
 
 export const mkLinkKojiWebUserId = (
     userId: number | string,
     instance: KojiInstanceType,
 ) => {
-    switch (instance) {
-        case 'fp':
-            return `https://koji.fedoraproject.org/koji/userinfo?userID=${userId}`;
-        case 'cs':
-            return `https://kojihub.stream.centos.org/koji/userinfo?userID=${userId}`;
-        case 'rh':
-            return `https://brewweb.engineering.redhat.com/brew/userinfo?userID=${userId}`;
-        default:
-            console.log(`Unknown koji instance: ${instance}`);
-            return '';
+    if (!_.has(config.koji, instance)) {
+        console.error(`Unknown Koji instance: ${instance}`);
+        return '';
     }
+    const kojiUrlPrefix = config.koji[instance].webUrl;
+    return `${kojiUrlPrefix}/userinfo?userID=${userId}`;
 };
 
 export const mkLinkKojiWebTagId = (
     tagId: number | string,
     instance: KojiInstanceType,
 ) => {
-    switch (instance) {
-        case 'fp':
-            return `https://koji.fedoraproject.org/koji/taginfo?tagID=${tagId}`;
-        case 'cs':
-            return `https://kojihub.stream.centos.org/koji/taginfo?tagID=${tagId}`;
-        case 'rh':
-            return `https://brewweb.engineering.redhat.com/brew/taginfo?tagID=${tagId}`;
-        default:
-            console.log(`Unknown koji instance: ${instance}`);
-            return '';
+    if (!_.has(config.koji, instance)) {
+        console.error(`Unknown Koji instance: ${instance}`);
+        return '';
     }
+    const kojiUrlPrefix = config.koji[instance].webUrl;
+    return `${kojiUrlPrefix}/taginfo?tagID=${tagId}`;
 };
 
 /**
