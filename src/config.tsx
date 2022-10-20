@@ -59,8 +59,8 @@ export const mappingDatagrepperUrl: Record<ArtifactType, string> = {
     'koji-build': config.datagrepperFedora.url,
     'copr-build': config.datagrepperFedora.url,
     'redhat-module': config.datagrepperRH.url,
+    'redhat-container-image': config.datagrepperRH.url,
     'koji-build-cs': config.datagrepperFedora.url,
-    'redhat-container': config.datagrepperRH.url,
     'productmd-compose': config.datagrepperRH.url,
 };
 
