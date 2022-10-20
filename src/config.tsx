@@ -74,7 +74,7 @@ export const greenwave = {
         context: {
             'brew-build': 'osci_compose_gate',
             'redhat-module': 'osci_compose_gate_modules',
-            'redhat-container': 'cvp_default',
+            'redhat-container-image': 'cvp_default',
         },
         product_version: (nvr: string, artifactType: string) => {
             const rhel_version = getOSVersionFromNvr(nvr, artifactType);
@@ -83,7 +83,7 @@ export const greenwave = {
                     return `rhel-${rhel_version}`;
                 case 'redhat-module':
                     return `rhel-${rhel_version}`;
-                case 'redhat-container':
+                case 'redhat-container-image':
                     return 'cvp';
                 default:
                     console.log(
