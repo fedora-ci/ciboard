@@ -34,11 +34,34 @@ export const config = {
          * overriden using the `REACT_APP_GRAPHQL_SERVER_URL` environment variable.
          */
         process.env.REACT_APP_GRAPHQL_SERVER_URL ?? '/graphql',
+    greenwave: {
+        url: 'https://greenwave.engineering.redhat.com',
+    },
     kai: {
         url: 'https://kai.osci.redhat.com',
     },
-    greenwave: {
-        url: 'https://greenwave.engineering.redhat.com',
+    koji: {
+        cs: {
+            webUrl: 'https://kojihub.stream.centos.org/koji',
+        },
+        fp: {
+            webUrl: 'https://koji.fedoraproject.org/koji',
+        },
+        rh: {
+            webUrl: 'https://brewweb.engineering.redhat.com/brew',
+        },
+    },
+    mbs: {
+        cs: {
+            // CentOS Stream has no mbs-ui instance.
+            webUrl: null,
+        },
+        fp: {
+            webUrl: 'https://release-engineering.github.io/mbs-ui/',
+        },
+        rh: {
+            webUrl: 'https://mbsweb.engineering.redhat.com/',
+        },
     },
     waiverdb: {
         url: 'https://waiverdb.engineering.redhat.com',
