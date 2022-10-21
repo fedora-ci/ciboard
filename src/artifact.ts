@@ -60,7 +60,7 @@ export interface PayloadRPMBuildType {
 export interface PayloadContainerImageType {
     id: string;
     nvr: string;
-    tag: string;
+    tag?: string;
     name?: string;
     source?: string;
     issuer: string;
@@ -70,7 +70,7 @@ export interface PayloadContainerImageType {
     component: string;
     namespace?: string;
     full_names: string[];
-    registry_url: string;
+    registry_url?: string;
 }
 
 export interface PayloadMBSBuildType {
