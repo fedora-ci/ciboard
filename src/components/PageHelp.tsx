@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import * as React from 'react';
-import { TextContent, Text } from '@patternfly/react-core';
+import { TextContent, Text, CodeBlockCode } from '@patternfly/react-core';
 
 import { config } from '../config';
 import { PageCommon } from './PageCommon';
@@ -187,6 +187,32 @@ const Help = () => (
                 </tr>
             </tbody>
         </table>
+        <h3>Via GraphQL</h3>
+        <p>
+            You can construct GraphQL queries and execute them on the dashboard's 
+            backend GraphQL server. The GraphQL backend is usually located at:
+        </p>
+        <p className="padding-left-20">
+            {window.location.origin}
+            /graphql
+        </p>
+        <h4>Examples</h4>
+        <p>
+            To retrieve build tags by NVR, your query could look something like this:
+        </p>
+        <p className="padding-left-20">
+            <CodeBlockCode id="code-content">
+                {`query brew {
+                    koji_build_tags_by_nvr(nvr: $NVR, instance: rh|fp|cs){
+                        arches
+                        id
+                        locked
+                        name
+                        perm
+                        perm_id}
+                }`}
+            </CodeBlockCode>
+        </p>
         <h2>Onboarding</h2>
         <p>
             To onboard your system to the dashboard, just start sending out
