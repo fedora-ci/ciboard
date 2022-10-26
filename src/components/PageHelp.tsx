@@ -196,6 +196,12 @@ const Help = () => (
             {window.location.origin}
             /graphql
         </p>
+        <h4> Disclaimers</h4>
+        <p>
+            Note: the API is not officially supported and its primary use is 
+            for the CI Dashboard front-end. It is not guaranteed to be stable and 
+            it can change arbitrarily without prior notice.
+        </p>
         <h4>Examples</h4>
         <p>
             To retrieve build tags by NVR, your query could look something like this:
