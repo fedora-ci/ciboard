@@ -71,6 +71,11 @@ export interface PayloadContainerImageType {
     namespace?: string;
     full_names: string[];
     registry_url?: string;
+    /*
+     * Entries come from: VirtualTopic.eng.brew.build.complete
+     * https://datagrepper.engineering.redhat.com/raw?topic=/topic/VirtualTopic.eng.brew.build.complete&delta=86400&contains=container_build
+     */
+    osbs_subtypes?: string[];
 }
 
 export interface PayloadMBSBuildType {
