@@ -41,6 +41,7 @@ import {
     DistGitInstanceType,
     GreenwaveRequirementTypesType,
     isArtifactMBS,
+    isArtifactRedhatContainerImage,
     isArtifactRPM,
     KaiStateType,
     KojiInstanceType,
@@ -468,10 +469,16 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
 }
 
 export const isGatingArtifact = (artifact: Artifact): boolean => {
-    return (
+    if (
         (isArtifactRPM(artifact) || isArtifactMBS(artifact)) &&
         _.size(artifact.payload.gate_tag_name) > 0
-    );
+    ) {
+        return true;
+    } else if (isArtifactRedhatContainerImage(artifact)) {
+        /* Container builds are gated by Errata Tool */
+        return true;
+    }
+    return false;
 };
 
 export const renderStatusIcon = (

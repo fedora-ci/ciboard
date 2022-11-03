@@ -47,8 +47,14 @@ import {
 import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
 import { PaginationToolbar } from './PaginationToolbar';
-import { Artifact, isArtifactMBS, isArtifactRPM } from '../artifact';
+import {
+    Artifact,
+    isArtifactMBS,
+    isArtifactRedhatContainerImage,
+    isArtifactRPM,
+} from '../artifact';
 import styles from '../custom.module.css';
+import { isGatingArtifact } from '../utils/artifactUtils';
 
 const ArtifactsTable: React.FC = () => {
     const queryString = ''; // XXX : delme
@@ -152,16 +158,14 @@ const ArtifactsTable: React.FC = () => {
     });
 
     /** Even there is an error there could be data */
-    const haveData = !isLoading && data && !_.isEmpty(data.artifacts?.artifacts);
+    const haveData =
+        !isLoading && data && !_.isEmpty(data.artifacts?.artifacts);
     const haveErrorNoData = !isLoading && error && !haveData;
     const aidsAtPage: string[] = [];
     if (haveData) {
         artifacts = data.artifacts.artifacts;
         _.forEach(artifacts, (a: Artifact) => {
-            if (
-                (isArtifactRPM(a) || isArtifactMBS(a)) &&
-                a.payload.gate_tag_name
-            ) {
+            if (isGatingArtifact(a)) {
                 aidsAtPage.push(a.aid);
             }
         });
