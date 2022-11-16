@@ -587,7 +587,7 @@ export const mkLinkMbsBuild = (
         console.warn(`Unknown MBS instance: ${instance}`);
         return;
     }
-    const mbsUrlPrefix = config.koji[instance].webUrl;
+    const mbsUrlPrefix = config.mbs[instance].webUrl;
     if (!mbsUrlPrefix) {
         console.warn(`MBS web UI not available for ${instance}`);
         return;
