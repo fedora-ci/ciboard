@@ -77,7 +77,11 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     const satisfied = decision?.satisfied_requirements?.length;
     const unSatisfied = decision?.unsatisfied_requirements?.length;
     if (satisfied) {
-        reqSummary['ok'] = satisfied;
+        /*
+         * Decrease the satisfied counter by 1 since the 'fetched-gating-yaml' task isn't displayed in UI.
+         * A similar thing is done in ArtifactStatesList() - `if (stateName === 'fetched-gating-yaml') continue;`
+         */
+        reqSummary['ok'] = satisfied - 1;
     }
     if (unSatisfied) {
         reqSummary['unsatisfied'] = unSatisfied;
