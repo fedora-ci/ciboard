@@ -33,7 +33,7 @@ jobs:
         username: ${{ env.USER_QUAY }}
         password: ${{ secrets.PASSWORD_QUAY }}
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set outputs
       id: vars
