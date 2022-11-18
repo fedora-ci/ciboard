@@ -85,7 +85,7 @@ type AlertVariantType = 'success' | 'danger' | 'warning' | 'info' | 'default';
 export const pushAlert = (
     variant: AlertVariantType,
     title: React.ReactNode,
-    autoRm: boolean = true,
+    autoRm = true,
 ) => {
     return async (dispatch: DispatchType) => {
         const key = new Date().getTime();
