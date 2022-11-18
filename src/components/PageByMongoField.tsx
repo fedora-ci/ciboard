@@ -95,7 +95,7 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
     // has_next -- returned by query from backend
     let hasNext = false;
     // currentPage -- index in known pages
-    let currentPage: number = 1;
+    let currentPage = 1;
     let loadNextIsDisabled = true;
     let loadPrevIsDisabled = true;
     // Index of the currently expanded artifact row within the `artifacts` list.

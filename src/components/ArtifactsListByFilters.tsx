@@ -74,7 +74,7 @@ const ArtifactsTable: React.FC = () => {
     /** XXX */
     let artifacts: any[] = [];
     let hasNext = false;
-    let currentPage: number = 1;
+    let currentPage = 1;
     let loadNextIsDisabled = true;
     let loadPrevIsDisabled = true;
     useEffect(() => {
