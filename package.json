@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@apollo/client": "^3.6.6",
+    "@apollo/client": "^3.7.1",
     "@patternfly/react-charts": "^6.67.1",
     "@patternfly/react-core": "^4.214.1",
     "@patternfly/react-icons": "^4.65.1",
