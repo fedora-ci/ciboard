@@ -47,12 +47,7 @@ import {
 import { RootStateType } from '../reducers';
 import { IStateFilters } from '../actions/types';
 import { PaginationToolbar } from './PaginationToolbar';
-import {
-    Artifact,
-    isArtifactMBS,
-    isArtifactRedhatContainerImage,
-    isArtifactRPM,
-} from '../artifact';
+import { Artifact } from '../artifact';
 import styles from '../custom.module.css';
 import { isGatingArtifact } from '../utils/artifactUtils';
 
