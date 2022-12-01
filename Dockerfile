@@ -8,6 +8,7 @@ WORKDIR $BUILDDIR
 COPY "src" "./src/"
 COPY "public" "./public/"
 COPY "package.json" "package-lock.json" "tsconfig.json" "."
+RUN chmod a+w "package-lock.json"
 RUN echo "Use location: $NPMLOCATION"
 COPY ".npmrcs/$NPMLOCATION" ".npmrc"
 RUN ["bash","-c", "--", "npm install"]
