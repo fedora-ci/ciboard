@@ -36,11 +36,11 @@ export const buildTypeMenuItems = {
     modularity: 'redhat-module',
 };
 
-export const getTypeFromSelect = (value: string) =>
-    _.get(buildTypeMenuItems, value, 'invalid');
+export const getTypeFromSelect = (value: string): ArtifactType =>
+    _.get(buildTypeMenuItems, value, 'brew-build');
 
 export const getSelectFromType = (type: string) =>
-    _.get(_.invert(buildTypeMenuItems), type, 'invalid');
+    _.get(_.invert(buildTypeMenuItems), type, 'brew-build');
 
 export interface StateGatingTests {
     buildType: ArtifactType;
