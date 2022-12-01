@@ -7,8 +7,8 @@ RUN ["bash","-c", "--", "mkdir -p \"$BUILDDIR\""]
 WORKDIR $BUILDDIR
 COPY "src" "./src/"
 COPY "public" "./public/"
-COPY "package.json" "package-lock.json" "tsconfig.json" "."
-RUN chmod a+w "package-lock.json"
+# Taken from https://github.com/sclorg/s2i-nodejs-container/blob/master/18/Dockerfile.c8s#L73
+COPY --chown=1001:0 "package.json" "package-lock.json" "tsconfig.json" "."
 RUN echo "Use location: $NPMLOCATION"
 COPY ".npmrcs/$NPMLOCATION" ".npmrc"
 RUN ["bash","-c", "--", "npm install"]
