@@ -19,7 +19,7 @@
  */
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import {
     ActionGroup,
     Alert,
@@ -34,7 +34,7 @@ import {
     TextContent,
     TextVariants,
 } from '@patternfly/react-core';
-import { useApolloClient } from '@apollo/client';
+import { useApolloClient, useLazyQuery } from '@apollo/client';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     ExternalLinkSquareAltIcon,
@@ -46,6 +46,27 @@ import { IStateWaiver } from '../actions/types';
 import { RootStateType } from '../reducers';
 import { getTestcaseName } from '../utils/artifactUtils';
 import _ from 'lodash';
+import { MetadataConsolidated } from '../queries/Metadata';
+import { KnownIssue, Dependency, Contact } from './PageMetadataList';
+
+
+export interface MetadataPayload {
+    contact?: Contact;
+    description?: string;
+    dependency?: Dependency[];
+    known_issues?: KnownIssue[];
+    waive_message?: string;
+}
+
+/* Based on reply from server */
+export interface Metadata {
+    payload?: MetadataPayload;
+}
+
+interface MetadataConsolidatedResult {
+    metadata_consolidated: Metadata;
+}
+
 
 const WaiveForm: React.FC<{}> = () => {
     const dispatch = useDispatch();
@@ -69,6 +90,21 @@ const WaiveForm: React.FC<{}> = () => {
         setValidated(validated);
     };
 
+    const [getMetadata, { loading: qLoading, error: qError, data: metadata }] =
+    useLazyQuery<MetadataConsolidatedResult>(MetadataConsolidated, {
+        errorPolicy: 'all',
+        fetchPolicy: 'network-only',
+        notifyOnNetworkStatusChange: true,
+    });
+
+    useEffect(() => {
+        if (_.isNil(waive.state)) {
+            return;
+        }
+        const testcase_name = getTestcaseName(waive.state);
+        getMetadata({ variables: { testcase_name: testcase_name } });
+    }, []);
+
     const onClickCancel = () => {
         dispatch(createWaiver(undefined, undefined));
     };
@@ -84,6 +120,9 @@ const WaiveForm: React.FC<{}> = () => {
         'Reason must have detailed explanation. Provide links to issues, bugs, etc';
     const helperText = '';
     const agreementLabel = 'I agree and acknowledge the above information';
+
+    const metadataLoaded = !qLoading && !qError && metadata;
+    const metadataAggrementText = metadataLoaded ? metadata?.metadata_consolidated?.payload?.waive_message : '';
     const agreementText = `Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
     composes and unverified or failed builds can cause issues in system integration. Before waiving these tests it is good to check 
     other possible options, in particular some CI-systems can fail due to outages and different circumstances. It is good to restart 
@@ -104,7 +143,7 @@ const WaiveForm: React.FC<{}> = () => {
                         style={{ marginTop: '0.5em' }}
                         component={TextVariants.small}
                     >
-                        {agreementText}
+                        {metadataAggrementText || agreementText}
                     </Text>
                 </TextContent>
                 <FormGroup

@@ -660,6 +660,37 @@ const FormGroupDescription: FunctionComponent<FormGroupDescriptionProps> = (
     return element;
 };
 
+interface FormGroupWaiveMessageProps {
+    message: string | undefined;
+}
+const FormGroupWaiveMessage: FunctionComponent<FormGroupWaiveMessageProps> = (
+    props,
+) => {
+    const waive_message = _.defaultTo(props.message, '');
+    const dispatch = useContext(MetadataDispatchContext);
+    if (_.isNull(dispatch)) return null;
+    const onChange = (value: string) => {
+        dispatch({ type: 'waiveMessage', waive_message: value });
+    };
+    const element = (
+        <FormGroup
+            label="Waive message"
+            fieldId="form-waive-message"
+            helperText="Warning message displayed in waiver form"
+        >
+            <TextArea
+                resizeOrientation="vertical"
+                id="form-waive-message"
+                value={waive_message}
+                onChange={onChange}
+                name="waiveMessage"
+                aria-label="testcase waive message"
+            />
+        </FormGroup>
+    );
+    return element;
+};
+
 interface FormGroupContactsTeamNameProps {
     team: string | undefined;
 }
@@ -1039,7 +1070,8 @@ type MetadataAction =
     | { type: 'contactsEmail'; email?: string }
     | { type: 'contactsGchat'; gchat?: string }
     | { type: 'contactsIrc'; irc?: string }
-    | { type: 'contactsReportIssue'; url?: string };
+    | { type: 'contactsReportIssue'; url?: string }
+    | { type: 'waiveMessage'; waive_message?: string };
 
 const metadataReducer: Reducer<MetadataRaw, MetadataAction> = (
     state,
@@ -1214,6 +1246,14 @@ const metadataReducer: Reducer<MetadataRaw, MetadataAction> = (
             newState.payload = _.defaultTo(newState.payload, {});
             return newState;
         }
+        case 'waiveMessage': {
+            state.payload = _.defaultTo(state.payload, {});
+            return update(state, {
+                payload: {
+                    waive_message: { $set: action.waive_message },
+                },
+            });
+        }
         default:
             return state;
     }
@@ -1229,6 +1269,7 @@ export interface MetadataPayload {
     description?: string;
     dependency?: Dependency[];
     known_issues?: KnownIssue[];
+    waive_message?: string;
 }
 
 /* Based on reply from server */
@@ -1343,7 +1384,7 @@ export const MetadataForm: React.FunctionComponent = () => {
         }
     }, [haveData]);
 
-    const { contact, known_issues, dependency, description } = _.defaultTo(
+    const { contact, known_issues, dependency, description, waive_message } = _.defaultTo(
         metadata.payload,
         {},
     );
@@ -1359,6 +1400,7 @@ export const MetadataForm: React.FunctionComponent = () => {
                     productVersion={metadata.product_version}
                 />
                 <FormGroupDescription description={description} />
+                <FormGroupWaiveMessage message={waive_message} />
                 <FormGroupKnownIssues issues={known_issues} />
                 <FormGroupDependency dependencies={dependency} />
 
