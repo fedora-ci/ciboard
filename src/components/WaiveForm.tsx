@@ -92,7 +92,6 @@ const WaiveForm: React.FC<{}> = () => {
     useQuery<MetadataConsolidatedResult>(MetadataQuery, {
         variables: { testcase_name: waiver_for },
         errorPolicy: 'all',
-        fetchPolicy: 'network-only',
         notifyOnNetworkStatusChange: true,
     });
 
