@@ -19,7 +19,7 @@
  */
 
 import * as React from 'react';
-import { useState, useEffect} from 'react';
+import { useState } from 'react';
 import {
     ActionGroup,
     Alert,
@@ -34,7 +34,7 @@ import {
     TextContent,
     TextVariants,
 } from '@patternfly/react-core';
-import { useApolloClient, useLazyQuery } from '@apollo/client';
+import { useApolloClient, useQuery } from '@apollo/client';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     ExternalLinkSquareAltIcon,
@@ -45,10 +45,9 @@ import { createWaiver, submitWaiver, resetWaiverReply } from '../actions';
 import { IStateWaiver } from '../actions/types';
 import { RootStateType } from '../reducers';
 import { getTestcaseName } from '../utils/artifactUtils';
-import _ from 'lodash';
-import { MetadataConsolidated } from '../queries/Metadata';
+import { MetadataQuery } from '../queries/Metadata';
 import { KnownIssue, Dependency, Contact } from './PageMetadataList';
-
+import _ from 'lodash';
 
 export interface MetadataPayload {
     contact?: Contact;
@@ -58,7 +57,6 @@ export interface MetadataPayload {
     waive_message?: string;
 }
 
-/* Based on reply from server */
 export interface Metadata {
     payload?: MetadataPayload;
 }
@@ -66,7 +64,6 @@ export interface Metadata {
 interface MetadataConsolidatedResult {
     metadata_consolidated: Metadata;
 }
-
 
 const WaiveForm: React.FC<{}> = () => {
     const dispatch = useDispatch();
@@ -90,20 +87,14 @@ const WaiveForm: React.FC<{}> = () => {
         setValidated(validated);
     };
 
-    const [getMetadata, { loading: qLoading, error: qError, data: metadata }] =
-    useLazyQuery<MetadataConsolidatedResult>(MetadataConsolidated, {
+    const waiver_for = waive?.state ? getTestcaseName(waive.state) : '';
+    const {loading: qLoading, error: qError, data: metadata } =
+    useQuery<MetadataConsolidatedResult>(MetadataQuery, {
+        variables: { testcase_name: waiver_for },
         errorPolicy: 'all',
         fetchPolicy: 'network-only',
         notifyOnNetworkStatusChange: true,
     });
-
-    useEffect(() => {
-        if (_.isNil(waive.state)) {
-            return;
-        }
-        const testcase_name = getTestcaseName(waive.state);
-        getMetadata({ variables: { testcase_name: testcase_name } });
-    }, []);
 
     const onClickCancel = () => {
         dispatch(createWaiver(undefined, undefined));
@@ -131,7 +122,6 @@ const WaiveForm: React.FC<{}> = () => {
     if (_.isNil(state)) {
         return null;
     }
-    const waiver_for = getTestcaseName(state);
     return (
         <>
             <TextContent>
