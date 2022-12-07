@@ -438,6 +438,10 @@ export interface SSTResult {
     tests_number: string;
 }
 
+export interface MetadataQueryResult {
+    metadata_consolidated: Metadata;
+}
+
 export interface Metadata {
     payload?: MetadataPayload;
 }
@@ -447,6 +451,7 @@ export interface MetadataPayload {
     description?: string;
     dependency?: MetadataDependency[];
     known_issues?: MetadataKnownIssue[];
+    waive_message?: string;
 }
 
 export interface MetadataContact {

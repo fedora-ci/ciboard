@@ -46,24 +46,8 @@ import { IStateWaiver } from '../actions/types';
 import { RootStateType } from '../reducers';
 import { getTestcaseName } from '../utils/artifactUtils';
 import { MetadataQuery } from '../queries/Metadata';
-import { KnownIssue, Dependency, Contact } from './PageMetadataList';
+import { MetadataQueryResult } from '../types';
 import _ from 'lodash';
-
-export interface MetadataPayload {
-    contact?: Contact;
-    description?: string;
-    dependency?: Dependency[];
-    known_issues?: KnownIssue[];
-    waive_message?: string;
-}
-
-export interface Metadata {
-    payload?: MetadataPayload;
-}
-
-interface MetadataConsolidatedResult {
-    metadata_consolidated: Metadata;
-}
 
 const WaiveForm: React.FC<{}> = () => {
     const dispatch = useDispatch();
@@ -89,7 +73,7 @@ const WaiveForm: React.FC<{}> = () => {
 
     const waiver_for = waive?.state ? getTestcaseName(waive.state) : '';
     const {loading: qLoading, error: qError, data: metadata } =
-    useQuery<MetadataConsolidatedResult>(MetadataQuery, {
+    useQuery<MetadataQueryResult>(MetadataQuery, {
         variables: { testcase_name: waiver_for },
         errorPolicy: 'all',
         notifyOnNetworkStatusChange: true,
