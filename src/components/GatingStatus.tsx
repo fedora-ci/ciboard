@@ -74,17 +74,20 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
         return null;
     }
     const reqSummary: { [name: string]: number } = {};
-    const satisfied = decision?.satisfied_requirements?.length;
-    const unSatisfied = decision?.unsatisfied_requirements?.length;
+    /*
+     * Ignore the 'fetched-gating-yaml' virtual test as we dont display it in the UI.
+     * It is prevented from displaying in `ArtifactStatesList()`:
+     *     `if (stateName === 'fetched-gating-yaml') continue;`
+     */
+    const satisfied = decision?.satisfied_requirements?.filter(
+        ({ type }) => type !== 'fetched-gating-yaml',
+    );
+    const unSatisfied = decision?.unsatisfied_requirements;
     if (satisfied) {
-        /*
-         * Decrease the satisfied counter by 1 since the 'fetched-gating-yaml' task isn't displayed in UI.
-         * A similar thing is done in ArtifactStatesList() - `if (stateName === 'fetched-gating-yaml') continue;`
-         */
-        reqSummary['ok'] = satisfied - 1;
+        reqSummary['ok'] = satisfied.length;
     }
     if (unSatisfied) {
-        reqSummary['unsatisfied'] = unSatisfied;
+        reqSummary['unsatisfied'] = unSatisfied.length;
     }
     const iconColor = isLoading
         ? 'info'
