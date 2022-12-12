@@ -20,7 +20,7 @@
     "classnames": "^2.3.1",
     "graphql": "^16.6.0",
     "immutability-helper": "^3.1.1",
-    "linkifyjs": "^3.0.5",
+    "linkifyjs": "^4.0.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "moment-duration-format": "^2.3.2",
