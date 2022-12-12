@@ -33,7 +33,8 @@ import {
 } from '@patternfly/react-icons';
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon';
 import moment from 'moment';
-import Linkify from 'react-linkify';
+import Linkify from 'linkify-react';
+import { IntermediateRepresentation } from 'linkifyjs';
 
 import {
     Artifact,
@@ -699,23 +700,19 @@ export const timestampForUser = (
     return `${timestampWithTz} (${fromNow})`;
 };
 
+const renderNewTabLink: (ir: IntermediateRepresentation) => React.ReactNode = ({
+    attributes,
+    content,
+}) => (
+    <a {...attributes} rel="noopener noreferrer" target="_blank">
+        {content}
+    </a>
+);
+
 export type LinkifyNewTabProps = React.PropsWithChildren<React.ReactNode>;
 
 export const LinkifyNewTab = (props: LinkifyNewTabProps) => (
-    <Linkify
-        componentDecorator={(decoratedHref, decoratedText, key) => (
-            <a
-                href={decoratedHref}
-                key={key}
-                rel="noopener noreferrer"
-                target="_blank"
-            >
-                {decoratedText}
-            </a>
-        )}
-    >
-        {props.children}
-    </Linkify>
+    <Linkify options={{ render: renderNewTabLink }}>{props.children}</Linkify>
 );
 
 export function getKaiExtendedStatus(
