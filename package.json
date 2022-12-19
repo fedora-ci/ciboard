@@ -10,7 +10,7 @@
     "@patternfly/react-table": "^4.83.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^12.1.5",
-    "@testing-library/user-event": "^12.8.3",
+    "@testing-library/user-event": "^14.4.3",
     "@types/jest": "^29.2.3",
     "@types/node": "^18.11.13",
     "@types/react": "^17.0.45",
