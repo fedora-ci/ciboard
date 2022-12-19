@@ -5,7 +5,7 @@
   "dependencies": {
     "@apollo/client": "^3.7.1",
     "@patternfly/react-charts": "^6.67.1",
-    "@patternfly/react-core": "^4.264.0",
+    "@patternfly/react-core": "^4.267.6",
     "@patternfly/react-icons": "^4.65.1",
     "@patternfly/react-table": "^4.83.1",
     "@testing-library/jest-dom": "^5.16.5",
