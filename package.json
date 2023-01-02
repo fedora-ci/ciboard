@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.7.1",
-    "@patternfly/react-charts": "^6.67.1",
+    "@patternfly/react-charts": "^6.94.15",
     "@patternfly/react-core": "^4.267.6",
     "@patternfly/react-icons": "^4.65.1",
     "@patternfly/react-table": "^4.83.1",
