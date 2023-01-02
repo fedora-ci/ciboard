@@ -96,10 +96,18 @@ export interface TestSuite {
     count: Record<TestSuiteStatus, number>;
 }
 
-export const getProperty = (testCase: TestCase, propertyName: string) =>
-    testCase.properties
+export const getProperty = (testCase: TestCase, propertyName: string) => {
+    const matchedProperty = testCase.properties
         ?.flatMap((property) => property.property)
-        .find((property) => property.$.name === propertyName)?.$.value;
+        /*
+         * Make sure the properties are in the expected format.
+         * TODO: This is already assumed in the type. It shoud be ensured by
+         * validation earlier in the data flow.
+         */
+        .filter((property) => _.has(property, '$.name'))
+        .find((property) => property.$.name === propertyName);
+    return matchedProperty?.$.value;
+};
 
 export const hasTestCaseContent = (testCase: TestCase) =>
     !_.isEmpty(testCase.phases?.[0]?.phase) ||
