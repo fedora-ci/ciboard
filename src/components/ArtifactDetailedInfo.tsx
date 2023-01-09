@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,6 +42,7 @@ import {
 } from '@patternfly/react-core';
 import classNames from 'classnames';
 
+import { config } from '../config';
 import styles from '../custom.module.css';
 import { TabClickHandlerType } from '../types';
 import {
@@ -50,7 +51,21 @@ import {
     ArtifactsDetailedInfoModuleBuild,
     ArtifactsDetailedInfoModuleBuildData,
 } from '../queries/Artifacts';
-import { Artifact, KojiBuildTagging, koji_instance } from '../artifact';
+import {
+    LinkedErrataAdvisories,
+    ErrataLinkedAdvisoriesReply,
+} from '../queries/Errata';
+import {
+    Artifact,
+    ArtifactRPM,
+    isArtifactMBS,
+    isArtifactRPM,
+    KojiBuildInfo,
+    koji_instance,
+    KojiBuildTagging,
+    KojiInstanceType,
+    ErrataLinkedAdvisory,
+} from '../artifact';
 import {
     mkCommitHashFromSource,
     mkLinkFileInGit,
@@ -62,12 +77,185 @@ import {
     mkLinkPkgsDevelFromSource,
 } from '../utils/artifactUtils';
 import { ExternalLink } from './ExternalLink';
+import {
+    Tr,
+    Td,
+    Th,
+    Tbody,
+    Thead,
+    TableComposable,
+} from '@patternfly/react-table';
+
+interface NoDataProps {
+    show: boolean;
+}
+const NoData: React.FC<NoDataProps> = (props) => {
+    const { show } = props;
+    if (!show) {
+        return null;
+    }
+    return (
+        <Flex className="pf-u-p-lg">
+            <Alert
+                isInline
+                isPlain
+                title="No build information available"
+                variant="info"
+            />
+        </Flex>
+    );
+};
+
+interface LoadingDataProps {
+    show: boolean;
+}
+const LoadingData: React.FC<LoadingDataProps> = (props) => {
+    const { show } = props;
+    if (!show) {
+        return null;
+    }
+    return (
+        <Flex className="pf-u-p-lg">
+            <FlexItem>
+                <Spinner className="pf-u-mr-md" size="md" /> Loading build info…
+            </FlexItem>
+        </Flex>
+    );
+};
+
+interface BuildInfoProps {
+    build: KojiBuildInfo | undefined;
+    instance: KojiInstanceType;
+}
+const BuildInfo: React.FC<BuildInfoProps> = (props) => {
+    const { build, instance } = props;
+    if (_.isNil(build)) {
+        return null;
+    }
+    /* Time of build */
+    const buildTimeLocal = moment.unix(build.completion_ts).local();
+    const buildTimeWithTz = buildTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
+    /* Time of commit */
+    let commitTimeWithTz = 'n/a';
+    if (build.commit_obj) {
+        const commitTimeLocal = moment
+            .unix(build.commit_obj.committer_date_seconds)
+            .local();
+        if (commitTimeLocal.isValid())
+            commitTimeWithTz = commitTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
+    }
+
+    const descListClassName = classNames(
+        'pf-u-px-lg',
+        'pf-u-py-md',
+        styles['buildInfo'],
+    );
+
+    return (
+        <DescriptionList
+            className={descListClassName}
+            columnModifier={{ default: '2Col' }}
+            isAutoColumnWidths
+            isCompact
+            isHorizontal
+        >
+            <DescriptionListGroup>
+                <DescriptionListTerm>Build ID</DescriptionListTerm>
+                <DescriptionListDescription>
+                    <a
+                        href={mkLinkKojiWebBuildId(build.build_id, instance)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {build.build_id}
+                    </a>
+                </DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>Git commit</DescriptionListTerm>
+                <DescriptionListDescription>
+                    <a
+                        className={styles['buildInfoCommitHash']}
+                        href={mkLinkPkgsDevelFromSource(build.source, instance)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {mkCommitHashFromSource(build.source)}
+                    </a>
+                </DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>Build owner</DescriptionListTerm>
+                <DescriptionListDescription>
+                    <a
+                        href={mkLinkKojiWebUserId(build.owner_id, instance)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {build.owner_name}
+                    </a>
+                </DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>Committer</DescriptionListTerm>
+                <DescriptionListDescription>
+                    {build.commit_obj?.committer_name || 'n/a'}
+                    &nbsp;&lt;
+                    {build.commit_obj?.committer_email || 'n/a'}
+                    &gt;
+                </DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>Build completed</DescriptionListTerm>
+                <DescriptionListDescription
+                    className={styles['buildInfoTimestamp']}
+                >
+                    {buildTimeWithTz}
+                </DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
+                <DescriptionListTerm>Commit time</DescriptionListTerm>
+                <DescriptionListDescription
+                    className={styles['buildInfoTimestamp']}
+                >
+                    {commitTimeWithTz}
+                </DescriptionListDescription>
+            </DescriptionListGroup>
+        </DescriptionList>
+    );
+};
+
+interface TagsListProps {
+    build: KojiBuildInfo | undefined;
+    instance: KojiInstanceType;
+}
+const TagsList: React.FC<TagsListProps> = (props) => {
+    const { build, instance } = props;
+    if (_.isNil(build)) {
+        return null;
+    }
+    return (
+        <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
+            <List component={ListComponent.ol} type={OrderType.number}>
+                {_.map(build.tags, (tag) => (
+                    <ListItem key={tag.id}>
+                        <ExternalLink
+                            href={mkLinkKojiWebTagId(tag.id, instance)}
+                        >
+                            {tag.name}
+                        </ExternalLink>
+                    </ListItem>
+                ))}
+            </List>
+        </Flex>
+    );
+};
 
 /**
  * Different artifact types have different detailed info.
  */
 interface ArtifactDetailedInfoKojiBuildProps {
-    artifact: Artifact;
+    artifact: ArtifactRPM;
 }
 const ArtifactDetailedInfoKojiBuild: React.FC<
     ArtifactDetailedInfoKojiBuildProps
@@ -91,174 +279,100 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                 notifyOnNetworkStatusChange: true,
             },
         );
-    if (loadingCurrentState) {
-        return (
-            <Flex className="pf-u-p-lg">
-                <FlexItem>
-                    <Spinner className="pf-u-mr-md" size="md" /> Loading build
-                    info…
-                </FlexItem>
-            </Flex>
-        );
-    }
+    const nvr = artifact.payload.nvr;
+    const { loading: loadingETState, data: dataETState } =
+        useQuery<ErrataLinkedAdvisoriesReply>(LinkedErrataAdvisories, {
+            variables: {
+                nvrs: [nvr],
+            },
+            errorPolicy: 'all',
+            notifyOnNetworkStatusChange: true,
+        });
     const haveData =
         !loadingCurrentState &&
         dataKojiTask &&
         !_.isEmpty(dataKojiTask.koji_task?.builds);
-
-    if (!haveData) {
-        return (
-            <Flex className="pf-u-p-lg">
-                <Alert
-                    isInline
-                    isPlain
-                    title="No build information available"
-                    variant="info"
-                />
-            </Flex>
-        );
-    }
     const build = _.first(dataKojiTask?.koji_task?.builds);
-    if (_.isNil(build)) {
-        console.error('No build found in data.');
-        return null;
-    }
-    /* Time of build */
-    const buildTimeLocal = moment.unix(build.completion_ts).local();
-    const buildTimeWithTz = buildTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
-    /* Time of commit */
-    let commitTimeWithTz = 'n/a';
-    if (build.commit_obj) {
-        const commitTimeLocal = moment
-            .unix(build.commit_obj.committer_date_seconds)
-            .local();
-        if (commitTimeLocal.isValid())
-            commitTimeWithTz = commitTimeLocal.format('YYYY-MM-DD HH:mm ZZ');
-    }
-
-    const descListClassName = classNames(
-        'pf-u-px-lg',
-        'pf-u-py-md',
-        styles['buildInfo'],
-    );
-
     return (
         <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
             <Tab eventKey={0} title={<TabTitleText>Build Info</TabTitleText>}>
-                <DescriptionList
-                    className={descListClassName}
-                    columnModifier={{ default: '2Col' }}
-                    isAutoColumnWidths
-                    isCompact
-                    isHorizontal
-                >
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Build ID</DescriptionListTerm>
-                        <DescriptionListDescription>
-                            <a
-                                href={mkLinkKojiWebBuildId(
-                                    build.build_id,
-                                    instance,
-                                )}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                {build.build_id}
-                            </a>
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Git commit</DescriptionListTerm>
-                        <DescriptionListDescription>
-                            <a
-                                className={styles['buildInfoCommitHash']}
-                                href={mkLinkPkgsDevelFromSource(
-                                    build.source,
-                                    instance,
-                                )}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                {mkCommitHashFromSource(build.source)}
-                            </a>
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Build owner</DescriptionListTerm>
-                        <DescriptionListDescription>
-                            <a
-                                href={mkLinkKojiWebUserId(
-                                    build.owner_id,
-                                    instance,
-                                )}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                {build.owner_name}
-                            </a>
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Committer</DescriptionListTerm>
-                        <DescriptionListDescription>
-                            {build.commit_obj?.committer_name || 'n/a'}
-                            &nbsp;&lt;
-                            {build.commit_obj?.committer_email || 'n/a'}
-                            &gt;
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>
-                            Build completed
-                        </DescriptionListTerm>
-                        <DescriptionListDescription
-                            className={styles['buildInfoTimestamp']}
-                        >
-                            {buildTimeWithTz}
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                    <DescriptionListGroup>
-                        <DescriptionListTerm>Commit time</DescriptionListTerm>
-                        <DescriptionListDescription
-                            className={styles['buildInfoTimestamp']}
-                        >
-                            {commitTimeWithTz}
-                        </DescriptionListDescription>
-                    </DescriptionListGroup>
-                </DescriptionList>
+                <NoData show={_.every([!haveData, !loadingCurrentState])} />
+                <LoadingData show={loadingCurrentState} />
+                <BuildInfo build={build} instance={instance} />
             </Tab>
             <Tab
                 eventKey={1}
                 title={<TabTitleText>Active Koji Tags</TabTitleText>}
             >
-                <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
-                    <List component={ListComponent.ol} type={OrderType.number}>
-                        {_.map(build.tags, (tag) => (
-                            <ListItem key={tag.id}>
-                                <ExternalLink
-                                    href={mkLinkKojiWebTagId(tag.id, instance)}
-                                >
-                                    {tag.name}
-                                </ExternalLink>
-                            </ListItem>
-                        ))}
-                    </List>
-                </Flex>
+                <LimitWithScroll>
+                    <TagsList build={build} instance={instance} />
+                </LimitWithScroll>
             </Tab>
             <Tab eventKey={2} title={<TabTitleText>Koji History</TabTitleText>}>
-                <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
-                    <FlexItem
-                        flex={{ default: 'flex_1' }}
-                        style={{
-                            height: '10em',
-                            overflow: 'auto',
-                        }}
-                    >
-                        <HistoryList history={build.history?.tag_listing} />
-                    </FlexItem>
-                </Flex>
+                <LimitWithScroll>
+                    <HistoryList history={build?.history?.tag_listing} />
+                </LimitWithScroll>
+            </Tab>
+            <Tab
+                eventKey={3}
+                title={<TabTitleText>Related Advisories</TabTitleText>}
+            >
+                <LoadingData show={loadingETState} />
+                <LimitWithScroll>
+                    <LinkedAdvisories
+                        linkedAdvisories={
+                            dataETState?.teiid_et_linked_advisories
+                        }
+                    />
+                </LimitWithScroll>
             </Tab>
         </Tabs>
+    );
+};
+
+interface LinkedAdvisoriesProps {
+    linkedAdvisories: ErrataLinkedAdvisory[] | undefined;
+}
+const LinkedAdvisories: React.FC<LinkedAdvisoriesProps> = (props) => {
+    const { linkedAdvisories } = props;
+    if (_.isNil(linkedAdvisories)) {
+        return null;
+    }
+    const advs: JSX.Element[] = [];
+    for (const adv of linkedAdvisories) {
+        advs.push(
+            <Tr key={adv.product_name}>
+                <Td dataLabel="product">{adv.product_name}</Td>
+                <Td dataLabel="status">{adv.advisory_status}</Td>
+                <Td dataLabel="name">
+                    <a
+                        href={`${config.et.url}/advisory/${adv.advisory_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {adv.advisory_name}
+                    </a>
+                </Td>
+            </Tr>,
+        );
+    }
+    return (
+        <>
+            <TableComposable
+                aria-label="Simple table"
+                variant="compact"
+                borders={false}
+            >
+                <Thead>
+                    <Tr>
+                        <Th>Product name</Th>
+                        <Th>Status</Th>
+                        <Th>Name</Th>
+                    </Tr>
+                </Thead>
+                <Tbody>{advs}</Tbody>
+            </TableComposable>
+        </>
     );
 };
 
@@ -290,14 +404,6 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
     );
 
     if (loading) {
-        return (
-            <Flex className="pf-u-p-lg">
-                <FlexItem>
-                    <Spinner className="pf-u-mr-md" size="md" /> Loading build
-                    info…
-                </FlexItem>
-            </Flex>
-        );
     }
 
     const haveData = !loading && data && !_.isEmpty(data.mbs_build);
@@ -505,17 +611,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
                 eventKey="tagging-history"
                 title={<TabTitleText>Tagging History</TabTitleText>}
             >
-                <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
-                    <FlexItem
-                        flex={{ default: 'flex_1' }}
-                        style={{
-                            height: '10em',
-                            overflow: 'auto',
-                        }}
-                    >
-                        <HistoryList history={build.tag_history?.tag_listing} />
-                    </FlexItem>
-                </Flex>
+                <HistoryList history={build.tag_history?.tag_listing} />
             </Tab>
         </Tabs>
     );
@@ -572,6 +668,26 @@ const HistoryList: React.FC<HistoryListProps> = (props) => {
     );
 };
 
+export const LimitWithScroll = (
+    props: React.PropsWithChildren<React.ReactNode>,
+) => {
+    const { children } = props;
+    return (
+        <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
+            <FlexItem
+                flex={{ default: 'flex_1' }}
+                style={{
+                    maxHeight: '10em',
+                    overflow: 'auto',
+                    flex: 'initial',
+                }}
+            >
+                {children}
+            </FlexItem>
+        </Flex>
+    );
+};
+
 interface HistoryListEntryProps {
     entry: TagActionHistoryType;
 }
@@ -597,9 +713,9 @@ interface ArtifactDetailedInfoProps {
 }
 
 export function ArtifactDetailedInfo({ artifact }: ArtifactDetailedInfoProps) {
-    if (['brew-build', 'koji-build', 'koji-build-cs'].includes(artifact.type))
+    if (isArtifactRPM(artifact))
         return <ArtifactDetailedInfoKojiBuild artifact={artifact} />;
-    else if (artifact.type === 'redhat-module')
+    else if (isArtifactMBS(artifact))
         return <ArtifactDetailedInfoModuleBuild artifact={artifact} />;
     return null;
 }

@@ -75,6 +75,9 @@ export const config = {
     sst: {
         url: 'https://sst.osci.redhat.com',
     },
+    et: {
+        url: 'https://errata.engineering.redhat.com/',
+    },
 };
 
 export const mappingDatagrepperUrl: Record<ArtifactType, string> = {

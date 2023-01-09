@@ -97,7 +97,11 @@ export interface PayloadMBSBuildType {
  * TypeScript guards
  */
 export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRPM {
-    return artifact.type === 'brew-build' || artifact.type === 'koji-build';
+    return (
+        artifact.type === 'brew-build' ||
+        artifact.type === 'koji-build' ||
+        artifact.type === 'koji-build-cs'
+    );
 }
 export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMBS {
     return artifact.type === 'redhat-module';
@@ -501,4 +505,13 @@ export interface MbsBuildInfo {
     tags?: KojiBuildTag[];
     tasks: MbsTask[];
     time_completed?: string;
+}
+
+export interface ErrataLinkedAdvisory {
+    build_id: number;
+    build_nvr: string;
+    advisory_id: number;
+    product_name: string;
+    advisory_name: string;
+    advisory_status: string;
 }
