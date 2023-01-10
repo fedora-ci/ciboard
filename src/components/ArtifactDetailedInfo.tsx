@@ -402,6 +402,14 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
     );
 
     if (loading) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading build
+                    info…
+                </FlexItem>
+            </Flex>
+        );
     }
 
     const haveData = !loading && data && !_.isEmpty(data.mbs_build);
