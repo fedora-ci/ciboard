@@ -357,22 +357,20 @@ const LinkedAdvisories: React.FC<LinkedAdvisoriesProps> = (props) => {
         );
     }
     return (
-        <>
-            <TableComposable
-                aria-label="Simple table"
-                variant="compact"
-                borders={false}
-            >
-                <Thead>
-                    <Tr>
-                        <Th>Product name</Th>
-                        <Th>Status</Th>
-                        <Th>Name</Th>
-                    </Tr>
-                </Thead>
-                <Tbody>{advs}</Tbody>
-            </TableComposable>
-        </>
+        <TableComposable
+            aria-label="Simple table"
+            variant="compact"
+            borders={false}
+        >
+            <Thead>
+                <Tr>
+                    <Th>Product name</Th>
+                    <Th>Status</Th>
+                    <Th>Name</Th>
+                </Tr>
+            </Thead>
+            <Tbody>{advs}</Tbody>
+        </TableComposable>
     );
 };
 
