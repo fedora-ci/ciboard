@@ -296,7 +296,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
     return (
         <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
             <Tab eventKey={0} title={<TabTitleText>Build Info</TabTitleText>}>
-                <NoData show={_.every([!haveData, !loadingCurrentState])} />
+                <NoData show={!haveData && !loadingCurrentState} />
                 <LoadingData show={loadingCurrentState} />
                 <BuildInfo build={build} instance={instance} />
             </Tab>
