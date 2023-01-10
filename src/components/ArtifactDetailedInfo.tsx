@@ -226,7 +226,7 @@ const BuildInfo: React.FC<BuildInfoProps> = (props) => {
 };
 
 interface TagsListProps {
-    build: KojiBuildInfo | undefined;
+    build?: KojiBuildInfo;
     instance: KojiInstanceType;
 }
 const TagsList: React.FC<TagsListProps> = (props) => {
