@@ -104,45 +104,50 @@ const TestSuitesInternal: React.FC<TestSuitesInternalProps> = (props) => {
 };
 
 const mkLogLink = (log: TestCaseLogsEntry): JSX.Element => (
-    <ExternalLink href={log.$.href} key={log.$.name}>
-        {log.$.name}
+    <ExternalLink href={log.$href} key={log.$name}>
+        {log.$name}
     </ExternalLink>
 );
 
 interface LogsLinksProps {
-    logs: TestCaseLogs[];
+    logs?: TestCaseLogsEntry | TestCaseLogsEntry[];
 }
 
 const LogsLinks: React.FC<LogsLinksProps> = ({ logs }) => {
-    if (!logs || _.isEmpty(logs[0].log)) return null;
+    if (!logs || _.isEmpty(logs)) return null;
+    if (!_.isArray(logs)) logs = [logs];
     const logsLinks = mkSeparatedList(mkLogsLinks(logs));
     return <p>Log files: {logsLinks}</p>;
 };
 
-const mkLogsLinks = (logs: TestCaseLogs[]): JSX.Element[] => {
-    /** logs[0].log - [log1, log2, log3] */
-    if (!logs[0] || _.isEmpty(logs[0].log)) return [];
-    return _.map(logs[0].log, (log) => mkLogLink(log));
+const mkLogsLinks = (logs: TestCaseLogsEntry[] | undefined): JSX.Element[] => {
+    if (!logs || _.isEmpty(logs)) return [];
+    return _.map(logs, (log) => mkLogLink(log));
 };
 
 const mkPhase = (phase: TestCasePhasesEntry): IRow => {
+    const logs = _.isArray(phase.logs?.log)
+        ? phase.logs?.log
+        : phase.logs?.log
+        ? [phase.logs?.log]
+        : [];
     return {
         cells: [
-            <TestStatusIcon status={phase.$.result} />,
-            phase.$.name,
-            mkSeparatedList(mkLogsLinks(phase.logs)),
+            <TestStatusIcon status={phase.$result} />,
+            phase.$name,
+            mkSeparatedList(mkLogsLinks(logs)),
         ],
-        key: phase.$.name,
+        key: phase.$name,
     };
 };
 
 interface PhasesProps {
-    phases?: TestCasePhases[];
+    phases?: TestCasePhasesEntry[];
 }
 
 const Phases: React.FC<PhasesProps> = ({ phases }) => {
-    if (!phases || _.isEmpty(phases[0]?.phase)) return null;
-    const rows: IRow[] = _.map(phases[0].phase, (phase) => mkPhase(phase));
+    if (_.isEmpty(phases)) return null;
+    const rows: IRow[] = _.map(phases, (phase) => mkPhase(phase));
     return (
         <Table
             aria-label="Table of individual phases within this test"
@@ -164,9 +169,9 @@ const Phases: React.FC<PhasesProps> = ({ phases }) => {
 
 const mkTestOutput = (output: TestCaseTestOutputsEntry): IRow => ({
     cells: [
-        <>{output.$.result}</>,
-        <>{output.$.message}</>,
-        <>{output.$.remedy}</>,
+        <>{output.$result}</>,
+        <>{output.$message}</>,
+        <>{output.$remedy}</>,
     ],
 });
 
@@ -208,7 +213,7 @@ export const TestCaseContent: React.FC<TestCaseContentProps> = (props) => {
     return (
         <>
             <OutputsTable outputs={test['test-outputs']} />
-            <Phases phases={test.phases} />
+            <Phases phases={test.phases?.phase} />
         </>
     );
 };
@@ -281,7 +286,7 @@ const TestCaseItem: React.FC<TestCaseItemProps> = (props) => {
                         </FlexItem>
                     )}
                 </Flex>
-                <LogsLinks logs={test.logs} />
+                <LogsLinks logs={test.logs?.log} />
             </Flex>
         </DataListCell>
     );

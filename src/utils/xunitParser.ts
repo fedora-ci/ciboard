@@ -19,10 +19,57 @@
  */
 
 import * as uuid from 'uuid';
-const parseString = require('xml2js-parser').parseStringSync;
+import { X2jOptions, XMLParser } from 'fast-xml-parser';
+import _ from 'lodash';
 
-const xml2js = (xml: string) => {
-    const data = parseString(xml);
+// IDEAL TYPES
+type DetailedTestResults = TestSuiteResult[];
+
+interface TestSuiteResult {
+    cases: TestCaseResult[];
+    /*
+     * Are there logs at the testsuite level? Yes, but only as an attribute of
+     * <testuite>.
+     */
+    log?: TestResultLog;
+    message?: string;
+    properties: TestProperties;
+}
+
+interface TestCaseResult {
+    logs?: TestResultLog[];
+    name: string;
+    phases: TestCasePhase[];
+    result?: TestCaseOutcome;
+    time?: number;
+}
+
+interface TestCasePhase {
+    logs: TestResultLog[]; // > logs > log
+    name: string;
+    result?: TestPhaseOutcome;
+    time?: number;
+}
+
+interface TestResultLog {
+    label: string; // $name
+    link: string; // $href
+}
+
+type TestCaseOutcome = 'error' | 'fail' | 'pass' | 'skip';
+type TestPhaseOutcome = Exclude<TestCaseOutcome, 'error'>;
+type TestProperties = Partial<Record<string, string>>;
+// END IDEAL TYPES
+
+const XML_PARSER_OPTIONS: Partial<X2jOptions> = {
+    alwaysCreateTextNode: true,
+    attributeNamePrefix: '$',
+    ignoreAttributes: false,
+};
+
+const parseSuitesXml = (xml: string) => {
+    const parser = new XMLParser(XML_PARSER_OPTIONS);
+    const data = parser.parse(xml);
 
     let suites = [];
     if (data.testsuites && data.testsuites.testsuite) {
@@ -64,62 +111,82 @@ const expandMeta = (thing: any) => {
 };
 
 const buildProperties = (suite: any) => {
-    const properties: any = {};
-    if (suite.properties) {
-        suite.properties
-            .filter((property: any) => typeof property !== 'string')
-            .forEach((property: any) => {
-                property.property.forEach((prop: any) => {
-                    const meta = prop.$;
-                    properties[meta.name] = meta.value;
-                });
+    const properties = suite?.properties?.property;
+    const propsMap: any = {};
+
+    if (properties) {
+        if (_.isArray(properties)) {
+            properties.forEach((prop: any) => {
+                /*
+                 * NOTE: This overwrites previous values with subsequent ones.
+                 * For example, given the xunit
+                 *      ...
+                 *      <property name="osci.result" value="failed" />
+                 *      <property name="osci.result" value="passed" />
+                 *      ...
+                 * the `osci.result` property will have the value 'passed'.
+                 */
+                propsMap[prop.$name] = prop.$value;
             });
-    }
-    properties._uuid = uuid.v4();
-    return properties;
-};
-
-const extactMessage = (thing: any) => {
-    if (typeof thing === 'string') return;
-    thing.message = '';
-    if (thing._) {
-        thing.message = thing._;
-        delete thing._;
-    }
-};
-
-const extractTestCore = (test: any, type: any, status: any) => {
-    if (test[type]) {
-        test.status = status;
-
-        const core = test[type][0];
-        extactMessage(core);
-
-        if (test.message === '') {
-            if (core.message) {
-                test.message = core.message;
-            } else if (core.$) {
-                test.message = '';
-                if (core.$.message) test.message += core.$.message;
-                if (core.$.type) test.message += core.$.type;
-            } else if (typeof core === 'string') {
-                test.message = core;
-            }
+        } else if (
+            _.isObject(properties) &&
+            '$name' in properties &&
+            '$value' in properties
+        ) {
+            const prop = properties;
+            propsMap[prop.$name as string] = prop.$value;
+        } else {
+            console.warn('Invalid <properties> in xunit');
         }
-
-        if (test.message) test.message = escape(test.message);
-
-        delete test[type];
     }
+
+    propsMap._uuid = uuid.v4();
+    return propsMap;
+};
+
+const extractMessage = (thing: any) => {
+    if (!thing || _.isString(thing)) return;
+    thing.message = '';
+    if (thing['#text']) {
+        thing.message = thing['#text'];
+        delete thing['#text'];
+    }
+};
+
+const extractTestCore = (test: any, type: string, status: string) => {
+    if (!test[type]) return;
+
+    test.status = status;
+
+    const core = test[type];
+    extractMessage(core);
+
+    if (test.message === '') {
+        if (_.isString(core)) {
+            test.message = core;
+        } else if (core.message) {
+            test.message = core.message;
+        } else if (core.$message || core.$type) {
+            test.message = '';
+            if (core.$message) test.message += core.$message;
+            if (core.$type) test.message += core.$type;
+        }
+    }
+
+    if (test.message) test.message = escape(test.message);
+
+    delete test[type];
 };
 
 const buildTest = (test: any) => {
-    test.status = 'pass';
-    test.name = 'no name';
+    test.status = test.$status || 'pass';
+    test.name = test.$name || 'no name';
 
-    expandMeta(test);
+    // expandMeta(test);
 
-    extactMessage(test);
+    extractMessage(test);
+
+    test.properties = buildProperties(test);
 
     extractTestCore(test, 'passed', 'pass');
     extractTestCore(test, 'passing', 'pass');
@@ -149,13 +216,15 @@ const buildTest = (test: any) => {
 };
 
 const buildTests = (suite: any) => {
-    suite.tests = suite.testcase
+    let testcases = suite.testcase;
+    if (!_.isArray(testcases)) testcases = [testcases];
+    suite.tests = testcases
         .filter((test: any) => {
-            if (typeof test === 'string') return test.trim() !== '';
+            if (_.isString(test)) return test.trim() !== '';
             return true;
         })
         .map((test: any) => {
-            if (typeof test === 'string') return buildTest({ _: test });
+            if (_.isString(test)) return buildTest({ '#text': test });
             return buildTest(test);
         });
     delete suite.testcase;
@@ -164,11 +233,11 @@ const buildTests = (suite: any) => {
 const buildSuites = (suites: any[]) =>
     suites
         .filter((suite: any) => {
-            if (typeof suite === 'string') return suite.trim() !== '';
+            if (_.isString(suite)) return suite.trim() !== '';
             return true;
         })
         .map((suite: any) => {
-            expandMeta(suite);
+            // expandMeta(suite);
             suite.properties = buildProperties(suite);
 
             delete suite.tests;
@@ -236,6 +305,6 @@ const buildSuites = (suites: any[]) =>
         });
 
 export const xunitParser = (xml: string) => {
-    const suites = xml2js(xml);
+    const suites = parseSuitesXml(xml);
     return buildSuites(suites);
 };

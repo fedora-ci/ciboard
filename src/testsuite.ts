@@ -23,16 +23,18 @@ import _ from 'lodash';
 export type TestCaseStatus = 'error' | 'fail' | 'pass' | 'skip';
 
 export interface TestCaseLogsEntry {
-    $: { name: string; href: string };
+    $name: string;
+    $href: string;
 }
 
 export interface TestCaseLogs {
-    log: TestCaseLogsEntry[];
+    log: TestCaseLogsEntry | TestCaseLogsEntry[];
 }
 
 export interface TestCasePhasesEntry {
-    $: { name: string; result: string };
-    logs: TestCaseLogs[];
+    $name: string;
+    $result: string;
+    logs?: TestCaseLogs;
 }
 
 export interface TestCasePhases {
@@ -40,7 +42,8 @@ export interface TestCasePhases {
 }
 
 export interface TestCasePropertiesEntry {
-    $: { name: string; value: string };
+    $name: string;
+    $value: string;
 }
 
 export interface TestCaseProperties {
@@ -48,7 +51,9 @@ export interface TestCaseProperties {
 }
 
 export interface TestCaseTestOutputsEntry {
-    $: { message: string; remedy: string; result: string };
+    $message: string;
+    $remedy: string;
+    $result: string;
 }
 
 export interface TestCaseTestOutputs {
@@ -64,18 +69,19 @@ export interface TestCase {
     _uuid: string;
     name: string;
     time: string;
-    logs: TestCaseLogs[];
+    logs?: TestCaseLogs;
     status: TestCaseStatus;
-    phases?: TestCasePhases[];
+    phases?: TestCasePhases;
     message: string;
-    properties?: TestCaseProperties[];
+    properties?: Partial<Record<string, any>>;
     'test-outputs'?: TestCaseTestOutputs[];
 }
 
 export type TestSuiteStatus = 'error' | 'fail' | 'pass' | 'skip' | 'tests';
 
 export interface TestSuitePropertiesEntry {
-    $: { name: string; value: string };
+    $name: string;
+    $value: string;
 }
 
 export interface TestSuiteProperties {
@@ -91,24 +97,14 @@ export interface TestSuite {
     time?: string;
     tests: TestCase[];
     status: string;
-    properties: TestSuiteProperties[];
+    properties: TestSuiteProperties;
     /** Number of test cases with each of the possible statuses. */
     count: Record<TestSuiteStatus, number>;
 }
 
-export const getProperty = (testCase: TestCase, propertyName: string) => {
-    const matchedProperty = testCase.properties
-        ?.flatMap((property) => property.property)
-        /*
-         * Make sure the properties are in the expected format.
-         * TODO: This is already assumed in the type. It shoud be ensured by
-         * validation earlier in the data flow.
-         */
-        .filter((property) => _.has(property, '$.name'))
-        .find((property) => property.$.name === propertyName);
-    return matchedProperty?.$.value;
-};
+export const getProperty = (testCase: TestCase, propertyName: string) =>
+    _.get(testCase.properties, propertyName);
 
 export const hasTestCaseContent = (testCase: TestCase) =>
-    !_.isEmpty(testCase.phases?.[0]?.phase) ||
+    !_.isEmpty(testCase.phases?.phase?.[0]) ||
     !_.isEmpty(testCase['test-outputs']);

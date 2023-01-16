@@ -26,9 +26,9 @@ describe('getProperty function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
-            phases: [],
+            phases: undefined,
             message: '',
             // properties: undefined, // Not present in the input.
             'test-outputs': [],
@@ -41,11 +41,11 @@ describe('getProperty function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
-            phases: [],
+            phases: undefined,
             message: '',
-            properties: [],
+            properties: undefined,
             'test-outputs': [],
         };
         expect(getProperty(testCase, 'ci.arch')).toBeUndefined();
@@ -56,18 +56,16 @@ describe('getProperty function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
-            phases: [],
+            phases: undefined,
             message: '',
-            properties: [
-                {
-                    property: [
-                        { $: { name: 'ci.name', value: 'Fedora CI' } },
-                        { $: { name: 'ci.epoch', value: '2022' } },
-                    ],
-                },
-            ],
+            properties: {
+                property: [
+                    { $name: 'ci.name', $value: 'Fedora CI' },
+                    { $name: 'ci.epoch', $value: '2022' },
+                ],
+            },
             'test-outputs': [],
         };
         expect(getProperty(testCase, 'ci.arch')).toBeUndefined();
@@ -78,19 +76,17 @@ describe('getProperty function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
-            phases: [],
+            phases: undefined,
             message: '',
-            properties: [
-                {
-                    property: [
-                        { $: { name: 'ci.name', value: 'Fedora CI' } },
-                        { $: { name: 'ci.epoch', value: '2022' } },
-                        { $: { name: 'ci.arch', value: 'aarch64' } },
-                    ],
-                },
-            ],
+            properties: {
+                property: [
+                    { $name: 'ci.name', $value: 'Fedora CI' },
+                    { $name: 'ci.epoch', $value: '2022' },
+                    { $name: 'ci.arch', $value: 'aarch64' },
+                ],
+            },
             'test-outputs': [],
         };
         expect(getProperty(testCase, 'ci.arch')).toStrictEqual('aarch64');
@@ -101,25 +97,19 @@ describe('getProperty function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
-            phases: [],
+            phases: undefined,
             message: '',
-            properties: [
-                {
-                    property: [
-                        { $: { name: 'ci.name', value: 'Fedora CI' } },
-                        { $: { name: 'ci.epoch', value: '2022' } },
-                        { $: { name: 'ci.arch', value: 'aarch64' } },
-                    ],
-                },
-                {
-                    property: [
-                        { $: { name: 'ci.name', value: 'Second CI' } },
-                        { $: { name: 'ci.arch', value: 's390x' } },
-                    ],
-                },
-            ],
+            properties: {
+                property: [
+                    { $name: 'ci.name', $value: 'Fedora CI' },
+                    { $name: 'ci.epoch', $value: '2022' },
+                    { $name: 'ci.arch', $value: 'aarch64' },
+                    { $name: 'ci.name', $value: 'Second CI' },
+                    { $name: 'ci.arch', $value: 's390x' },
+                ],
+            },
             'test-outputs': [],
         };
         expect(getProperty(testCase, 'ci.arch')).toStrictEqual('aarch64');
@@ -132,7 +122,7 @@ describe('hasTestCaseContet function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
             message: '',
         };
@@ -144,9 +134,9 @@ describe('hasTestCaseContet function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
-            phases: [],
+            phases: undefined,
             message: '',
             'test-outputs': [],
         };
@@ -158,15 +148,12 @@ describe('hasTestCaseContet function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
-            phases: [
-                {
-                    phase: [
-                        { $: { name: 'prepare', result: 'pass' }, logs: [] },
-                    ],
-                },
-            ],
+            phases: {
+                phase: [{ $name: 'prepare', $result: 'pass', logs: undefined }],
+            },
+
             message: '',
             'test-outputs': [],
         };
@@ -178,18 +165,16 @@ describe('hasTestCaseContet function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
             message: '',
             'test-outputs': [
                 {
                     'test-output': [
                         {
-                            $: {
-                                message: 'Test case OK',
-                                remedy: '',
-                                result: 'pass',
-                            },
+                            $message: 'Test case OK',
+                            $remedy: '',
+                            $result: 'pass',
                         },
                     ],
                 },
@@ -203,25 +188,19 @@ describe('hasTestCaseContet function', () => {
             _uuid: 'd50ce531-01f0-4e8f-b398-ee1bdb4be223',
             name: '/test/basic',
             time: '1658312226',
-            logs: [],
+            logs: undefined,
             status: 'pass',
-            phases: [
-                {
-                    phase: [
-                        { $: { name: 'prepare', result: 'pass' }, logs: [] },
-                    ],
-                },
-            ],
+            phases: {
+                phase: [{ $name: 'prepare', $result: 'pass', logs: undefined }],
+            },
             message: '',
             'test-outputs': [
                 {
                     'test-output': [
                         {
-                            $: {
-                                message: 'Test case OK',
-                                remedy: '',
-                                result: 'pass',
-                            },
+                            $message: 'Test case OK',
+                            $remedy: '',
+                            $result: 'pass',
                         },
                     ],
                 },
