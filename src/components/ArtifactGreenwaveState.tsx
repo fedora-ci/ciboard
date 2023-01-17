@@ -26,6 +26,7 @@ import { useLazyQuery } from '@apollo/client';
 import { useDispatch } from 'react-redux';
 import {
     Alert,
+    AlertProps,
     Button,
     DataListCell,
     DataListContent,
@@ -75,7 +76,11 @@ import {
     getTestcaseName,
     getArtifactProduct,
 } from '../utils/artifactUtils';
-import { Artifact, StateGreenwaveType } from '../artifact';
+import {
+    Artifact,
+    GreenwaveRequirementType,
+    StateGreenwaveType,
+} from '../artifact';
 import { isResultMissing } from '../utils/artifactUtils';
 import { ArtifactStateProps } from './ArtifactState';
 import {
@@ -218,6 +223,36 @@ export const GreenwaveWaiver: React.FC<PropsWithGreenwaveState> = (props) => {
                 <Text component="p">
                     <LinkifyNewTab>{waiver.comment}</LinkifyNewTab>
                 </Text>
+            </TextContent>
+        </Alert>
+    );
+};
+
+interface GreenwaveDetailsProps {
+    requirement?: GreenwaveRequirementType;
+}
+
+export const GreenwaveDetails: React.FC<GreenwaveDetailsProps> = ({
+    requirement,
+}) => {
+    if (!requirement || !requirement.details) return null;
+
+    const icon = renderStatusIcon(requirement.type);
+    let title = 'Result details';
+    let variant: AlertProps['variant'] = 'default';
+
+    if (
+        requirement.type === 'invalid-gating-yaml' ||
+        requirement.type === 'invalid-gating-yaml-waived'
+    ) {
+        title = 'gating.yaml validation failed';
+        variant = 'danger';
+    }
+
+    return (
+        <Alert customIcon={icon} isInline title={title} variant={variant}>
+            <TextContent className="pf-u-font-size-sm">
+                <Text component="pre">{requirement.details}</Text>
             </TextContent>
         </Alert>
     );
@@ -402,7 +437,8 @@ export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
     }
     const { contact, dependency, description, known_issues } = metadata.payload;
 
-    const isTestResultsTabHidden = !isResultMissing(state) && !state.waiver;
+    const isTestResultsTabHidden =
+        !isResultMissing(state) && !state.waiver && !state.requirement?.details;
     const isTestKnownIssuesTabHidden = !known_issues;
     const isTestDependencyTabHidden = !dependency;
     const isTestInfoTabHidden = !description && !contact;
@@ -441,6 +477,7 @@ export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
                     aria-label="Tab with results info"
                 >
                     <GreenwaveWaiver state={state} />
+                    <GreenwaveDetails requirement={state.requirement} />
                     {isResultMissing(state) && <GreenwaveMissingHints />}
                 </Tab>
                 <Tab
