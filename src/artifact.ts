@@ -192,8 +192,9 @@ export type GreenwaveRequirementType = {
     subject_type: string;
     /* python2-flask-1.0.2-1.rawhide */
     subject_identifier: string;
-    result_id: number;
-    error_reason: string;
+    result_id?: number;
+    details?: string;
+    error_reason?: string;
     source?: string;
     scenario?: string | null;
     item: { type: ArtifactType; identifier: string };
