@@ -9,7 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14.x]
+        # NOTE: The version we use to build the container image should always be
+        # included here. (See Dockerfile in the root directory of the ciboard-server
+        # repository.)
+        node-version: [18.x]
     steps:
       - name: Check out sources
         uses: actions/checkout@v3
