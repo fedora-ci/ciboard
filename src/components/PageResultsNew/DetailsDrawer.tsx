@@ -207,13 +207,13 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                 <Alert isInline title="Test information" variant="info">
                     <TextContent>
                         <Text>
-                            This test result is provided by the <b>BaseOS QE</b>{' '}
-                            team. If you need help with this test, you can reach
-                            out to the team via <b>#tft on IRC</b>, or via email
-                            at{' '}
+                            This test result is provided by the{' '}
+                            <b>Kitten Farm</b> team. If you need help with this
+                            test, you can reach out to the team via{' '}
+                            <b>#kittens on IRC</b>, or via email at{' '}
                             <b>
-                                <a href="mailto:baseos-ci@redhat.com">
-                                    baseos-ci@redhat.com
+                                <a href="mailto:kittens@example.com">
+                                    kittens@example.com
                                 </a>
                             </b>
                             .
