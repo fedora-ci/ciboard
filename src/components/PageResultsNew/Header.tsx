@@ -53,7 +53,7 @@ export function SummaryHeader(props: SummaryHeaderProps) {
                 <Title headingLevel="h1">{props.nvr}</Title>
             </TextContent>
             <FlexItem spacer={{ default: 'spacerXl' }}></FlexItem>
-            {/* The semaphore implemented by ArtifactGreenwaveStatesSummary */}
+            {/* TODO: Replace with real gating status. See `ArtifactGreenwaveStatesSummary`. */}
             {props.gatingStatus && (
                 <TextContent>
                     <GatingStatusIcon status={props.gatingStatus === 'pass'} />{' '}
