@@ -33,10 +33,9 @@ import {
 import classNames from 'classnames';
 
 import styles from '../../custom.module.css';
-
 import { ExternalLink } from '../ExternalLink';
 
-interface BuildInfoProps {
+interface BuildMetadataProps {
     buildId: number;
     buildTime: string;
     commit: string;
@@ -46,7 +45,7 @@ interface BuildInfoProps {
     owner: string;
 }
 
-function BuildInfo(props: BuildInfoProps) {
+function BuildMetadata(props: BuildMetadataProps) {
     const items = [
         {
             label: 'Build ID',
@@ -114,9 +113,10 @@ function BuildInfo(props: BuildInfoProps) {
     );
 }
 
-export function BuildMetadata(_props: {}) {
+export function BuildInfo(_props: {}) {
     const [activeTabKey, setActiveTabKey] = useState('summary');
 
+    // TODO: Replace with real data.
     const buildProps = {
         buildId: 4115943,
         buildTime: '2022-09-16 10:27 +02:00',
@@ -140,17 +140,19 @@ export function BuildMetadata(_props: {}) {
                 eventKey="summary"
                 title={<TabTitleText>Build summary</TabTitleText>}
             >
-                <BuildInfo {...buildProps} />
+                <BuildMetadata {...buildProps} />
             </Tab>
             <Tab
                 eventKey="tags"
                 title={
+                    // TODO: Replace with real tags count.
                     <TabTitleText>
                         Active tags <Badge isRead>116</Badge>
                     </TabTitleText>
                 }
             >
                 <CardBody>
+                    {/* TODO: List really active tags. See `TagsList` in `ArtifactDetailedInfo.tsx`. */}
                     Currently active Koji tags for this build will be listed
                     here.
                 </CardBody>
@@ -160,18 +162,21 @@ export function BuildMetadata(_props: {}) {
                 title={<TabTitleText>Tagging history</TabTitleText>}
             >
                 <CardBody>
+                    {/* TODO: List real tagging history. See `HistoryList` in `ArtifactDetailedInfo.tsx`. */}
                     Koji tagging history will be displayed here.
                 </CardBody>
             </Tab>
             <Tab
                 eventKey="advisories"
                 title={
+                    // TODO: Replace with real advisories count.
                     <TabTitleText>
                         Related advisories <Badge isRead>14</Badge>
                     </TabTitleText>
                 }
             >
                 <CardBody>
+                    {/* TODO: List real advisories. See `LinkedAdvisories` in `ArtifactDetailedInfo.tsx`. */}
                     Advisories (errata) related to this build will be listed
                     here.
                 </CardBody>
