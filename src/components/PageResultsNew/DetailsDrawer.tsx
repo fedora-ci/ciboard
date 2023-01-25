@@ -51,11 +51,12 @@ import {
     ThumbsUpIcon,
 } from '@patternfly/react-icons';
 
-import { LinkifyNewTab, TestStatusIcon } from '../../utils/artifactUtils';
+import { LinkifyNewTab } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
 import { FAKE_TEST_SUITES } from './fakeData';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
+import { TestStatusIcon } from './TestStatusIcon';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
