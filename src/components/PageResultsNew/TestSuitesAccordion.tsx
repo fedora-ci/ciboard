@@ -158,6 +158,7 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
      * TODO: Expand all suites by default?
      * TOOD: Expand suites with failures by default?
      * TODO: Render test cases directly if there is only a single suite?
+     * TODO: If only one test suite is present, expand it by default.
      */
     const [expandedIds, setExpandedIds] = useState<
         Partial<Record<string, boolean>>
