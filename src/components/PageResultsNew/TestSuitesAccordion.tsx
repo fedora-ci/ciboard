@@ -26,6 +26,7 @@ import {
     AccordionItem,
     AccordionToggle,
     Alert,
+    Badge,
     Flex,
     FlexItem,
     Label,
@@ -158,36 +159,45 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
      * TODO: Render test cases directly if there is only a single suite?
      * TODO: If only one test suite is present, expand it by default.
      */
-    const [expandedIds, setExpandedIds] = useState<
+    const [expandedSuites, setExpandedSuites] = useState<
         Partial<Record<string, boolean>>
     >({});
     const { suites } = props;
     if (!suites) return null;
 
     const onToggle = (name: string): void => {
-        const newExpandedIds = update(expandedIds, {
+        const newExpandedIds = update(expandedSuites, {
             $toggle: [name],
         });
-        setExpandedIds(newExpandedIds);
+        setExpandedSuites(newExpandedIds);
     };
 
     return (
-        <Accordion>
-            {suites.map(({ cases, name }) => (
+        <Accordion isBordered>
+            {suites.map(({ cases, name }) => {
+                const failedCount = cases.filter(
+                    ({ status }) => status === 'fail',
+                ).length;
+
                 // TODO: Use a unique ID here later.
-                <AccordionItem key={name}>
-                    <AccordionToggle
-                        id={name}
-                        isExpanded={expandedIds[name]}
-                        onClick={() => onToggle(name)}
-                    >
-                        {name}
-                    </AccordionToggle>
-                    <AccordionContent isHidden={!expandedIds[name]}>
-                        <TestCasesTable cases={cases} />
-                    </AccordionContent>
-                </AccordionItem>
-            ))}
+                return (
+                    <AccordionItem key={name}>
+                        <AccordionToggle
+                            id={name}
+                            isExpanded={expandedSuites[name]}
+                            onClick={() => onToggle(name)}
+                        >
+                            {name}{' '}
+                            {failedCount > 0 && (
+                                <Badge isRead>{failedCount} failed</Badge>
+                            )}
+                        </AccordionToggle>
+                        <AccordionContent isHidden={!expandedSuites[name]}>
+                            <TestCasesTable cases={cases} />
+                        </AccordionContent>
+                    </AccordionItem>
+                );
+            })}
         </Accordion>
     );
 }
