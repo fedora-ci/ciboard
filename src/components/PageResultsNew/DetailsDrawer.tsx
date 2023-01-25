@@ -18,6 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import * as _ from 'lodash';
+import { PropsWithChildren, useContext, useState } from 'react';
 import {
     Alert,
     Badge,
@@ -47,14 +49,16 @@ import {
     SyncAltIcon,
     ThumbsUpIcon,
 } from '@patternfly/react-icons';
-import * as _ from 'lodash';
-import { PropsWithChildren, useContext, useState } from 'react';
+import useLocalStorage from 'react-use-localstorage';
+
 import { LinkifyNewTab } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
-
 import { SelectedTestContext } from './contexts';
 import { FAKE_TEST_SUITES } from './fakeData';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
+
+const DEFAULT_DRAWER_SIZE = '50rem';
+const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
 
 /*
 function TogglableLabel(props: { outcome: 'pass' | 'fail' }) {
@@ -96,8 +100,8 @@ function KnownIssuesTab(props: {}) {
                         title="Blocker issue"
                     />{' '}
                     SP ResultsDB doesn't process messages (
-                    <ExternalLink href="https://issues.redhat.com/browse/HYDRA-9816">
-                        HYDRA-9816
+                    <ExternalLink href="https://example.com/KTTY-1916">
+                        KTTY-1916
                     </ExternalLink>
                     ).
                 </ListItem>
@@ -107,8 +111,8 @@ function KnownIssuesTab(props: {}) {
                         title="Normal issue"
                     />{' '}
                     Test sometimes fails in guest setup stage because of{' '}
-                    <ExternalLink href="https://issues.redhat.com/browse/OAMG-7788">
-                        OAMG-7788
+                    <ExternalLink href="https://example.com/KTTY-7788">
+                        KTTY-7788
                     </ExternalLink>
                     .
                 </ListItem>
@@ -117,20 +121,10 @@ function KnownIssuesTab(props: {}) {
     );
 }
 
-export type DetailsDrawerProps = PropsWithChildren<{
-    onClose?(): void;
-}>;
-
-/*
- * Code example taken from the Patternfly docs: https://www.patternfly.org/v4/components/drawer
- */
-export function DetailsDrawer(props: DetailsDrawerProps) {
-    const selectedTest = useContext(SelectedTestContext);
-    const testSuites = FAKE_TEST_SUITES;
+function DetailsDrawerTabs(_props: {}) {
     const [activeTabKey, setActiveTabKey] = useState(0);
-    const isExpanded = !_.isNil(selectedTest);
+    const testSuites = FAKE_TEST_SUITES;
 
-    const onCloseClick = () => props.onClose && props.onClose();
     const tabs = [
         {
             title: 'Results',
@@ -147,6 +141,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         },
         {
             title: (
+                // TODO: Only show if there are any known issues.
                 <>
                     Known issues <Badge isRead>2</Badge>
                 </>
@@ -164,9 +159,53 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         },
     ];
 
+    return (
+        <Tabs
+            activeKey={activeTabKey}
+            inset={{ default: 'insetLg' }}
+            onSelect={(_event, tabIndex) => {
+                setActiveTabKey(Number(tabIndex));
+            }}
+        >
+            {tabs.map(({ content, title }, i) => (
+                <Tab
+                    eventKey={i}
+                    key={i}
+                    title={<TabTitleText>{title}</TabTitleText>}
+                >
+                    {content}
+                </Tab>
+            ))}
+        </Tabs>
+    );
+}
+
+export type DetailsDrawerProps = PropsWithChildren<{
+    onClose?(): void;
+}>;
+
+/*
+ * Code example taken from the Patternfly docs: https://www.patternfly.org/v4/components/drawer
+ */
+export function DetailsDrawer(props: DetailsDrawerProps) {
+    const [drawerSize, setDrawerSize] = useLocalStorage(
+        DRAWER_SIZE_STORAGE_KEY,
+        DEFAULT_DRAWER_SIZE,
+    );
+    const selectedTest = useContext(SelectedTestContext);
+    const isExpanded = !_.isNil(selectedTest);
+
+    const onCloseClick = () => props.onClose && props.onClose();
+    const onResize = (newWidth: number) => setDrawerSize(`${newWidth}px`);
+
     // TODO: Persist the drawer width across pages/sessions.
     const panelContent = (
-        <DrawerPanelContent defaultSize="40rem" isResizable minSize="20rem">
+        <DrawerPanelContent
+            defaultSize={drawerSize}
+            isResizable
+            minSize="20rem"
+            onResize={onResize}
+        >
             <DrawerHead>
                 <Title className="pf-u-pb-sm" headingLevel="h3" size="xl">
                     {selectedTest?.name}
@@ -285,23 +324,10 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                     </Alert>
                 )}
             </DrawerPanelBody>
-            <Tabs
-                activeKey={activeTabKey}
-                inset={{ default: 'insetLg' }}
-                onSelect={(_event, tabIndex) => {
-                    setActiveTabKey(Number(tabIndex));
-                }}
-            >
-                {tabs.map(({ content, title }, i) => (
-                    <Tab
-                        eventKey={i}
-                        key={i}
-                        title={<TabTitleText>{title}</TabTitleText>}
-                    >
-                        {content}
-                    </Tab>
-                ))}
-            </Tabs>
+            <DetailsDrawerTabs
+                // TODO: Use a unique ID for the `key` prop instead of `selectedTest?.name`.
+                key={selectedTest?.name}
+            />
         </DrawerPanelContent>
     );
 
