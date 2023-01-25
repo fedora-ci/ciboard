@@ -73,12 +73,10 @@ interface LogsLinksProps {
 
 function LogsLinks(props: LogsLinksProps) {
     const { logs } = props;
-    return (
-        <div className="pf-u-font-size-sm">
-            Logs:{' '}
-            {mkSeparatedList(logs.map((name) => <a href="#">{name}</a>, ', '))}
-        </div>
-    );
+    const makeLink = (name: string) => <a href="#">{name}</a>;
+    const linksList = mkSeparatedList(logs.map(makeLink, ', '));
+
+    return <div className="pf-u-font-size-sm">Logs: {linksList}</div>;
 }
 
 interface TestCasesTableProps {
