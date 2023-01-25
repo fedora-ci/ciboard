@@ -38,7 +38,7 @@ import { SelectedTestContext } from './contexts';
 import { FAKE_TESTS } from './fakeData';
 import { BackButton, SummaryHeader } from './Header';
 import { TestResultsTable } from './TestResultsTable';
-import { BuildMetadata } from './BuildMetadata';
+import { BuildInfo } from './BuildInfo';
 import { DetailsDrawer } from './DetailsDrawer';
 
 export function PageResultsNew(_props: {}) {
@@ -46,6 +46,7 @@ export function PageResultsNew(_props: {}) {
 
     const pageTitle = `New test results | ${config.defaultTitle}`;
 
+    // TODO: Display real data.
     const buildNvr = 'ansible-collection-microsoft-sql-1.2.4-1.el9';
     const buildOwner = 'mgrabovs';
 
@@ -70,6 +71,7 @@ export function PageResultsNew(_props: {}) {
                                 <BackButton />
                             </StackItem>
                             <StackItem>
+                                {/* TODO: Display real data. */}
                                 <SummaryHeader
                                     gatingStatus="fail"
                                     gatingTag="rhel-8.7.0-build-sidetag-101738-stack-gate"
@@ -85,7 +87,7 @@ export function PageResultsNew(_props: {}) {
                             direction={{ default: 'column' }}
                         >
                             <Card>
-                                <BuildMetadata />
+                                <BuildInfo />
                             </Card>
                             <Card>
                                 <TestResultsTable
