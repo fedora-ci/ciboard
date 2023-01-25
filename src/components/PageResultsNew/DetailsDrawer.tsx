@@ -87,6 +87,7 @@ function TogglableLabel(props: { outcome: 'pass' | 'fail' }) {
 function KnownIssuesTab(props: {}) {
     return (
         <DrawerPanelBody>
+            {/* TODO: Replace with real known issues. */}
             <p>Known issues with the CI (if any) will be listed here.</p>
             <List>
                 <ListItem>
@@ -206,6 +207,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             <DrawerPanelBody className="pf-u-pb-sm">
                 <Alert isInline title="Test information" variant="info">
                     <TextContent>
+                        {/* TODO: Replace with real contact info. */}
                         <Text>
                             This test result is provided by the{' '}
                             <b>Kitten Farm</b> team. If you need help with this
@@ -228,6 +230,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         variant="warning"
                     >
                         <TextContent className="pf-u-font-size-sm">
+                            {/* TODO: Replace with real error message. */}
                             <Text>
                                 This test has failed to complete, but the CI
                                 system provided no more information. Please
@@ -244,6 +247,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         variant="danger"
                     >
                         <TextContent className="pf-u-font-size-sm">
+                            {/* TODO: Replace with real error message. */}
                             <Text>
                                 This test has failed. Please see the list below
                                 for individual test cases.
@@ -260,6 +264,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         variant="default"
                     >
                         <TextContent className="pf-u-font-size-sm">
+                            {/* TODO: Replace with real waiver. */}
                             <Text>
                                 This test result was waived by <b>mgrabovs</b>{' '}
                                 <time
