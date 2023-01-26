@@ -37,6 +37,7 @@ import { TableComposable, Tbody, Td, Tr } from '@patternfly/react-table';
 import moment from 'moment';
 import update from 'immutability-helper';
 
+import './index.css';
 import { TestCase, TestSuite } from './types';
 import { mkSeparatedList } from '../../utils/artifactsTable';
 import { TestStatusIcon } from '../../utils/artifactUtils';
@@ -98,7 +99,7 @@ function TestCasesTable(props: TestCasesTableProps) {
         );
 
     return (
-        <TableComposable variant="compact">
+        <TableComposable className="testCasesTable" variant="compact">
             <Tbody>
                 {cases.map((testCase) => (
                     // TODO: Use a unique ID here later.
