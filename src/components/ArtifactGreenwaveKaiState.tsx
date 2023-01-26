@@ -34,7 +34,6 @@ import {
     Label,
     Spinner,
     Tab,
-    TabProps,
     Tabs,
     TabsProps,
     TabTitleIcon,

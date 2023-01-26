@@ -121,6 +121,7 @@ const Actions: FunctionComponent<ActionsProps> = (props) => {
             /* data is saved, go back to the list */
             forceUpdate();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entryIsRemoved]);
 
     return (
@@ -337,6 +338,7 @@ const MetadataList: FunctionComponent<{}> = () => {
         });
     useEffect(() => {
         getMetadataList();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     const forceUpdateReducer = (state_: any) => {
         getMetadataList();

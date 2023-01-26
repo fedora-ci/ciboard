@@ -591,6 +591,7 @@ const FormGroupProductVersion: FunctionComponent<
 > = (props) => {
     const productVersion = _.defaultTo(props.productVersion, '');
     const dispatch = useContext(MetadataDispatchContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => doValidation(productVersion), []);
     const [validated, setValidated] = useState<Validate>('error');
     if (_.isNull(dispatch)) return null;
@@ -759,6 +760,7 @@ const FormGroupContactsCiSystemURL: FunctionComponent<
 > = (props) => {
     const url = _.defaultTo(props.url, '');
     const dispatch = useContext(MetadataDispatchContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => doValidation(url), []);
     const [validated, setValidated] = useState<Validate>('error');
     if (_.isNull(dispatch)) return null;
@@ -807,6 +809,7 @@ const FormGroupContactsDocsLink: FunctionComponent<
 > = (props) => {
     const docs = _.defaultTo(props.docs, '');
     const dispatch = useContext(MetadataDispatchContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => doValidation(docs), []);
     const [validated, setValidated] = useState<Validate>('error');
     if (_.isNull(dispatch)) return null;
@@ -855,6 +858,7 @@ const FormGroupContactsEmail: FunctionComponent<FormGroupContactsEmailProps> = (
 ) => {
     const email = _.defaultTo(props.email, '');
     const dispatch = useContext(MetadataDispatchContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => doValidation(email), []);
     const [validated, setValidated] = useState<Validate>('error');
     if (_.isNull(dispatch)) return null;
@@ -903,6 +907,7 @@ const FormGroupContactsGchat: FunctionComponent<FormGroupContactsGchatProps> = (
 ) => {
     const gchat = _.defaultTo(props.gchat, '');
     const dispatch = useContext(MetadataDispatchContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => doValidation(gchat), []);
     const [validated, setValidated] = useState<Validate>('error');
     if (_.isNull(dispatch)) return null;
@@ -951,6 +956,7 @@ const FormGroupContactsIrc: FunctionComponent<FormGroupContactsIrcProps> = (
 ) => {
     const irc = _.defaultTo(props.irc, '');
     const dispatch = useContext(MetadataDispatchContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => doValidation(irc), []);
     const [validated, setValidated] = useState<Validate>('error');
     if (_.isNull(dispatch)) return null;
@@ -999,6 +1005,7 @@ const FormGroupContactsReportIssue: FunctionComponent<
 > = (props) => {
     const url = _.defaultTo(props.url, '');
     const dispatch = useContext(MetadataDispatchContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => doValidation(url), []);
     const [validated, setValidated] = useState<Validate>('error');
     if (_.isNull(dispatch)) return null;
@@ -1309,7 +1316,8 @@ export const MetadataForm: React.FunctionComponent = () => {
         if (_.isString(id) && id.length === 24 && validator.isHexadecimal(id)) {
             getMetadata({ variables: { _id: id } });
         }
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
 
     useEffect(() => {
         const haveInitData =
@@ -1324,7 +1332,7 @@ export const MetadataForm: React.FunctionComponent = () => {
                 metadata: qData.metadata_raw[0],
             });
         }
-    }, [qData]);
+    }, [qData, qError, qLoading]);
 
     /* on save */
     const [
@@ -1382,12 +1390,11 @@ export const MetadataForm: React.FunctionComponent = () => {
             /* data is saved, go back to the list */
             history.push('/metadata');
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [haveData]);
 
-    const { contact, known_issues, dependency, description, waive_message } = _.defaultTo(
-        metadata.payload,
-        {},
-    );
+    const { contact, known_issues, dependency, description, waive_message } =
+        _.defaultTo(metadata.payload, {});
 
     return (
         <MetadataDispatchContext.Provider value={dispatch}>
