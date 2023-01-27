@@ -22,14 +22,17 @@ import {
     Button,
     Flex,
     FlexItem,
+    Stack,
+    StackItem,
     TextContent,
     Title,
 } from '@patternfly/react-core';
-import { AngleLeftIcon } from '@patternfly/react-icons';
+import { AngleLeftIcon, CubeIcon } from '@patternfly/react-icons';
 
 import { GatingStatusIcon } from '../../utils/artifactUtils';
+import { ExternalLink } from '../ExternalLink';
 
-export function BackButton(_props: {}) {
+function BackButton(_props: {}) {
     return (
         <Button className="pf-u-px-0" icon={<AngleLeftIcon />} variant="link">
             Back to results list
@@ -37,7 +40,7 @@ export function BackButton(_props: {}) {
     );
 }
 
-export interface SummaryHeaderProps {
+interface SummaryHeaderProps {
     gatingStatus?: 'fail' | 'pass';
     gatingTag?: string;
     isScratch?: boolean;
@@ -45,8 +48,7 @@ export interface SummaryHeaderProps {
     owner: string;
 }
 
-// TODO: Better naming.
-export function SummaryHeader(props: SummaryHeaderProps) {
+function ArtifactTitle(props: SummaryHeaderProps) {
     return (
         <Flex spaceItems={{ default: 'spaceItemsLg' }}>
             <TextContent>
@@ -72,5 +74,44 @@ export function SummaryHeader(props: SummaryHeaderProps) {
                 </span>
             )}
         </Flex>
+    );
+}
+
+interface PageHeaderProps {
+    gatingStatus?: 'fail' | 'pass';
+    gatingTag?: string;
+    hasBackLink?: boolean;
+    isScratch?: boolean;
+    nvr: string;
+    owner: string;
+    taskId: number;
+}
+
+export function ArtifactHeader(props: PageHeaderProps) {
+    const taskLabel = `Brew #${props.taskId}`;
+
+    return (
+        <Stack className="resultsNarrower">
+            {props.hasBackLink && (
+                <StackItem>
+                    <BackButton />
+                </StackItem>
+            )}
+            <StackItem>
+                <ExternalLink href="#">
+                    <CubeIcon style={{ verticalAlign: '-.125em' }} />{' '}
+                    {taskLabel}
+                </ExternalLink>
+            </StackItem>
+            <StackItem>
+                {/* TODO: Display real data. */}
+                <ArtifactTitle
+                    gatingStatus="fail"
+                    gatingTag={props.gatingTag}
+                    nvr={props.nvr}
+                    owner={props.owner}
+                />
+            </StackItem>
+        </Stack>
     );
 }
