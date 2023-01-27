@@ -18,3 +18,7 @@ You can also use the [`.env.local` file](https://create-react-app.dev/docs/addin
 ## Code style
 
 In this project we follow the [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html).
+
+## License
+
+This project is licensed under the [GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0-standalone.html).
