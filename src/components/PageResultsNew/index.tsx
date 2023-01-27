@@ -24,8 +24,6 @@ import {
     Flex,
     PageSection,
     PageSectionVariants,
-    Stack,
-    StackItem,
 } from '@patternfly/react-core';
 import { useState } from 'react';
 
@@ -36,19 +34,21 @@ import './index.css';
 import { CiTest } from './types';
 import { SelectedTestContext } from './contexts';
 import { FAKE_TESTS } from './fakeData';
-import { BackButton, SummaryHeader } from './Header';
 import { TestResultsTable } from './TestResultsTable';
 import { BuildInfo } from './BuildInfo';
 import { DetailsDrawer } from './DetailsDrawer';
+import { ArtifactHeader } from './Header';
 
 export function PageResultsNew(_props: {}) {
     const [selectedTest, setSelectedTest] = useState<CiTest | undefined>();
 
-    const pageTitle = `New test results | ${config.defaultTitle}`;
+    const pageTitle = `🚧 New test results | ${config.defaultTitle}`;
 
     // TODO: Display real data.
     const buildNvr = 'ansible-collection-microsoft-sql-1.2.4-1.el9';
     const buildOwner = 'mgrabovs';
+    const gatingTag = 'rhel-8.7.0-build-sidetag-101738-stack-gate';
+    const taskId = 47942709;
 
     // TODO: Use unique key later on.
     const onTestSelect = (name: string | undefined) => {
@@ -66,20 +66,13 @@ export function PageResultsNew(_props: {}) {
             <SelectedTestContext.Provider value={selectedTest}>
                 <DetailsDrawer onClose={() => setSelectedTest(undefined)}>
                     <PageSection variant={PageSectionVariants.light}>
-                        <Stack className="resultsNarrower">
-                            <StackItem>
-                                <BackButton />
-                            </StackItem>
-                            <StackItem>
-                                {/* TODO: Display real data. */}
-                                <SummaryHeader
-                                    gatingStatus="fail"
-                                    gatingTag="rhel-8.7.0-build-sidetag-101738-stack-gate"
-                                    nvr={buildNvr}
-                                    owner={buildOwner}
-                                />
-                            </StackItem>
-                        </Stack>
+                        <ArtifactHeader
+                            gatingStatus="fail"
+                            gatingTag={gatingTag}
+                            nvr={buildNvr}
+                            owner={buildOwner}
+                            taskId={taskId}
+                        />
                     </PageSection>
                     <PageSection isFilled variant={PageSectionVariants.default}>
                         <Flex

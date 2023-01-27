@@ -47,11 +47,11 @@ import {
     ExclamationCircleIcon,
     HandPaperIcon,
     InfoCircleIcon,
-    SyncAltIcon,
+    RedoIcon,
     ThumbsUpIcon,
 } from '@patternfly/react-icons';
 
-import { LinkifyNewTab } from '../../utils/artifactUtils';
+import { LinkifyNewTab, TestStatusIcon } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
 import { FAKE_TEST_SUITES } from './fakeData';
@@ -197,6 +197,9 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
 
     const onCloseClick = () => props.onClose && props.onClose();
     const onResize = (newWidth: number) => setDrawerSize(`${newWidth}px`);
+    const statusIcon = selectedTest ? (
+        <TestStatusIcon status={selectedTest.status} />
+    ) : null;
 
     // TODO: Persist the drawer width across pages/sessions.
     const panelContent = (
@@ -208,7 +211,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         >
             <DrawerHead>
                 <Title className="pf-u-pb-sm" headingLevel="h3" size="xl">
-                    {selectedTest?.name}
+                    {statusIcon} {selectedTest?.name}
                 </Title>
                 <DrawerActions>
                     <DrawerCloseButton onClick={onCloseClick} />
@@ -229,7 +232,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                     )}
                     <Button
                         className="pf-u-p-0"
-                        icon={<SyncAltIcon />}
+                        icon={<RedoIcon />}
                         variant="link"
                     >
                         Rerun

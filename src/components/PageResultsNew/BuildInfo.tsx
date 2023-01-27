@@ -118,7 +118,7 @@ export function BuildInfo(_props: {}) {
 
     // TODO: Replace with real data.
     const buildProps = {
-        buildId: 4115943,
+        buildId: 2181999,
         buildTime: '2022-09-16 10:27 +02:00',
         commit: '81bf54a75572bddc61e6b0b250b4fb45c5aa9856',
         commitTime: '2022-09-16 09:12 +02:00',
