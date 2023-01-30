@@ -25,10 +25,7 @@ import { ApolloClient } from '@apollo/client';
 
 import {
     /** Filters */
-    ADD_FILTER,
-    DELETE_FILTER,
     SET_QUERY_STRING,
-    SET_OPTIONS_FOR_FILTERS,
     GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
     GATE_ARTIFACTS_SET_SEARCH_OPTIONS,
     /** Alerts */
@@ -37,10 +34,10 @@ import {
     ActionPopAlert,
     ActionGASetSearchOptions,
     ActionGABumpSearchEpoch,
-    FETCH_USER,
 } from './types';
 import { AppDispatch, GetState, store } from '../reduxStore';
 import * as authSlice from '../reducers/authSlice';
+import * as filtersSlice from '../reducers/filtersSlice';
 import * as waiveSlice from '../reducers/waiveSlice';
 import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
 import { greenwave } from '../config';
@@ -48,7 +45,6 @@ import WaiverdbNewMutation from '../mutations/WaiverdbNew';
 import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
 
 type DispatchType = typeof store.dispatch;
-type GetStateType = typeof store.getState;
 
 export const popAlert = (key: number): ActionPopAlert => {
     return {
@@ -107,41 +103,13 @@ export const setQueryString = (queryString: qs.ParsedQs) => {
     };
 };
 
-export const deleteFilter = (delval = '') => {
-    /** XXX: simplify */
-    return async (dispatch: DispatchType, getState: GetStateType) => {
-        dispatch({
-            type: DELETE_FILTER,
-            payload: { delval },
-        });
-    };
-};
-
-export const setOptionsForFilters = (changed_options: any) => {
-    return async (dispatch: DispatchType, getState: GetStateType) => {
-        const cur_options = getState().filters.options;
-        const the_same = _.isMatch(cur_options, changed_options);
-        if (the_same) {
-            return null;
-        }
-        const type = getState().filters.type;
-        const filters = getState().filters.active;
-        dispatch({
-            type: SET_OPTIONS_FOR_FILTERS,
-            payload: changed_options,
-        });
-        for (const filter of filters) {
-            dispatch(addFilter(filter, type) as any);
-        }
-    };
-};
-
 export const addFilter = (newval = '', type = '') => {
-    return async (dispatch: DispatchType, getState: GetStateType) => {
-        const cur_type = getState().filters.type;
-        const cur_filters = getState().filters.active;
-        const rforeign = /[^\u0000-\u007f]/;
-        if (rforeign.test(newval)) {
+    return async (dispatch: AppDispatch, getState: GetState) => {
+        const { filters } = getState();
+        const currentType = filters.type;
+        const activeFilters = filters.active;
+        const foreignRegex = /[^\u0000-\u007f]/;
+        if (foreignRegex.test(newval)) {
             console.log('Ignoring filter with no-latin character:', newval);
             return null;
         }
@@ -150,16 +118,33 @@ export const addFilter = (newval = '', type = '') => {
             return null;
         }
         console.log('Add new filter', type, newval);
-        if (type !== cur_type) {
+        if (type !== currentType) {
             /** new epoch */
-        } else if (_.includes(cur_filters, newval)) {
+        } else if (_.includes(activeFilters, newval)) {
             console.log('Do not add existing filter', newval);
             return null;
         }
-        dispatch({
-            type: ADD_FILTER,
-            payload: { type, newval },
-        });
+        dispatch(filtersSlice.addFilter({ newval, type }));
+    };
+};
+
+export const deleteFilter = (delval = '') =>
+    filtersSlice.deleteFilter({ delval });
+
+export const setOptionsForFilters = (newOptions: any) => {
+    return async (dispatch: AppDispatch, getState: GetState) => {
+        const { filters } = getState();
+        const currentOptions = filters.options;
+        const optionsSame = _.isMatch(currentOptions, newOptions);
+        if (optionsSame) {
+            return null;
+        }
+        const type = filters.type;
+        const activeFilters = filters.active;
+        dispatch(filtersSlice.setOptions(newOptions));
+        for (const filter of activeFilters) {
+            dispatch(addFilter(filter, type));
+        }
     };
 };
 
