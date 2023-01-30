@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import _ from 'lodash';
 import * as React from 'react';
 import { useState } from 'react';
 import {
@@ -34,27 +35,20 @@ import {
     TextContent,
     TextVariants,
 } from '@patternfly/react-core';
+import { ExternalLinkSquareAltIcon } from '@patternfly/react-icons';
 import { useApolloClient, useQuery } from '@apollo/client';
-import { useSelector, useDispatch } from 'react-redux';
-import {
-    ExternalLinkSquareAltIcon,
-} from '@patternfly/react-icons';
 
 import { docs } from '../config';
 import { createWaiver, submitWaiver, resetWaiverReply } from '../actions';
-import { IStateWaiver } from '../actions/types';
-import { RootStateType } from '../reducers';
 import { getTestcaseName } from '../utils/artifactUtils';
 import { MetadataQuery } from '../queries/Metadata';
 import { MetadataQueryResult } from '../types';
-import _ from 'lodash';
+import { useAppDispatch, useAppSelector } from '../hooks';
 
 const WaiveForm: React.FC<{}> = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
+    const waiver = useAppSelector((store) => store.waive);
     const client = useApolloClient();
-    const waive = useSelector<RootStateType, IStateWaiver>(
-        (store) => store.waive,
-    );
     const [value, setValue] = useState('');
     const [checked, setChecked] = useState(false);
     const [isValid, setIsValid] = useState(false);
@@ -71,10 +65,13 @@ const WaiveForm: React.FC<{}> = () => {
         setValidated(validated);
     };
 
-    const waiver_for = waive?.state ? getTestcaseName(waive.state) : '';
-    const {loading: qLoading, error: qError, data: metadata } =
-    useQuery<MetadataQueryResult>(MetadataQuery, {
-        variables: { testcase_name: waiver_for },
+    const waiverFor = waiver.state ? getTestcaseName(waiver.state) : '';
+    const {
+        loading: qLoading,
+        error: qError,
+        data: metadata,
+    } = useQuery<MetadataQueryResult>(MetadataQuery, {
+        variables: { testcase_name: waiverFor },
         errorPolicy: 'all',
         notifyOnNetworkStatusChange: true,
     });
@@ -96,19 +93,21 @@ const WaiveForm: React.FC<{}> = () => {
     const agreementLabel = 'I agree and acknowledge the above information';
 
     const metadataLoaded = !qLoading && !qError && metadata;
-    const metadataAggrementText = metadataLoaded ? metadata?.metadata_consolidated?.payload?.waive_message : '';
+    const metadataAggrementText = metadataLoaded
+        ? metadata?.metadata_consolidated?.payload?.waive_message
+        : '';
     const agreementText = `Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
     composes and unverified or failed builds can cause issues in system integration. Before waiving these tests it is good to check 
     other possible options, in particular some CI-systems can fail due to outages and different circumstances. It is good to restart 
     the test or to contact CI-owners for assistance. Proceed waiving test-result only when other efforts have not succeeded.`;
-    const { state, waiveError, timestamp } = waive;
+    const { state, waiveError, timestamp } = waiver;
     if (_.isNil(state)) {
         return null;
     }
     return (
         <>
             <TextContent>
-                <Text component={TextVariants.h3}>{waiver_for}</Text>
+                <Text component={TextVariants.h3}>{waiverFor}</Text>
             </TextContent>
             <Form onSubmit={(event) => event.preventDefault()}>
                 <TextContent>
@@ -191,12 +190,10 @@ const WaiveForm: React.FC<{}> = () => {
 };
 
 export const WaiveModal: React.FC<{}> = () => {
-    const dispatch = useDispatch();
-    const waive = useSelector<RootStateType, IStateWaiver>(
-        (store) => store.waive,
-    );
-    const { state, artifact, timestamp } = waive;
-    const showWaiveForm = state && artifact && !timestamp;
+    const dispatch = useAppDispatch();
+    const waiver = useAppSelector((store) => store.waive);
+    const { artifact, state, timestamp } = waiver;
+    const showWaiveForm = artifact && state && !timestamp;
     const onClose = () => {
         dispatch(createWaiver(undefined, undefined));
     };

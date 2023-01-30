@@ -18,16 +18,21 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { createStore, applyMiddleware, compose } from 'redux';
+import { applyMiddleware, compose } from 'redux';
 import reduxThunk from 'redux-thunk';
+import { configureStore } from '@reduxjs/toolkit';
 
-import { rootReducer as reducers } from './reducers';
+import { rootReducer } from './reducers';
 
 /** https://github.com/zalmoxisus/redux-devtools-extension */
 const composeEnhancers =
     (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-export const store = createStore(
-    reducers,
-    composeEnhancers(applyMiddleware(reduxThunk)),
-);
+export const store = configureStore({
+    middleware: composeEnhancers(applyMiddleware(reduxThunk)),
+    reducer: rootReducer,
+});
+
+export type GetState = typeof store.getState;
+export type RootState = ReturnType<GetState>;
+export type AppDispatch = typeof store.dispatch;

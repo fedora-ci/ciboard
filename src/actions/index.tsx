@@ -37,12 +37,10 @@ import {
     ActionPopAlert,
     ActionGASetSearchOptions,
     ActionGABumpSearchEpoch,
-    WAIVER_CREATE,
-    WAIVER_RESET_REPLY,
-    WAIVER_RESULT,
     FETCH_USER,
 } from './types';
-import { store } from '../reduxStore';
+import { AppDispatch, GetState, store } from '../reduxStore';
+import * as waiveSlice from '../reducers/waiveSlice';
 import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
@@ -173,7 +171,7 @@ export const createWaiver = (
     artifact: Artifact | undefined,
     state: StateType | undefined,
 ) => {
-    return async (dispatch: DispatchType, getState: GetStateType) => {
+    return async (dispatch: AppDispatch, getState: GetState) => {
         const { displayName, nameID } = getState().auth;
         if (!displayName && !nameID) {
             dispatch(
@@ -183,31 +181,25 @@ export const createWaiver = (
                         Please <a href="/login">log in</a> before creating a
                         waiver.
                     </>,
-                ) as any,
+                ),
             );
             return;
         }
-        dispatch({
-            type: WAIVER_CREATE,
-            payload: { artifact, state },
-        });
+        dispatch(waiveSlice.createWaiver({ artifact, state }));
     };
 };
 
 export const resetWaiverReply = () => {
-    return async (dispatch: DispatchType, getState: GetStateType) => {
+    return async (dispatch: AppDispatch, getState: GetState) => {
         const { timestamp, waiveError } = getState().waive;
         if (timestamp || waiveError) {
-            dispatch({
-                type: WAIVER_RESET_REPLY,
-                payload: {},
-            });
+            dispatch(waiveSlice.resetWaiver());
         }
     };
 };
 
 export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
-    return async (dispatch: DispatchType, getState: GetStateType) => {
+    return async (dispatch: AppDispatch, getState: GetState) => {
         /**
          * result - state to waive
          * Result name with link
@@ -224,10 +216,7 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
         const nvr = (artifact!.payload! as PayloadRPMBuildType).nvr;
         if (!nvr) {
             waiveError = 'Could not get NVR, please contact support.';
-            dispatch({
-                type: WAIVER_RESULT,
-                payload: { waiveError, reason: '' },
-            });
+            dispatch(waiveSlice.submitWaiver({ waiveError, reason: '' }));
             return;
         }
         /**
@@ -259,14 +248,13 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
                     comment: reason,
                 },
             });
-            console.log('Get response from WaiverDB', response);
-            dispatch({
-                type: WAIVER_RESULT,
-                payload: {
+            console.log('Got response from WaiverDB', response);
+            dispatch(
+                waiveSlice.submitWaiver({
                     reason,
                     waiveError: '',
-                },
-            });
+                }),
+            );
             /* XXX run query to update artifacts */
         } catch (error) {
             if (_.isError(error)) {
@@ -274,10 +262,7 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
             } else {
                 waiveError = _.toString(error);
             }
-            dispatch({
-                type: WAIVER_RESULT,
-                payload: { waiveError, reason: '' },
-            });
+            dispatch(waiveSlice.submitWaiver({ waiveError, reason: '' }));
         }
     };
 };

@@ -1,8 +1,9 @@
 /*
  * This file is part of ciboard
-
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -25,7 +26,7 @@ import { authReducer } from './authReducer';
 import { filtersReducer } from './filtersReducer';
 import { gateArtifactsReducer } from './gateArtifactsReducer';
 import { queryStringReducer } from './queryStringReducer';
-import { waiveReducer } from './waiveReducer';
+import { waiveReducer } from './waiveSlice';
 
 export const rootReducer = combineReducers({
     alerts: alertsReducer,
