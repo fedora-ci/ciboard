@@ -19,7 +19,6 @@
  */
 
 import _ from 'lodash';
-import { useSelector, useDispatch } from 'react-redux';
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Flex,
@@ -41,12 +40,11 @@ import {
 import { SearchIcon } from '@patternfly/react-icons';
 
 import { config } from '../config';
-import { RootStateType } from '../reducers';
-import { IStateFilters } from '../actions/types';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { ArtifactsListByFilters } from './ArtifactsListByFilters';
 import { addFilter, deleteFilter, setOptionsForFilters } from '../actions';
 import { WaiveModal } from './WaiveForm';
+import { useAppDispatch, useAppSelector } from '../hooks';
 
 /**
  * These are default search-field for each artifact type
@@ -80,10 +78,8 @@ function usePrevious(value: number) {
 }
 
 const SearchToolbar = () => {
-    const dispatch = useDispatch();
-    const filters = useSelector<RootStateType, IStateFilters>(
-        (state) => state.filters,
-    );
+    const dispatch = useAppDispatch();
+    const filters = useAppSelector((state) => state.filters);
     const [inputValue, setInputValue] = useState('');
     const [statusIsExpanded, setIsExpanded] = useState(false);
     const menu_default_entry = _.toPairs(menuTypes)[0][0];
@@ -251,9 +247,7 @@ const SearchToolbar = () => {
                 className="pf-u-mx-xl"
                 style={{ background: 'inherit' }}
                 collapseListedFiltersBreakpoint="xl"
-                clearAllFilters={() => {
-                    dispatch(deleteFilter());
-                }}
+                clearAllFilters={() => dispatch(deleteFilter())}
             >
                 <ToolbarContent>{toolbarItems}</ToolbarContent>
             </Toolbar>
@@ -288,9 +282,7 @@ const SearchToolbar = () => {
 };
 
 export function PageByFilters() {
-    const { active: activeFilters } = useSelector<RootStateType, IStateFilters>(
-        (state) => state.filters,
-    );
+    const { active: activeFilters } = useAppSelector((state) => state.filters);
     const [pageTitle, setPageTitle] = useState<string | undefined>();
 
     useEffect(() => {
