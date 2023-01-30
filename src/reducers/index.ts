@@ -25,7 +25,7 @@ import { alertsReducer } from './alertsSlice';
 import { authReducer } from './authSlice';
 import { filtersReducer } from './filtersSlice';
 import { gateArtifactsReducer } from './gateArtifactsReducer';
-import { queryStringReducer } from './queryStringReducer';
+import { queryStringReducer } from './queryStringSlice';
 import { waiveReducer } from './waiveSlice';
 
 export const rootReducer = combineReducers({
