@@ -22,7 +22,6 @@ import * as React from 'react';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
 import { css } from '@patternfly/react-styles';
 import { useLazyQuery } from '@apollo/client';
 import {
@@ -47,15 +46,14 @@ import {
 import accessibleStyles from '@patternfly/react-styles/css/utilities/Accessibility/accessibility';
 
 import { fetchUser } from '../actions';
-import { IStateAuth } from '../actions/types';
 import { menuRoutes } from '../routes';
-import { RootStateType } from '../reducers';
 import styles from '../custom.module.css';
 import {
     OnDropdownSelectType,
     OnDropdownToggleType,
 } from '../utils/artifactsTable';
 import { AuthzMappingQuery } from '../queries/Authz';
+import { useAppDispatch, useAppSelector } from '../hooks';
 
 const logoProps = {
     to: '/',
@@ -108,8 +106,8 @@ const LogoutLink = () => (
 const userDropdownItems = [<LogoutLink />];
 
 const HeaderToolbar = () => {
-    const dispatch = useDispatch();
-    const auth = useSelector<RootStateType, IStateAuth>((store) => store.auth);
+    const dispatch = useAppDispatch();
+    const auth = useAppSelector((store) => store.auth);
     const [isDropdownOpen, setDropDownOpen] = useState(false);
     useEffect(() => {
         dispatch(fetchUser());

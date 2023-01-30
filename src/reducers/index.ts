@@ -22,7 +22,7 @@
 import { combineReducers } from 'redux';
 
 import { alertsReducer } from './alertsReducer';
-import { authReducer } from './authReducer';
+import { authReducer } from './authSlice';
 import { filtersReducer } from './filtersReducer';
 import { gateArtifactsReducer } from './gateArtifactsReducer';
 import { queryStringReducer } from './queryStringReducer';
