@@ -42,9 +42,6 @@ export const GATE_ARTIFACTS_BUMP_SEARCH_EPOCH =
 
 export const SET_QUERY_STRING = 'SET_QUERY_STRING';
 
-export const POP_ALERT = 'POP_ALERT';
-export const PUSH_ALERT = 'PUSH_ALERT';
-
 /**
  * States
  */
@@ -86,20 +83,14 @@ export interface IStateQueryString {
  * Actions
  */
 
-export interface ActionPushAlert {
-    type: typeof PUSH_ALERT;
-    payload: {
-        key: number;
-        title: React.ReactNode;
-        variant: keyof typeof AlertVariant;
-    };
+export interface PushAlertPayload {
+    key: number;
+    title: React.ReactNode;
+    variant: keyof typeof AlertVariant;
 }
 
-export interface ActionPopAlert {
-    type: typeof POP_ALERT;
-    payload: {
-        key: number;
-    };
+export interface PopAlertPayload {
+    key: number;
 }
 
 export interface AddFilterPayload {
@@ -160,7 +151,6 @@ export interface FetchUserPayload {
  */
 
 export type ActionsQueryStringType = ActionSetQueryString;
-export type ActionsAlertsType = ActionPushAlert | ActionPopAlert;
 export type ActionsGateArtifactsType =
     | ActionGASetSearchOptions
     | ActionGABumpSearchEpoch;

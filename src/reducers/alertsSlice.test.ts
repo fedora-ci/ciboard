@@ -19,15 +19,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import {
-    ActionPopAlert,
-    ActionPushAlert,
-    IStateAlerts,
-    POP_ALERT,
-    PUSH_ALERT,
-} from '../actions/types';
+import { IStateAlerts } from '../actions/types';
 
-import { alertsReducer } from './alertsReducer';
+import { alertsReducer, popAlert, pushAlert } from './alertsSlice';
 
 test('PUSH adds an alert', () => {
     const state: IStateAlerts = {
@@ -36,10 +30,7 @@ test('PUSH adds an alert', () => {
             { key: 2, title: 'Second alert', variant: 'danger' },
         ],
     };
-    const action: ActionPushAlert = {
-        type: PUSH_ALERT,
-        payload: { key: 3, title: 'New alert', variant: 'info' },
-    };
+    const action = pushAlert({ key: 3, title: 'New alert', variant: 'info' });
     const newState = alertsReducer(state, action);
     expect(newState).toStrictEqual({
         alerts: [
@@ -58,10 +49,7 @@ test('POP removes an alert', () => {
             { key: 3, title: 'New alert', variant: 'info' },
         ],
     };
-    const action: ActionPopAlert = {
-        type: POP_ALERT,
-        payload: { key: 2 },
-    };
+    const action = popAlert({ key: 2 });
     const newState = alertsReducer(state, action);
     expect(newState).toStrictEqual({
         alerts: [
@@ -79,10 +67,7 @@ test('POP does not remove a non-existent alert', () => {
             { key: 3, title: 'New alert', variant: 'info' },
         ],
     };
-    const action: ActionPopAlert = {
-        type: POP_ALERT,
-        payload: { key: 246 },
-    };
+    const action = popAlert({ key: 246 });
     const newState = alertsReducer(state, action);
     expect(newState).toStrictEqual(state);
 });

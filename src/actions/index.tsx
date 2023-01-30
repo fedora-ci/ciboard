@@ -29,13 +29,11 @@ import {
     GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
     GATE_ARTIFACTS_SET_SEARCH_OPTIONS,
     /** Alerts */
-    POP_ALERT,
-    PUSH_ALERT,
-    ActionPopAlert,
     ActionGASetSearchOptions,
     ActionGABumpSearchEpoch,
 } from './types';
-import { AppDispatch, GetState, store } from '../reduxStore';
+import { AppDispatch, GetState } from '../reduxStore';
+import * as alertsSlice from '../reducers/alertsSlice';
 import * as authSlice from '../reducers/authSlice';
 import * as filtersSlice from '../reducers/filtersSlice';
 import * as waiveSlice from '../reducers/waiveSlice';
@@ -44,14 +42,7 @@ import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
 import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
 
-type DispatchType = typeof store.dispatch;
-
-export const popAlert = (key: number): ActionPopAlert => {
-    return {
-        type: POP_ALERT,
-        payload: { key },
-    };
-};
+export const popAlert = (key: number) => alertsSlice.popAlert({ key });
 
 export const setGatingSearchOptions = (
     gating_options: ActionGASetSearchOptions['payload'],
@@ -82,17 +73,14 @@ export const pushAlert = (
     title: React.ReactNode,
     autoRm = true,
 ) => {
-    return async (dispatch: DispatchType) => {
+    return async (dispatch: AppDispatch) => {
         const key = new Date().getTime();
         if (autoRm) {
             setTimeout(function () {
                 dispatch(popAlert(key));
             }, 3000);
         }
-        dispatch({
-            type: PUSH_ALERT,
-            payload: { key, variant, title },
-        });
+        dispatch(alertsSlice.pushAlert({ key, variant, title }));
     };
 };
 
