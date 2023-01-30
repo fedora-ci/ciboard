@@ -20,7 +20,7 @@
     "@types/node": "^18.11.18",
     "@types/react": "^17.0.45",
     "@types/react-dom": "^17.0.17",
-    "axios": "^1.2.3",
+    "axios": "^1.2.6",
     "buffer": "^6.0.3",
     "classnames": "^2.3.1",
     "graphql": "^16.6.0",
