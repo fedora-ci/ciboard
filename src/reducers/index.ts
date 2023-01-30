@@ -21,7 +21,7 @@
 
 import { combineReducers } from 'redux';
 
-import { alertsReducer } from './alertsReducer';
+import { alertsReducer } from './alertsSlice';
 import { authReducer } from './authSlice';
 import { filtersReducer } from './filtersSlice';
 import { gateArtifactsReducer } from './gateArtifactsReducer';
