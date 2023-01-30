@@ -40,8 +40,6 @@ export const GATE_ARTIFACTS_SET_SEARCH_OPTIONS =
 export const GATE_ARTIFACTS_BUMP_SEARCH_EPOCH =
     'GATE_ARTIFACTS_BUMP_SEARCH_EPOCH';
 
-export const SET_QUERY_STRING = 'SET_QUERY_STRING';
-
 /**
  * States
  */
@@ -106,11 +104,8 @@ export interface SetOptionsForFiltersPayload {
     skipScratch: boolean;
 }
 
-export interface ActionSetQueryString {
-    type: typeof SET_QUERY_STRING;
-    payload: {
-        queryString: qs.ParsedQs;
-    };
+export interface SetQueryStringPayload {
+    queryString: qs.ParsedQs;
 }
 
 export interface ActionGASetSearchOptions {
@@ -150,7 +145,6 @@ export interface FetchUserPayload {
  * Actions for reducers
  */
 
-export type ActionsQueryStringType = ActionSetQueryString;
 export type ActionsGateArtifactsType =
     | ActionGASetSearchOptions
     | ActionGABumpSearchEpoch;

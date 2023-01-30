@@ -25,7 +25,6 @@ import { ApolloClient } from '@apollo/client';
 
 import {
     /** Filters */
-    SET_QUERY_STRING,
     GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
     GATE_ARTIFACTS_SET_SEARCH_OPTIONS,
     /** Alerts */
@@ -36,6 +35,7 @@ import { AppDispatch, GetState } from '../reduxStore';
 import * as alertsSlice from '../reducers/alertsSlice';
 import * as authSlice from '../reducers/authSlice';
 import * as filtersSlice from '../reducers/filtersSlice';
+import * as queryStringSlice from '../reducers/queryStringSlice';
 import * as waiveSlice from '../reducers/waiveSlice';
 import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
 import { greenwave } from '../config';
@@ -84,12 +84,8 @@ export const pushAlert = (
     };
 };
 
-export const setQueryString = (queryString: qs.ParsedQs) => {
-    return {
-        type: SET_QUERY_STRING,
-        payload: { queryString },
-    };
-};
+export const setQueryString = (queryString: qs.ParsedQs) =>
+    queryStringSlice.setQueryString({ queryString });
 
 export const addFilter = (newval = '', type = '') => {
     return async (dispatch: AppDispatch, getState: GetState) => {
