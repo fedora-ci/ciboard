@@ -23,7 +23,6 @@ import classNames from 'classnames';
 import * as React from 'react';
 import { useState } from 'react';
 import { useLazyQuery } from '@apollo/client';
-import { useDispatch } from 'react-redux';
 import {
     Alert,
     AlertProps,
@@ -66,6 +65,7 @@ import {
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
+import { useAppDispatch } from '../hooks';
 import {
     LinkifyNewTab,
     isResultWaivable,
@@ -112,7 +112,7 @@ export interface WaiveButtonProps extends PropsWithGreenwaveState {
 export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     const { state, artifact } = props;
     const { requirement } = state;
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     if (_.isNil(requirement?.testcase)) return null;
     const onClick: React.MouseEventHandler = (e) => {
         e.stopPropagation();

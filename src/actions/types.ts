@@ -32,13 +32,10 @@ export const FETCH_USER = 'FETCH_USER';
 export const MAIN_SCROLLER_BOTTOM = 'MAIN_SCROLLER_BOTTOM';
 
 export const NEW_EPOCH = 'NEW_EPOCH';
-export const WAIVER_CREATE = 'WAIVER_CREATE';
-export const WAIVER_RESULT = 'SUBMIT_WAIVER';
 export const ADD_POST_QUERY = 'ADD_POST_QUERY';
 export const FETCH_ARTIFACTS = 'FETCH_ARTIFACTS';
 export const UPDATE_ARTIFACT = 'UPDATE_ARTIFACT';
 export const ARTIFACTS_LOADING = 'ARTIFACTS_LOADING';
-export const WAIVER_RESET_REPLY = 'WAIVER_RESET_REPLY';
 
 export const GATE_ARTIFACTS_SET_SEARCH_OPTIONS =
     'GATE_ARTIFACTS_SET_SEARCH_OPTIONS';
@@ -156,25 +153,15 @@ export interface ActionGABumpSearchEpoch {
     type: typeof GATE_ARTIFACTS_BUMP_SEARCH_EPOCH;
 }
 
-export interface ActionWaiverCreate {
-    type: typeof WAIVER_CREATE;
-    payload: {
-        state: StateType | undefined;
-        artifact: Artifact | undefined;
-    };
+export interface CreateWaiverPayload {
+    state: StateType | undefined;
+    artifact: Artifact | undefined;
 }
 
-export interface ActionWaiverResetReply {
-    type: typeof WAIVER_RESET_REPLY;
-}
-
-export interface ActionWaiverResult {
-    type: typeof WAIVER_RESULT;
-    payload: {
-        /* Cannot send waiver */
-        waiveError: string;
-        reason: string;
-    };
+export interface SubmitWaiverPayload {
+    /* Cannot send waiver */
+    waiveError: string;
+    reason: string;
 }
 
 export interface ActionAuthFetchUser {
@@ -192,10 +179,6 @@ export interface ActionAuthFetchUser {
 export type ActionsQueryStringType = ActionSetQueryString;
 export type ActionsAuthType = ActionAuthFetchUser;
 export type ActionsAlertsType = ActionPushAlert | ActionPopAlert;
-export type ActionsWaiverType =
-    | ActionWaiverCreate
-    | ActionWaiverResetReply
-    | ActionWaiverResult;
 export type ActionsFiltersType =
     | ActionSetOptionsForFilters
     | ActionAddFilter
