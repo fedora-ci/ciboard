@@ -40,6 +40,7 @@ import {
     FETCH_USER,
 } from './types';
 import { AppDispatch, GetState, store } from '../reduxStore';
+import * as authSlice from '../reducers/authSlice';
 import * as waiveSlice from '../reducers/waiveSlice';
 import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
 import { greenwave } from '../config';
@@ -162,9 +163,11 @@ export const addFilter = (newval = '', type = '') => {
     };
 };
 
-export const fetchUser = () => async (dispatch: DispatchType) => {
-    const res = await axios.get('/current_user');
-    dispatch({ type: FETCH_USER, payload: res.data });
+export const fetchUser = () => {
+    return async (dispatch: AppDispatch) => {
+        const res = await axios.get('/current_user');
+        dispatch(authSlice.fetchUser(res.data));
+    };
 };
 
 export const createWaiver = (

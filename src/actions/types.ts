@@ -27,8 +27,6 @@ export const SST_PAGE = 'SST_PAGE';
 export const SST_MENU = 'SUBMIT_MENU';
 export const SST_LOADING = 'SUBMIT_LOADING';
 
-export const FETCH_USER = 'FETCH_USER';
-
 export const MAIN_SCROLLER_BOTTOM = 'MAIN_SCROLLER_BOTTOM';
 
 export const NEW_EPOCH = 'NEW_EPOCH';
@@ -164,12 +162,9 @@ export interface SubmitWaiverPayload {
     reason: string;
 }
 
-export interface ActionAuthFetchUser {
-    type: typeof FETCH_USER;
-    payload: {
-        displayName: string;
-        nameID: string;
-    };
+export interface FetchUserPayload {
+    displayName: string;
+    nameID: string;
 }
 
 /**
@@ -177,7 +172,6 @@ export interface ActionAuthFetchUser {
  */
 
 export type ActionsQueryStringType = ActionSetQueryString;
-export type ActionsAuthType = ActionAuthFetchUser;
 export type ActionsAlertsType = ActionPushAlert | ActionPopAlert;
 export type ActionsFiltersType =
     | ActionSetOptionsForFilters
