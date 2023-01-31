@@ -59,7 +59,7 @@ import { Artifact, StateGreenwaveKaiType } from '../artifact';
 import {
     getUmbDocsUrl,
     isResultWaivable,
-    renderStatusIcon,
+    TestStatusIcon,
 } from '../utils/artifactUtils';
 import { ArtifactStateProps, StateLink } from './ArtifactState';
 import {
@@ -161,7 +161,9 @@ export const FaceForGreenwaveKaiState: React.FC<
     return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
+                <FlexItem>
+                    <TestStatusIcon status={iconName} />
+                </FlexItem>
                 <TextContent>
                     <Text className="pf-u-text-nowrap">
                         {state.gs.testcase}

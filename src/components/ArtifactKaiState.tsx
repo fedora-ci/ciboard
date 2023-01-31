@@ -65,7 +65,7 @@ import {
     getThreadID,
     getUmbDocsUrl,
     LinkifyNewTab,
-    renderStatusIcon,
+    TestStatusIcon,
 } from '../utils/artifactUtils';
 import { MSG_V_1, MSG_V_0_1, Metadata } from '../types';
 import { Artifact, StateKaiType, StateNameType } from '../artifact';
@@ -363,7 +363,9 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
     return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <Flex>{renderStatusIcon(result)}</Flex>
+                <Flex>
+                    <TestStatusIcon status={result} />
+                </Flex>
                 <Flex flexWrap={{ default: 'nowrap' }}>
                     <StageName state={state} />
                 </Flex>

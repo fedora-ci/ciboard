@@ -29,14 +29,18 @@ import {
     Spinner,
 } from '@patternfly/react-core';
 
-import { isGatingArtifact, resultColor } from '../utils/artifactUtils';
-import { renderStatusIcon } from '../utils/artifactUtils';
+import {
+    GatingStatusIcon,
+    isGatingArtifact,
+    resultColor,
+} from '../utils/artifactUtils';
 import { Artifact, GreenwaveDecisionReplyType } from '../artifact';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
     reqName: string;
 }
+
 const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
     const { reqName, allReqs } = props;
     const color = resultColor(reqName);
@@ -57,6 +61,7 @@ interface ArtifactGreenwaveStatesSummaryProps {
     artifact: Artifact;
     isLoading: boolean;
 }
+
 export const ArtifactGreenwaveStatesSummary: React.FC<
     ArtifactGreenwaveStatesSummaryProps
 > = (props) => {
@@ -73,6 +78,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     if (_.isNil(decision) && !isLoading) {
         return null;
     }
+
     const reqSummary: { [name: string]: number } = {};
     /*
      * Ignore the 'fetched-gating-yaml' virtual test as we dont display it in the UI.
@@ -89,16 +95,18 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     if (unsatisfiedCount) {
         reqSummary['unsatisfied'] = unsatisfiedCount;
     }
-    const iconColor = isLoading
-        ? 'info'
-        : _.toString(decision?.policies_satisfied);
+
+    const gatingPassed = decision?.policies_satisfied;
+    const iconStyle = { height: '1.2em' };
+    const statusIcon = isLoading ? null : (
+        <GatingStatusIcon status={gatingPassed} style={iconStyle} />
+    );
+
     return (
         <Flex flexWrap={{ default: 'nowrap' }}>
-            <FlexItem key="3">
+            <FlexItem>
                 <TextContent>
-                    <Text>
-                        {renderStatusIcon(iconColor, 'gating', '1.2em')}
-                    </Text>
+                    <Text>{statusIcon}</Text>
                 </TextContent>
             </FlexItem>
             {_.map(reqSummary, (_len, reqName) => (
@@ -110,7 +118,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
                 </FlexItem>
             ))}
             {isLoading && (
-                <FlexItem key="spiner" spacer={{ default: 'spacerMd' }}>
+                <FlexItem spacer={{ default: 'spacerMd' }}>
                     <Spinner size="sm" />
                 </FlexItem>
             )}

@@ -54,7 +54,7 @@ import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
 import classNames from 'classnames';
 
 import { Artifact, StateKaiType } from '../artifact';
-import { mapTypeToIconsProps, renderStatusIcon } from '../utils/artifactUtils';
+import { mapTypeToIconsProps, TestStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 import { mkSeparatedList } from '../utils/artifactsTable';
 import { xunitParser } from '../utils/xunitParser';
@@ -128,7 +128,7 @@ const mkLogsLinks = (logs: TestCaseLogs[]): JSX.Element[] => {
 const mkPhase = (phase: TestCasePhasesEntry): IRow => {
     return {
         cells: [
-            renderStatusIcon(phase.$.result),
+            <TestStatusIcon status={phase.$.result} />,
             phase.$.name,
             mkSeparatedList(mkLogsLinks(phase.logs)),
         ],
@@ -268,7 +268,9 @@ const TestCaseItem: React.FC<TestCaseItemProps> = (props) => {
                 spaceItems={{ default: 'spaceItemsSm' }}
             >
                 <Flex>
-                    <FlexItem>{renderStatusIcon(test.status)}</FlexItem>
+                    <FlexItem>
+                        <TestStatusIcon status={test.status} />
+                    </FlexItem>
                     <FlexItem className={nameClassName}>{test.name}</FlexItem>
                     <FlexItem>
                         <ArchitectureLabel architecture={machineArchitecture} />
@@ -374,26 +376,32 @@ const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
     return (
         <>
             <Flex>
-                {_.map(toggleState, (isChecked, outcome: TestSuiteStatus) => {
-                    if (_.isNil(isChecked)) return <></>;
-                    const label = (
-                        <>
-                            {renderStatusIcon(outcome)} {suite.count[outcome]}
-                        </>
-                    );
-                    return (
-                        <FlexItem key={outcome}>
-                            <Checkbox
-                                aria-label={`Toggle display of results in status ${outcome}`}
-                                id={`check-${outcome}-${suite._uuid}`}
-                                isChecked={isChecked}
-                                label={label}
-                                name={outcome}
-                                onChange={() => onToggle(outcome, isChecked)}
-                            />
-                        </FlexItem>
-                    );
-                })}
+                {_.map(
+                    toggleState,
+                    (isChecked: boolean, outcome: TestSuiteStatus) => {
+                        if (_.isNil(isChecked)) return <></>;
+                        const label = (
+                            <>
+                                <TestStatusIcon status={outcome} />{' '}
+                                {suite.count[outcome]}
+                            </>
+                        );
+                        return (
+                            <FlexItem key={outcome}>
+                                <Checkbox
+                                    aria-label={`Toggle display of results in status ${outcome}`}
+                                    id={`check-${outcome}-${suite._uuid}`}
+                                    isChecked={isChecked}
+                                    label={label}
+                                    name={outcome}
+                                    onChange={() =>
+                                        onToggle(outcome, isChecked)
+                                    }
+                                />
+                            </FlexItem>
+                        );
+                    },
+                )}
             </Flex>
 
             <DataList aria-label="Test suite items" isCompact>
