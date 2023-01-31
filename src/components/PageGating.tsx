@@ -23,8 +23,7 @@ import _ from 'lodash';
 import { useQuery } from '@apollo/client';
 import classNames from 'classnames';
 import moment from 'moment';
-import { Dispatch, ReactNode, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
     ActionGroup,
     Button,
@@ -72,11 +71,11 @@ import {
 import { config } from '../config';
 import styles from '../custom.module.css';
 import { bumpGatingSearchEpoch, setGatingSearchOptions } from '../actions';
-import { RootStateType } from '../reducers';
 import {
+    BUILD_TYPE_MENU_ITEMS,
     StateGatingTests,
     getSelectFromType,
-} from '../reducers/gateArtifactsReducer';
+} from '../reducers/gateArtifactsSlice';
 import {
     Artifact,
     isStateKai,
@@ -90,7 +89,6 @@ import {
 } from '../artifact';
 import { mkSpecialRows } from '../utils/artifactsTable';
 import { PageCommon } from './PageCommon';
-import { ActionsGateArtifactsType } from '../actions/types';
 import {
     PageGatingArtifacts,
     PageGatingArtifactsData,
@@ -103,6 +101,7 @@ import {
     getTestcaseName,
 } from '../utils/artifactUtils';
 import { transformKaiStates } from '../utils/stages_states';
+import { useAppDispatch, useAppSelector } from '../hooks';
 
 interface CiSystem {
     ciSystemName: string;
@@ -154,11 +153,6 @@ const ciSystems: string[] = [
 ];
 
 const gatingTagMenuItems: string[] = ['8\\.', '9\\.', '8\\.4', 'dnf', 'gnome'];
-
-const buildTypeMenuItems = {
-    ordinary: 'brew-build',
-    modularity: 'redhat-module',
-};
 
 const columns = (buildType: string): ICell[] => {
     return [
@@ -437,11 +431,10 @@ function mkArtifactRow(
 }
 
 function BuildTypeSelector() {
-    const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { buildType: buildTypeInit } = useSelector<
-        RootStateType,
-        StateGatingTests
-    >((state) => state.gateArtifacts);
+    const dispatch = useAppDispatch();
+    const { buildType: buildTypeInit } = useAppSelector(
+        (state) => state.gateArtifacts,
+    );
     const inititalState = getSelectFromType(buildTypeInit);
     const [buildType, setBuildType] = useState(inititalState);
     const [isExpanded, setExpanded] = useState(false);
@@ -463,7 +456,7 @@ function BuildTypeSelector() {
             onToggle={setExpanded}
             selections={buildType}
         >
-            {_.keys(buildTypeMenuItems).map((item, index) => (
+            {_.keys(BUILD_TYPE_MENU_ITEMS).map((item, index) => (
                 <SelectOption key={index} value={item} />
             ))}
         </Select>
@@ -471,11 +464,10 @@ function BuildTypeSelector() {
 }
 
 function Checkboxes() {
-    const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { ignoreCiSystem: initialState } = useSelector<
-        RootStateType,
-        StateGatingTests
-    >((state) => state.gateArtifacts);
+    const dispatch = useAppDispatch();
+    const { ignoreCiSystem: initialState } = useAppSelector(
+        (state) => state.gateArtifacts,
+    );
     const [ignoreCiSystem, setIgnoreCiSystem] = useState(initialState);
     const onChange: CheckboxProps['onChange'] = (flag) => {
         setIgnoreCiSystem(flag);
@@ -497,11 +489,10 @@ function Checkboxes() {
 }
 
 function CiSystemSelector() {
-    const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { ciSystem: init_state } = useSelector<
-        RootStateType,
-        StateGatingTests
-    >((state) => state.gateArtifacts);
+    const dispatch = useAppDispatch();
+    const { ciSystem: init_state } = useAppSelector(
+        (state) => state.gateArtifacts,
+    );
     const [isExpanded, setExpanded] = useState(false);
     const [ciSystem, setCISystem] = useState(init_state);
     const onToggle = (isExpanded: boolean) => {
@@ -539,11 +530,10 @@ function CiSystemSelector() {
 }
 
 function GatingTagSelector() {
-    const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { gateTag: init_state } = useSelector<
-        RootStateType,
-        StateGatingTests
-    >((state) => state.gateArtifacts);
+    const dispatch = useAppDispatch();
+    const { gateTag: init_state } = useAppSelector(
+        (state) => state.gateArtifacts,
+    );
     const [gateTag, setRHELVersion] = useState(init_state);
     const [isExpanded, setExpanded] = useState(false);
     const titleId = 'plain-typeahead-select-id-gating-tag';
@@ -583,11 +573,10 @@ function GatingTagSelector() {
 }
 
 function PackagerSelector() {
-    const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { packager: init_state } = useSelector<
-        RootStateType,
-        StateGatingTests
-    >((state) => state.gateArtifacts);
+    const dispatch = useAppDispatch();
+    const { packager: init_state } = useAppSelector(
+        (state) => state.gateArtifacts,
+    );
     const [value, setValue] = useState(init_state);
     const handleTextInputChange: TextInputProps['onChange'] = (value) => {
         setValue(value);
@@ -610,10 +599,8 @@ function PackagerSelector() {
 }
 
 function ProductSelector() {
-    const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { productId } = useSelector<RootStateType, StateGatingTests>(
-        (state) => state.gateArtifacts,
-    );
+    const dispatch = useAppDispatch();
+    const { productId } = useAppSelector((state) => state.gateArtifacts);
     const [isOpen, setOpen] = useState(false);
     const onFocus = () => {
         document.getElementById('toggle-id')?.focus();
@@ -670,11 +657,10 @@ function ProductSelector() {
 }
 
 function SstSelector() {
-    const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
-    const { productId, sstTeams: initialState } = useSelector<
-        RootStateType,
-        StateGatingTests
-    >((state) => state.gateArtifacts);
+    const dispatch = useAppDispatch();
+    const { productId, sstTeams: initialState } = useAppSelector(
+        (state) => state.gateArtifacts,
+    );
     const [isExpanded, setExpanded] = useState(false);
     const [selectedSst, setSelectedSst] = useState(initialState);
     const onSelect: SelectProps['onSelect'] = (_event, selection) => {
@@ -722,9 +708,7 @@ function SstSelector() {
 }
 
 function GatingResults() {
-    const reduxState = useSelector<RootStateType, StateGatingTests>(
-        (state) => state.gateArtifacts,
-    );
+    const reduxState = useAppSelector((state) => state.gateArtifacts);
     let artifacts: Artifact[] = [];
     /**
      * pagination vars,
@@ -937,7 +921,7 @@ function GatingResults() {
 }
 
 function GatingToolbar() {
-    const dispatch: Dispatch<ActionsGateArtifactsType> = useDispatch();
+    const dispatch = useAppDispatch();
     const onClickSearch = () => {
         dispatch(bumpGatingSearchEpoch());
     };

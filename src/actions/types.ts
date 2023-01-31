@@ -35,11 +35,6 @@ export const FETCH_ARTIFACTS = 'FETCH_ARTIFACTS';
 export const UPDATE_ARTIFACT = 'UPDATE_ARTIFACT';
 export const ARTIFACTS_LOADING = 'ARTIFACTS_LOADING';
 
-export const GATE_ARTIFACTS_SET_SEARCH_OPTIONS =
-    'GATE_ARTIFACTS_SET_SEARCH_OPTIONS';
-export const GATE_ARTIFACTS_BUMP_SEARCH_EPOCH =
-    'GATE_ARTIFACTS_BUMP_SEARCH_EPOCH';
-
 /**
  * States
  */
@@ -77,8 +72,8 @@ export interface IStateQueryString {
     queryString: qs.ParsedQs;
 }
 
-/**
- * Actions
+/*
+ * Payload types for Redux actions.
  */
 
 export interface PushAlertPayload {
@@ -108,21 +103,14 @@ export interface SetQueryStringPayload {
     queryString: qs.ParsedQs;
 }
 
-export interface ActionGASetSearchOptions {
-    type: typeof GATE_ARTIFACTS_SET_SEARCH_OPTIONS;
-    payload: {
-        gateTag?: string;
-        packager?: string;
-        ciSystem?: string;
-        sstTeams?: string[];
-        productId?: number;
-        buildType?: string;
-        ignoreCiSystem?: boolean;
-    };
-}
-
-export interface ActionGABumpSearchEpoch {
-    type: typeof GATE_ARTIFACTS_BUMP_SEARCH_EPOCH;
+export interface GASetSearchOptionsPayload {
+    gateTag?: string;
+    packager?: string;
+    ciSystem?: string;
+    sstTeams?: string[];
+    productId?: number;
+    buildType?: string;
+    ignoreCiSystem?: boolean;
 }
 
 export interface CreateWaiverPayload {
@@ -140,11 +128,3 @@ export interface FetchUserPayload {
     displayName: string;
     nameID: string;
 }
-
-/**
- * Actions for reducers
- */
-
-export type ActionsGateArtifactsType =
-    | ActionGASetSearchOptions
-    | ActionGABumpSearchEpoch;

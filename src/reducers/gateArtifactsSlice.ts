@@ -1,46 +1,42 @@
 /*
  * This file is part of ciboard
-
+ *
  * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
- * 
+ * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 import _ from 'lodash';
-import update from 'immutability-helper';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import {
-    GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
-    GATE_ARTIFACTS_SET_SEARCH_OPTIONS,
-    ActionsGateArtifactsType,
-    ActionGASetSearchOptions,
-} from '../actions/types';
+import { GASetSearchOptionsPayload } from '../actions/types';
 import { ArtifactType } from '../artifact';
 
 const query = new URLSearchParams(window.location.search);
 
-export const buildTypeMenuItems = {
-    ordinary: 'brew-build',
+export const BUILD_TYPE_MENU_ITEMS = {
     modularity: 'redhat-module',
+    ordinary: 'brew-build',
 };
 
 export const getTypeFromSelect = (value: string): ArtifactType =>
-    _.get(buildTypeMenuItems, value, 'brew-build');
+    _.get(BUILD_TYPE_MENU_ITEMS, value, 'brew-build');
 
 export const getSelectFromType = (type: string) =>
-    _.get(_.invert(buildTypeMenuItems), type, 'brew-build');
+    _.get(_.invert(BUILD_TYPE_MENU_ITEMS), type, 'brew-build');
 
 export interface StateGatingTests {
     buildType: ArtifactType;
@@ -68,15 +64,13 @@ const INITIAL_STATE: StateGatingTests = {
     /** buildType === artifact type */
 };
 
-export function gateArtifactsReducer(
-    state = INITIAL_STATE,
-    action: ActionsGateArtifactsType,
-) {
-    switch (action.type) {
-        case GATE_ARTIFACTS_BUMP_SEARCH_EPOCH: {
-            const nstate = update(state, {
-                searchEpoch: { $set: state.searchEpoch + 1 },
-            });
+export const gateArtifactsSlice = createSlice({
+    name: 'gateArtifacts',
+    initialState: INITIAL_STATE,
+    reducers: {
+        gateArtifactsBumpSearchEpoch: (state) => {
+            ++state.searchEpoch;
+
             const url = new URL(window.location.href);
             if (!_.isEmpty(state.ciSystem)) {
                 url.searchParams.set(
@@ -110,8 +104,13 @@ export function gateArtifactsReducer(
             } else {
                 url.searchParams.delete('teams');
             }
+
             url.searchParams.set('pid', encodeURIComponent(state.productId));
-            /** Mapping select entries to actual aritfact type, URL contains value from select entry */
+
+            /*
+             * Mapping select entries to actual aritfact type, URL contains value
+             * from select entry
+             */
             const btype =
                 state.buildType === 'redhat-module' ? 'modularity' : 'ordinary';
             url.searchParams.set('btype', encodeURIComponent(btype));
@@ -119,20 +118,23 @@ export function gateArtifactsReducer(
                 'ic',
                 encodeURIComponent(state.ignoreCiSystem),
             );
+
             window.history.pushState(null, 'update search params', url.href);
-            return nstate;
-        }
-        case GATE_ARTIFACTS_SET_SEARCH_OPTIONS: {
+        },
+        gateArtifactsSetSearchOptions: (
+            state,
+            action: PayloadAction<GASetSearchOptionsPayload>,
+        ) => {
             const {
-                gateTag,
-                packager,
-                ciSystem,
-                sstTeams,
-                productId,
                 buildType,
+                ciSystem,
+                gateTag,
                 ignoreCiSystem,
+                packager,
+                productId,
+                sstTeams,
             } = action.payload;
-            /**
+            /*
              * {type: 'brew-build',
              * gate_tag_name: {$regex: 'rhel-8.3'},
              * resultsdb_testcase: {$regex: 'manual'},
@@ -152,27 +154,31 @@ export function gateArtifactsReducer(
                     console.log('Unknown build type:', buildType);
                     return state;
             }
-            const update_set: ActionGASetSearchOptions['payload'] = {
-                gateTag,
-                packager,
-                ciSystem,
-                sstTeams,
-                productId,
+            const updateSet: typeof action.payload = {
                 buildType: type,
+                ciSystem,
+                gateTag,
                 ignoreCiSystem,
+                packager,
+                productId,
+                sstTeams,
             };
-            let nstate = state;
-            let property: keyof ActionGASetSearchOptions['payload'];
-            for (property in update_set) {
-                if (!_.isNil(update_set[property])) {
-                    nstate = update(nstate, {
-                        [property]: { $set: update_set[property] },
-                    });
+            let key: keyof typeof updateSet;
+            for (key in updateSet) {
+                const newValue = updateSet[key];
+                if (!_.isNil(newValue)) {
+                    type StateSpecialized = Record<
+                        typeof key,
+                        typeof updateSet[typeof key]
+                    >;
+                    (state as StateSpecialized)[key] = newValue;
                 }
             }
-            return nstate;
-        }
-        default:
-            return state;
-    }
-}
+        },
+    },
+});
+
+export const { gateArtifactsBumpSearchEpoch, gateArtifactsSetSearchOptions } =
+    gateArtifactsSlice.actions;
+
+export const gateArtifactsReducer = gateArtifactsSlice.reducer;
