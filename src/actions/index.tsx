@@ -23,18 +23,12 @@ import qs from 'qs';
 import axios from 'axios';
 import { ApolloClient } from '@apollo/client';
 
-import {
-    /** Filters */
-    GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
-    GATE_ARTIFACTS_SET_SEARCH_OPTIONS,
-    /** Alerts */
-    ActionGASetSearchOptions,
-    ActionGABumpSearchEpoch,
-} from './types';
+import { GASetSearchOptionsPayload } from './types';
 import { AppDispatch, GetState } from '../reduxStore';
 import * as alertsSlice from '../reducers/alertsSlice';
 import * as authSlice from '../reducers/authSlice';
 import * as filtersSlice from '../reducers/filtersSlice';
+import * as gateArtifactsSlice from '../reducers/gateArtifactsSlice';
 import * as queryStringSlice from '../reducers/queryStringSlice';
 import * as waiveSlice from '../reducers/waiveSlice';
 import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
@@ -45,19 +39,11 @@ import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
 export const popAlert = (key: number) => alertsSlice.popAlert({ key });
 
 export const setGatingSearchOptions = (
-    gating_options: ActionGASetSearchOptions['payload'],
-): ActionGASetSearchOptions => {
-    return {
-        type: GATE_ARTIFACTS_SET_SEARCH_OPTIONS,
-        payload: gating_options,
-    };
-};
+    gatingOptions: GASetSearchOptionsPayload,
+) => gateArtifactsSlice.gateArtifactsSetSearchOptions(gatingOptions);
 
-export const bumpGatingSearchEpoch = (): ActionGABumpSearchEpoch => {
-    return {
-        type: GATE_ARTIFACTS_BUMP_SEARCH_EPOCH,
-    };
-};
+export const bumpGatingSearchEpoch = () =>
+    gateArtifactsSlice.gateArtifactsBumpSearchEpoch();
 
 type AlertVariantType = 'success' | 'danger' | 'warning' | 'info' | 'default';
 
