@@ -55,6 +55,7 @@ import {
 } from '../artifact';
 import { config } from '../config';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
+import { CSSProperties } from 'react';
 
 /**
  *Typescript guards
@@ -285,8 +286,6 @@ export const resultColor = (result: string) => {
     return _.findKey(resultColors, (item) => item.indexOf(result) !== -1);
 };
 
-type modifyType = 'gating' | 'test';
-
 export const getThreadID = (args: {
     kai_state?: KaiStateType;
     broker_msg_body?: BrokerMessagesType;
@@ -482,36 +481,66 @@ export const isGatingArtifact = (artifact: Artifact): boolean => {
     return false;
 };
 
-export const renderStatusIcon = (
-    type: string,
-    mod: modifyType = 'test',
-    size = '1em',
-) => {
-    const typeLC = _.toLower(type);
-    const iconProps = mapTypeToIconsProps(typeLC);
+export interface TestStatusIconProps {
+    /**
+     * String indicating the status/outcome of the test.
+     * Examples: 'pass', 'failed', 'error', 'info'.
+     */
+    status: string;
+    /** Additional styling for the icon. */
+    style?: CSSProperties;
+}
+
+export function TestStatusIcon(props: TestStatusIconProps) {
+    const statusLower = props.status.toLowerCase();
+    const iconProps = mapTypeToIconsProps(statusLower);
+
     if (!iconProps) {
-        console.warn('Asked to render icon with unknown type:', type);
+        console.warn('Asked to render icon with unknown status:', props.status);
         return (
             <OutlinedQuestionCircleIcon aria-label="Result is unknown type." />
         );
     }
+
     let Icon = iconProps.icon;
-    if (mod === 'gating') {
-        Icon = TrafficLightIcon;
-    }
-    const style = {
-        height: size,
-    };
+
     return (
         <Icon
             aria-label={iconProps.label}
             className={iconProps.className}
             size="sm"
-            style={style}
+            style={props.style}
             title={iconProps.label}
         />
     );
-};
+}
+
+export interface GatingStatusIconProps {
+    /** Boolean indicating whether gating has passed. The default is false. */
+    status?: boolean;
+    /** Additional styling for the icon. */
+    style?: CSSProperties;
+}
+
+export function GatingStatusIcon(props: GatingStatusIconProps) {
+    let className = 'pf-u-danger-color-100';
+    let label = 'Gating is blocked';
+
+    if (props.status) {
+        className = 'pf-u-success-color-100';
+        label = 'Gating has passed';
+    }
+
+    return (
+        <TrafficLightIcon
+            aria-label={label}
+            className={className}
+            size="sm"
+            style={props.style}
+            title={label}
+        />
+    );
+}
 
 const SCM_COMMIT_URL_REGEX =
     /\/(rpms|modules)\/([\w-]+)(?:\.git)?\/?\??#([0-9a-fA-F]+)$/;

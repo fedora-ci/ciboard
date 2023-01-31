@@ -53,7 +53,6 @@ import {
     TextContent,
     TextVariants,
 } from '@patternfly/react-core';
-
 import {
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
@@ -70,11 +69,11 @@ import styles from '../custom.module.css';
 import {
     LinkifyNewTab,
     isResultWaivable,
-    renderStatusIcon,
     timestampForUser,
     getGreenwaveDocsUrl,
     getTestcaseName,
     getArtifactProduct,
+    TestStatusIcon,
 } from '../utils/artifactUtils';
 import {
     Artifact,
@@ -237,7 +236,7 @@ export const GreenwaveDetails: React.FC<GreenwaveDetailsProps> = ({
 }) => {
     if (!requirement || !requirement.details) return null;
 
-    const icon = renderStatusIcon(requirement.type);
+    const icon = <TestStatusIcon status={requirement.type} />;
     let title = 'Result details';
     let variant: AlertProps['variant'] = 'default';
 
@@ -362,7 +361,9 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <FlexItem>{renderStatusIcon(iconName)}</FlexItem>
+                <FlexItem>
+                    <TestStatusIcon status={iconName} />
+                </FlexItem>
                 <TextContent>
                     <Text className="pf-u-text-nowrap">{state.testcase}</Text>
                 </TextContent>
