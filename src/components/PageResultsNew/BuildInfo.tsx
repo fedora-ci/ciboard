@@ -123,7 +123,7 @@ export function BuildInfo(_props: {}) {
         commit: '81bf54a75572bddc61e6b0b250b4fb45c5aa9856',
         commitTime: '2022-09-16 09:12 +02:00',
         committerEmail: 'mgrabovs@redhat.com',
-        committerName: 'mgrabovs',
+        committerName: 'Matěj Grabovský',
         owner: 'mgrabovs',
     };
 
