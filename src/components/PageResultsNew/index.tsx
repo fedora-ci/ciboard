@@ -26,6 +26,7 @@ import {
     PageSectionVariants,
 } from '@patternfly/react-core';
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 import { config } from '../../config';
 import { PageCommon } from '../PageCommon';
@@ -39,8 +40,13 @@ import { BuildInfo } from './BuildInfo';
 import { DetailsDrawer } from './DetailsDrawer';
 import { ArtifactHeader } from './Header';
 
+interface PageResultsNewParams {
+    task_id?: string;
+}
+
 export function PageResultsNew(_props: {}) {
     const [selectedTest, setSelectedTest] = useState<CiTest | undefined>();
+    const params = useParams<PageResultsNewParams>();
 
     const pageTitle = `🚧 New test results | ${config.defaultTitle}`;
 
@@ -48,7 +54,15 @@ export function PageResultsNew(_props: {}) {
     const buildNvr = 'ansible-collection-microsoft-sql-1.2.4-1.el9';
     const buildOwner = 'mgrabovs';
     const gatingTag = 'rhel-8.7.0-build-sidetag-101738-stack-gate';
-    const taskId = 47942709;
+    const taskId = params.task_id ? Number(params.task_id) : 47942709;
+
+    /*
+     * TODO: Load build info and test results if `taskId` is specified.
+     * - build info: ArtifactsDetailedInfoKojiTask for RPMs,
+     *               ArtifactsDetailedInfoModuleBuild for modules
+     * - list of artifacts: ArtifactsCompleteQuery
+     * For details, see `PageByMongoField`.
+     */
 
     // TODO: Use unique key later on.
     const onTestSelect = (name: string | undefined) => {
