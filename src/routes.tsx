@@ -96,7 +96,13 @@ export const otherRoutes: MenuEntry[] = [
     {
         title: '',
         key: 'resultsnew',
-        to: '/resultsnew',
+        /*
+         * Further details on new address structure:
+         * - /artifact/:type/:field/:value - same as now, see PageByMongoField
+         * - /artifact/:type/:field/:value/tc/:testcase - show specific test in sidebar
+         * - /artifact/:type/:field/:value/...?
+         */
+        to: '/resultsnew/:task_id?',
         render: (props) => <PageResultsNew {...props} />,
     },
 ];
