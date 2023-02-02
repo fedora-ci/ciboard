@@ -336,7 +336,16 @@ interface LinkedAdvisoriesProps {
 const LinkedAdvisories: React.FC<LinkedAdvisoriesProps> = (props) => {
     const { linkedAdvisories } = props;
     if (_.isNil(linkedAdvisories)) {
-        return null;
+        return (
+            <Flex className="pf-u-p-lg">
+                <Alert
+                    isInline
+                    isPlain
+                    title="No advisories linked to this artifact"
+                    variant="info"
+                />
+            </Flex>
+        );
     }
     const advs: JSX.Element[] = [];
     for (const adv of linkedAdvisories) {
