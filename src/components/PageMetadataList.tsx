@@ -385,7 +385,7 @@ const MetadataList: FunctionComponent<{}> = () => {
     const isEmpty = _.isNil(haveData);
 
     const [valueSearch, setSearchValue] = React.useState('');
-    const onSearchChange = (value: string) => {
+    const onSearchChange = (_event: any, value: string) => {
         setSearchValue(value);
     };
 
@@ -402,7 +402,7 @@ const MetadataList: FunctionComponent<{}> = () => {
                             placeholder="Find by name"
                             value={valueSearch}
                             onChange={onSearchChange}
-                            onClear={() => onSearchChange('')}
+                            onClear={(event) => onSearchChange(event, '')}
                         />
                     </ToolbarItem>
                 </ToolbarContent>
