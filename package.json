@@ -12,7 +12,7 @@
     "@patternfly/react-charts": "^6.67.1",
     "@patternfly/react-core": "^4.276.6",
     "@patternfly/react-icons": "^4.65.1",
-    "@patternfly/react-table": "^4.112.6",
+    "@patternfly/react-table": "^4.112.39",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^12.1.5",
     "@testing-library/user-event": "^14.4.3",
