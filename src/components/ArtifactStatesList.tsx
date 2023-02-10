@@ -48,7 +48,7 @@ import {
     isGreenwaveState,
     isKaiState,
 } from '../utils/artifactUtils';
-import { RootStateType } from '../reducers';
+import { RootStateType } from '../slices';
 import { ArtifactState } from './ArtifactState';
 import { IStateQueryString } from '../actions/types';
 import {
