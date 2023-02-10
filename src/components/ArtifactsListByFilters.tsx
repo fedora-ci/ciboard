@@ -44,7 +44,7 @@ import {
     CustomRowWrapper,
     OnCollapseEventType,
 } from '../utils/artifactsTable';
-import { RootStateType } from '../reducers';
+import { RootStateType } from '../slices';
 import { IStateFilters } from '../actions/types';
 import { PaginationToolbar } from './PaginationToolbar';
 import { Artifact } from '../artifact';

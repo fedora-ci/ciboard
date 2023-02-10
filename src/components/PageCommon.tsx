@@ -35,7 +35,7 @@ import {
 
 import { config } from '../config';
 import { useTitle } from '../hooks';
-import { RootStateType } from '../reducers';
+import { RootStateType } from '../slices';
 import { popAlert, setQueryString } from '../actions';
 import { IStateAlerts } from '../actions/types';
 import { DashboardPageHeader } from './PageHeader';

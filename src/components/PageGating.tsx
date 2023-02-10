@@ -75,7 +75,7 @@ import {
     BUILD_TYPE_MENU_ITEMS,
     StateGatingTests,
     getSelectFromType,
-} from '../reducers/gateArtifactsSlice';
+} from '../slices/gateArtifactsSlice';
 import {
     Artifact,
     isStateKai,

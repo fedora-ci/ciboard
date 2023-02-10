@@ -25,12 +25,12 @@ import { ApolloClient } from '@apollo/client';
 
 import { GASetSearchOptionsPayload } from './types';
 import { AppDispatch, GetState } from '../reduxStore';
-import * as alertsSlice from '../reducers/alertsSlice';
-import * as authSlice from '../reducers/authSlice';
-import * as filtersSlice from '../reducers/filtersSlice';
-import * as gateArtifactsSlice from '../reducers/gateArtifactsSlice';
-import * as queryStringSlice from '../reducers/queryStringSlice';
-import * as waiveSlice from '../reducers/waiveSlice';
+import * as alertsSlice from '../slices/alertsSlice';
+import * as authSlice from '../slices/authSlice';
+import * as filtersSlice from '../slices/filtersSlice';
+import * as gateArtifactsSlice from '../slices/gateArtifactsSlice';
+import * as queryStringSlice from '../slices/queryStringSlice';
+import * as waiveSlice from '../slices/waiveSlice';
 import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
