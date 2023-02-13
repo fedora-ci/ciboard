@@ -127,7 +127,7 @@ const buildTest = (test: any) => {
 
     extractTestCore(test, 'failure', 'fail');
     extractTestCore(test, 'failed', 'fail');
-    extractTestCore(test, 'failint', 'fail');
+    extractTestCore(test, 'failing', 'fail');
     extractTestCore(test, 'fail', 'fail');
 
     extractTestCore(test, 'errored', 'error');
@@ -137,6 +137,12 @@ const buildTest = (test: any) => {
     extractTestCore(test, 'skipped', 'skip');
     extractTestCore(test, 'skipping', 'skip');
     extractTestCore(test, 'skip', 'skip');
+
+    /*
+     * Treat `needs_inspection` result as an error to make it more visible in the UI.
+     * See https://issues.redhat.com/browse/OSCI-4096
+     */
+    if (test.result === 'needs_inspection') test.status = 'error';
 
     test._uuid = uuid.v4();
     return test;
