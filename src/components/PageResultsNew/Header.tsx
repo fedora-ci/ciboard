@@ -27,7 +27,11 @@ import {
     TextContent,
     Title,
 } from '@patternfly/react-core';
-import { AngleLeftIcon, CubeIcon } from '@patternfly/react-icons';
+import {
+    AngleLeftIcon,
+    CodeBranchIcon,
+    CubeIcon,
+} from '@patternfly/react-icons';
 
 import { GatingStatusIcon } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
@@ -70,7 +74,7 @@ function ArtifactTitle(props: SummaryHeaderProps) {
             {props.isScratch && <span className="pf-u-color-200">scratch</span>}
             {!props.isScratch && props.gatingTag && (
                 <span className="pf-u-color-200" title="Gating tag">
-                    {props.gatingTag}
+                    <CodeBranchIcon /> {props.gatingTag}
                 </span>
             )}
         </Flex>
