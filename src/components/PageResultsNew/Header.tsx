@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import * as _ from 'lodash';
 import {
     Button,
     Flex,
@@ -32,9 +33,11 @@ import {
     CodeBranchIcon,
     CubeIcon,
 } from '@patternfly/react-icons';
+import { Artifact } from '../../artifact';
 
-import { GatingStatusIcon } from '../../utils/artifactUtils';
+import { mkLinkKojiWebTask } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
+import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';
 
 function BackButton(_props: {}) {
     return (
@@ -45,7 +48,7 @@ function BackButton(_props: {}) {
 }
 
 interface SummaryHeaderProps {
-    gatingStatus?: 'fail' | 'pass';
+    artifact: Artifact;
     gatingTag?: string;
     isScratch?: boolean;
     nvr: string;
@@ -53,23 +56,16 @@ interface SummaryHeaderProps {
 }
 
 function ArtifactTitle(props: SummaryHeaderProps) {
+    const hasGatingDecision = !_.isNil(props.artifact.greenwave_decision);
+
     return (
         <Flex spaceItems={{ default: 'spaceItemsLg' }}>
             <TextContent>
                 <Title headingLevel="h1">{props.nvr}</Title>
             </TextContent>
             <FlexItem spacer={{ default: 'spacerXl' }}></FlexItem>
-            {/* TODO: Replace with real gating status. See `ArtifactGreenwaveStatesSummary`. */}
-            {props.gatingStatus && (
-                <TextContent>
-                    <GatingStatusIcon status={props.gatingStatus === 'pass'} />{' '}
-                    <span className="pf-u-danger-color-100 pf-u-font-weight-bold">
-                        2 err
-                    </span>{' '}
-                    <span className="pf-u-success-color-100 pf-u-font-weight-bold">
-                        6 ok
-                    </span>
-                </TextContent>
+            {hasGatingDecision && (
+                <ArtifactGreenwaveStatesSummary artifact={props.artifact} />
             )}
             {props.isScratch && <span className="pf-u-color-200">scratch</span>}
             {!props.isScratch && props.gatingTag && (
@@ -82,17 +78,30 @@ function ArtifactTitle(props: SummaryHeaderProps) {
 }
 
 interface PageHeaderProps {
+    artifact: Artifact;
     gatingStatus?: 'fail' | 'pass';
     gatingTag?: string;
     hasBackLink?: boolean;
     isScratch?: boolean;
     nvr: string;
     owner: string;
-    taskId: number;
 }
 
 export function ArtifactHeader(props: PageHeaderProps) {
-    const taskLabel = `Brew #${props.taskId}`;
+    const { artifact } = props;
+    // TODO: Use the correct label (Brew, MBS, Compose).
+    const artifactLabel = `Brew #${artifact.aid}`;
+    // TODO: Use the correct service and instance.
+    const artifactUrl = mkLinkKojiWebTask(artifact.aid, 'rh');
+    const externalLink = (
+        <ExternalLink href={artifactUrl}>
+            <CubeIcon
+                className="pf-u-mr-xs"
+                style={{ verticalAlign: '-.125em' }}
+            />{' '}
+            {artifactLabel}
+        </ExternalLink>
+    );
 
     return (
         <Stack className="resultsNarrower">
@@ -101,16 +110,10 @@ export function ArtifactHeader(props: PageHeaderProps) {
                     <BackButton />
                 </StackItem>
             )}
+            <StackItem>{externalLink}</StackItem>
             <StackItem>
-                <ExternalLink href="#">
-                    <CubeIcon style={{ verticalAlign: '-.125em' }} />{' '}
-                    {taskLabel}
-                </ExternalLink>
-            </StackItem>
-            <StackItem>
-                {/* TODO: Display real data. */}
                 <ArtifactTitle
-                    gatingStatus="fail"
+                    artifact={artifact}
                     gatingTag={props.gatingTag}
                     nvr={props.nvr}
                     owner={props.owner}
