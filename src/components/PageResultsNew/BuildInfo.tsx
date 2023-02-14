@@ -18,74 +18,123 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import * as _ from 'lodash';
 import { useState } from 'react';
 import {
+    Alert,
     Badge,
+    Bullseye,
     CardBody,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
+    EmptyState,
+    EmptyStateBody,
+    EmptyStateIcon,
+    Spinner,
     Tab,
     Tabs,
     TabTitleText,
+    Title,
 } from '@patternfly/react-core';
 import classNames from 'classnames';
 
 import styles from '../../custom.module.css';
 import { ExternalLink } from '../ExternalLink';
+import {
+    ArtifactRPM,
+    KojiBuildInfo,
+    KojiInstanceType,
+    koji_instance,
+} from '../../artifact';
+import { useQuery } from '@apollo/client';
+import {
+    ArtifactsDetailedInfoKojiTask,
+    ArtifactsDetailedInfoKojiTaskData,
+} from '../../queries/Artifacts';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import {
+    mkCommitHashFromSource,
+    mkLinkKojiWebBuildId,
+    mkLinkKojiWebUserId,
+    mkLinkPkgsDevelFromSource,
+} from '../../utils/artifactUtils';
+import { secondsToTimestampWithTz } from '../../utils/timeUtils';
+import {
+    HistoryList,
+    LimitWithScroll,
+    TagsList,
+} from '../ArtifactDetailedInfo';
 
 interface BuildMetadataProps {
-    buildId: number;
-    buildTime: string;
-    commit: string;
-    commitTime: string;
-    committerEmail?: string;
-    committerName?: string;
-    owner: string;
+    build: KojiBuildInfo;
+    instance: KojiInstanceType;
 }
 
 function BuildMetadata(props: BuildMetadataProps) {
+    const { build, instance } = props;
+
+    const buildTimeWithTz = secondsToTimestampWithTz(build.completion_ts);
+    let commitTimeWithTz = 'n/a';
+    if (build.commit_obj) {
+        commitTimeWithTz = secondsToTimestampWithTz(
+            build.commit_obj.committer_date_seconds,
+        );
+    }
+
     const items = [
         {
             label: 'Build ID',
-            value: <ExternalLink href="#">{props.buildId}</ExternalLink>,
+            value: (
+                <ExternalLink
+                    href={mkLinkKojiWebBuildId(build.build_id, instance)}
+                >
+                    {build.build_id}
+                </ExternalLink>
+            ),
         },
         {
             label: 'Git commit',
             value: (
                 <ExternalLink
-                    className={styles['buildInfoCommitHash']}
-                    href="#"
+                    className={styles['commitHash']}
+                    href={mkLinkPkgsDevelFromSource(build.source, instance)}
                 >
-                    {props.commit}
+                    {mkCommitHashFromSource(build.source)}
                 </ExternalLink>
             ),
         },
         {
             label: 'Build owner',
-            value: <ExternalLink href="#">{props.owner}</ExternalLink>,
+            value: (
+                <ExternalLink
+                    href={mkLinkKojiWebUserId(build.owner_id, instance)}
+                >
+                    {build.owner_name}
+                </ExternalLink>
+            ),
         },
         {
             label: 'Committer',
             value: (
                 <>
-                    {props.committerName || 'n/a'}
+                    {build.commit_obj?.committer_name || 'n/a'}
                     &nbsp;&lt;
-                    {props.committerEmail || 'n/a'}
+                    {build.commit_obj?.committer_email || 'n/a'}
                     &gt;
                 </>
             ),
         },
         {
             label: 'Build completed',
-            value: props.buildTime,
-            className: styles['buildInfoTimestamp'],
+            value: buildTimeWithTz,
+            className: styles['timestamp'],
         },
         {
             label: 'Commit time',
-            value: props.commitTime,
-            className: styles['buildInfoTimestamp'],
+            value: commitTimeWithTz,
+            className: styles['timestamp'],
         },
     ];
 
@@ -113,19 +162,85 @@ function BuildMetadata(props: BuildMetadataProps) {
     );
 }
 
-export function BuildInfo(_props: {}) {
+function BuildInfoEmpty(_props: {}) {
+    return (
+        <CardBody>
+            <Alert
+                isInline
+                isPlain
+                title="No build information available"
+                variant="info"
+            ></Alert>
+        </CardBody>
+    );
+}
+
+function BuildInfoError(props: { message: string }) {
+    return (
+        <Bullseye>
+            <EmptyState variant="small">
+                <EmptyStateIcon
+                    className="pf-u-danger-color-100"
+                    icon={ExclamationCircleIcon}
+                />
+                <Title headingLevel="h3" size="md">
+                    Could not load build information
+                </Title>
+                <EmptyStateBody>{props.message}</EmptyStateBody>
+            </EmptyState>
+        </Bullseye>
+    );
+}
+
+function BuildInfoLoading(_props: {}) {
+    return (
+        <Bullseye>
+            <EmptyState variant="small">
+                <EmptyStateIcon component={Spinner} variant="container" />
+                <Title headingLevel="h3" size="md">
+                    Loading build information…
+                </Title>
+            </EmptyState>
+        </Bullseye>
+    );
+}
+
+interface BuildInfoProps {
+    artifact: ArtifactRPM;
+}
+
+export function BuildInfo(props: BuildInfoProps) {
+    const { artifact } = props;
     const [activeTabKey, setActiveTabKey] = useState('summary');
 
-    // TODO: Replace with real data.
-    const buildProps = {
-        buildId: 2181999,
-        buildTime: '2022-09-16 10:27 +02:00',
-        commit: '81bf54a75572bddc61e6b0b250b4fb45c5aa9856',
-        commitTime: '2022-09-16 09:12 +02:00',
-        committerEmail: 'mgrabovs@redhat.com',
-        committerName: 'Matěj Grabovský',
-        owner: 'mgrabovs',
-    };
+    const kojiInstance = koji_instance(artifact.type);
+
+    const { data, error, loading } =
+        useQuery<ArtifactsDetailedInfoKojiTaskData>(
+            ArtifactsDetailedInfoKojiTask,
+            {
+                variables: {
+                    distgit_instance: kojiInstance,
+                    koji_instance: kojiInstance,
+                    task_id: Number(artifact.aid),
+                },
+                errorPolicy: 'all',
+            },
+        );
+
+    if (loading) {
+        return <BuildInfoLoading />;
+    }
+
+    if (error) {
+        return <BuildInfoError message={error.message} />;
+    }
+
+    const build = data?.koji_task?.builds?.[0];
+
+    if (!build) {
+        return <BuildInfoEmpty />;
+    }
 
     return (
         <Tabs
@@ -140,31 +255,27 @@ export function BuildInfo(_props: {}) {
                 eventKey="summary"
                 title={<TabTitleText>Build summary</TabTitleText>}
             >
-                <BuildMetadata {...buildProps} />
+                <BuildMetadata build={build} instance={kojiInstance} />
             </Tab>
             <Tab
                 eventKey="tags"
                 title={
-                    // TODO: Replace with real tags count.
                     <TabTitleText>
-                        Active tags <Badge isRead>116</Badge>
+                        Active tags <Badge isRead>{build.tags.length}</Badge>
                     </TabTitleText>
                 }
             >
-                <CardBody>
-                    {/* TODO: List really active tags. See `TagsList` in `ArtifactDetailedInfo.tsx`. */}
-                    Currently active Koji tags for this build will be listed
-                    here.
-                </CardBody>
+                <LimitWithScroll>
+                    <TagsList build={build} instance={kojiInstance} />
+                </LimitWithScroll>
             </Tab>
             <Tab
                 eventKey="history"
                 title={<TabTitleText>Tagging history</TabTitleText>}
             >
-                <CardBody>
-                    {/* TODO: List real tagging history. See `HistoryList` in `ArtifactDetailedInfo.tsx`. */}
-                    Koji tagging history will be displayed here.
-                </CardBody>
+                <LimitWithScroll>
+                    <HistoryList history={build.history?.tag_listing} />
+                </LimitWithScroll>
             </Tab>
             <Tab
                 eventKey="advisories"
