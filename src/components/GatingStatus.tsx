@@ -59,7 +59,7 @@ interface PrintRequirementsSizeProps {
 
 interface ArtifactGreenwaveStatesSummaryProps {
     artifact: Artifact;
-    isLoading: boolean;
+    isLoading?: boolean;
 }
 
 export const ArtifactGreenwaveStatesSummary: React.FC<
