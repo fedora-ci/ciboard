@@ -43,6 +43,14 @@ import {
     HelperTextItem,
     HelperTextItemProps,
 } from '@patternfly/react-core';
+import {
+    TableComposable,
+    Tbody,
+    Td,
+    Th,
+    Thead,
+    Tr,
+} from '@patternfly/react-table';
 import classNames from 'classnames';
 
 import { config, mappingDatagrepperUrl } from '../config';
@@ -81,15 +89,8 @@ import {
     mkLinkMbsBuild,
     mkLinkPkgsDevelFromSource,
 } from '../utils/artifactUtils';
+import { secondsToTimestampWithTz } from '../utils/timeUtils';
 import { ExternalLink } from './ExternalLink';
-import {
-    Tr,
-    Td,
-    Th,
-    Tbody,
-    Thead,
-    TableComposable,
-} from '@patternfly/react-table';
 
 interface NoDataProps {
     show: boolean;
@@ -180,7 +181,7 @@ const BuildInfo: React.FC<BuildInfoProps> = (props) => {
                 <DescriptionListTerm>Git commit</DescriptionListTerm>
                 <DescriptionListDescription>
                     <a
-                        className={styles['buildInfoCommitHash']}
+                        className={styles['commitHash']}
                         href={mkLinkPkgsDevelFromSource(build.source, instance)}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -212,17 +213,13 @@ const BuildInfo: React.FC<BuildInfoProps> = (props) => {
             </DescriptionListGroup>
             <DescriptionListGroup>
                 <DescriptionListTerm>Build completed</DescriptionListTerm>
-                <DescriptionListDescription
-                    className={styles['buildInfoTimestamp']}
-                >
+                <DescriptionListDescription className={styles['timestamp']}>
                     {buildTimeWithTz}
                 </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
                 <DescriptionListTerm>Commit time</DescriptionListTerm>
-                <DescriptionListDescription
-                    className={styles['buildInfoTimestamp']}
-                >
+                <DescriptionListDescription className={styles['timestamp']}>
                     {commitTimeWithTz}
                 </DescriptionListDescription>
             </DescriptionListGroup>
@@ -230,29 +227,30 @@ const BuildInfo: React.FC<BuildInfoProps> = (props) => {
     );
 };
 
-interface TagsListProps {
+export interface TagsListProps {
     build?: KojiBuildInfo;
     instance: KojiInstanceType;
 }
-const TagsList: React.FC<TagsListProps> = (props) => {
+
+export const TagsList: React.FC<TagsListProps> = (props) => {
     const { build, instance } = props;
     if (_.isNil(build)) {
         return null;
     }
     return (
-        <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
-            <List component={ListComponent.ol} type={OrderType.number}>
-                {_.map(build.tags, (tag) => (
-                    <ListItem key={tag.id}>
-                        <ExternalLink
-                            href={mkLinkKojiWebTagId(tag.id, instance)}
-                        >
-                            {tag.name}
-                        </ExternalLink>
-                    </ListItem>
-                ))}
-            </List>
-        </Flex>
+        <List
+            className="pf-u-font-size-sm"
+            component={ListComponent.ol}
+            type={OrderType.number}
+        >
+            {_.map(build.tags, (tag) => (
+                <ListItem key={tag.id}>
+                    <ExternalLink href={mkLinkKojiWebTagId(tag.id, instance)}>
+                        {tag.name}
+                    </ExternalLink>
+                </ListItem>
+            ))}
+        </List>
     );
 };
 
@@ -593,7 +591,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
 
     const gitCommitLink = build.scmurl && (
         <ExternalLink
-            className={styles['buildInfoCommitHash']}
+            className={styles['commitHash']}
             href={mkLinkPkgsDevelFromSource(build.scmurl, instance)}
         >
             {mkCommitHashFromSource(build.scmurl)}
@@ -682,7 +680,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
                             Build completed
                         </DescriptionListTerm>
                         <DescriptionListDescription
-                            className={styles['buildInfoTimestamp']}
+                            className={styles['timestamp']}
                         >
                             {buildTimeWithTz}
                         </DescriptionListDescription>
@@ -690,7 +688,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
                     <DescriptionListGroup>
                         <DescriptionListTerm>Commit time</DescriptionListTerm>
                         <DescriptionListDescription
-                            className={styles['buildInfoTimestamp']}
+                            className={styles['timestamp']}
                         >
                             {commitTimeWithTz}
                         </DescriptionListDescription>
@@ -769,11 +767,11 @@ interface TagActionHistoryType {
     time: number;
 }
 
-interface HistoryListProps {
+export interface HistoryListProps {
     history?: KojiBuildTagging[];
 }
 
-const HistoryList: React.FC<HistoryListProps> = (props) => {
+export const HistoryList: React.FC<HistoryListProps> = (props) => {
     const { history } = props;
     if (_.isNil(history)) return null;
     const lines: TagActionHistoryType[] = [];
@@ -799,7 +797,11 @@ const HistoryList: React.FC<HistoryListProps> = (props) => {
     });
     const log = _.orderBy(lines, ['time'], ['asc']);
     return (
-        <List component={ListComponent.ol} type={OrderType.number}>
+        <List
+            className="pf-u-font-size-sm"
+            component={ListComponent.ol}
+            type={OrderType.number}
+        >
             {_.map(log, (entry) => {
                 return (
                     <ListItem key={entry.action + entry.time}>
@@ -816,13 +818,12 @@ export const LimitWithScroll = (
 ) => {
     const { children } = props;
     return (
-        <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
+        <Flex className="pf-u-p-md">
             <FlexItem
                 flex={{ default: 'flex_1' }}
                 style={{
                     maxHeight: '10em',
                     overflow: 'auto',
-                    flex: 'initial',
                 }}
             >
                 {children}
@@ -839,14 +840,12 @@ const HistoryListEntry: React.FC<HistoryListEntryProps> = (props) => {
     const {
         entry: { action, active, person_name, tag_name, time },
     } = props;
-    const eventTimeLocal = moment.unix(time).local();
-    const eventTimeWithTz = eventTimeLocal.format('YYYY-MM-DD, HH:mm');
-    const shift = eventTimeLocal.format('ZZ');
+    const eventTimeWithTz = secondsToTimestampWithTz(time);
     const flag = active ? '[still active]' : '';
     return (
         <div style={{ whiteSpace: 'nowrap' }}>
-            {eventTimeWithTz} {shift} {action} {tag_name} by {person_name}{' '}
-            {flag}
+            <span className={styles['timestamp']}>{eventTimeWithTz}</span>{' '}
+            {action} {tag_name} by {person_name} {flag}
         </div>
     );
 };
