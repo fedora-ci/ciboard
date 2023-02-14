@@ -198,7 +198,10 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     const onCloseClick = () => props.onClose && props.onClose();
     const onResize = (newWidth: number) => setDrawerSize(`${newWidth}px`);
     const statusIcon = selectedTest ? (
-        <TestStatusIcon status={selectedTest.status} />
+        <TestStatusIcon
+            status={selectedTest.status}
+            style={{ verticalAlign: '-.125em' }}
+        />
     ) : null;
 
     // TODO: Persist the drawer width across pages/sessions.

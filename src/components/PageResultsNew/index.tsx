@@ -20,17 +20,22 @@
 
 import * as _ from 'lodash';
 import {
+    Bullseye,
     Card,
+    EmptyState,
+    EmptyStateIcon,
     Flex,
     PageSection,
     PageSectionVariants,
+    Spinner,
+    Title,
 } from '@patternfly/react-core';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { config } from '../../config';
 import { PageCommon } from '../PageCommon';
-import { ArtifactRPM } from '../../artifact';
+import { isArtifactRPM } from '../../artifact';
 
 import './index.css';
 import { CiTest } from './types';
@@ -40,9 +45,15 @@ import { TestResultsTable } from './TestResultsTable';
 import { BuildInfo } from './BuildInfo';
 import { DetailsDrawer } from './DetailsDrawer';
 import { ArtifactHeader } from './Header';
+import { useQuery } from '@apollo/client';
+import {
+    ArtifactsCompleteQuery,
+    ArtifactsCompleteQueryData,
+} from '../../queries/Artifacts';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 interface PageResultsNewParams {
-    task_id?: string;
+    aid?: string;
 }
 
 export function PageResultsNew(_props: {}) {
@@ -51,30 +62,25 @@ export function PageResultsNew(_props: {}) {
 
     const pageTitle = `🚧 New test results | ${config.defaultTitle}`;
 
-    // TODO: Display real data.
-    const buildNvr = 'ansible-collection-microsoft-sql-1.2.4-1.el9';
-    const buildOwner = 'mgrabovs';
-    const gatingTag = 'rhel-8.7.0-build-sidetag-101738-stack-gate';
-    const taskId = params.task_id ? Number(params.task_id) : 47942709;
-    const artifact: ArtifactRPM = {
-        _id: 'dummy',
-        _updated: 'dummy',
-        _version: 'dummy',
-        aid: taskId.toString(),
-        resultsdb_testscase: [],
-        states: [],
-        type: 'brew-build',
-        payload: {
-            build_id: 2181999,
-            component: 'ansible-collection-microsoft-sql',
-            gate_tag_name: gatingTag,
-            issuer: 'mgrabovs',
-            nvr: buildNvr,
-            source: 'https://example.com/git/0432ca7d',
-            scratch: false,
-            task_id: taskId,
+    const aid = params.aid || '47942709';
+
+    const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
+        ArtifactsCompleteQuery,
+        {
+            variables: {
+                atype: 'brew-build',
+                dbFieldName1: 'aid',
+                dbFieldValues1: [aid],
+                limit: 1,
+            },
+            errorPolicy: 'all',
+            fetchPolicy: 'cache-first',
         },
-    };
+    );
+
+    // TODO: Loading state.
+    // TODO: Error state.
+    // TODO: Multiple results state?
 
     /*
      * TODO: Load build info and test results if `taskId` is specified.
@@ -95,17 +101,60 @@ export function PageResultsNew(_props: {}) {
         } else setSelectedTest(undefined);
     };
 
+    const artifact = data?.artifacts.artifacts?.[0];
+    const haveData = !_.isNil(artifact) && !error && !loading;
+
+    if (loading) {
+        return (
+            <PageCommon title={pageTitle}>
+                <PageSection isFilled>
+                    <Bullseye>
+                        <EmptyState>
+                            <EmptyStateIcon
+                                variant="container"
+                                component={Spinner}
+                            />
+                            <Title headingLevel="h2" size="lg">
+                                Loading artifact…
+                            </Title>
+                        </EmptyState>
+                    </Bullseye>
+                </PageSection>
+            </PageCommon>
+        );
+    }
+
+    if (!haveData || !isArtifactRPM(artifact)) {
+        return (
+            <PageCommon title={pageTitle}>
+                <PageSection isFilled>
+                    <Bullseye>
+                        <EmptyState>
+                            <EmptyStateIcon
+                                className="pf-u-danger-color-100"
+                                icon={ExclamationCircleIcon}
+                            />
+                            <Title headingLevel="h2" size="lg">
+                                Failed to load artifact
+                            </Title>
+                        </EmptyState>
+                    </Bullseye>
+                </PageSection>
+            </PageCommon>
+        );
+    }
+
     return (
         <PageCommon title={pageTitle}>
             <SelectedTestContext.Provider value={selectedTest}>
                 <DetailsDrawer onClose={() => setSelectedTest(undefined)}>
                     <PageSection variant={PageSectionVariants.light}>
                         <ArtifactHeader
+                            artifact={artifact}
                             gatingStatus="fail"
-                            gatingTag={gatingTag}
-                            nvr={buildNvr}
-                            owner={buildOwner}
-                            taskId={taskId}
+                            gatingTag={artifact.payload.gate_tag_name}
+                            nvr={artifact.payload.nvr}
+                            owner={artifact.payload.issuer}
                         />
                     </PageSection>
                     <PageSection isFilled variant={PageSectionVariants.default}>
