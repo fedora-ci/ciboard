@@ -109,8 +109,8 @@ dl.buildInfo {
     row-gap: var(--pf-global--spacer--sm);
 }
 
-.buildInfoCommitHash,
-.buildInfoTimestamp {
+.commitHash,
+.timestamp {
     --pf-c-description-list__description--FontSize: 0.85em;
     font-size: 0.85em;
     font-family: monospace;
