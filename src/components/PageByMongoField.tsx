@@ -39,7 +39,10 @@ import {
 import { config } from '../config';
 import { Artifact } from '../artifact';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
-import { ArtifactsCompleteQuery } from '../queries/Artifacts';
+import {
+    ArtifactsCompleteQuery,
+    ArtifactsCompleteQueryData,
+} from '../queries/Artifacts';
 import { PaginationToolbar, PaginationToolbarProps } from './PaginationToolbar';
 import { getArtifactName } from '../utils/artifactUtils';
 import {
@@ -123,15 +126,13 @@ const ArtifactsTable: React.FC<ArtifactsTableProps> = (props) => {
         setAidOffset(new_aid_offset);
     };
     /** Frontend need to ask exact DB field, with its full path */
-    const fieldPath = _.includes(['aid'], fieldName)
-        ? fieldName
-        : `payload.${fieldName}`;
+    const fieldPath = fieldName === 'aid' ? fieldName : `payload.${fieldName}`;
 
     const {
         loading: isLoading,
         error,
         data,
-    } = useQuery(ArtifactsCompleteQuery, {
+    } = useQuery<ArtifactsCompleteQueryData>(ArtifactsCompleteQuery, {
         variables: {
             atype: artifactType,
             aid_offset,

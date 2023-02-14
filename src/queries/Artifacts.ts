@@ -205,6 +205,13 @@ export const ArtifactsDetailedInfoModuleBuild = gql`
     ${tagHistoryFragment}
 `;
 
+export interface ArtifactsCompleteQueryData {
+    artifacts: {
+        has_next: boolean;
+        artifacts: Artifact[];
+    };
+}
+
 export const ArtifactsCompleteQuery = gql`
     query ArtifactsComplete(
         $limit: Int
