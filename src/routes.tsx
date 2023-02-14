@@ -103,7 +103,7 @@ export const otherRoutes: MenuEntry[] = [
          * - /artifact/:type/:field/:value/tc/:testcase - show specific test in sidebar
          * - /artifact/:type/:field/:value/...?
          */
-        to: '/resultsnew/:task_id?',
+        to: '/resultsnew/:aid?',
         render: (props) => <PageResultsNew {...props} />,
     },
 ];
