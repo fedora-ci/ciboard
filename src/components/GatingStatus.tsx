@@ -85,15 +85,15 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
      * It is prevented from displaying in `ArtifactStatesList()`:
      *     `if (stateName === 'fetched-gating-yaml') continue;`
      */
+    const unsatisfiedCount = decision?.unsatisfied_requirements?.length;
     const satisfiedCount = decision?.satisfied_requirements?.filter(
         ({ type }) => type !== 'fetched-gating-yaml',
     ).length;
-    const unsatisfiedCount = decision?.unsatisfied_requirements?.length;
+    if (unsatisfiedCount) {
+        reqSummary['err'] = unsatisfiedCount;
+    }
     if (satisfiedCount) {
         reqSummary['ok'] = satisfiedCount;
-    }
-    if (unsatisfiedCount) {
-        reqSummary['unsatisfied'] = unsatisfiedCount;
     }
 
     const gatingPassed = decision?.policies_satisfied;
