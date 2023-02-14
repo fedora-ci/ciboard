@@ -30,6 +30,7 @@ import { useParams } from 'react-router-dom';
 
 import { config } from '../../config';
 import { PageCommon } from '../PageCommon';
+import { ArtifactRPM } from '../../artifact';
 
 import './index.css';
 import { CiTest } from './types';
@@ -55,6 +56,25 @@ export function PageResultsNew(_props: {}) {
     const buildOwner = 'mgrabovs';
     const gatingTag = 'rhel-8.7.0-build-sidetag-101738-stack-gate';
     const taskId = params.task_id ? Number(params.task_id) : 47942709;
+    const artifact: ArtifactRPM = {
+        _id: 'dummy',
+        _updated: 'dummy',
+        _version: 'dummy',
+        aid: taskId.toString(),
+        resultsdb_testscase: [],
+        states: [],
+        type: 'brew-build',
+        payload: {
+            build_id: 2181999,
+            component: 'ansible-collection-microsoft-sql',
+            gate_tag_name: gatingTag,
+            issuer: 'mgrabovs',
+            nvr: buildNvr,
+            source: 'https://example.com/git/0432ca7d',
+            scratch: false,
+            task_id: taskId,
+        },
+    };
 
     /*
      * TODO: Load build info and test results if `taskId` is specified.
@@ -94,7 +114,7 @@ export function PageResultsNew(_props: {}) {
                             direction={{ default: 'column' }}
                         >
                             <Card>
-                                <BuildInfo />
+                                <BuildInfo artifact={artifact} />
                             </Card>
                             <Card>
                                 <TestResultsTable
