@@ -112,10 +112,11 @@ const NoData: React.FC<NoDataProps> = (props) => {
     );
 };
 
-interface LoadingDataProps {
+export interface LoadingDataProps {
     show: boolean;
 }
-const LoadingData: React.FC<LoadingDataProps> = (props) => {
+
+export const LoadingData: React.FC<LoadingDataProps> = (props) => {
     const { show } = props;
     if (!show) {
         return null;
@@ -342,21 +343,20 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
     );
 };
 
-interface LinkedAdvisoriesProps {
-    linkedAdvisories: ErrataLinkedAdvisory[] | undefined;
+export interface LinkedAdvisoriesProps {
+    linkedAdvisories?: ErrataLinkedAdvisory[];
 }
-const LinkedAdvisories: React.FC<LinkedAdvisoriesProps> = (props) => {
+
+export const LinkedAdvisories: React.FC<LinkedAdvisoriesProps> = (props) => {
     const { linkedAdvisories } = props;
     if (_.isNil(linkedAdvisories)) {
         return (
-            <Flex className="pf-u-p-lg">
-                <Alert
-                    isInline
-                    isPlain
-                    title="No advisories linked to this artifact"
-                    variant="info"
-                />
-            </Flex>
+            <Alert
+                isInline
+                isPlain
+                title="No advisories linked to this artifact"
+                variant="info"
+            />
         );
     }
     const advs: JSX.Element[] = [];

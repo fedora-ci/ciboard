@@ -38,22 +38,25 @@ import {
     TabTitleText,
     Title,
 } from '@patternfly/react-core';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { useQuery } from '@apollo/client';
 import classNames from 'classnames';
 
 import styles from '../../custom.module.css';
-import { ExternalLink } from '../ExternalLink';
 import {
     ArtifactRPM,
     KojiBuildInfo,
     KojiInstanceType,
     koji_instance,
 } from '../../artifact';
-import { useQuery } from '@apollo/client';
 import {
     ArtifactsDetailedInfoKojiTask,
     ArtifactsDetailedInfoKojiTaskData,
 } from '../../queries/Artifacts';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import {
+    ErrataLinkedAdvisoriesReply,
+    LinkedErrataAdvisories,
+} from '../../queries/Errata';
 import {
     mkCommitHashFromSource,
     mkLinkKojiWebBuildId,
@@ -64,8 +67,11 @@ import { secondsToTimestampWithTz } from '../../utils/timeUtils';
 import {
     HistoryList,
     LimitWithScroll,
+    LinkedAdvisories,
+    LoadingData,
     TagsList,
 } from '../ArtifactDetailedInfo';
+import { ExternalLink } from '../ExternalLink';
 
 interface BuildMetadataProps {
     build: KojiBuildInfo;
@@ -215,6 +221,11 @@ export function BuildInfo(props: BuildInfoProps) {
 
     const kojiInstance = koji_instance(artifact.type);
 
+    /*
+     * Fetch available information about the build -- NVR, commit and build time,
+     * source URL, build owner, tags and tagging history, and gating status (if
+     * available).
+     */
     const { data, error, loading } =
         useQuery<ArtifactsDetailedInfoKojiTaskData>(
             ArtifactsDetailedInfoKojiTask,
@@ -227,6 +238,15 @@ export function BuildInfo(props: BuildInfoProps) {
                 errorPolicy: 'all',
             },
         );
+
+    // Fetch information on related advisories (errata).
+    const { loading: loadingAdvisories, data: dataAdvisories } =
+        useQuery<ErrataLinkedAdvisoriesReply>(LinkedErrataAdvisories, {
+            variables: {
+                nvrs: [artifact.payload.nvr],
+            },
+            errorPolicy: 'all',
+        });
 
     if (loading) {
         return <BuildInfoLoading />;
@@ -241,6 +261,9 @@ export function BuildInfo(props: BuildInfoProps) {
     if (!build) {
         return <BuildInfoEmpty />;
     }
+
+    const advisoryCount =
+        dataAdvisories?.teiid_et_linked_advisories?.length || 0;
 
     return (
         <Tabs
@@ -280,16 +303,23 @@ export function BuildInfo(props: BuildInfoProps) {
             <Tab
                 eventKey="advisories"
                 title={
-                    // TODO: Replace with real advisories count.
                     <TabTitleText>
-                        Related advisories <Badge isRead>14</Badge>
+                        Related advisories{' '}
+                        {advisoryCount > 0 && (
+                            <Badge isRead>{advisoryCount}</Badge>
+                        )}
                     </TabTitleText>
                 }
             >
                 <CardBody>
-                    {/* TODO: List real advisories. See `LinkedAdvisories` in `ArtifactDetailedInfo.tsx`. */}
-                    Advisories (errata) related to this build will be listed
-                    here.
+                    <LoadingData show={loadingAdvisories} />
+                    <LimitWithScroll>
+                        <LinkedAdvisories
+                            linkedAdvisories={
+                                dataAdvisories?.teiid_et_linked_advisories
+                            }
+                        />
+                    </LimitWithScroll>
                 </CardBody>
             </Tab>
         </Tabs>
