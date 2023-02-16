@@ -692,29 +692,43 @@ const SATISFIED_REQUIREMENT_TYPES: GreenwaveRequirementTypesType[] = [
     'test-result-passed',
 ];
 
+const isRequirementSatisfied = (state: StateGreenwaveType): boolean =>
+    _.includes(SATISFIED_REQUIREMENT_TYPES, state.requirement?.type);
+
 /**
  * Should we display a waive button for this result in the dashboard?
  * Show the button only if the test is blocking gating.
  * @param state The state object of the test result in question.
  */
-export const isResultWaivable = (state: StateGreenwaveType): boolean =>
-    !_.includes(SATISFIED_REQUIREMENT_TYPES, state.requirement?.type);
+export const isResultWaivable = (state: StateType): boolean => {
+    if (isGreenwaveKaiState(state)) return !isRequirementSatisfied(state.gs);
+    if (isGreenwaveState(state)) return !isRequirementSatisfied(state);
+    return false;
+};
+
+/**
+ * List of Greenwave requirement types that we consider as missing.
+ */
+const MISSING_REQUIREMENT_TYPES: GreenwaveRequirementTypesType[] = [
+    'missing-gating-yaml',
+    'missing-gating-yaml-waived',
+    'test-result-missing',
+    'test-result-missing-waived',
+];
+
+const isRequirementMissing = (state: StateGreenwaveType): boolean =>
+    _.includes(MISSING_REQUIREMENT_TYPES, state.requirement?.type);
 
 /**
  * Check if the Greenwave state is missing the required test result.
  * @param state The Greenwave state to check.
  * @returns `true` if the required result is missing in Greenwave, `false` otherwise.
  */
-export const isResultMissing = (state: StateGreenwaveType): boolean =>
-    _.includes(
-        [
-            'missing-gating-yaml',
-            'missing-gating-yaml-waived',
-            'test-result-missing',
-            'test-result-missing-waived',
-        ],
-        state.requirement?.type,
-    );
+export const isResultMissing = (state: StateType): boolean => {
+    if (isGreenwaveKaiState(state)) return isRequirementMissing(state.gs);
+    if (isGreenwaveState(state)) return isRequirementMissing(state);
+    return false;
+};
 
 export const timestampForUser = (
     timestamp: string,
