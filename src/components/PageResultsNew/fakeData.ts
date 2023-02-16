@@ -26,28 +26,28 @@ import { CiTest, TestCase, TestSuite } from './types';
  */
 export const FAKE_TESTS: CiTest[] = [
     {
-        isWaivable: true,
         labels: ['rhel-linux_P9', 'ppc64le', 'python3-libvirt'],
         name: 'leapp.brew-build.upgrade.distro',
         required: true,
         status: 'failed',
         subtitle: 'Depends on osci.brew-build.test-compose.integration.',
+        waivable: true,
     },
     {
-        isWaivable: true,
         labels: ['ppc64le'],
         name: 'baseos-ci.brew-build.ci-dnf-stack-gating.functional',
         required: true,
         status: 'error',
         subtitle:
             'Test failed because of CI infrastructure. Please contact the CI system maintainers.',
+        waivable: true,
     },
     {
-        isWaivable: true,
         labels: ['x86_64'],
         name: 'redhat-cloud-client-configuration.brew-build.tier0.functional',
         required: true,
         status: 'missing',
+        waivable: true,
     },
     {
         name: 'osci.brew-build.virtual.always-running',

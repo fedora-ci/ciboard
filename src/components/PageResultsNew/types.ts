@@ -25,17 +25,18 @@ export type TestStatus =
     | 'passed'
     | 'queued'
     | 'running'
+    | 'unknown'
     | 'waived';
 
 export type TestCaseStatus = 'fail' | 'pass' | 'skip';
 
 export interface CiTest {
-    isWaivable?: boolean;
     labels?: string[];
     name: string;
     required?: boolean;
     status: TestStatus;
     subtitle?: string;
+    waivable?: boolean;
 }
 
 export interface TestCase {
