@@ -204,7 +204,6 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         />
     ) : null;
 
-    // TODO: Persist the drawer width across pages/sessions.
     const panelContent = (
         <DrawerPanelContent
             defaultSize={drawerSize}
@@ -224,7 +223,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         default: 'spaceItemsLg',
                     }}
                 >
-                    {selectedTest?.isWaivable && (
+                    {selectedTest?.waivable && (
                         <Button
                             className="pf-u-p-0"
                             icon={<ThumbsUpIcon />}

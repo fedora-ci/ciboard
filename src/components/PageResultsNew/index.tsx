@@ -19,6 +19,8 @@
  */
 
 import * as _ from 'lodash';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import {
     Bullseye,
     Card,
@@ -30,27 +32,106 @@ import {
     Spinner,
     Title,
 } from '@patternfly/react-core';
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-
-import { config } from '../../config';
-import { PageCommon } from '../PageCommon';
-import { isArtifactRPM } from '../../artifact';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { useQuery } from '@apollo/client';
 
 import './index.css';
-import { CiTest } from './types';
-import { SelectedTestContext } from './contexts';
-import { FAKE_TESTS } from './fakeData';
-import { TestResultsTable } from './TestResultsTable';
-import { BuildInfo } from './BuildInfo';
-import { DetailsDrawer } from './DetailsDrawer';
-import { ArtifactHeader } from './Header';
-import { useQuery } from '@apollo/client';
 import {
     ArtifactsCompleteQuery,
     ArtifactsCompleteQueryData,
 } from '../../queries/Artifacts';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { config } from '../../config';
+import {
+    Artifact,
+    isArtifactRPM,
+    StateExtendedNameType,
+    StateType,
+} from '../../artifact';
+import {
+    getTestcaseName,
+    isGreenwaveKaiState,
+    isGreenwaveState,
+    isResultWaivable,
+} from '../../utils/artifactUtils';
+import { mkStagesAndStates } from '../../utils/stages_states';
+import { CiTest, TestStatus } from './types';
+import { SelectedTestContext } from './contexts';
+import { TestResultsTable } from './TestResultsTable';
+import { BuildInfo } from './BuildInfo';
+import { DetailsDrawer } from './DetailsDrawer';
+import { ArtifactHeader } from './Header';
+import { PageCommon } from '../PageCommon';
+
+// TODO: This function is temporary only and will be removed once the UI is finalized.
+function transformStatus(stateName: StateExtendedNameType): TestStatus {
+    if (['error', 'test-result-errored'].includes(stateName)) {
+        return 'error';
+    } else if (['failed', 'test-result-failed'].includes(stateName)) {
+        return 'failed';
+    } else if (
+        [
+            'missing-gating-yaml',
+            'missing-gating-yaml-waived',
+            'test-result-missing',
+            'test-result-missing-waived',
+        ].includes(stateName)
+    ) {
+        return 'missing';
+    } else if (
+        [
+            'passed',
+            'complete',
+            'test-result-passed',
+            /*
+             * TODO: Handle this more approriately. This is just a flag used by
+             * Greenwave, but the outcome can be anything from `running` to `passed`
+             * to `failed` or `not_applicable`.
+             */
+            'additional-tests',
+        ].includes(stateName)
+    ) {
+        return 'passed';
+    } else if (['queued'].includes(stateName)) {
+        return 'queued';
+    } else if (['running'].includes(stateName)) {
+        return 'running';
+    } else if (stateName.endsWith('-waived')) {
+        return 'waived';
+    }
+    /*
+     * TODO: Handle `info`, `needs_inspection`, `not_applicable`
+     * and `*-gating-yaml` + `excluded`/`blacklisted` statuses.
+     */
+    return 'unknown';
+}
+
+// TODO: This function is temporary only and will be removed once the UI is finalized.
+function transformTest(
+    test: StateType,
+    stateName: StateExtendedNameType,
+): CiTest {
+    const name = getTestcaseName(test);
+    const required =
+        (isGreenwaveState(test) || isGreenwaveKaiState(test)) &&
+        stateName !== 'additional-tests';
+    let status = transformStatus(stateName);
+    if (isGreenwaveState(test) && test.result && status !== 'waived')
+        status = test.result.outcome.toLowerCase() as TestStatus;
+    if (isGreenwaveKaiState(test) && test.gs.result && status !== 'waived')
+        status = test.gs.result.outcome.toLowerCase() as TestStatus;
+    const waivable = isResultWaivable(test);
+
+    return { name, required, status, waivable };
+}
+
+// TODO: This function is temporary only and will be removed once the UI is finalized.
+function extractTests(artifact: Artifact): CiTest[] {
+    const stagesStates = mkStagesAndStates(artifact);
+    const tests = stagesStates.flatMap(([_stage, stateName, tests]) =>
+        tests.map((test) => transformTest(test, stateName)),
+    );
+    return _.sortBy(tests, (test) => test.name);
+}
 
 interface PageResultsNewParams {
     aid?: string;
@@ -89,17 +170,6 @@ export function PageResultsNew(_props: {}) {
      * - list of artifacts: ArtifactsCompleteQuery
      * For details, see `PageByMongoField`.
      */
-
-    // TODO: Use unique key later on.
-    const onTestSelect = (name: string | undefined) => {
-        if (name) {
-            if (name === selectedTest?.name) setSelectedTest(undefined);
-            else
-                setSelectedTest(
-                    _.find(FAKE_TESTS, (test) => test.name === name),
-                );
-        } else setSelectedTest(undefined);
-    };
 
     const artifact = data?.artifacts.artifacts?.[0];
     const haveData = !_.isNil(artifact) && !error && !loading;
@@ -144,6 +214,16 @@ export function PageResultsNew(_props: {}) {
         );
     }
 
+    const tests = extractTests(artifact);
+
+    // TODO: Use unique key later on.
+    const onTestSelect = (name: string | undefined) => {
+        if (name) {
+            if (name === selectedTest?.name) setSelectedTest(undefined);
+            else setSelectedTest(_.find(tests, (test) => test.name === name));
+        } else setSelectedTest(undefined);
+    };
+
     return (
         <PageCommon title={pageTitle}>
             <SelectedTestContext.Provider value={selectedTest}>
@@ -168,7 +248,7 @@ export function PageResultsNew(_props: {}) {
                             <Card>
                                 <TestResultsTable
                                     onSelect={onTestSelect}
-                                    tests={FAKE_TESTS}
+                                    tests={tests}
                                 />
                             </Card>
                         </Flex>

@@ -18,8 +18,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import * as _ from 'lodash';
 import { ReactNode, useContext } from 'react';
-import { Button, Flex, Label, Title } from '@patternfly/react-core';
+import {
+    Alert,
+    Button,
+    CardBody,
+    Flex,
+    Label,
+    Title,
+} from '@patternfly/react-core';
 import {
     TableComposable,
     Tbody,
@@ -181,7 +189,18 @@ export function TestResultsTable(props: TestResultsTableProps) {
     const { tests } = props;
     const selectedTest = useContext(SelectedTestContext);
 
-    // TODO: Handle the empty case, i.e. when there are no (known) tests.
+    if (_.isEmpty(tests)) {
+        return (
+            <CardBody>
+                <Alert
+                    isInline
+                    isPlain
+                    title="No test results found for this artifact"
+                    variant="info"
+                />
+            </CardBody>
+        );
+    }
 
     const failedRequiredRows = tests
         .filter(
@@ -202,7 +221,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                 <Td>
                     <SingleTestRow
                         isRequired
-                        isWaivable={row.isWaivable}
+                        isWaivable={row.waivable}
                         isWaived={row.status === 'waived'}
                         labels={row.labels}
                         name={row.name}
@@ -235,7 +254,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                 <Td>
                     <SingleTestRow
                         isRequired
-                        isWaivable={row.isWaivable}
+                        isWaivable={row.waivable}
                         isWaived={row.status === 'waived'}
                         labels={row.labels}
                         name={row.name}
@@ -295,10 +314,19 @@ export function TestResultsTable(props: TestResultsTableProps) {
             </Tr>
         ));
 
+    /*
+     * TODO: Refactor the table for readability.
+     * TODO: Sorts tests within sections:
+     *      - in failed: alphabetically
+     *      - in awaited: missing first, then running, then alphabetically
+     *      - in passed: waived first, then alphabetically
+     *      - in additional: failed+errored+needs_inspection first,
+     *          then info/not_applicable, then
+     * TODO: Where to put waived tests in this order?
+     */
     return (
         <TableComposable variant="compact">
-            {/* TODO: Where to put waived tests in this order? */}
-            {failedRequiredRows.length && (
+            {failedRequiredRows.length > 0 && (
                 <>
                     <Thead>
                         <Tr>
@@ -311,7 +339,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                     <Tbody>{failedRequiredRows}</Tbody>
                 </>
             )}
-            {awaitedRequiredRows.length && (
+            {awaitedRequiredRows.length > 0 && (
                 <>
                     <Thead>
                         <Tr>
@@ -324,7 +352,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                     <Tbody>{awaitedRequiredRows}</Tbody>
                 </>
             )}
-            {passedRequiredRows.length && (
+            {passedRequiredRows.length > 0 && (
                 <>
                     <Thead>
                         <Tr>
@@ -337,7 +365,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                     <Tbody>{passedRequiredRows}</Tbody>
                 </>
             )}
-            {additionalRows.length && (
+            {additionalRows.length > 0 && (
                 <>
                     <Thead>
                         <Tr>
