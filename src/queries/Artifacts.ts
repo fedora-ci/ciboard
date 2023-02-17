@@ -60,6 +60,21 @@ const statesFragment = gql`
     ${stateEntryFragment}
 `;
 
+const etaStatesFragment = gql`
+    fragment EtaStatesFragment on ArtifactType {
+        _id
+        states_eta {
+            broker_msg_body
+            kai_state {
+                msg_id
+                version
+                timestamp
+            }
+        }
+    }
+    ${stateEntryFragment}
+`;
+
 /**
 export const ArtifactsQuery = gql`
     query Artifacts(
@@ -237,12 +252,14 @@ export const ArtifactsCompleteQuery = gql`
             artifacts {
                 ...MainFragment
                 ...StatesFragment
+                ...EtaStatesFragment
                 ...GreenwaveDecisionFragment
             }
         }
     }
     ${mainFragment}
     ${statesFragment}
+    ${etaStatesFragment}
     ${greenwaveDecisionFragment}
 `;
 
