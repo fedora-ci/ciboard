@@ -39,12 +39,15 @@ import {
     Tab,
     TabTitleText,
     Tabs,
+    HelperText,
+    HelperTextItem,
+    HelperTextItemProps,
 } from '@patternfly/react-core';
 import classNames from 'classnames';
 
-import { config } from '../config';
+import { config, mappingDatagrepperUrl } from '../config';
 import styles from '../custom.module.css';
-import { TabClickHandlerType } from '../types';
+import { ErrataAutomationBugCiStatus, TabClickHandlerType } from '../types';
 import {
     ArtifactsDetailedInfoKojiTask,
     ArtifactsDetailedInfoKojiTaskData,
@@ -67,6 +70,7 @@ import {
     ErrataLinkedAdvisory,
 } from '../artifact';
 import {
+    LinkifyNewTab,
     mkCommitHashFromSource,
     mkLinkFileInGit,
     mkLinkKojiWebBuildId,
@@ -84,7 +88,10 @@ import {
     Tbody,
     Thead,
     TableComposable,
+    Caption,
 } from '@patternfly/react-table';
+import { LinkIcon } from '@patternfly/react-icons';
+import Linkify from 'linkify-react';
 
 interface NoDataProps {
     show: boolean;
@@ -315,6 +322,15 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
             </Tab>
             <Tab
                 eventKey={3}
+                title={<TabTitleText>Errata Automation</TabTitleText>}
+            >
+                <LoadingData show={loadingETState} />
+                <LimitWithScroll>
+                    <ErrataAutomation artifact={artifact} />
+                </LimitWithScroll>
+            </Tab>
+            <Tab
+                eventKey={4}
                 title={<TabTitleText>Related Advisories</TabTitleText>}
             >
                 <LoadingData show={loadingETState} />
@@ -380,6 +396,108 @@ const LinkedAdvisories: React.FC<LinkedAdvisoriesProps> = (props) => {
             </Thead>
             <Tbody>{advs}</Tbody>
         </TableComposable>
+    );
+};
+
+const ErrataAutomationBugCiStatusHumanReadable: {
+    [key in ErrataAutomationBugCiStatus]: string;
+} = {
+    BUG_READY: 'ready',
+    BUG_IN_ADVISORY: 'in advisory',
+    BUG_VERIFIED_TESTED_MISSING: 'Verified:Tested missing',
+};
+
+interface ErrataAutomationProps {
+    artifact: Artifact;
+}
+const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
+    const { artifact } = props;
+    const latestState = artifact.states_eta?.[0];
+    if (_.isNil(latestState)) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <Alert
+                    isInline
+                    isPlain
+                    title="No Errata Tool Automation activity known for this artifact"
+                    variant="info"
+                />
+            </Flex>
+        );
+    }
+    const advs: JSX.Element[] = [];
+    const brokerMessage = latestState.broker_msg_body;
+    const bugs = brokerMessage.bugs;
+    for (const bug of bugs) {
+        const bugCiState =
+            ErrataAutomationBugCiStatusHumanReadable[bug.ci_status] ||
+            'Unknown';
+        advs.push(
+            <Tr key={bug.id}>
+                <Td dataLabel="bug">
+                    <a
+                        href={`${config.et.url}/advisory/${bug.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {bug.id}
+                    </a>
+                </Td>
+                <Td dataLabel="state">{bugCiState}</Td>
+                <Td dataLabel="fixed in">{bug.fixed_in_version}</Td>
+                <Td dataLabel="summary">{bug.summary}</Td>
+            </Tr>,
+        );
+    }
+    const brokerMsgUrl: string = new URL(
+        `id?id=${latestState.kai_state.msg_id}&is_raw=true&size=extra-large`,
+        mappingDatagrepperUrl[artifact.type],
+    ).toString();
+    const etaState: HelperTextItemProps['variant'] =
+        brokerMessage.ci_run_outcome === 'CREATED' ? 'success' : 'warning';
+    return (
+        <>
+            <HelperText>
+                <HelperTextItem hasIcon variant={etaState}>
+                    <LinkifyNewTab>
+                        {brokerMessage.ci_run_explanation}
+                    </LinkifyNewTab>
+                </HelperTextItem>
+            </HelperText>
+            <TableComposable
+                aria-label="Errata Automation State Table"
+                variant="compact"
+                borders={false}
+            >
+                <Thead>
+                    <Tr>
+                        <Th>Bug</Th>
+                        <Th>State</Th>
+                        <Th>Fixed in</Th>
+                        <Th>Summary</Th>
+                    </Tr>
+                </Thead>
+                <Tbody>{advs}</Tbody>
+            </TableComposable>
+            <small>
+                <a
+                    href={`${brokerMsgUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Errata Tool Automation UMB message"
+                >
+                    UMB message
+                </a>{' '}
+                <a
+                    href={`${brokerMessage.ci_run_url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Errata Tool Automation run"
+                >
+                    Pipeline run
+                </a>
+            </small>
+        </>
     );
 };
 

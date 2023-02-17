@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -347,6 +347,57 @@ export namespace MSG_V_0_1 {
 }
 
 export type BrokerMessagesType = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;
+
+/**
+ * Based on all possible outcomes from: https://gitlab.cee.redhat.com/osci/errata-automation/-/blob/master/main.py
+ */
+type ErrataAutomationOutcome =
+    | 'FAILED'
+    | 'CREATED'
+    | 'MODIFIED'
+    | 'UNCHANGED'
+    | 'BUGLISTUPDATED';
+
+export type ErrataAutomationBugCiStatus =
+    | 'BUG_READY'
+    | 'BUG_IN_ADVISORY'
+    | 'BUG_VERIFIED_TESTED_MISSING';
+
+/**
+ * Information how bug affected on this Errata Automation
+ */
+type ErrataAutomationBugInfo = {
+    /* What is the type of this bug from errata_automation POW */
+    ci_status: ErrataAutomationBugCiStatus;
+    /* NVR where this bug is fixed */
+    fixed_in_version: string;
+    /* Bugzilla bug numbe */
+    id: number;
+    /* Bugzilla bug status, example: ASSIGNED */
+    status: string;
+    /* Bugzilla bug summary */
+    summary: string;
+};
+
+/**
+ * Related Jira tickets:
+ *
+ *    https://issues.redhat.com/browse/OSCI-4011
+ */
+export type EtaBrokerMessagesType = {
+    /** https://errata.devel.redhat.com/advisory/109137 */
+    advisory_url: string;
+    bugs: ErrataAutomationBugInfo[];
+    /** Example: 'updated advisory: https://errata.devel.redhat.com/advisory/109137' */
+    ci_run_explanation: string;
+    ci_run_outcome: ErrataAutomationOutcome;
+    /** https://jenkins.prod.osci.redhat.com/job/errata-tool-automation/job/et-automation-rhel/895/ */
+    ci_run_url: string;
+    /** iso 8601 string. */
+    msg_time: '2023-02-01T14:38:55.987655';
+    /** message schema version format according to https://semver.org/ */
+    msg_version: string;
+};
 
 export type TabClickHandlerType = Extract<TabsProps['onSelect'], Function>;
 
