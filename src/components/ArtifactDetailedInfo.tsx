@@ -435,13 +435,9 @@ const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
         advs.push(
             <Tr key={bug.id}>
                 <Td dataLabel="bug">
-                    <a
-                        href={`${config.et.url}/advisory/${bug.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
+                    <ExternalLink href={`${config.et.url}/advisory/${bug.id}`}>
                         {bug.id}
-                    </a>
+                    </ExternalLink>
                 </Td>
                 <Td dataLabel="state">{bugCiState}</Td>
                 <Td dataLabel="fixed in">{bug.fixed_in_version}</Td>
