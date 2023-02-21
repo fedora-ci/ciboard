@@ -367,7 +367,7 @@ export type ErrataAutomationBugCiStatus =
  * Information how bug affected on this Errata Automation
  */
 type ErrataAutomationBugInfo = {
-    /* What is the type of this bug from errata_automation POW */
+    /* Type of bug from errata_automation point of view */
     ci_status: ErrataAutomationBugCiStatus;
     /* NVR where this bug is fixed */
     fixed_in_version: string;
