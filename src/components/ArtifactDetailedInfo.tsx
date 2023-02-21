@@ -477,7 +477,7 @@ const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
             </TableComposable>
             <small>
                 <a
-                    href={`${brokerMsgUrl}`}
+                    href={brokerMsgUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Errata Tool Automation UMB message"
