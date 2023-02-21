@@ -371,7 +371,7 @@ type ErrataAutomationBugInfo = {
     ci_status: ErrataAutomationBugCiStatus;
     /* NVR where this bug is fixed */
     fixed_in_version: string;
-    /* Bugzilla bug numbe */
+    /* Bugzilla bug number */
     id: number;
     /* Bugzilla bug status, example: ASSIGNED */
     status: string;
