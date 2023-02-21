@@ -394,7 +394,7 @@ export type EtaBrokerMessagesType = {
     /** https://jenkins.prod.osci.redhat.com/job/errata-tool-automation/job/et-automation-rhel/895/ */
     ci_run_url: string;
     /** iso 8601 string. */
-    msg_time: '2023-02-01T14:38:55.987655';
+    msg_time: string;
     /** message schema version format according to https://semver.org/ */
     msg_version: string;
 };
