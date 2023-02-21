@@ -68,6 +68,7 @@ import {
     KojiBuildTagging,
     KojiInstanceType,
     ErrataLinkedAdvisory,
+    StateErrataToolAutomationType,
 } from '../artifact';
 import {
     LinkifyNewTab,
@@ -88,10 +89,7 @@ import {
     Tbody,
     Thead,
     TableComposable,
-    Caption,
 } from '@patternfly/react-table';
-import { LinkIcon } from '@patternfly/react-icons';
-import Linkify from 'linkify-react';
 
 interface NoDataProps {
     show: boolean;
@@ -407,6 +405,17 @@ const ErrataAutomationBugCiStatusHumanReadable: {
     BUG_VERIFIED_TESTED_MISSING: 'Verified:Tested missing',
 };
 
+const getEtaMessageUrl = (
+    artifact: Artifact,
+    state: StateErrataToolAutomationType,
+) => {
+    const brokerMsgUrl: string = new URL(
+        `id?id=${state.kai_state.msg_id}&is_raw=true&size=extra-large`,
+        mappingDatagrepperUrl[artifact.type],
+    ).toString();
+    return brokerMsgUrl;
+};
+
 interface ErrataAutomationProps {
     artifact: Artifact;
 }
@@ -445,10 +454,7 @@ const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
             </Tr>,
         );
     }
-    const brokerMsgUrl: string = new URL(
-        `id?id=${latestState.kai_state.msg_id}&is_raw=true&size=extra-large`,
-        mappingDatagrepperUrl[artifact.type],
-    ).toString();
+    const brokerMsgUrl = getEtaMessageUrl(artifact, latestState);
     const etaState: HelperTextItemProps['variant'] =
         brokerMessage.ci_run_outcome === 'CREATED' ? 'success' : 'warning';
     return (
