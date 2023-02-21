@@ -485,7 +485,7 @@ const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
                     UMB message
                 </a>{' '}
                 <a
-                    href={`${brokerMessage.ci_run_url}`}
+                    href={brokerMessage.ci_run_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Errata Tool Automation run"
