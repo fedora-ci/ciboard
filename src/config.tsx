@@ -77,6 +77,7 @@ export const config = {
     },
     et: {
         url: 'https://errata.engineering.redhat.com/',
+        bz: 'https://bugzilla.redhat.com/',
     },
 };
 
