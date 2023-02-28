@@ -437,24 +437,30 @@ const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
     const advs: JSX.Element[] = [];
     const brokerMessage = latestState.broker_msg_body;
     const bugs = brokerMessage.bugs;
-    for (const bug of bugs) {
-        const bugCiState =
-            ErrataAutomationBugCiStatusHumanReadable[bug.ci_status] ||
-            'Unknown';
-        advs.push(
-            <Tr key={bug.id}>
-                <Td dataLabel="bug">
-                    <ExternalLink
-                        href={`${config.et.bz}/show_bug.cgi?id=${bug.id}`}
-                    >
-                        {bug.id}
-                    </ExternalLink>
-                </Td>
-                <Td dataLabel="state">{bugCiState}</Td>
-                <Td dataLabel="fixed in">{bug.fixed_in_version}</Td>
-                <Td dataLabel="summary">{bug.summary}</Td>
-            </Tr>,
-        );
+    /*
+     * FIXME: Temporary workaround until the changes from the following patch propagate:
+     * https://gitlab.cee.redhat.com/osci/errata-automation/-/merge_requests/252/
+     */
+    if (!_.isEmpty(bugs)) {
+        for (const bug of bugs) {
+            const bugCiState =
+                ErrataAutomationBugCiStatusHumanReadable[bug.ci_status] ||
+                'Unknown';
+            advs.push(
+                <Tr key={bug.id}>
+                    <Td dataLabel="bug">
+                        <ExternalLink
+                            href={`${config.et.bz}/show_bug.cgi?id=${bug.id}`}
+                        >
+                            {bug.id}
+                        </ExternalLink>
+                    </Td>
+                    <Td dataLabel="state">{bugCiState}</Td>
+                    <Td dataLabel="fixed in">{bug.fixed_in_version}</Td>
+                    <Td dataLabel="summary">{bug.summary}</Td>
+                </Tr>,
+            );
+        }
     }
     const brokerMsgUrl = getEtaMessageUrl(artifact, latestState);
     const etaState: HelperTextItemProps['variant'] =
