@@ -201,6 +201,15 @@ export type GreenwaveRequirementType = {
     item: { type: ArtifactType; identifier: string };
 };
 
+export type GreenwaveRequirementOutcome =
+    | 'INFO'
+    | 'ERROR'
+    | 'PASSED'
+    | 'FAILED'
+    | 'RUNNING'
+    | 'NOT_APPLICABLE'
+    | 'NEEDS_INSPECTION';
+
 /**
  * Based on documentation from:
  * https://pagure.io/greenwave/blob/master/f/greenwave/api_v1.py
@@ -258,14 +267,7 @@ export type GreenwaveResultType = {
      * https://pagure.io/fedora-ci/messages/blob/master/f/mappings/results/brew-build.test.complete.yaml#_3
      * https://pagure.io/fedora-ci/messages/blob/master/f/mappings/results/brew-build.test.error.yaml#_3
      */
-    outcome:
-        | 'INFO'
-        | 'ERROR'
-        | 'PASSED'
-        | 'FAILED'
-        | 'RUNNING'
-        | 'NOT_APPLICABLE'
-        | 'NEEDS_INSPECTION';
+    outcome: GreenwaveRequirementOutcome;
     /**
      * ref_url - always run.url, for old and new mapping:
      * https://github.com/release-engineering/resultsdb-updater/blob/master/resultsdbupdater/utils.py#L343
