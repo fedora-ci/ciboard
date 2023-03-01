@@ -43,6 +43,7 @@ import {
 import { config } from '../../config';
 import {
     Artifact,
+    GreenwaveRequirementOutcome,
     isArtifactRPM,
     StateExtendedNameType,
     StateType,
@@ -63,7 +64,7 @@ import { ArtifactHeader } from './Header';
 import { PageCommon } from '../PageCommon';
 
 // TODO: This function is temporary only and will be removed once the UI is finalized.
-function transformStatus(stateName: StateExtendedNameType): TestStatus {
+function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
     if (['error', 'test-result-errored'].includes(stateName)) {
         return 'error';
     } else if (['failed', 'test-result-failed'].includes(stateName)) {
@@ -99,10 +100,20 @@ function transformStatus(stateName: StateExtendedNameType): TestStatus {
         return 'waived';
     }
     /*
-     * TODO: Handle `info`, `needs_inspection`, `not_applicable`
+     * TODO: Handle `info`, `needs_inspection` (→ error/warning),
+     * `not_applicable` (→ info)
      * and `*-gating-yaml` + `excluded`/`blacklisted` statuses.
      */
     return 'unknown';
+}
+
+// TODO: This function is temporary only and will be removed once the UI is finalized.
+function transformGreenwaveOutcome(
+    outcome: GreenwaveRequirementOutcome,
+): TestStatus {
+    if (outcome === 'PASSED') return 'passed';
+    if (outcome === 'RUNNING') return 'running';
+    return 'failed';
 }
 
 // TODO: This function is temporary only and will be removed once the UI is finalized.
@@ -114,11 +125,16 @@ function transformTest(
     const required =
         (isGreenwaveState(test) || isGreenwaveKaiState(test)) &&
         stateName !== 'additional-tests';
-    let status = transformStatus(stateName);
-    if (isGreenwaveState(test) && test.result && status !== 'waived')
-        status = test.result.outcome.toLowerCase() as TestStatus;
-    if (isGreenwaveKaiState(test) && test.gs.result && status !== 'waived')
-        status = test.gs.result.outcome.toLowerCase() as TestStatus;
+    let status = transformUmbStatus(stateName);
+    if (isGreenwaveState(test) && test.result && status !== 'waived') {
+        status = transformGreenwaveOutcome(test.result.outcome);
+    } else if (
+        isGreenwaveKaiState(test) &&
+        test.gs.result &&
+        status !== 'waived'
+    ) {
+        status = transformGreenwaveOutcome(test.gs.result.outcome);
+    }
     const waivable = isResultWaivable(test);
 
     return { name, required, status, waivable };
