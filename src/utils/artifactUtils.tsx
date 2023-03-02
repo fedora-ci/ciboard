@@ -250,6 +250,23 @@ export function getUmbDocsUrl(
 export const getGreenwaveDocsUrl = (state: StateGreenwaveType) =>
     state.result?.testcase.ref_url;
 
+/**
+ * Extract the URL to re-run a test. This is typically a link to a Jenkins instance.
+ * @param state Gating state response object from backend.
+ * @returns URL to re-run the test or `undefined` if no URL is available.
+ */
+export function getRerunUrl(state: StateType): string | undefined {
+    // Prefer URL from UMB message, if present.
+    if (isKaiState(state)) return state.broker_msg_body.run.rebuild;
+    if (isGreenwaveKaiState(state)) {
+        let rerunUrl = state.ks.broker_msg_body.run.rebuild;
+        // Try to fall back to URL stored in ResultsDB.
+        if (!rerunUrl) rerunUrl = state.gs.result?.data.rebuild?.[0];
+        return rerunUrl;
+    }
+    if (isGreenwaveState(state)) return state.result?.data.rebuild?.[0];
+}
+
 export const resultColors = {
     '--pf-global--success-color--100': [
         'complete',
