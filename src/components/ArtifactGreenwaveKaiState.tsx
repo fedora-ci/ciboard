@@ -56,6 +56,7 @@ import {
 import styles from '../custom.module.css';
 import { Artifact, StateGreenwaveKaiType } from '../artifact';
 import {
+    getRerunUrl,
     getUmbDocsUrl,
     isResultWaivable,
     TestStatusIcon,
@@ -94,7 +95,7 @@ export const GreenwaveKaiStateActions: React.FC<
 > = (props) => {
     const { state, artifact } = props;
     const docsUrl = getUmbDocsUrl(state.ks.broker_msg_body);
-    const rerunUrl = state.ks.broker_msg_body.run.rebuild;
+    const rerunUrl = getRerunUrl(state);
     const showWaiveButton = isResultWaivable(state.gs);
     return (
         <Flex style={{ minWidth: '20em' }}>

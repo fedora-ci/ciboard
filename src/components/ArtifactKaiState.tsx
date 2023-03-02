@@ -61,6 +61,7 @@ import { TestSuites } from './TestSuites';
 import {
     getArtifactProduct,
     getKaiExtendedStatus,
+    getRerunUrl,
     getTestcaseName,
     getThreadID,
     getUmbDocsUrl,
@@ -322,7 +323,7 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
 export const KaiStateActions: React.FC<PropsWithKaiState> = (props) => {
     const { broker_msg_body } = props.state;
     const docsUrl = getUmbDocsUrl(broker_msg_body);
-    const rerunUrl = broker_msg_body.run.rebuild;
+    const rerunUrl = getRerunUrl(props.state);
     return (
         <Flex style={{ minWidth: '20em' }}>
             <Flex flex={{ default: 'flex_1' }}></Flex>
