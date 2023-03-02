@@ -34,6 +34,7 @@ export interface CiTest {
     labels?: string[];
     name: string;
     required?: boolean;
+    rerunUrl?: string;
     status: TestStatus;
     subtitle?: string;
     waivable?: boolean;
