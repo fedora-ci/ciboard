@@ -31,6 +31,7 @@ export type TestStatus =
 export type TestCaseStatus = 'fail' | 'pass' | 'skip';
 
 export interface CiTest {
+    docsUrl?: string;
     labels?: string[];
     name: string;
     required?: boolean;
