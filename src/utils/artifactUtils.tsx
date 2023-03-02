@@ -251,6 +251,22 @@ export const getGreenwaveDocsUrl = (state: StateGreenwaveType) =>
     state.result?.testcase.ref_url;
 
 /**
+ * Extract the URL for the documentation of a CI test.
+ * @param state Gating state response object from backend.
+ * @returns URL of test documentation or `undefined` if none is available.
+ */
+export function getDocsUrl(state: StateType): string | undefined {
+    // Prefer URL from UMB message, if present.
+    if (isKaiState(state)) return getUmbDocsUrl(state.broker_msg_body);
+    if (isGreenwaveState(state)) return getGreenwaveDocsUrl(state);
+    if (isGreenwaveKaiState(state)) {
+        let docsUrl = getUmbDocsUrl(state.ks.broker_msg_body);
+        if (!docsUrl) docsUrl = getGreenwaveDocsUrl(state.gs);
+        return docsUrl;
+    }
+}
+
+/**
  * Extract the URL to re-run a test. This is typically a link to a Jenkins instance.
  * @param state Gating state response object from backend.
  * @returns URL to re-run the test or `undefined` if no URL is available.
@@ -258,13 +274,13 @@ export const getGreenwaveDocsUrl = (state: StateGreenwaveType) =>
 export function getRerunUrl(state: StateType): string | undefined {
     // Prefer URL from UMB message, if present.
     if (isKaiState(state)) return state.broker_msg_body.run.rebuild;
+    if (isGreenwaveState(state)) return state.result?.data.rebuild?.[0];
     if (isGreenwaveKaiState(state)) {
         let rerunUrl = state.ks.broker_msg_body.run.rebuild;
         // Try to fall back to URL stored in ResultsDB.
         if (!rerunUrl) rerunUrl = state.gs.result?.data.rebuild?.[0];
         return rerunUrl;
     }
-    if (isGreenwaveState(state)) return state.result?.data.rebuild?.[0];
 }
 
 export const resultColors = {
