@@ -228,25 +228,34 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         <Button
                             className="pf-u-p-0"
                             icon={<ThumbsUpIcon />}
+                            isDisabled
                             variant="link"
                         >
                             Waive
                         </Button>
                     )}
-                    <Button
-                        className="pf-u-p-0"
-                        icon={<RedoIcon />}
-                        variant="link"
-                    >
-                        Rerun
-                    </Button>
-                    <Button
-                        className="pf-u-p-0"
-                        icon={<BookIcon />}
-                        variant="link"
-                    >
-                        Documentation
-                    </Button>
+                    {selectedTest?.rerunUrl && (
+                        <Button
+                            className="pf-u-p-0"
+                            component={ExternalLink}
+                            href={selectedTest?.rerunUrl}
+                            icon={<RedoIcon />}
+                            variant="link"
+                        >
+                            Rerun
+                        </Button>
+                    )}
+                    {selectedTest?.docsUrl && (
+                        <Button
+                            className="pf-u-p-0"
+                            component={ExternalLink}
+                            href={selectedTest?.docsUrl}
+                            icon={<BookIcon />}
+                            variant="link"
+                        >
+                            Documentation
+                        </Button>
+                    )}
                 </Flex>
             </DrawerHead>
             <DrawerPanelBody className="pf-u-pb-sm">
