@@ -43,7 +43,7 @@ import { TestStatusIcon } from './TestStatusIcon';
 import {
     BookIcon,
     LinkIcon,
-    SyncAltIcon,
+    RedoIcon,
     ThumbsUpIcon,
 } from '@patternfly/react-icons';
 import { ExternalLink } from '../ExternalLink';
@@ -145,7 +145,7 @@ function SingleTestRow(props: SingleTestRowProps) {
                         <Button
                             component={ExternalLink}
                             href={props.rerunUrl}
-                            icon={<SyncAltIcon />}
+                            icon={<RedoIcon />}
                             variant="link"
                         >
                             Rerun
