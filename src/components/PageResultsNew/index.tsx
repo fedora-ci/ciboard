@@ -49,6 +49,7 @@ import {
     StateType,
 } from '../../artifact';
 import {
+    getRerunUrl,
     getTestcaseName,
     isGreenwaveKaiState,
     isGreenwaveState,
@@ -122,9 +123,12 @@ function transformTest(
     stateName: StateExtendedNameType,
 ): CiTest {
     const name = getTestcaseName(test);
+    const rerunUrl = getRerunUrl(test);
     const required =
         (isGreenwaveState(test) || isGreenwaveKaiState(test)) &&
         stateName !== 'additional-tests';
+    const waivable = isResultWaivable(test);
+
     let status = transformUmbStatus(stateName);
     if (isGreenwaveState(test) && test.result && status !== 'waived') {
         status = transformGreenwaveOutcome(test.result.outcome);
@@ -135,9 +139,8 @@ function transformTest(
     ) {
         status = transformGreenwaveOutcome(test.gs.result.outcome);
     }
-    const waivable = isResultWaivable(test);
 
-    return { name, required, status, waivable };
+    return { name, required, rerunUrl, status, waivable };
 }
 
 // TODO: This function is temporary only and will be removed once the UI is finalized.

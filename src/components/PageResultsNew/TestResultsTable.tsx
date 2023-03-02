@@ -46,6 +46,7 @@ import {
     SyncAltIcon,
     ThumbsUpIcon,
 } from '@patternfly/react-icons';
+import { ExternalLink } from '../ExternalLink';
 
 interface SingleTestRowProps {
     isRequired?: boolean;
@@ -53,6 +54,7 @@ interface SingleTestRowProps {
     isWaived?: boolean;
     labels?: string[];
     name: string;
+    rerunUrl?: string;
     status: TestStatus;
     subtitle?: ReactNode;
 }
@@ -138,18 +140,16 @@ function SingleTestRow(props: SingleTestRowProps) {
                             Waive
                         </Button>
                     )}
-                    <Button
-                        icon={<SyncAltIcon />}
-                        onClick={(event) => {
-                            alert(
-                                'Not implemented yet. This will rerun the test.',
-                            );
-                            event.stopPropagation();
-                        }}
-                        variant="link"
-                    >
-                        Rerun
-                    </Button>
+                    {props.rerunUrl && (
+                        <Button
+                            component={ExternalLink}
+                            href={props.rerunUrl}
+                            icon={<SyncAltIcon />}
+                            variant="link"
+                        >
+                            Rerun
+                        </Button>
+                    )}
                     <Button
                         icon={<BookIcon />}
                         onClick={(event) => {
@@ -225,6 +225,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                         isWaived={row.status === 'waived'}
                         labels={row.labels}
                         name={row.name}
+                        rerunUrl={row.rerunUrl}
                         status={row.status}
                         subtitle={row.subtitle}
                     />
@@ -258,6 +259,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                         isWaived={row.status === 'waived'}
                         labels={row.labels}
                         name={row.name}
+                        rerunUrl={row.rerunUrl}
                         status={row.status}
                         subtitle={row.subtitle}
                     />
@@ -285,6 +287,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                         isWaived={row.status === 'waived'}
                         labels={row.labels}
                         name={row.name}
+                        rerunUrl={row.rerunUrl}
                         status={row.status}
                         subtitle={row.subtitle}
                     />
@@ -307,6 +310,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                     <SingleTestRow
                         labels={row.labels}
                         name={row.name}
+                        rerunUrl={row.rerunUrl}
                         status={row.status}
                         subtitle={row.subtitle}
                     />
