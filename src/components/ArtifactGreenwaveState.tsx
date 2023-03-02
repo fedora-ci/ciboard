@@ -71,6 +71,7 @@ import {
     isResultWaivable,
     timestampForUser,
     getGreenwaveDocsUrl,
+    getRerunUrl,
     getTestcaseName,
     getArtifactProduct,
     TestStatusIcon,
@@ -141,7 +142,7 @@ export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
 ) => {
     const { artifact, state } = props;
     const docsUrl = getGreenwaveDocsUrl(state);
-    const rerunUrl = _.first(state.result?.data.rebuild);
+    const rerunUrl = getRerunUrl(state);
     const showWaiveButton = isResultWaivable(state);
     return (
         <Flex style={{ minWidth: '20em' }}>
@@ -292,6 +293,7 @@ export const GreenwaveResultData: React.FC<PropsWithGreenwaveState> = (
     const items: Array<JSX.Element> = [];
     /* result.data is array */
     _.map(result.data, (values, k) => {
+        if (!values) return;
         const item = mkItem(k, values);
         items.push(item);
     });
