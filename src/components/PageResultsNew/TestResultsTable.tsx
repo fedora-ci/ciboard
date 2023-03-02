@@ -49,6 +49,7 @@ import {
 import { ExternalLink } from '../ExternalLink';
 
 interface SingleTestRowProps {
+    docsUrl?: string;
     isRequired?: boolean;
     isWaivable?: boolean;
     isWaived?: boolean;
@@ -150,18 +151,16 @@ function SingleTestRow(props: SingleTestRowProps) {
                             Rerun
                         </Button>
                     )}
-                    <Button
-                        icon={<BookIcon />}
-                        onClick={(event) => {
-                            alert(
-                                'Not implemented yet. This will take you to the CI documentation.',
-                            );
-                            event.stopPropagation();
-                        }}
-                        variant="link"
-                    >
-                        Documentation
-                    </Button>
+                    {props.docsUrl && (
+                        <Button
+                            component={ExternalLink}
+                            href={props.docsUrl}
+                            icon={<BookIcon />}
+                            variant="link"
+                        >
+                            Documentation
+                        </Button>
+                    )}
                     <Button
                         icon={<LinkIcon />}
                         onClick={(event) => {
@@ -220,6 +219,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        docsUrl={row.docsUrl}
                         isRequired
                         isWaivable={row.waivable}
                         isWaived={row.status === 'waived'}
@@ -254,6 +254,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        docsUrl={row.docsUrl}
                         isRequired
                         isWaivable={row.waivable}
                         isWaived={row.status === 'waived'}
@@ -283,6 +284,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        docsUrl={row.docsUrl}
                         isRequired
                         isWaived={row.status === 'waived'}
                         labels={row.labels}
@@ -308,6 +310,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        docsUrl={row.docsUrl}
                         labels={row.labels}
                         name={row.name}
                         rerunUrl={row.rerunUrl}
