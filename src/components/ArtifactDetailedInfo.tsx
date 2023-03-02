@@ -421,7 +421,7 @@ interface ErrataAutomationProps {
 }
 const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
     const { artifact } = props;
-    const latestState = artifact.states_eta?.[0];
+    const latestState = artifact.states_eta?.at(-1);
     if (_.isNil(latestState)) {
         return (
             <Flex className="pf-u-p-lg">
