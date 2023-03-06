@@ -161,7 +161,13 @@ interface PageResultsNewParams {
 export function PageResultsNew(_props: {}) {
     const [selectedTest, setSelectedTest] = useState<CiTest | undefined>();
     const params = useParams<PageResultsNewParams>();
+    // TODO: Uncomment this once we migrate to v6.
+    // Docs: https://reactrouter.com/en/main/hooks/use-search-params
+    // const [searchParams, setSearchParams] = useSearchParams();
 
+    // TODO: Set selectedTest based on searchParams, if present.
+
+    // TODO: Update title dynamically.
     const pageTitle = `🚧 New test results | ${config.defaultTitle}`;
 
     const aid = params.aid || '47942709';
@@ -243,6 +249,8 @@ export function PageResultsNew(_props: {}) {
             if (name === selectedTest?.name) setSelectedTest(undefined);
             else setSelectedTest(_.find(tests, (test) => test.name === name));
         } else setSelectedTest(undefined);
+        // TODO: Set query/search params.
+        // setSearchParams({ focus: name });
     };
 
     return (
