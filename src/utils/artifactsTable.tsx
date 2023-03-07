@@ -247,13 +247,10 @@ export interface InputRowType {
     type: string;
 }
 
-export type OnCollapseEventType = Extract<TableProps['onCollapse'], Function>;
-export type TableRowWrapperType = Extract<TableProps['rowWrapper'], Function>;
-export type OnDropdownToggleType = Extract<
-    DropdownToggleProps['onToggle'],
-    Function
->;
-export type OnDropdownSelectType = Extract<DropdownProps['onSelect'], Function>;
+export type OnCollapseEventType = TableProps['onCollapse'];
+export type TableRowWrapperType = TableProps['rowWrapper'];
+export type OnDropdownToggleType = DropdownToggleProps['onToggle'];
+export type OnDropdownSelectType = DropdownProps['onSelect'];
 
 export const mkSpecialRows = (args: InputRowType): IRow[] => {
     const default_args = { type: 'error' };
@@ -344,7 +341,6 @@ export const mkArtifactRow = (
 export type InputArtifactRowType = {
     artifacts: Artifact[];
     opened: number | null;
-    queryString?: string;
     body?: JSX.Element;
     waitForRef?: React.MutableRefObject<any>;
     gatingDecisionIsLoading: boolean;

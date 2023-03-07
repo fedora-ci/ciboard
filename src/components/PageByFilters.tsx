@@ -20,7 +20,7 @@
 
 import _ from 'lodash';
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import {
     Flex,
     Button,
@@ -81,7 +81,7 @@ function usePrevious(value: number) {
 const SearchToolbar = () => {
     const dispatch = useAppDispatch();
     const filters = useAppSelector((state) => state.filters);
-    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [inputValue, setInputValue] = useState('');
     const [statusIsExpanded, setIsExpanded] = useState(false);
     const menu_default_entry = _.toPairs(menuTypes)[0][0];
@@ -115,7 +115,6 @@ const SearchToolbar = () => {
     };
     const prevFiltersLen = usePrevious(_.size(filters.active));
     useEffect(() => {
-        const searchParams = new URLSearchParams(window.location.search);
         if (
             _.isEmpty(filters.active) &&
             searchParams.has('filters') &&
@@ -123,9 +122,9 @@ const SearchToolbar = () => {
         ) {
             console.log('Remove filters from URL');
             searchParams.delete('filters');
-            navigate('?' + searchParams.toString());
+            setSearchParams(searchParams);
         }
-    }, [filters, navigate, prevFiltersLen]);
+    }, [filters, prevFiltersLen, searchParams, setSearchParams]);
     useEffect(() => {
         /** Check if there are filters. */
         const url = new URL(window.location.href);
@@ -256,7 +255,6 @@ const SearchToolbar = () => {
         </Flex>
     );
 
-    const searchParams = new URLSearchParams(window.location.search);
     const filtersEncoded = searchParams.get('filters');
     if (!_.isEmpty(filters.active)) {
         let urlFilters = {};
@@ -275,7 +273,7 @@ const SearchToolbar = () => {
             }
             if (updateFilters) {
                 searchParams.set('filters', filtersParam);
-                navigate('?' + searchParams.toString());
+                setSearchParams(searchParams);
             }
         }
     }

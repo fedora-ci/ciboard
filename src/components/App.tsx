@@ -21,11 +21,11 @@
 import * as React from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import {
-    HttpLink,
-    ApolloLink,
     ApolloClient,
-    InMemoryCache,
+    ApolloLink,
     ApolloProvider,
+    HttpLink,
+    InMemoryCache,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 /**
@@ -64,27 +64,14 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (networkError) console.log(`[Network error]: ${networkError}`);
 });
 
-const client = new ApolloClient({
+const apolloClient = new ApolloClient({
     /**
      * Data ID from Object. Purpose identify each record that comes.
      * from server. "I just got updated record ABC."
      * Every record we fetch from backedn we be run through this function:
      */
     link: ApolloLink.from([errorLink, httpLink]),
-    cache: new InMemoryCache({
-        typePolicies: {
-            /**
-             * https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays-of-non-normalized-objects
-             * https://www.apollographql.com/docs/react/caching/cache-configuration/#generating-unique-identifiers
-             * Not all states have msg_id. Todo: find why.
-             * StateType: {
-             *     // In most inventory management systems, a single UPC code uniquely
-             *     // identifies any product.
-             *     keyFields: ['msg_id'],
-             * },
-             */
-        },
-    }),
+    cache: new InMemoryCache(),
     connectToDevTools: true,
     /**
      * dataIdFromObject: (o) => o.id,
@@ -104,7 +91,7 @@ export function App() {
         ));
 
     return (
-        <ApolloProvider client={client}>
+        <ApolloProvider client={apolloClient}>
             <div className="pf-u-h-100vh">
                 <HashRouter>
                     <Routes>

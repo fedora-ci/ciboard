@@ -20,9 +20,8 @@
 
 import * as React from 'react';
 import _ from 'lodash';
-import qs from 'qs';
-import { useSelector } from 'react-redux';
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     Alert,
     DataList,
@@ -48,9 +47,7 @@ import {
     isGreenwaveState,
     isKaiState,
 } from '../utils/artifactUtils';
-import { RootStateType } from '../slices';
 import { ArtifactState } from './ArtifactState';
-import { IStateQueryString } from '../actions/types';
 import {
     StageNameStateNameStatesType,
     mkStagesAndStates,
@@ -139,9 +136,7 @@ interface ArtifactResultsListProps {
 
 export function ArtifactStatesList(props: ArtifactResultsListProps) {
     const { artifact } = props;
-    const queryString = useSelector<RootStateType, IStateQueryString>(
-        (store) => store.queryString,
-    );
+    const [searchParams] = useSearchParams();
     const focusedRef = useRef<HTMLDivElement>(null);
     /** canExpandURLState == was not expanded */
     const [wasExpandedForURLParam, setWasExpandedForURLParam] = useState(false);
@@ -173,11 +168,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
             </Flex>
         );
     }
-    const focusOnParam: qs.ParsedQs[keyof qs.ParsedQs] = _.get(
-        queryString.queryString,
-        'focus',
-        '',
-    );
+    const focusOnParam = searchParams.get('focus') || '';
     const focusOnFromURL = _.isString(focusOnParam) ? focusOnParam : '';
     if (!_.isEmpty(focusOnFromURL) && !wasExpandedForURLParam) {
         const testCaseName = focusOnFromURL.replace(/^(tc:)/, '');

@@ -19,10 +19,9 @@
  */
 
 import _ from 'lodash';
-import qs from 'qs';
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import {
     Alert,
     AlertActionCloseButton,
@@ -36,10 +35,9 @@ import {
 import { config } from '../config';
 import { useTitle } from '../hooks';
 import { RootStateType } from '../slices';
-import { popAlert, setQueryString } from '../actions';
+import { popAlert } from '../actions';
 import { IStateAlerts } from '../actions/types';
 import { DashboardPageHeader } from './PageHeader';
-import { useEffect } from 'react';
 
 type PageCommonProps = React.PropsWithChildren<React.ReactNode> & {
     title?: string;
@@ -74,26 +72,14 @@ export function ToastAlertGroup() {
 }
 
 export function PageCommon(props: PageCommonProps) {
-    const location = useLocation();
-    const dispatch = useDispatch();
-    const queryString = qs.parse(location.search, {
-        ignoreQueryPrefix: true,
-    });
-    useEffect(() => {
-        /*
-         * This code is side-effect. There-fore must be called in useEffect. Otherwise will be thrown:
-         * Cannot update a component (`ArtifactStatesList`) while rendering a different component (`PageCommon`).
-         * To locate the bad setState() call inside `PageCommon`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
-         */
-        dispatch(setQueryString(queryString));
-    }, [dispatch, queryString]);
+    const [searchParams] = useSearchParams();
 
     const title = props.title || config.defaultTitle;
     useTitle(title);
 
     const pageId = 'main-content-page-layout-horizontal-nav';
     let to_render: JSX.Element;
-    if (queryString.embedded !== 'true') {
+    if (searchParams.get('embedded') !== 'true') {
         to_render = (
             <Page header={<DashboardPageHeader />} mainContainerId={pageId}>
                 <PageSection

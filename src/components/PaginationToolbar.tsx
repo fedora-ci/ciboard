@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import React, { MouseEventHandler } from 'react';
 import {
     Text,
     Button,
@@ -28,12 +29,10 @@ import {
     ToolbarGroup,
     ToolbarContent,
 } from '@patternfly/react-core';
-
 import { AngleLeftIcon, AngleRightIcon } from '@patternfly/react-icons';
-import React, { MouseEventHandler } from 'react';
 
 export interface PaginationToolbarProps {
-    isLoading: boolean;
+    isLoading?: boolean;
     currentPage: number;
     onClickLoadPrev: MouseEventHandler;
     onClickLoadNext: MouseEventHandler;

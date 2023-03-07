@@ -19,7 +19,6 @@
  */
 
 import _ from 'lodash';
-import qs from 'qs';
 import axios from 'axios';
 import { ApolloClient } from '@apollo/client';
 
@@ -28,24 +27,31 @@ import { AppDispatch, GetState } from '../reduxStore';
 import * as alertsSlice from '../slices/alertsSlice';
 import * as authSlice from '../slices/authSlice';
 import * as filtersSlice from '../slices/filtersSlice';
-import * as gateArtifactsSlice from '../slices/gateArtifactsSlice';
-import * as queryStringSlice from '../slices/queryStringSlice';
+import * as gatingTestsFormSlice from '../slices/gatingTestsFormSlice';
 import * as waiveSlice from '../slices/waiveSlice';
 import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
 import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
 
-export const popAlert = (key: number) => alertsSlice.popAlert({ key });
+export const cleanseGatingFormState = () => gatingTestsFormSlice.cleanse();
+
+export const goToGatingNextPage = (aid: string) =>
+    gatingTestsFormSlice.goToNextPage(aid);
+
+export const goToGatingPrevPage = () => gatingTestsFormSlice.goToPrevPage();
 
 export const setGatingSearchOptions = (
     gatingOptions: GASetSearchOptionsPayload,
-) => gateArtifactsSlice.gateArtifactsSetSearchOptions(gatingOptions);
+) => gatingTestsFormSlice.setCriteria(gatingOptions);
 
-export const bumpGatingSearchEpoch = () =>
-    gateArtifactsSlice.gateArtifactsBumpSearchEpoch();
+export const updateGatingSearchOptions = (
+    gatingOptions: GASetSearchOptionsPayload,
+) => gatingTestsFormSlice.updateCriteria(gatingOptions);
 
 type AlertVariantType = 'success' | 'danger' | 'warning' | 'info' | 'default';
+
+export const popAlert = (key: number) => alertsSlice.popAlert({ key });
 
 /**
  * Push a new alert to the alerts queue.
@@ -69,9 +75,6 @@ export const pushAlert = (
         dispatch(alertsSlice.pushAlert({ key, variant, title }));
     };
 };
-
-export const setQueryString = (queryString: qs.ParsedQs) =>
-    queryStringSlice.setQueryString({ queryString });
 
 export const addFilter = (newval = '', type = '') => {
     return async (dispatch: AppDispatch, getState: GetState) => {

@@ -52,7 +52,6 @@ import styles from '../custom.module.css';
 import { isGatingArtifact } from '../utils/artifactUtils';
 
 const ArtifactsTable: React.FC = () => {
-    const queryString = ''; // XXX : delme
     const scrollRef = useRef<HTMLTableRowElement>(null);
     const waitForRef = useRef<HTMLElement>(null);
     const aid_offset_pages = useRef<string[]>([]);
@@ -228,7 +227,6 @@ const ArtifactsTable: React.FC = () => {
         opened,
         artifacts,
         waitForRef,
-        queryString,
         gatingDecisionIsLoading: isCompleteLoading,
     });
     const known_rows = _.concat(rows_artifacts, rowsErrors);
