@@ -18,7 +18,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import qs from 'qs';
 import { AlertVariant } from '@patternfly/react-core';
 import { Artifact, StateType } from '../artifact';
 import React from 'react';
@@ -68,10 +67,6 @@ export interface IStateAuth {
     nameID: string;
 }
 
-export interface IStateQueryString {
-    queryString: qs.ParsedQs;
-}
-
 /*
  * Payload types for Redux actions.
  */
@@ -97,10 +92,6 @@ export interface DeleteFilterPayload {
 
 export interface SetOptionsForFiltersPayload {
     skipScratch: boolean;
-}
-
-export interface SetQueryStringPayload {
-    queryString: qs.ParsedQs;
 }
 
 export interface GASetSearchOptionsPayload {

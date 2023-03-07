@@ -339,6 +339,10 @@ export const ArtifactsXunitQuery = gql`
     ${statesFragment}
 `;
 
+export interface PageGatingGetSSTTeamsData {
+    db_sst_list?: string[];
+}
+
 export const PageGatingGetSSTTeams = gql`
     query PageGatingGetSSTTeams($product_id: Int) {
         db_sst_list(product_id: $product_id)
@@ -346,7 +350,7 @@ export const PageGatingGetSSTTeams = gql`
 `;
 
 export interface PageGatingArtifactsData {
-    artifacts: {
+    artifacts?: {
         has_next: boolean;
         artifacts: Artifact[] & {
             component_mapping: ComponentComponentMappingType;

@@ -1,6 +1,6 @@
 /*
  * This file is part of ciboard
- * 
+ *
  * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
  *
@@ -24,16 +24,14 @@ import { combineReducers } from 'redux';
 import { alertsReducer } from './alertsSlice';
 import { authReducer } from './authSlice';
 import { filtersReducer } from './filtersSlice';
-import { gateArtifactsReducer } from './gateArtifactsSlice';
-import { queryStringReducer } from './queryStringSlice';
+import { gatingTestsFormReducer } from './gatingTestsFormSlice';
 import { waiveReducer } from './waiveSlice';
 
 export const rootReducer = combineReducers({
     alerts: alertsReducer,
     auth: authReducer,
     filters: filtersReducer,
-    gateArtifacts: gateArtifactsReducer,
-    queryString: queryStringReducer,
+    gatingTestsForm: gatingTestsFormReducer,
     waive: waiveReducer,
 });
 

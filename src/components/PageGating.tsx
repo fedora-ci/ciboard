@@ -20,12 +20,12 @@
  */
 
 import _ from 'lodash';
-import { useQuery } from '@apollo/client';
+import { ApolloError, useQuery } from '@apollo/client';
 import classNames from 'classnames';
 import moment from 'moment';
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
-    ActionGroup,
     Button,
     Checkbox,
     CheckboxProps,
@@ -54,10 +54,9 @@ import {
     Text,
     TextContent,
     TextInput,
-    TextInputProps,
     Title,
 } from '@patternfly/react-core';
-import { LinkIcon, ThIcon } from '@patternfly/react-icons';
+import { LinkIcon, SearchIcon, ThIcon } from '@patternfly/react-icons';
 import {
     cellWidth,
     ICell,
@@ -70,12 +69,18 @@ import {
 
 import { config } from '../config';
 import styles from '../custom.module.css';
-import { bumpGatingSearchEpoch, setGatingSearchOptions } from '../actions';
+import {
+    cleanseGatingFormState,
+    goToGatingNextPage,
+    goToGatingPrevPage,
+    setGatingSearchOptions,
+    updateGatingSearchOptions,
+} from '../actions';
 import {
     BUILD_TYPE_MENU_ITEMS,
-    StateGatingTests,
-    getSelectFromType,
-} from '../slices/gateArtifactsSlice';
+    deserializeGatingFormState,
+    selectSerializedGatingFormState,
+} from '../slices/gatingTestsFormSlice';
 import {
     Artifact,
     isStateKai,
@@ -93,6 +98,7 @@ import {
     PageGatingArtifacts,
     PageGatingArtifactsData,
     PageGatingGetSSTTeams,
+    PageGatingGetSSTTeamsData,
 } from '../queries/Artifacts';
 import { PaginationToolbar } from './PaginationToolbar';
 import {
@@ -102,6 +108,7 @@ import {
 } from '../utils/artifactUtils';
 import { transformKaiStates } from '../utils/stages_states';
 import { useAppDispatch, useAppSelector } from '../hooks';
+import { RootState } from '../reduxStore';
 
 interface CiSystem {
     ciSystemName: string;
@@ -154,6 +161,11 @@ const ciSystems: string[] = [
 
 const gatingTagMenuItems: string[] = ['8\\.', '9\\.', '8\\.4', 'dnf', 'gnome'];
 
+const PRODUCTS = [
+    { id: 604, label: 'RHEL 9' },
+    { id: 370, label: 'RHEL 8' },
+];
+
 const columns = (buildType: string): ICell[] => {
     return [
         { title: 'Artifact' },
@@ -171,12 +183,81 @@ const columns = (buildType: string): ICell[] => {
 const artifactDashboardUrl = ({ aid, type }: Artifact) =>
     `${window.location.origin}/#/artifact/${type}/aid/${aid}`;
 
-interface CiSystemsTableProps {
-    currentState: StatesByCategoryType;
-    searchParams: StateGatingTests;
+function selectGatingQueryVariables(state: RootState): GatingSearchQuery {
+    const { gatingTestsForm: formState } = state;
+
+    const atype = formState.buildType;
+    /**
+     * gate_tag_name must be first in the query field, otherwise query will be slow.
+     * Special index is present:
+     * db.artifacts.createIndex({"type" : 1, "aid" : -1, "gate_tag_name" : 1}, { collation: { locale: "en_US", numericOrdering : true} })
+     */
+    const dbFieldName1 = 'payload.gate_tag_name';
+    const dbFieldValues1 = _.trim(formState.gateTag);
+    /** resultsdb_testcase */
+    const dbFieldName2 = 'states.kai_state.test_case_name';
+    const dbFieldValues2 = _.trim(formState.ciSystem);
+    const dbFieldName3 = 'payload.issuer';
+    const dbFieldValues3 = _.trim(formState.packager);
+    const dbFieldNameComponentMapping1 = 'sst_team_name';
+    const dbFieldValuesComponentMapping1 = formState.sstTeams;
+    const options = {
+        valuesAreRegex1: true,
+        valuesAreRegex2: true,
+        valuesAreRegex3: true,
+        reduced: true,
+    };
+
+    const variables: GatingSearchQuery = {
+        /** Brew-build, redhat-module. Always present in query. */
+        atype,
+        /**
+         * gate_tag_name -> RHEL version. Always present in query.
+         * This will guarantee that gate_tag_name is not emtpy.
+         */
+        dbFieldName1,
+        dbFieldValues1,
+        options,
+    };
+
+    if (!_.isEmpty(dbFieldValues2)) {
+        /** CI system name -> resultsdb testcase name */
+        variables.dbFieldName2 = dbFieldName2;
+        variables.dbFieldValues2 = dbFieldValues2;
+    }
+    if (!_.isEmpty(dbFieldValues3)) {
+        variables.dbFieldName3 = dbFieldName3;
+        variables.dbFieldValues3 = dbFieldValues3;
+    }
+    if (!_.isEmpty(dbFieldValuesComponentMapping1)) {
+        if (_.isEmpty(variables.dbFieldValues1)) {
+            /** Limit gating tag to product id */
+            if (formState.productId === 604) {
+                variables.dbFieldValues1 = 'rhel-9';
+            } else if (formState.productId === 370) {
+                variables.dbFieldValues1 = 'rhel-8';
+            }
+        }
+        variables.options.componentMappingProductId = formState.productId;
+        variables.dbFieldNameComponentMapping1 = dbFieldNameComponentMapping1;
+        variables.dbFieldValuesComponentMapping1 =
+            dbFieldValuesComponentMapping1;
+    }
+
+    if (!_.isEmpty(formState.aidStack)) {
+        variables.aid_offset = _.last(formState.aidStack);
+    }
+
+    return variables;
 }
+
+interface CiSystemsTableProps {
+    ciSystem: string;
+    currentState: StatesByCategoryType;
+}
+
 const CiSystemsTable = (props: CiSystemsTableProps) => {
-    const { currentState, searchParams } = props;
+    const { ciSystem, currentState } = props;
     const ciSystemsNames: CiSystem[] = [];
     const kaiStatesNames: StateExtendedKaiNameType[] = [
         'running',
@@ -198,8 +279,8 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
                 continue;
             }
             let ciSystemName: string = getTestcaseName(kaiState);
-            const re = new RegExp(searchParams.ciSystem, 'gi');
-            if (searchParams.ciSystem && !ciSystemName.match(re)) {
+            const re = new RegExp(ciSystem, 'gi');
+            if (ciSystem && !ciSystemName.match(re)) {
                 continue;
             }
             ciSystemsNames.push({
@@ -342,6 +423,7 @@ const MappingInfo = (props: MappingInfoProps) => {
     const { mapping } = props;
     if (!mapping?.product_id) return null;
     const { def_assignee, qa_contact, sst_team_name } = mapping;
+
     return (
         <>
             Team: {sst_team_name}
@@ -353,10 +435,7 @@ const MappingInfo = (props: MappingInfoProps) => {
     );
 };
 
-function mkArtifactRow(
-    artifact: Artifact,
-    searchParams: StateGatingTests,
-): IRow {
+function mkArtifactRow(artifact: Artifact, ciSystem: string): IRow {
     if (!(isArtifactRPM(artifact) || isArtifactMBS(artifact))) {
         return {};
     }
@@ -405,11 +484,11 @@ function mkArtifactRow(
             title: (
                 <div>
                     <CiSystemsTable
+                        ciSystem={ciSystem}
                         currentState={transformKaiStates(
                             artifact.states,
                             'test',
                         )}
-                        searchParams={searchParams}
                     />
                 </div>
             ),
@@ -432,22 +511,20 @@ function mkArtifactRow(
 
 function BuildTypeSelector() {
     const dispatch = useAppDispatch();
-    const { buildType: buildTypeInit } = useAppSelector(
-        (state) => state.gateArtifacts,
+    const buildType = useAppSelector(
+        (state) => state.gatingTestsForm.buildType,
     );
-    const inititalState = getSelectFromType(buildTypeInit);
-    const [buildType, setBuildType] = useState(inititalState);
     const [isExpanded, setExpanded] = useState(false);
     const onSelect: SelectProps['onSelect'] = (_event, selection) => {
         const selectionString = selection.toString();
-        setBuildType(selectionString);
         setExpanded(false);
         dispatch(
-            setGatingSearchOptions({
+            updateGatingSearchOptions({
                 buildType: selectionString,
             }),
         );
     };
+
     return (
         <Select
             isOpen={isExpanded}
@@ -456,8 +533,10 @@ function BuildTypeSelector() {
             onToggle={setExpanded}
             selections={buildType}
         >
-            {_.keys(BUILD_TYPE_MENU_ITEMS).map((item, index) => (
-                <SelectOption key={index} value={item} />
+            {_.map(BUILD_TYPE_MENU_ITEMS, (value, label) => (
+                <SelectOption key={value} value={value}>
+                    {label}
+                </SelectOption>
             ))}
         </Select>
     );
@@ -465,18 +544,17 @@ function BuildTypeSelector() {
 
 function Checkboxes() {
     const dispatch = useAppDispatch();
-    const { ignoreCiSystem: initialState } = useAppSelector(
-        (state) => state.gateArtifacts,
+    const ignoreCiSystem = useAppSelector(
+        (state) => state.gatingTestsForm.ignoreCiSystem,
     );
-    const [ignoreCiSystem, setIgnoreCiSystem] = useState(initialState);
     const onChange: CheckboxProps['onChange'] = (flag) => {
-        setIgnoreCiSystem(flag);
         dispatch(
-            setGatingSearchOptions({
+            updateGatingSearchOptions({
                 ignoreCiSystem: flag,
             }),
         );
     };
+
     return (
         <Checkbox
             id="toggle-hide-missing-disabled-typeahead"
@@ -490,24 +568,21 @@ function Checkboxes() {
 
 function CiSystemSelector() {
     const dispatch = useAppDispatch();
-    const { ciSystem: init_state } = useAppSelector(
-        (state) => state.gateArtifacts,
-    );
+    const ciSystem = useAppSelector((state) => state.gatingTestsForm.ciSystem);
     const [isExpanded, setExpanded] = useState(false);
-    const [ciSystem, setCISystem] = useState(init_state);
     const onToggle = (isExpanded: boolean) => {
         setExpanded(isExpanded);
     };
     const onSelect: SelectProps['onSelect'] = (_event, selection) => {
         const selectionString = selection.toString();
-        setCISystem(selectionString);
         setExpanded(false);
         dispatch(
-            setGatingSearchOptions({
+            updateGatingSearchOptions({
                 ciSystem: selectionString,
             }),
         );
     };
+
     return (
         <Select
             aria-labelledby="plain-typeahead-select-id-ci-system"
@@ -531,10 +606,7 @@ function CiSystemSelector() {
 
 function GatingTagSelector() {
     const dispatch = useAppDispatch();
-    const { gateTag: init_state } = useAppSelector(
-        (state) => state.gateArtifacts,
-    );
-    const [gateTag, setRHELVersion] = useState(init_state);
+    const gateTag = useAppSelector((state) => state.gatingTestsForm.gateTag);
     const [isExpanded, setExpanded] = useState(false);
     const titleId = 'plain-typeahead-select-id-gating-tag';
     const onToggle = (isExpanded: boolean) => {
@@ -542,14 +614,14 @@ function GatingTagSelector() {
     };
     const onSelect: SelectProps['onSelect'] = (_event, selection) => {
         const selectionString = selection.toString();
-        setRHELVersion(selectionString);
         setExpanded(false);
         dispatch(
-            setGatingSearchOptions({
+            updateGatingSearchOptions({
                 gateTag: selectionString,
             }),
         );
     };
+
     return (
         <Select
             aria-labelledby={titleId}
@@ -574,33 +646,26 @@ function GatingTagSelector() {
 
 function PackagerSelector() {
     const dispatch = useAppDispatch();
-    const { packager: init_state } = useAppSelector(
-        (state) => state.gateArtifacts,
-    );
-    const [value, setValue] = useState(init_state);
-    const handleTextInputChange: TextInputProps['onChange'] = (value) => {
-        setValue(value);
-    };
-    const updateRedux = () => {
+    const packager = useAppSelector((state) => state.gatingTestsForm.packager);
+    const onChange = (_value: string, event: FormEvent<HTMLInputElement>) => {
+        const value = event.currentTarget.value;
         dispatch(
-            setGatingSearchOptions({
+            updateGatingSearchOptions({
                 packager: value,
             }),
         );
     };
+
     return (
-        <TextInput
-            id="packager-input"
-            onBlur={updateRedux}
-            onChange={handleTextInputChange}
-            value={value}
-        />
+        <TextInput id="packager-input" onChange={onChange} value={packager} />
     );
 }
 
 function ProductSelector() {
     const dispatch = useAppDispatch();
-    const { productId } = useAppSelector((state) => state.gateArtifacts);
+    const productId = useAppSelector(
+        (state) => state.gatingTestsForm.productId,
+    );
     const [isOpen, setOpen] = useState(false);
     const onFocus = () => {
         document.getElementById('toggle-id')?.focus();
@@ -609,34 +674,27 @@ function ProductSelector() {
         setOpen(!isOpen);
         onFocus();
     };
-    // FIXME: This doesn't seem to react on product change properly.
     const onClickItem = (productId: number): void => {
         dispatch(
-            setGatingSearchOptions({
+            updateGatingSearchOptions({
                 productId,
+                // Clear SSTs list as they are specific to a product release.
+                sstTeams: [],
             }),
         );
     };
-    const dropdownItems = [
+    const dropdownItems = PRODUCTS.map(({ id, label }) => (
         <DropdownItem
-            autoFocus={productId === 604}
+            autoFocus={productId === id}
             component="button"
-            description="SST teams for RHEL 9"
+            description={`SST teams for ${label}`}
             key="action1"
-            onClick={() => onClickItem(604)}
+            onClick={() => onClickItem(id)}
         >
-            RHEL 9
-        </DropdownItem>,
-        <DropdownItem
-            autoFocus={productId === 370}
-            component="button"
-            description="SST teams for RHEL 8"
-            key="action2"
-            onClick={() => onClickItem(370)}
-        >
-            RHEL 8
-        </DropdownItem>,
-    ];
+            {label}
+        </DropdownItem>
+    ));
+
     return (
         <Dropdown
             isOpen={isOpen}
@@ -658,16 +716,15 @@ function ProductSelector() {
 
 function SstSelector() {
     const dispatch = useAppDispatch();
-    const { productId, sstTeams: initialState } = useAppSelector(
-        (state) => state.gateArtifacts,
+    const productId = useAppSelector(
+        (state) => state.gatingTestsForm.productId,
     );
+    const sstTeams = useAppSelector((state) => state.gatingTestsForm.sstTeams);
     const [isExpanded, setExpanded] = useState(false);
-    const [selectedSst, setSelectedSst] = useState(initialState);
     const onSelect: SelectProps['onSelect'] = (_event, selection) => {
-        const updatedSet = _.xor(selectedSst, [selection.toString()]);
-        setSelectedSst(updatedSet);
+        const updatedSet = _.xor(sstTeams, [selection.toString()]);
         dispatch(
-            setGatingSearchOptions({
+            updateGatingSearchOptions({
                 sstTeams: updatedSet,
             }),
         );
@@ -676,19 +733,27 @@ function SstSelector() {
     const queryVariables = {
         product_id: productId,
     };
-    const { data, loading } = useQuery(PageGatingGetSSTTeams, {
-        errorPolicy: 'all',
-        fetchPolicy: 'cache-first',
-        notifyOnNetworkStatusChange: true,
-        variables: queryVariables,
-    });
+    const { data, loading } = useQuery<PageGatingGetSSTTeamsData>(
+        PageGatingGetSSTTeams,
+        {
+            errorPolicy: 'all',
+            fetchPolicy: 'cache-first',
+            notifyOnNetworkStatusChange: true,
+            variables: queryVariables,
+        },
+    );
     const haveData = !loading && data && !_.isEmpty(data.db_sst_list);
     if (haveData) {
-        sstMenuItems = _.map(data.db_sst_list, (a) => _.toString(a));
+        // NOTE: We know `db_sst_list` is not undefined thanks to `!_.isEmpty()` above.
+        sstMenuItems = data
+            .db_sst_list!.filter((sst) => !_.isNil(sst))
+            .map((sst) => _.toString(sst))
+            .sort();
     }
-    const badge = !_.isEmpty(selectedSst)
-        ? `Selected: ${_.size(selectedSst)}`
+    const badge = !_.isEmpty(sstTeams)
+        ? `Selected: ${_.size(sstTeams)}`
         : undefined;
+
     return (
         <Select
             customBadgeText={badge}
@@ -697,7 +762,7 @@ function SstSelector() {
             maxHeight="37.5rem"
             onSelect={onSelect}
             onToggle={setExpanded}
-            selections={selectedSst}
+            selections={sstTeams}
             variant={SelectVariant.checkbox}
         >
             {_.map(sstMenuItems, (item, index) => (
@@ -707,164 +772,47 @@ function SstSelector() {
     );
 }
 
-function GatingResults() {
-    const reduxState = useAppSelector((state) => state.gateArtifacts);
+interface GatingResultsProps {
+    data?: PageGatingArtifactsData;
+    error?: ApolloError;
+    isLoading?: boolean;
+}
+
+function GatingResults(props: GatingResultsProps) {
+    const { data, error, isLoading } = props;
+
+    const dispatch = useAppDispatch();
+    const aidStack = useAppSelector(
+        ({ gatingTestsForm }) => gatingTestsForm.aidStack,
+    );
+    const buildType = useAppSelector(
+        ({ gatingTestsForm }) => gatingTestsForm.buildType,
+    );
+    const ciSystem = useAppSelector(
+        ({ gatingTestsForm }) => gatingTestsForm.ciSystem,
+    );
+
     let artifacts: Artifact[] = [];
+
     /**
-     * pagination vars,
-     * useRef - preserves values during component re-render,
-     * no need to update component re-render when update.
-     */
-    const aidOffsetPages = useRef<string[]>([]);
-    /**
-     * array of sorted 'aid' from the bottom of each known page
-     */
-    const knownPages = aidOffsetPages.current;
-    /**
-     * aid_offset -- entry from 'known_pages'
-     * Set when user clicks on 'prev' or 'next'
-     */
-    /**
-     * Maps to page number
-     */
-    const [aidOffset, setAidOffset] = useState<string | undefined>();
-    const [searchParams, setSearchParams] = useState(_.cloneDeep(reduxState));
-    useEffect(() => {
-        if (searchParams.searchEpoch !== reduxState.searchEpoch) {
-            /** apply new search options */
-            setSearchParams(_.cloneDeep(reduxState));
-            /** Search parameters has changed */
-            const len = _.size(knownPages);
-            knownPages.splice(0, len);
-            /** reset pages */
-            setAidOffset(undefined);
-        }
-    }, [knownPages, reduxState, searchParams.searchEpoch]);
-    /**
-     * has_next -- returned by query from backend
+     * Are there more pages in the results?
      */
     let hasNext = false;
     /**
-     * currentPage -- index in known pages
+     * index in known pages
      */
-    let currentPage = 1;
+    let currentPage = 1 + aidStack.length;
     let loadNextIsDisabled = true;
     let loadPrevIsDisabled = true;
-    /**
-     * page navigation
-     */
-    const onClickLoadNext = () => {
-        const newAidOffset = _.last(artifacts)?.aid;
-        setAidOffset(newAidOffset);
-    };
-    const onClickLoadPrev = () => {
-        const index = _.findLastIndex(knownPages, (o) => aidOffset! < o);
-        if (index < -1) {
-            /** reach first page */
-            setAidOffset(undefined);
-            return;
-        }
-        const newAidOffset = knownPages[index];
-        setAidOffset(newAidOffset);
-    };
-    const artifactsType = searchParams.buildType;
-    /**
-     * gate_tag_name must be first in the query field, otherwise query will be slow.
-     * Special index is present:
-     * db.artifacts.createIndex({"type" : 1, "aid" : -1, "gate_tag_name" : 1}, { collation: { locale: "en_US", numericOrdering : true} })
-     */
-    const dbFieldName1 = 'payload.gate_tag_name';
-    const dbFieldValues1 = _.trim(searchParams.gateTag);
-    /** resultsdb_testcase */
-    const dbFieldName2 = 'states.kai_state.test_case_name';
-    const dbFieldValues2 = _.trim(searchParams.ciSystem);
-    const dbFieldName3 = 'payload.issuer';
-    const dbFieldValues3 = _.trim(searchParams.packager);
-    const dbFieldNameComponentMapping1 = 'sst_team_name';
-    const dbFieldValuesComponentMapping1 = searchParams.sstTeams;
-    const searchOptions = {
-        valuesAreRegex1: true,
-        valuesAreRegex2: true,
-        valuesAreRegex3: true,
-        reduced: true,
-    };
-    /** Always present block */
-    const queryVariables: GatingSearchQuery = {
-        /** Brew-build, redhat-module. Always present in query. */
-        atype: artifactsType,
-        /**
-         * gate_tag_name -> RHEL version. Always present in query.
-         * This will guarantee that gate_tag_name is not emtpy.
-         */
-        dbFieldName1: dbFieldName1,
-        dbFieldValues1: dbFieldValues1,
-        options: searchOptions,
-    };
-    if (!_.isNil(aidOffset)) {
-        queryVariables.aid_offset = aidOffset;
-    }
-    if (!_.isEmpty(dbFieldValues2)) {
-        /** CI system name -> resultsdb testcase name */
-        queryVariables.dbFieldName2 = dbFieldName2;
-        queryVariables.dbFieldValues2 = dbFieldValues2;
-    }
-    if (!_.isEmpty(dbFieldValues3)) {
-        queryVariables.dbFieldName3 = dbFieldName3;
-        queryVariables.dbFieldValues3 = dbFieldValues3;
-    }
-    if (!_.isEmpty(dbFieldValuesComponentMapping1)) {
-        if (_.isEmpty(queryVariables.dbFieldValues1)) {
-            /** Limit gating tag to product id */
-            if (searchParams.productId === 604) {
-                queryVariables.dbFieldValues1 = 'rhel-9';
-            } else if (searchParams.productId === 370) {
-                queryVariables.dbFieldValues1 = 'rhel-8';
-            }
-        }
-        queryVariables.options.componentMappingProductId =
-            searchParams.productId;
-        queryVariables.dbFieldNameComponentMapping1 =
-            dbFieldNameComponentMapping1;
-        queryVariables.dbFieldValuesComponentMapping1 =
-            dbFieldValuesComponentMapping1;
-    }
-    const query = new URLSearchParams(window.location.search);
-    const btype = query.get('btype');
-    const {
-        loading: isLoading,
-        error,
-        data,
-    } = useQuery<PageGatingArtifactsData>(PageGatingArtifacts, {
-        variables: queryVariables,
-        /** https://www.apollographql.com/docs/react/api/core/ApolloClient/ */
-        fetchPolicy: 'cache-first',
-        notifyOnNetworkStatusChange: true,
-        errorPolicy: 'all',
-        /** Do query if URL has artifact type */
-        skip: _.isEmpty(btype),
-    });
-    const haveData = !isLoading && data && !_.isEmpty(data.artifacts.artifacts);
+
+    const haveData =
+        !isLoading && data && !_.isEmpty(data.artifacts?.artifacts);
     const haveErrorNoData = !isLoading && error && !haveData;
     if (haveData) {
-        artifacts = data.artifacts.artifacts;
-        hasNext = data.artifacts.has_next;
-        const aidAtBottom = _.last(artifacts)!.aid;
-        if (!_.includes(knownPages, aidAtBottom)) {
-            knownPages.splice(
-                /**
-                 * Keep list sorted, by inserting aid at the correct place.
-                 * Q: Does this works when 'aid' is not number?
-                 */
-                _.sortedIndexBy(knownPages, aidAtBottom, (x) => -x),
-                0,
-                aidAtBottom,
-            );
-        }
+        artifacts = data.artifacts!.artifacts;
+        hasNext = data.artifacts!.has_next;
     }
-    if (knownPages.length && !_.isEmpty(artifacts)) {
-        const aidAtBottom = _.last(artifacts)!.aid;
-        currentPage = 1 + _.findIndex(knownPages, (x) => x === aidAtBottom);
-    }
+
     if (currentPage > 1) {
         loadPrevIsDisabled = false;
     }
@@ -882,7 +830,7 @@ function GatingResults() {
     }
 
     const rowsArtifacts = _.map(artifacts, (artifact) =>
-        mkArtifactRow(artifact, searchParams),
+        mkArtifactRow(artifact, ciSystem),
     );
 
     let rowsLoading: IRow[] = [];
@@ -895,20 +843,33 @@ function GatingResults() {
     }
     const knownRows: IRow[] = _.concat(rowsArtifacts, rowsErrors, rowsLoading);
 
+    const onClickLoadNext = () => {
+        const newAidOffset = _.last(artifacts)?.aid;
+        if (!hasNext || _.isNil(newAidOffset)) {
+            // This shouldn't happen but just to be sure...
+            return;
+        }
+        dispatch(goToGatingNextPage(newAidOffset));
+    };
+    const onClickLoadPrev = () => {
+        dispatch(goToGatingPrevPage());
+    };
+
     const paginationProps = {
         isLoading,
         currentPage,
         loadPrevIsDisabled,
         loadNextIsDisabled,
-        onClickLoadPrev,
         onClickLoadNext,
+        onClickLoadPrev,
     };
+
     return (
         <>
             <Table
                 header={<PaginationToolbar {...paginationProps} />}
                 variant={TableVariant.compact}
-                cells={columns(artifactsType)}
+                cells={columns(buildType)}
                 rows={knownRows}
                 aria-label="table with results"
             >
@@ -920,88 +881,117 @@ function GatingResults() {
     );
 }
 
-function GatingToolbar() {
-    const dispatch = useAppDispatch();
+interface GatingToolbarProps {
+    onSubmit?(): void;
+}
+
+function GatingToolbar(props: GatingToolbarProps) {
     const onClickSearch = () => {
-        dispatch(bumpGatingSearchEpoch());
+        if (props.onSubmit) props.onSubmit();
     };
+
     return (
-        <Flex>
-            <Flex
-                alignContent={{ default: 'alignContentCenter' }}
-                direction={{ default: 'column' }}
-                grow={{ default: 'grow' }}
-            >
-                <Form>
-                    <Grid hasGutter md={4}>
-                        <FormGroup
-                            fieldId="grid-form-email-01"
-                            helperText="Brew artifact type."
-                            isRequired
-                            label="Build type"
+        <Flex
+            alignContent={{ default: 'alignContentCenter' }}
+            direction={{ default: 'column' }}
+        >
+            <Form>
+                <Grid hasGutter md={4}>
+                    <FormGroup
+                        fieldId="grid-form-email-01"
+                        helperText="Brew artifact type."
+                        isRequired
+                        label="Build type"
+                    >
+                        <BuildTypeSelector />
+                    </FormGroup>
+                    <FormGroup
+                        fieldId="grid-form-email-01"
+                        helperText="Brew gate tag."
+                        label="Gating tag"
+                    >
+                        <GatingTagSelector />
+                    </FormGroup>
+                    <FormGroup
+                        fieldId="grid-form-name-01"
+                        helperText="Test case name as it sees ResultsDB."
+                        label="CI system"
+                    >
+                        <CiSystemSelector />
+                    </FormGroup>
+                    <FormGroup
+                        fieldId="grid-form-email-01"
+                        helperText="SST teams for specific product."
+                        label="SST teams"
+                    >
+                        <InputGroup>
+                            <ProductSelector />
+                            <SstSelector />
+                        </InputGroup>
+                    </FormGroup>
+                    <FormGroup
+                        fieldId="grid-form-email-01"
+                        helperText="Kerberos principal who made a build."
+                        label="Packager"
+                    >
+                        <PackagerSelector />
+                    </FormGroup>
+                    <FormGroup fieldId="options" isStack label="Search options">
+                        <Checkboxes />
+                    </FormGroup>
+                    <GridItem span={12}>
+                        <Button
+                            icon={<SearchIcon />}
+                            onClick={onClickSearch}
+                            variant="primary"
                         >
-                            <BuildTypeSelector />
-                        </FormGroup>
-                        <FormGroup
-                            fieldId="grid-form-email-01"
-                            helperText="Brew gate tag."
-                            label="Gating tag"
-                        >
-                            <GatingTagSelector />
-                        </FormGroup>
-                        <FormGroup
-                            fieldId="grid-form-name-01"
-                            helperText="Test case name as it sees ResultsDB."
-                            label="CI system"
-                        >
-                            <CiSystemSelector />
-                        </FormGroup>
-                        <FormGroup
-                            fieldId="grid-form-email-01"
-                            helperText="SST teams for specific product."
-                            label="SST teams"
-                        >
-                            <InputGroup>
-                                <ProductSelector />
-                                <SstSelector />
-                            </InputGroup>
-                        </FormGroup>
-                        <FormGroup
-                            fieldId="grid-form-email-01"
-                            helperText="Kerberos principal who made a build."
-                            label="Packager"
-                        >
-                            <PackagerSelector />
-                        </FormGroup>
-                        <GridItem span={12}>
-                            <FormGroup
-                                fieldId="options"
-                                hasNoPaddingTop
-                                isHelperTextBeforeField
-                                isStack
-                                label="Search options"
-                            >
-                                <Checkboxes />
-                            </FormGroup>
-                        </GridItem>
-                    </Grid>
-                    <ActionGroup>
-                        <Button onClick={onClickSearch} variant="primary">
-                            Show
+                            Search
                         </Button>
-                    </ActionGroup>
-                </Form>
-            </Flex>
+                    </GridItem>
+                </Grid>
+            </Form>
         </Flex>
     );
 }
 
 export function PageGating() {
+    const dispatch = useAppDispatch();
+    const isFormDirty = useAppSelector(
+        ({ gatingTestsForm }) => !!gatingTestsForm.isDirty,
+    );
+    const queryVariables = useAppSelector(selectGatingQueryVariables);
+    const serializedFormState = useAppSelector(selectSerializedGatingFormState);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    useEffect(() => {
+        // Hydrate form state from URL parameters.
+        if (searchParams.has('btype')) {
+            const deserialized = deserializeGatingFormState(searchParams);
+            dispatch(setGatingSearchOptions(deserialized));
+        }
+    }, [dispatch, searchParams]);
+
+    const { data, error, loading } = useQuery<PageGatingArtifactsData>(
+        PageGatingArtifacts,
+        {
+            errorPolicy: 'all',
+            fetchPolicy: 'cache-first',
+            notifyOnNetworkStatusChange: true,
+            skip: isFormDirty,
+            variables: queryVariables,
+        },
+    );
+
+    const onSearchSubmit = () => {
+        setSearchParams(serializedFormState);
+        dispatch(cleanseGatingFormState());
+    };
+
     return (
         <PageCommon title={`Gating tests | ${config.defaultTitle}`}>
             <PageSection isFilled variant={PageSectionVariants.default}>
-                <GatingToolbar />
-                <GatingResults />
+                <GatingToolbar onSubmit={onSearchSubmit} />
+                <GatingResults data={data} error={error} isLoading={loading} />
             </PageSection>
         </PageCommon>
     );
