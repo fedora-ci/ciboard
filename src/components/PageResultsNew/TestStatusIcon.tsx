@@ -18,6 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import { CSSProperties } from 'react';
 import {
     CheckCircleIcon,
     ExclamationCircleIcon,
@@ -25,6 +26,8 @@ import {
     GhostIcon,
     HandPaperIcon,
     HourglassHalfIcon,
+    IconSize,
+    InfoCircleIcon,
     InProgressIcon,
     QuestionCircleIcon,
 } from '@patternfly/react-icons';
@@ -32,14 +35,22 @@ import {
 import { TestStatus } from './types';
 
 export interface TestStatusIconProps {
+    size?: IconSize | keyof typeof IconSize;
+    /**
+     * String indicating the status/outcome of the test.
+     * Examples: 'pass', 'failed', 'error', 'info'.
+     */
     status: TestStatus;
+    /** Additional styling for the icon. */
+    style?: CSSProperties;
 }
 
-export function TestStatusIcon({ status }: TestStatusIconProps) {
+export function TestStatusIcon({ size, status, style }: TestStatusIconProps) {
     const commonIconProps = {
-        size: 'md' as const,
-        style: { marginTop: '0.2rem' },
+        size: size || ('sm' as IconSize),
+        style,
     };
+
     if (status === 'error')
         return (
             <ExclamationTriangleIcon
@@ -53,6 +64,14 @@ export function TestStatusIcon({ status }: TestStatusIconProps) {
             <ExclamationCircleIcon
                 className="pf-u-danger-color-100"
                 title="Failed because one or more test cases failed"
+                {...commonIconProps}
+            />
+        );
+    if (status === 'info')
+        return (
+            <InfoCircleIcon
+                className="pf-u-info-color-100"
+                title="This result is informative"
                 {...commonIconProps}
             />
         );

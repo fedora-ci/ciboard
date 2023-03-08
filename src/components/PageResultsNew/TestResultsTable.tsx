@@ -61,7 +61,13 @@ interface SingleTestRowProps {
 }
 
 function SingleTestRow(props: SingleTestRowProps) {
-    const statusIcon = <TestStatusIcon status={props.status} />;
+    const statusIcon = (
+        <TestStatusIcon
+            size="md"
+            status={props.status}
+            style={{ marginTop: '0.2em' }}
+        />
+    );
 
     return (
         <Flex
@@ -271,7 +277,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
     const passedRequiredRows = tests
         .filter(
             ({ required, status }) =>
-                required && (status === 'passed' || status === 'waived'),
+                required && (['info', 'passed', 'waived'].includes(status)),
         )
         .map((row) => (
             <Tr

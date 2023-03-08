@@ -21,6 +21,7 @@
 export type TestStatus =
     | 'error'
     | 'failed'
+    | 'info'
     | 'missing'
     | 'passed'
     | 'queued'
