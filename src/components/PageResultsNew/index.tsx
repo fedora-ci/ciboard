@@ -50,6 +50,7 @@ import {
 } from '../../artifact';
 import {
     getDocsUrl,
+    getKaiExtendedStatus,
     getRerunUrl,
     getTestcaseName,
     isGreenwaveKaiState,
@@ -72,25 +73,22 @@ function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
     } else if (['failed', 'test-result-failed'].includes(stateName)) {
         return 'failed';
     } else if (
-        [
-            'missing-gating-yaml',
-            'missing-gating-yaml-waived',
-            'test-result-missing',
-            'test-result-missing-waived',
-        ].includes(stateName)
+        ['missing-gating-yaml', 'test-result-missing'].includes(stateName)
     ) {
         return 'missing';
     } else if (
         [
-            'passed',
+            'blacklisted',
             'complete',
+            'excluded',
+            'passed',
             'test-result-passed',
             /*
-             * TODO: Handle this more approriately. This is just a flag used by
+             * TODO: Handle this more appropriately. This is just a flag used by
              * Greenwave, but the outcome can be anything from `running` to `passed`
              * to `failed` or `not_applicable`.
              */
-            'additional-tests',
+            // 'additional-tests',
         ].includes(stateName)
     ) {
         return 'passed';
@@ -98,14 +96,14 @@ function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
         return 'queued';
     } else if (['running'].includes(stateName)) {
         return 'running';
+    } else if (
+        ['info', 'needs_inspection', 'not_applicable'].includes(stateName)
+    ) {
+        return 'info';
     } else if (stateName.endsWith('-waived')) {
         return 'waived';
     }
-    /*
-     * TODO: Handle `info`, `needs_inspection` (→ error/warning),
-     * `not_applicable` (→ info)
-     * and `*-gating-yaml` + `excluded`/`blacklisted` statuses.
-     */
+    // TODO: Handle `*-gating-yaml` statuses.
     return 'unknown';
 }
 
@@ -113,6 +111,9 @@ function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
 function transformGreenwaveOutcome(
     outcome: GreenwaveRequirementOutcome,
 ): TestStatus {
+    // TODO: NOT_APPLICABLE is fine for additional-tests but not for required tests. Make
+    // sure this works as expected.
+    if (outcome === 'INFO' || outcome === 'NOT_APPLICABLE') return 'info';
     if (outcome === 'PASSED') return 'passed';
     if (outcome === 'RUNNING') return 'running';
     return 'failed';
@@ -132,14 +133,22 @@ function transformTest(
     const waivable = isResultWaivable(test);
 
     let status = transformUmbStatus(stateName);
-    if (isGreenwaveState(test) && test.result && status !== 'waived') {
+    if (
+        isGreenwaveState(test) &&
+        test.result &&
+        // stateName !== 'additional-tests' &&
+        status !== 'waived'
+    ) {
         status = transformGreenwaveOutcome(test.result.outcome);
     } else if (
         isGreenwaveKaiState(test) &&
         test.gs.result &&
+        stateName !== 'additional-tests' &&
         status !== 'waived'
     ) {
         status = transformGreenwaveOutcome(test.gs.result.outcome);
+    } else if (isGreenwaveKaiState(test) && stateName === 'additional-tests') {
+        status = transformUmbStatus(getKaiExtendedStatus(test.ks));
     }
 
     return { docsUrl, name, required, rerunUrl, status, waivable };

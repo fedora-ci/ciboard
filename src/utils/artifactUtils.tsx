@@ -19,6 +19,7 @@
  */
 
 import _ from 'lodash';
+import { CSSProperties } from 'react';
 import {
     CheckCircleIcon,
     ExclamationTriangleIcon,
@@ -55,8 +56,6 @@ import {
 } from '../artifact';
 import { config } from '../config';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
-import { CSSProperties } from 'react';
-
 /**
  *Typescript guards
  */

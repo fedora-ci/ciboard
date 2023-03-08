@@ -55,6 +55,7 @@ import { LinkifyNewTab } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
 import { FAKE_TEST_SUITES } from './fakeData';
+import { TestStatusIcon } from './TestStatusIcon';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestStatusIcon } from './TestStatusIcon';
 
@@ -201,7 +202,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     const statusIcon = selectedTest ? (
         <TestStatusIcon
             status={selectedTest.status}
-            style={{ verticalAlign: '-.125em' }}
+            style={{ verticalAlign: '-0.125em' }}
         />
     ) : null;
 
