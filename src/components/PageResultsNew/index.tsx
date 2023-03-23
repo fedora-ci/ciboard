@@ -163,9 +163,7 @@ function extractTests(artifact: Artifact): CiTest[] {
     return _.sortBy(tests, (test) => test.name);
 }
 
-interface PageResultsNewParams {
-    aid?: string;
-}
+type PageResultsNewParams = 'aid';
 
 export function PageResultsNew(_props: {}) {
     const [selectedTest, setSelectedTest] = useState<CiTest | undefined>();
