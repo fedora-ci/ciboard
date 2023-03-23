@@ -95,6 +95,18 @@ export const otherRoutes: MenuEntry[] = [
     },
     {
         title: '',
+        key: 'resultsnew-empty',
+        /*
+         * Further details on new address structure:
+         * - /artifact/:type/:field/:value - same as now, see PageByMongoField
+         * - /artifact/:type/:field/:value/tc/:testcase - show specific test in sidebar
+         * - /artifact/:type/:field/:value/...?
+         */
+        path: '/resultsnew',
+        element: <PageResultsNew />,
+    },
+    {
+        title: '',
         key: 'resultsnew',
         /*
          * Further details on new address structure:
@@ -102,7 +114,7 @@ export const otherRoutes: MenuEntry[] = [
          * - /artifact/:type/:field/:value/tc/:testcase - show specific test in sidebar
          * - /artifact/:type/:field/:value/...?
          */
-        path: '/resultsnew/:aid?',
+        path: '/resultsnew/:type/:aid',
         element: <PageResultsNew />,
     },
 ];
