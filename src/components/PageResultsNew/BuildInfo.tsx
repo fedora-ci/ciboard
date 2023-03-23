@@ -44,6 +44,7 @@ import classNames from 'classnames';
 
 import styles from '../../custom.module.css';
 import {
+    ArtifactMBS,
     ArtifactRPM,
     KojiBuildInfo,
     KojiInstanceType,
@@ -212,7 +213,7 @@ function BuildInfoLoading(_props: {}) {
 }
 
 interface BuildInfoProps {
-    artifact: ArtifactRPM;
+    artifact: ArtifactMBS | ArtifactRPM;
 }
 
 export function BuildInfo(props: BuildInfoProps) {

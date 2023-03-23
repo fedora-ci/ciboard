@@ -32,10 +32,11 @@ import {
     AngleLeftIcon,
     CodeBranchIcon,
     CubeIcon,
+    UserIcon,
 } from '@patternfly/react-icons';
-import { Artifact } from '../../artifact';
+import { Artifact, isArtifactMBS, isArtifactRPM } from '../../artifact';
 
-import { mkLinkKojiWebTask } from '../../utils/artifactUtils';
+import { getArtifactName, mkLinkKojiWebTask } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';
 
@@ -47,21 +48,26 @@ function BackButton(_props: {}) {
     );
 }
 
-interface SummaryHeaderProps {
+interface ArtifactTitleProps {
     artifact: Artifact;
     gatingTag?: string;
     isScratch?: boolean;
-    nvr: string;
     owner: string;
 }
 
-function ArtifactTitle(props: SummaryHeaderProps) {
+function ArtifactTitle(props: ArtifactTitleProps) {
     const hasGatingDecision = !_.isNil(props.artifact.greenwave_decision);
+    const issuer =
+        isArtifactMBS(props.artifact) || isArtifactRPM(props.artifact)
+            ? props.artifact.payload.issuer
+            : null;
 
     return (
         <Flex spaceItems={{ default: 'spaceItemsLg' }}>
-            <TextContent>
-                <Title headingLevel="h1">{props.nvr}</Title>
+            <TextContent className="pf-u-mr-auto">
+                <Title headingLevel="h1">
+                    {getArtifactName(props.artifact)}
+                </Title>
             </TextContent>
             <FlexItem spacer={{ default: 'spacerXl' }}></FlexItem>
             {hasGatingDecision && (
@@ -73,11 +79,19 @@ function ArtifactTitle(props: SummaryHeaderProps) {
                     <CodeBranchIcon /> {props.gatingTag}
                 </span>
             )}
+            {issuer && (
+                <span
+                    className="pf-u-color-200"
+                    title="Build issuer / packager"
+                >
+                    <UserIcon /> {issuer}
+                </span>
+            )}
         </Flex>
     );
 }
 
-interface PageHeaderProps {
+export interface ArtifactHeaderProps {
     artifact: Artifact;
     gatingStatus?: 'fail' | 'pass';
     gatingTag?: string;
@@ -87,7 +101,7 @@ interface PageHeaderProps {
     owner: string;
 }
 
-export function ArtifactHeader(props: PageHeaderProps) {
+export function ArtifactHeader(props: ArtifactHeaderProps) {
     const { artifact } = props;
     // TODO: Use the correct label (Brew, MBS, Compose).
     const artifactLabel = `Brew #${artifact.aid}`;
@@ -114,8 +128,8 @@ export function ArtifactHeader(props: PageHeaderProps) {
             <StackItem>
                 <ArtifactTitle
                     artifact={artifact}
+                    isScratch={props.isScratch}
                     gatingTag={props.gatingTag}
-                    nvr={props.nvr}
                     owner={props.owner}
                 />
             </StackItem>

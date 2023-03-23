@@ -44,6 +44,7 @@ import { config } from '../../config';
 import {
     Artifact,
     GreenwaveRequirementOutcome,
+    isArtifactMBS,
     isArtifactRPM,
     StateExtendedNameType,
     StateType,
@@ -163,7 +164,7 @@ function extractTests(artifact: Artifact): CiTest[] {
     return _.sortBy(tests, (test) => test.name);
 }
 
-type PageResultsNewParams = 'aid';
+type PageResultsNewParams = 'aid' | 'type';
 
 export function PageResultsNew(_props: {}) {
     const [selectedTest, setSelectedTest] = useState<CiTest | undefined>();
@@ -178,12 +179,13 @@ export function PageResultsNew(_props: {}) {
     const pageTitle = `🚧 New test results | ${config.defaultTitle}`;
 
     const aid = params.aid || '47942709';
+    const atype = params.type || 'brew-build';
 
     const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
         ArtifactsCompleteQuery,
         {
             variables: {
-                atype: 'brew-build',
+                atype,
                 dbFieldName1: 'aid',
                 dbFieldValues1: [aid],
                 limit: 1,
@@ -228,7 +230,7 @@ export function PageResultsNew(_props: {}) {
         );
     }
 
-    if (!haveData || !isArtifactRPM(artifact)) {
+    if (!haveData || (!isArtifactMBS(artifact) && !isArtifactRPM(artifact))) {
         return (
             <PageCommon title={pageTitle}>
                 <PageSection isFilled>
@@ -269,6 +271,10 @@ export function PageResultsNew(_props: {}) {
                             artifact={artifact}
                             gatingStatus="fail"
                             gatingTag={artifact.payload.gate_tag_name}
+                            // TODO: Is this logic correct?
+                            isScratch={_.isEmpty(
+                                artifact.payload.gate_tag_name,
+                            )}
                             nvr={artifact.payload.nvr}
                             owner={artifact.payload.issuer}
                         />
