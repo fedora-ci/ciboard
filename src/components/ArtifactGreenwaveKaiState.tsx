@@ -262,7 +262,7 @@ export const BodyForGreenwaveKaiState: React.FC<
                     }
                     aria-label="Tab with xunit results"
                 >
-                    <GreenwaveWaiver state={state.gs} />
+                    <GreenwaveWaiver waiver={state.gs.waiver} />
                     <GreenwaveDetails requirement={state.gs.requirement} />
                     <ResultNote state={state.ks} />
                     <KaiDetailedResults artifact={artifact} state={state.ks} />

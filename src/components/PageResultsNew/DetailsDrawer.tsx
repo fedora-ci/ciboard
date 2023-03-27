@@ -45,19 +45,17 @@ import {
 import {
     BookIcon,
     ExclamationCircleIcon,
-    HandPaperIcon,
     InfoCircleIcon,
     RedoIcon,
     ThumbsUpIcon,
 } from '@patternfly/react-icons';
 
-import { LinkifyNewTab } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
 import { FAKE_TEST_SUITES } from './fakeData';
-import { TestStatusIcon } from './TestStatusIcon';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestStatusIcon } from './TestStatusIcon';
+import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -310,34 +308,8 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         </TextContent>
                     </Alert>
                 )}
-                {selectedTest?.status === 'waived' && (
-                    <Alert
-                        className="pf-u-mt-md"
-                        customIcon={<HandPaperIcon />}
-                        isInline
-                        title="Test result waived"
-                        variant="default"
-                    >
-                        <TextContent className="pf-u-font-size-sm">
-                            {/* TODO: Replace with real waiver. */}
-                            <Text>
-                                This test result was waived by <b>mgrabovs</b>{' '}
-                                <time
-                                    dateTime="2023-01-17T14:39:11Z"
-                                    title="2023-01-17T14:39:11Z"
-                                >
-                                    27 minutes ago
-                                </time>{' '}
-                                with the following comment:
-                            </Text>
-                            <Text component="blockquote">
-                                <LinkifyNewTab>
-                                    This is a broken test. See
-                                    https://issues.redhat.com/browse/OSCI-3206
-                                </LinkifyNewTab>
-                            </Text>
-                        </TextContent>
-                    </Alert>
+                {selectedTest?.waiver && (
+                    <GreenwaveWaiver waiver={selectedTest?.waiver} />
                 )}
             </DrawerPanelBody>
             <DetailsDrawerTabs

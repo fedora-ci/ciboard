@@ -44,6 +44,7 @@ import { config } from '../../config';
 import {
     Artifact,
     GreenwaveRequirementOutcome,
+    GreenwaveWaiveType,
     isArtifactMBS,
     isArtifactRPM,
     StateExtendedNameType,
@@ -132,6 +133,7 @@ function transformTest(
         (isGreenwaveState(test) || isGreenwaveKaiState(test)) &&
         stateName !== 'additional-tests';
     const waivable = isResultWaivable(test);
+    let waiver: GreenwaveWaiveType | undefined;
 
     let status = transformUmbStatus(stateName);
     if (
@@ -152,7 +154,13 @@ function transformTest(
         status = transformUmbStatus(getKaiExtendedStatus(test.ks));
     }
 
-    return { docsUrl, name, required, rerunUrl, status, waivable };
+    if (isGreenwaveState(test)) {
+        waiver = test.waiver;
+    } else if (isGreenwaveKaiState(test)) {
+        waiver = test.gs.waiver;
+    }
+
+    return { docsUrl, name, required, rerunUrl, status, waivable, waiver };
 }
 
 // TODO: This function is temporary only and will be removed once the UI is finalized.
