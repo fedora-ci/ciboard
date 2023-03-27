@@ -19,8 +19,8 @@
  */
 
 import * as _ from 'lodash';
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
     Bullseye,
     Card,
@@ -169,11 +169,24 @@ type PageResultsNewParams = 'aid' | 'type';
 export function PageResultsNew(_props: {}) {
     const [selectedTest, setSelectedTest] = useState<CiTest | undefined>();
     const params = useParams<PageResultsNewParams>();
-    // TODO: Uncomment this once we migrate to v6.
     // Docs: https://reactrouter.com/en/main/hooks/use-search-params
-    // const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    // TODO: Set selectedTest based on searchParams, if present.
+    let tests: CiTest[] = [];
+    const findTestByName = (name: string) =>
+        _.find(tests, (test) => test.name === name);
+
+    useEffect(() => {
+        // Set selected test based on URL, if present.
+        if (searchParams.has('focus')) {
+            // NOTE: We know that `.get()` must return non-null since `.has()` is true.
+            const test = findTestByName(searchParams.get('focus')!);
+            setSelectedTest(test);
+        } else {
+            setSelectedTest(undefined);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     // TODO: Update title dynamically.
     const pageTitle = `🚧 New test results | ${config.defaultTitle}`;
@@ -250,22 +263,23 @@ export function PageResultsNew(_props: {}) {
         );
     }
 
-    const tests = extractTests(artifact);
+    tests = extractTests(artifact);
 
     // TODO: Use unique key later on.
     const onTestSelect = (name: string | undefined) => {
-        if (name) {
-            if (name === selectedTest?.name) setSelectedTest(undefined);
-            else setSelectedTest(_.find(tests, (test) => test.name === name));
-        } else setSelectedTest(undefined);
-        // TODO: Set query/search params.
-        // setSearchParams({ focus: name });
+        if (name && name !== selectedTest?.name) {
+            setSelectedTest(findTestByName(name));
+            setSearchParams({ focus: name });
+        } else {
+            setSelectedTest(undefined);
+            setSearchParams({});
+        }
     };
 
     return (
         <PageCommon title={pageTitle}>
             <SelectedTestContext.Provider value={selectedTest}>
-                <DetailsDrawer onClose={() => setSelectedTest(undefined)}>
+                <DetailsDrawer onClose={() => onTestSelect(undefined)}>
                     <PageSection variant={PageSectionVariants.light}>
                         <ArtifactHeader
                             artifact={artifact}
