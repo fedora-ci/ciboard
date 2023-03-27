@@ -41,6 +41,8 @@ import { ExternalLink } from '../ExternalLink';
 import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';
 
 function BackButton(_props: {}) {
+    // const navigate = useNavigate();
+    // TODO: Call `navigate(-1)` on click to go to the previous page.
     return (
         <Button className="pf-u-px-0" icon={<AngleLeftIcon />} variant="link">
             Back to results list
