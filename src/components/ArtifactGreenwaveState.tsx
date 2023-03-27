@@ -55,12 +55,12 @@ import {
 import {
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
+    HandPaperIcon,
     InfoCircleIcon,
     ListIcon,
     OutlinedThumbsUpIcon,
     RegisteredIcon,
     RegistryIcon,
-    ThumbsUpIcon,
     WeeblyIcon,
 } from '@patternfly/react-icons';
 
@@ -79,6 +79,7 @@ import {
 import {
     Artifact,
     GreenwaveRequirementType,
+    GreenwaveWaiveType,
     StateGreenwaveType,
 } from '../artifact';
 import { isResultMissing } from '../utils/artifactUtils';
@@ -204,13 +205,18 @@ export const GreenwaveResultInfo: React.FC<PropsWithGreenwaveState> = (
     );
 };
 
-export const GreenwaveWaiver: React.FC<PropsWithGreenwaveState> = (props) => {
-    const { waiver } = props.state;
+export interface GreenwaveWaiverProps {
+    waiver?: GreenwaveWaiveType;
+}
+
+export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
+    const { waiver } = props;
     if (!waiver) return null;
     const humanTime = timestampForUser(waiver.timestamp);
     return (
         <Alert
-            customIcon={<ThumbsUpIcon />}
+            className="pf-u-mt-md"
+            customIcon={<HandPaperIcon />}
             isInline
             title="Test result waived"
             variant="warning"
@@ -220,7 +226,7 @@ export const GreenwaveWaiver: React.FC<PropsWithGreenwaveState> = (props) => {
                     This test result was waived by <b>{waiver.username}</b> on{' '}
                     {humanTime} with the following comment:
                 </Text>
-                <Text component="p">
+                <Text className="pf-u-py-xs" component="blockquote">
                     <LinkifyNewTab>{waiver.comment}</LinkifyNewTab>
                 </Text>
             </TextContent>
@@ -479,7 +485,7 @@ export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
                     }
                     aria-label="Tab with results info"
                 >
-                    <GreenwaveWaiver state={state} />
+                    <GreenwaveWaiver waiver={state.waiver} />
                     <GreenwaveDetails requirement={state.requirement} />
                     {isResultMissing(state) && <GreenwaveMissingHints />}
                 </Tab>
