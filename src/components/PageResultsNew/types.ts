@@ -18,6 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import { GreenwaveWaiveType } from '../../artifact';
+
 export type TestStatus =
     | 'error'
     | 'failed'
@@ -40,6 +42,7 @@ export interface CiTest {
     status: TestStatus;
     subtitle?: string;
     waivable?: boolean;
+    waiver?: GreenwaveWaiveType;
 }
 
 export interface TestCase {
