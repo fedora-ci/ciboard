@@ -38,17 +38,19 @@ import {
 } from '@patternfly/react-table';
 
 import { SelectedTestContext } from './contexts';
-import { CiTest, TestStatus } from './types';
+import { CiContact, CiTest, TestStatus } from './types';
 import { TestStatusIcon } from './TestStatusIcon';
 import {
     BookIcon,
     LinkIcon,
     RedoIcon,
     ThumbsUpIcon,
+    UsersIcon,
 } from '@patternfly/react-icons';
 import { ExternalLink } from '../ExternalLink';
 
 interface SingleTestRowProps {
+    contact?: CiContact;
     docsUrl?: string;
     isRequired?: boolean;
     isWaivable?: boolean;
@@ -113,9 +115,14 @@ function SingleTestRow(props: SingleTestRowProps) {
                                 waived
                             </Label>
                         )}
-                        {props.isRequired && (
+                        {/* {props.isRequired && (
                             <Label color="blue" isCompact>
                                 required
+                            </Label>
+                        )} */}
+                        {props.contact?.team && (
+                            <Label color="blue" icon={<UsersIcon />} isCompact>
+                                Team: {props.contact.team}
                             </Label>
                         )}
                         {props.labels?.map((label) => (
@@ -225,6 +232,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        contact={row.contact}
                         docsUrl={row.docsUrl}
                         isRequired
                         isWaivable={row.waivable}
@@ -260,6 +268,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        contact={row.contact}
                         docsUrl={row.docsUrl}
                         isRequired
                         isWaivable={row.waivable}
@@ -277,7 +286,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
     const passedRequiredRows = tests
         .filter(
             ({ required, status }) =>
-                required && (['info', 'passed', 'waived'].includes(status)),
+                required && ['info', 'passed', 'waived'].includes(status),
         )
         .map((row) => (
             <Tr
@@ -290,6 +299,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        contact={row.contact}
                         docsUrl={row.docsUrl}
                         isRequired
                         isWaived={row.status === 'waived'}
@@ -316,6 +326,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        contact={row.contact}
                         docsUrl={row.docsUrl}
                         labels={row.labels}
                         name={row.name}

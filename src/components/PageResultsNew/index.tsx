@@ -48,8 +48,10 @@ import {
     isArtifactMBS,
     isArtifactRPM,
     StateExtendedNameType,
+    StateKaiType,
     StateType,
 } from '../../artifact';
+import { MSG_V_1 } from '../../types';
 import {
     getDocsUrl,
     getKaiExtendedStatus,
@@ -57,10 +59,11 @@ import {
     getTestcaseName,
     isGreenwaveKaiState,
     isGreenwaveState,
+    isKaiState,
     isResultWaivable,
 } from '../../utils/artifactUtils';
 import { mkStagesAndStates } from '../../utils/stages_states';
-import { CiTest, TestStatus } from './types';
+import { CiContact, CiTest, TestStatus } from './types';
 import { SelectedTestContext } from './contexts';
 import { TestResultsTable } from './TestResultsTable';
 import { BuildInfo } from './BuildInfo';
@@ -121,11 +124,39 @@ function transformGreenwaveOutcome(
     return 'failed';
 }
 
+function extractCotactFromUmb(test: StateKaiType): CiContact | undefined {
+    if (!MSG_V_1.isMsg(test.broker_msg_body)) return;
+    const { contact } = test.broker_msg_body;
+    return {
+        docsUrl: contact.docs,
+        email: contact.email,
+        gchatRoomUrl: undefined,
+        name: contact.name,
+        reportIssueUrl: undefined,
+        slackRoomUrl: undefined,
+        team: contact.team,
+        url: contact.url,
+    };
+}
+
+function extractContact(test: StateType): CiContact | undefined {
+    // TODO: Pull data from "metadata" database.
+    // TODO: Handle the Greenwave-only case.
+    if (isGreenwaveState(test)) return;
+    if (isKaiState(test)) {
+        return extractCotactFromUmb(test);
+    }
+    if (isGreenwaveKaiState(test)) {
+        return extractCotactFromUmb(test.ks);
+    }
+}
+
 // TODO: This function is temporary only and will be removed once the UI is finalized.
 function transformTest(
     test: StateType,
     stateName: StateExtendedNameType,
 ): CiTest {
+    const contact = extractContact(test);
     const docsUrl = getDocsUrl(test);
     const name = getTestcaseName(test);
     const rerunUrl = getRerunUrl(test);
@@ -160,7 +191,16 @@ function transformTest(
         waiver = test.gs.waiver;
     }
 
-    return { docsUrl, name, required, rerunUrl, status, waivable, waiver };
+    return {
+        contact,
+        docsUrl,
+        name,
+        required,
+        rerunUrl,
+        status,
+        waivable,
+        waiver,
+    };
 }
 
 // TODO: This function is temporary only and will be removed once the UI is finalized.
