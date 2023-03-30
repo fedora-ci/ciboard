@@ -33,7 +33,19 @@ export type TestStatus =
 
 export type TestCaseStatus = 'fail' | 'pass' | 'skip';
 
+export interface CiContact {
+    docsUrl?: string;
+    email?: string;
+    gchatRoomUrl?: string;
+    name?: string;
+    reportIssueUrl?: string;
+    slackRoomUrl?: string;
+    team?: string;
+    url?: string;
+}
+
 export interface CiTest {
+    contact?: CiContact;
     docsUrl?: string;
     labels?: string[];
     name: string;
