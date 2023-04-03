@@ -216,7 +216,7 @@ export const artifactUrl = (artifact: Artifact) => {
             // return `https://copr.fedorainfracloud.org/coprs/${coprRepo}build/${bid}`;
             return 'fixme';
         })(),
-        'redhat-module': `${config.mbs.rh.webUrl}/${artifact.aid}`,
+        'redhat-module': `${config.mbs.rh.webUrl}/mbs-ui/module/${artifact.aid}`,
         'productmd-compose': '',
     };
     return urlMap[artifact.type];
