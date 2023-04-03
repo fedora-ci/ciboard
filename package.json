@@ -31,7 +31,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "moment-duration-format": "^2.3.2",
-    "moment-timezone": "^0.5.42",
+    "moment-timezone": "^0.5.43",
     "pako": "^2.0.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
