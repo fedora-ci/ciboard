@@ -135,10 +135,7 @@ const Actions: FunctionComponent<ActionsProps> = (props) => {
                             variant="link"
                             id="edit-button"
                             component={(props) => (
-                                <Link
-                                    {...props}
-                                    to={`metadata/edit/${mEntry._id}`}
-                                />
+                                <Link {...props} to={`edit/${mEntry._id}`} />
                             )}
                             icon={<EditIcon />}
                         />
@@ -152,7 +149,7 @@ const Actions: FunctionComponent<ActionsProps> = (props) => {
                             component={(props) => (
                                 <Link
                                     {...props}
-                                    to={`metadata/edit/${mEntry._id}/clone`}
+                                    to={`edit/${mEntry._id}/clone`}
                                 />
                             )}
                             icon={<CopyIcon />}
@@ -492,7 +489,7 @@ const MetadataList: FunctionComponent<{}> = () => {
                 variant="primary"
                 isInline
                 isSmall
-                component={(props) => <Link {...props} to="metadata/edit" />}
+                component={(props) => <Link {...props} to="edit" />}
                 icon={<AddCircleOIcon />}
             >
                 Add new
