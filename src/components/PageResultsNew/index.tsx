@@ -55,6 +55,7 @@ import { MSG_V_1 } from '../../types';
 import {
     getDocsUrl,
     getKaiExtendedStatus,
+    getMessageError,
     getRerunUrl,
     getTestcaseName,
     isGreenwaveKaiState,
@@ -158,6 +159,7 @@ function transformTest(
 ): CiTest {
     const contact = extractContact(test);
     const docsUrl = getDocsUrl(test);
+    let error;
     const name = getTestcaseName(test);
     const rerunUrl = getRerunUrl(test);
     const required =
@@ -187,13 +189,17 @@ function transformTest(
 
     if (isGreenwaveState(test)) {
         waiver = test.waiver;
+    } else if (isKaiState(test)) {
+        error = getMessageError(test.broker_msg_body);
     } else if (isGreenwaveKaiState(test)) {
+        error = getMessageError(test.ks.broker_msg_body);
         waiver = test.gs.waiver;
     }
 
     return {
         contact,
         docsUrl,
+        error,
         name,
         required,
         rerunUrl,

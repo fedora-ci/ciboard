@@ -401,6 +401,18 @@ export const getXunit = (broker_msg_body: BrokerMessagesType) => {
     return null;
 };
 
+export const getMessageError = (broker_msg_body: BrokerMessagesType) => {
+    if (MSG_V_0_1.isMsg(broker_msg_body) && 'reason' in broker_msg_body) {
+        return {
+            issue_url: broker_msg_body.issue_url,
+            reason: broker_msg_body.reason,
+        };
+    }
+    if (MSG_V_1.isMsg(broker_msg_body) && 'error' in broker_msg_body) {
+        return broker_msg_body.error;
+    }
+};
+
 export interface IconProps {
     className: string;
     icon: React.ComponentClass<SVGIconProps, any>;

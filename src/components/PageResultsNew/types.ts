@@ -19,6 +19,7 @@
  */
 
 import { GreenwaveWaiveType } from '../../artifact';
+import { MSG_V_1 } from '../../types';
 
 export type TestStatus =
     | 'error'
@@ -47,6 +48,7 @@ export interface CiContact {
 export interface CiTest {
     contact?: CiContact;
     docsUrl?: string;
+    error?: MSG_V_1.MsgErrorType;
     labels?: string[];
     name: string;
     required?: boolean;
