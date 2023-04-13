@@ -29,6 +29,13 @@ import {
     Title,
 } from '@patternfly/react-core';
 import {
+    BookIcon,
+    LinkIcon,
+    RedoIcon,
+    ThumbsUpIcon,
+    UsersIcon,
+} from '@patternfly/react-icons';
+import {
     TableComposable,
     Tbody,
     Td,
@@ -36,17 +43,11 @@ import {
     Thead,
     Tr,
 } from '@patternfly/react-table';
+import { useHref } from 'react-router-dom';
 
 import { SelectedTestContext } from './contexts';
 import { CiContact, CiTest, TestStatus } from './types';
 import { TestStatusIcon } from './TestStatusIcon';
-import {
-    BookIcon,
-    LinkIcon,
-    RedoIcon,
-    ThumbsUpIcon,
-    UsersIcon,
-} from '@patternfly/react-icons';
 import { ExternalLink } from '../ExternalLink';
 
 interface SingleTestRowProps {
@@ -63,6 +64,8 @@ interface SingleTestRowProps {
 }
 
 function SingleTestRow(props: SingleTestRowProps) {
+    // TODO: Use unique ID later.
+    const permalinkUrl = useHref(`?focus=${props.name}`);
     const statusIcon = (
         <TestStatusIcon
             size="md"
@@ -175,13 +178,9 @@ function SingleTestRow(props: SingleTestRowProps) {
                         </Button>
                     )}
                     <Button
+                        component="a"
+                        href={permalinkUrl}
                         icon={<LinkIcon />}
-                        onClick={(event) => {
-                            alert(
-                                'Not implemented yet. This will be a permalink to the test results.',
-                            );
-                            event.stopPropagation();
-                        }}
                         variant="link"
                     >
                         Link
