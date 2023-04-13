@@ -262,7 +262,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                 </Flex>
             </DrawerHead>
             <DrawerPanelBody className="pf-u-pb-sm">
-                <Alert isInline title="Test information" variant="info">
+                <Alert isInline title="Test ownership" variant="info">
                     <TextContent>
                         {/* TODO: Replace with real contact info. */}
                         <Text>
@@ -279,28 +279,48 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         </Text>
                     </TextContent>
                 </Alert>
-                {selectedTest?.status === 'error' && (
+                {(selectedTest?.status === 'error' ||
+                    (selectedTest?.status === 'waived' &&
+                        selectedTest.error)) && (
                     <Alert
                         className="pf-u-mt-md"
                         isInline
                         title="Test not completed"
-                        variant="warning"
+                        variant="danger"
                     >
-                        <TextContent className="pf-u-font-size-sm">
-                            {/* TODO: Replace with real error message. */}
-                            <Text>
-                                This test has failed to complete, but the CI
-                                system provided no more information. Please
-                                contact the team, listed above, for guidance.
-                            </Text>
-                        </TextContent>
+                        {selectedTest.error && (
+                            <TextContent className="pf-u-font-size-sm">
+                                <Text>
+                                    <strong>Reason:</strong>{' '}
+                                    {selectedTest.error.reason}
+                                </Text>
+                                {selectedTest.error.issue_url && (
+                                    <Text>
+                                        <ExternalLink
+                                            href={selectedTest.error.issue_url}
+                                        >
+                                            Related issue report
+                                        </ExternalLink>
+                                    </Text>
+                                )}
+                            </TextContent>
+                        )}
+                        {!selectedTest.error && (
+                            <TextContent className="pf-u-font-size-sm">
+                                <Text>
+                                    This test has failed to complete, but the CI
+                                    system provided no more information. Please
+                                    contact the team listed above for guidance.
+                                </Text>
+                            </TextContent>
+                        )}
                     </Alert>
                 )}
                 {selectedTest?.status === 'failed' && (
                     <Alert
                         className="pf-u-mt-md"
                         isInline
-                        title="Test result failed"
+                        title="Test failed"
                         variant="danger"
                     >
                         <TextContent className="pf-u-font-size-sm">
