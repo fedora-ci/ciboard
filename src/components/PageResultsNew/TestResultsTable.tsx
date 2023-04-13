@@ -115,7 +115,7 @@ function SingleTestRow(props: SingleTestRowProps) {
                     >
                         {props.isWaived && (
                             <Label color="orange" isCompact>
-                                waived
+                                Waived
                             </Label>
                         )}
                         {/* {props.isRequired && (
