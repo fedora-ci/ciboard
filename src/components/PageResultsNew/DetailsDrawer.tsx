@@ -48,6 +48,7 @@ import {
     InfoCircleIcon,
     RedoIcon,
     ThumbsUpIcon,
+    UsersIcon,
 } from '@patternfly/react-icons';
 
 import { ExternalLink } from '../ExternalLink';
@@ -56,6 +57,7 @@ import { FAKE_TEST_SUITES } from './fakeData';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestStatusIcon } from './TestStatusIcon';
 import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
+import { CiContact } from './types';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -180,6 +182,40 @@ function DetailsDrawerTabs(_props: {}) {
     );
 }
 
+interface ContactWidgetProps {
+    contact?: CiContact;
+}
+
+function ContactWidget({ contact }: ContactWidgetProps) {
+    if (!contact) return null;
+
+    // TODO: Show contact info only if available.
+    return (
+        <Alert
+            customIcon={<UsersIcon />}
+            isInline
+            title={`Test owned by ${contact.team}`}
+            variant="info"
+        >
+            <TextContent>
+                <Text>
+                    This test result is provided by the <b>{contact.team}</b>{' '}
+                    team. If you need help with this test, you can reach out to
+                    the team{' '}
+                    <ExternalLink href={contact.slackRoomUrl}>
+                        <b>via Slack</b>
+                    </ExternalLink>
+                    , or via email at{' '}
+                    <b>
+                        <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                    </b>
+                    .
+                </Text>
+            </TextContent>
+        </Alert>
+    );
+}
+
 export type DetailsDrawerProps = PropsWithChildren<{
     onClose?(): void;
 }>;
@@ -241,7 +277,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         <Button
                             className="pf-u-p-0"
                             component={ExternalLink}
-                            href={selectedTest?.rerunUrl}
+                            href={selectedTest.rerunUrl}
                             icon={<RedoIcon />}
                             variant="link"
                         >
@@ -252,33 +288,28 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         <Button
                             className="pf-u-p-0"
                             component={ExternalLink}
-                            href={selectedTest?.docsUrl}
+                            href={selectedTest.docsUrl}
                             icon={<BookIcon />}
                             variant="link"
                         >
-                            Documentation
+                            Docs
+                        </Button>
+                    )}
+                    {selectedTest?.contact?.reportIssueUrl && (
+                        <Button
+                            className="pf-u-p-0"
+                            component={ExternalLink}
+                            href={selectedTest.contact.reportIssueUrl}
+                            icon={<ExclamationCircleIcon />}
+                            variant="link"
+                        >
+                            Report issue
                         </Button>
                     )}
                 </Flex>
             </DrawerHead>
             <DrawerPanelBody className="pf-u-pb-sm">
-                <Alert isInline title="Test ownership" variant="info">
-                    <TextContent>
-                        {/* TODO: Replace with real contact info. */}
-                        <Text>
-                            This test result is provided by the{' '}
-                            <b>Kitten Farm</b> team. If you need help with this
-                            test, you can reach out to the team via{' '}
-                            <b>#kittens on IRC</b>, or via email at{' '}
-                            <b>
-                                <a href="mailto:kittens@example.com">
-                                    kittens@example.com
-                                </a>
-                            </b>
-                            .
-                        </Text>
-                    </TextContent>
-                </Alert>
+                <ContactWidget contact={selectedTest?.contact} />
                 {(selectedTest?.status === 'error' ||
                     (selectedTest?.status === 'waived' &&
                         selectedTest.error)) && (

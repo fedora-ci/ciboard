@@ -98,9 +98,9 @@ function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
         ].includes(stateName)
     ) {
         return 'passed';
-    } else if (['queued'].includes(stateName)) {
+    } else if (stateName === 'queued') {
         return 'queued';
-    } else if (['running'].includes(stateName)) {
+    } else if (stateName === 'running') {
         return 'running';
     } else if (
         ['info', 'needs_inspection', 'not_applicable'].includes(stateName)
@@ -126,6 +126,7 @@ function transformGreenwaveOutcome(
 }
 
 function extractCotactFromUmb(test: StateKaiType): CiContact | undefined {
+    // TODO: Incorporate contact info from metadata somehow.
     if (!MSG_V_1.isMsg(test.broker_msg_body)) return;
     const { contact } = test.broker_msg_body;
     return {
