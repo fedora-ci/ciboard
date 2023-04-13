@@ -200,7 +200,10 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     const statusIcon = selectedTest ? (
         <TestStatusIcon
             status={selectedTest.status}
-            style={{ verticalAlign: '-0.125em' }}
+            style={{
+                marginRight: 'var(--pf-global--spacer--sm)',
+                verticalAlign: '-0.125em',
+            }}
         />
     ) : null;
 
@@ -213,7 +216,8 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         >
             <DrawerHead>
                 <Title className="pf-u-pb-sm" headingLevel="h3" size="xl">
-                    {statusIcon} {selectedTest?.name}
+                    {statusIcon}
+                    {selectedTest?.name}
                 </Title>
                 <DrawerActions>
                     <DrawerCloseButton onClick={onCloseClick} />
