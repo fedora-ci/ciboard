@@ -51,7 +51,7 @@ import {
     StateKaiType,
     StateType,
 } from '../../artifact';
-import { MSG_V_1 } from '../../types';
+import { MSG_V_1, MetadataContact } from '../../types';
 import {
     getDocsUrl,
     getKaiExtendedStatus,
@@ -125,7 +125,7 @@ function transformGreenwaveOutcome(
     return 'failed';
 }
 
-function extractCotactFromUmb(test: StateKaiType): CiContact | undefined {
+function extractContactFromUmb(test: StateKaiType): CiContact | undefined {
     // TODO: Incorporate contact info from metadata somehow.
     if (!MSG_V_1.isMsg(test.broker_msg_body)) return;
     const { contact } = test.broker_msg_body;
@@ -135,22 +135,54 @@ function extractCotactFromUmb(test: StateKaiType): CiContact | undefined {
         gchatRoomUrl: undefined,
         name: contact.name,
         reportIssueUrl: undefined,
-        slackRoomUrl: undefined,
+        slackChannelUrl: contact.slack,
         team: contact.team,
         url: contact.url,
     };
 }
 
-function extractContact(test: StateType): CiContact | undefined {
-    // TODO: Pull data from "metadata" database.
-    // TODO: Handle the Greenwave-only case.
-    if (isGreenwaveState(test)) return;
+function extractContact(test: StateType): CiContact {
+    let contact: CiContact = {};
+    let metadataContact: MetadataContact | undefined;
+
+    // TODO: Handle the Greenwave-only case. Is there any info in the Greenwave response?
+    // if (isGreenwaveState(test)) return;
     if (isKaiState(test)) {
-        return extractCotactFromUmb(test);
+        _.merge(contact, extractContactFromUmb(test));
+        metadataContact = test.custom_metadata?.payload?.contact;
     }
     if (isGreenwaveKaiState(test)) {
-        return extractCotactFromUmb(test.ks);
+        _.merge(contact, extractContactFromUmb(test.ks));
+        metadataContact = test.ks.custom_metadata?.payload?.contact;
     }
+
+    // Merge in data from the `custom_metadata` Kai state field.
+    if (metadataContact?.docs) {
+        contact.docsUrl = metadataContact.docs;
+    }
+    if (metadataContact?.email) {
+        contact.email = metadataContact.email;
+    }
+    if (metadataContact?.gchat_room_url) {
+        contact.gchatRoomUrl = metadataContact.gchat_room_url;
+    }
+    if (metadataContact?.name) {
+        contact.name = metadataContact.name;
+    }
+    if (metadataContact?.report_issue_url) {
+        contact.reportIssueUrl = metadataContact.report_issue_url;
+    }
+    if (metadataContact?.slack_channel_url) {
+        contact.slackChannelUrl = metadataContact.slack_channel_url;
+    }
+    if (metadataContact?.team) {
+        contact.team = metadataContact.team;
+    }
+    if (metadataContact?.url) {
+        contact.url = metadataContact.url;
+    }
+
+    return contact;
 }
 
 // TODO: This function is temporary only and will be removed once the UI is finalized.
@@ -185,6 +217,13 @@ function transformTest(
     ) {
         status = transformGreenwaveOutcome(test.gs.result.outcome);
     } else if (isGreenwaveKaiState(test) && stateName === 'additional-tests') {
+        /*
+         * TODO: For some osci and baseos-ci tests, this will return `failed`
+         * even if the failure is in infrastructure. The message is sent to
+         * `/topic/VirtualTopic.eng.ci.osci.brew-build.test.error` and has
+         * `error.reason`, but `test.result === 'failed'`. For an example, see
+         * https://datagrepper.engineering.redhat.com/id?id=ID:osci-jenkins-master-0-43277-1681457299489-309:1:1:1:1&is_raw=true&size=extra-large
+         */
         status = transformUmbStatus(getKaiExtendedStatus(test.ks));
     }
 
