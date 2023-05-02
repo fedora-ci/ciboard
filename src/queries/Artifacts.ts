@@ -38,6 +38,9 @@ const stateEntryFragment = gql`
             timestamp
             test_case_name
         }
+        custom_metadata {
+            payload
+        }
     }
 `;
 

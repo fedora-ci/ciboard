@@ -19,7 +19,7 @@
  */
 
 import _ from 'lodash';
-import { BrokerMessagesType, EtaBrokerMessagesType } from './types';
+import { BrokerMessagesType, EtaBrokerMessagesType, Metadata } from './types';
 
 export type ComposeArtifactType = 'productmd-compose';
 export type ContainerImageArtifactType = 'redhat-container-image';
@@ -404,6 +404,7 @@ export interface KaiErrataToolAutomationStateType {
 
 export type StateKaiType = {
     broker_msg_body: BrokerMessagesType;
+    custom_metadata?: Metadata;
     kai_state: KaiStateType;
 };
 

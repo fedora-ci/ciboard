@@ -40,7 +40,7 @@ export interface CiContact {
     gchatRoomUrl?: string;
     name?: string;
     reportIssueUrl?: string;
-    slackRoomUrl?: string;
+    slackChannelUrl?: string;
     team?: string;
     url?: string;
 }
