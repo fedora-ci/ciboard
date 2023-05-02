@@ -202,8 +202,12 @@ function ContactWidget({ contact }: ContactWidgetProps) {
                     This test result is provided by the <b>{contact.team}</b>{' '}
                     team. If you need help with this test, you can reach out to
                     the team{' '}
-                    <ExternalLink href={contact.slackRoomUrl}>
+                    <ExternalLink href={contact.slackChannelUrl}>
                         <b>via Slack</b>
+                    </ExternalLink>
+                    ,{' '}
+                    <ExternalLink href={contact.gchatRoomUrl}>
+                        <b>via Chat</b>
                     </ExternalLink>
                     , or via email at{' '}
                     <b>
@@ -242,6 +246,11 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             }}
         />
     ) : null;
+
+    /*
+     * TODO: Load (ArtifactsXunitQuery) and parse (xunitParser) xunit
+     * and pass the test suites/loading/error state to <DetailsDrawerTabs>.
+     */
 
     const panelContent = (
         <DrawerPanelContent

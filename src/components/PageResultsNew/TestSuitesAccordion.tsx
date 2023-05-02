@@ -27,6 +27,7 @@ import {
     AccordionToggle,
     Alert,
     Badge,
+    DrawerPanelBody,
     Flex,
     FlexItem,
     Label,
@@ -164,7 +165,20 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
         Partial<Record<string, boolean>>
     >({});
     const { suites } = props;
-    if (!suites) return null;
+    if (_.isEmpty(suites)) {
+        return (
+            <DrawerPanelBody>
+                <Alert
+                    isInline
+                    title="Detailed results not available"
+                    variant="info"
+                >
+                    The CI system did not provide detailed results for this test
+                    run.
+                </Alert>
+            </DrawerPanelBody>
+        );
+    }
 
     const onToggle = (name: string): void => {
         const newExpandedIds = update(expandedSuites, {
