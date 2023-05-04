@@ -948,6 +948,55 @@ const FormGroupContactsGchat: FunctionComponent<FormGroupContactsGchatProps> = (
     return element;
 };
 
+interface FormGroupContactsSlackProps {
+    slackUrl?: string;
+}
+const FormGroupContactsSlack: FunctionComponent<FormGroupContactsSlackProps> = (
+    props,
+) => {
+    const slackUrl = _.defaultTo(props.slackUrl, '');
+    const dispatch = useContext(MetadataDispatchContext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => doValidation(slackUrl), []);
+    const [validated, setValidated] = useState<Validate>('error');
+    if (_.isNull(dispatch)) return null;
+    const doValidation = (s: string) => {
+        if (s === '') {
+            setValidated('default');
+        } else if (validator.isURL(s)) {
+            setValidated('success');
+        } else {
+            setValidated('error');
+        }
+    };
+    const onChange = (value: string) => {
+        dispatch({ type: 'contactsSlack', slackUrl: value });
+        doValidation(value);
+    };
+    const element = (
+        <FormGroup
+            label="Team Slack channel"
+            fieldId="form-contacts-slack"
+            helperText="URL format"
+            helperTextInvalid="Invalid url"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
+        >
+            <TextInput
+                isRequired
+                type="text"
+                placeholder="https://example.slack.com/archives/T12Z1Z1XYZ9"
+                id="form-contacts-slack"
+                name="contacts-slack"
+                onChange={onChange}
+                validated={validated}
+                value={slackUrl}
+            />
+        </FormGroup>
+    );
+    return element;
+};
+
 interface FormGroupContactsIrcProps {
     irc: string | undefined;
 }
@@ -1076,6 +1125,7 @@ type MetadataAction =
     | { type: 'contactsCiSystemURL'; url?: string }
     | { type: 'contactsEmail'; email?: string }
     | { type: 'contactsGchat'; gchat?: string }
+    | { type: 'contactsSlack'; slackUrl?: string }
     | { type: 'contactsIrc'; irc?: string }
     | { type: 'contactsReportIssue'; url?: string }
     | { type: 'waiveMessage'; waive_message?: string };
@@ -1137,6 +1187,15 @@ const metadataReducer: Reducer<MetadataRaw, MetadataAction> = (
             return update(state, {
                 payload: {
                     contact: { gchat_room_url: { $set: action.gchat } },
+                },
+            });
+        }
+        case 'contactsSlack': {
+            state.payload = _.defaultTo(state.payload, {});
+            state.payload.contact = _.defaultTo(state.payload.contact, {});
+            return update(state, {
+                payload: {
+                    contact: { slack_channel_url: { $set: action.slackUrl } },
                 },
             });
         }
@@ -1430,6 +1489,9 @@ export const MetadataForm: React.FunctionComponent = () => {
                     <FormGroupContactsDocsLink docs={contact?.docs} />
                     <FormGroupContactsEmail email={contact?.email} />
                     <FormGroupContactsGchat gchat={contact?.gchat_room_url} />
+                    <FormGroupContactsSlack
+                        slackUrl={contact?.slack_channel_url}
+                    />
                     <FormGroupContactsIrc irc={contact?.irc} />
                     <FormGroupContactsReportIssue
                         url={contact?.report_issue_url}
