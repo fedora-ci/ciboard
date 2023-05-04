@@ -218,6 +218,7 @@ export interface Contact {
     docs?: string;
     email?: string;
     gchat_room_url?: string;
+    slack_channel_url?: string;
     report_issue_url?: string;
 }
 

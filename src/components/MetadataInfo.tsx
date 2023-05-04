@@ -221,6 +221,7 @@ const metadataContactKnownEntries = {
     docs: 'Documentation',
     email: 'Contact email',
     gchat_room_url: 'Google chat',
+    slack_channel_url: 'Slack channel',
     report_issue_url: 'Report issue',
 };
 
