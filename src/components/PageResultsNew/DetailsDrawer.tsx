@@ -90,6 +90,27 @@ function TogglableLabel(props: { outcome: 'pass' | 'fail' }) {
 }
 */
 
+export function mkSeparatedListNatural(
+    elements: React.ReactNode[],
+    separator: React.ReactNode = ', ',
+    lastSeparator: React.ReactNode = ' and ',
+) {
+    if (_.isNil(elements)) return null;
+    return elements.reduce(
+        (acc, el, i) =>
+            acc === null ? (
+                <>{el}</>
+            ) : (
+                <>
+                    {acc}
+                    {i === elements.length - 1 ? lastSeparator : separator}
+                    {el}
+                </>
+            ),
+        null,
+    );
+}
+
 function KnownIssuesTab(props: {}) {
     return (
         <DrawerPanelBody>
@@ -189,7 +210,49 @@ interface ContactWidgetProps {
 function ContactWidget({ contact }: ContactWidgetProps) {
     if (!contact) return null;
 
-    // TODO: Show contact info only if available.
+    let contactLinks: JSX.Element[] = [];
+
+    if (contact.slackChannelUrl) {
+        contactLinks.push(
+            <ExternalLink
+                className="pf-u-font-weight-bold"
+                href={contact.slackChannelUrl}
+            >
+                via Slack
+            </ExternalLink>,
+        );
+    }
+    if (contact.gchatRoomUrl) {
+        contactLinks.push(
+            <ExternalLink
+                className="pf-u-font-weight-bold"
+                href={contact.gchatRoomUrl}
+            >
+                via Chat
+            </ExternalLink>,
+        );
+    }
+    if (contact.email) {
+        contactLinks.push(
+            <>
+                via email at{' '}
+                <ExternalLink
+                    className="pf-u-font-weight-bold"
+                    href={`mailto:${contact.email}`}
+                >
+                    {contact.email}
+                </ExternalLink>
+            </>,
+        );
+    }
+
+    let reachOutText = contactLinks.length ? (
+        <>
+            If you need help with this test, you can reach out to the team{' '}
+            {mkSeparatedListNatural(contactLinks, ', ', ' or ')}.
+        </>
+    ) : null;
+
     return (
         <Alert
             customIcon={<UsersIcon />}
@@ -200,20 +263,7 @@ function ContactWidget({ contact }: ContactWidgetProps) {
             <TextContent>
                 <Text>
                     This test result is provided by the <b>{contact.team}</b>{' '}
-                    team. If you need help with this test, you can reach out to
-                    the team{' '}
-                    <ExternalLink href={contact.slackChannelUrl}>
-                        <b>via Slack</b>
-                    </ExternalLink>
-                    ,{' '}
-                    <ExternalLink href={contact.gchatRoomUrl}>
-                        <b>via Chat</b>
-                    </ExternalLink>
-                    , or via email at{' '}
-                    <b>
-                        <a href={`mailto:${contact.email}`}>{contact.email}</a>
-                    </b>
-                    .
+                    team. {reachOutText}
                 </Text>
             </TextContent>
         </Alert>

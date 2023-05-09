@@ -145,7 +145,11 @@ function extractContact(test: StateType): CiContact {
     let contact: CiContact = {};
     let metadataContact: MetadataContact | undefined;
 
-    // TODO: Handle the Greenwave-only case. Is there any info in the Greenwave response?
+    /*
+     * TODO: What to do in the Greenwave-only case? Is there any info
+     * in the Greenwave response? As a last resort, we would need to
+     * query our API for custom metadata.
+     */
     // if (isGreenwaveState(test)) return;
     if (isKaiState(test)) {
         _.merge(contact, extractContactFromUmb(test));
