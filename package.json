@@ -79,6 +79,6 @@
     "@types/react-linkify": "^1.0.1",
     "@types/shell-quote": "^1.7.1",
     "@types/uuid": "^9.0.1",
-    "@types/validator": "^13.7.16"
+    "@types/validator": "^13.7.17"
   }
 }
