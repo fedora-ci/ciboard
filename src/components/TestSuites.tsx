@@ -490,8 +490,13 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     if (_.isEmpty(xunit)) {
         return <NoDetailedResults />;
     }
-    const parsedXunit = xunitParser(xunit);
-    if (_.isEmpty(parsedXunit)) {
+    let parsedXunit;
+    try {
+        parsedXunit = xunitParser(xunit);
+        if (_.isEmpty(parsedXunit)) {
+            return <NoDetailedResults />;
+        }
+    } catch (err) {
         return <NoDetailedResults />;
     }
     /* TODO XXX: remove / generalize */
