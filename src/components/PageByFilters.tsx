@@ -1,23 +1,24 @@
 /*
  * This file is part of ciboard
-
+ *
  * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import { Buffer } from 'buffer';
 import _ from 'lodash';
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -121,14 +122,12 @@ const SearchToolbar = () => {
             prevFiltersLen > 0
         ) {
             console.log('Remove filters from URL');
-            searchParams.delete('filters');
-            setSearchParams(searchParams);
+            setSearchParams({});
         }
     }, [filters, prevFiltersLen, searchParams, setSearchParams]);
     useEffect(() => {
         /** Check if there are filters. */
-        const url = new URL(window.location.href);
-        const filters_enc = url.searchParams.get('filters');
+        const filters_enc = searchParams.get('filters');
         if (!filters_enc) {
             /** No filters in url */
             return;
@@ -149,7 +148,7 @@ const SearchToolbar = () => {
          * Ensure the useEffect only runs once.
          * That will not invoke re-renders because dispatch value will not change
          */
-    }, [dispatch]);
+    }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
     const onKeyPress = (keyEvent: React.KeyboardEvent) => {
         if (!statusSelected) {
             return;
@@ -259,21 +258,19 @@ const SearchToolbar = () => {
     if (!_.isEmpty(filters.active)) {
         let urlFilters = {};
         if (filtersEncoded) {
-            urlFilters = JSON.parse(atob(filtersEncoded));
+            urlFilters = JSON.parse(
+                Buffer.from(filtersEncoded, 'base64').toString(),
+            );
         }
         if (!_.isEqual(urlFilters, filters)) {
             /** Update URL with new filters param. */
-            let filtersParam = JSON.stringify(filters);
-            let updateFilters = false;
+            const filtersJson = JSON.stringify(filters);
             try {
-                filtersParam = btoa(filtersParam);
-                updateFilters = true;
-            } catch {
-                console.log('Cannot set filters %o', filters);
-            }
-            if (updateFilters) {
-                searchParams.set('filters', filtersParam);
-                setSearchParams(searchParams);
+                const filtersEncoded =
+                    Buffer.from(filtersJson).toString('base64');
+                setSearchParams({ filters: filtersEncoded });
+            } catch (ex) {
+                console.log('Cannot set filters %o: %s', filters, ex);
             }
         }
     }
