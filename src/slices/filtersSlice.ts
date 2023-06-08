@@ -74,15 +74,15 @@ export const filtersSlice = createSlice({
             state,
             action: PayloadAction<SetOptionsForFiltersPayload>,
         ) => {
-            const changed_options = action.payload;
-            const keep_old = _.isMatch(state.options, changed_options);
-            if (keep_old) {
+            const changeOptions = action.payload;
+            const keepOld = _.isMatch(state.options, changeOptions);
+            if (keepOld) {
                 return state;
             }
-            const new_options = _.assign({}, state.options, changed_options);
-            const new_state = _.cloneDeep(INITIAL_STATE);
-            new_state.options = new_options;
-            return new_state;
+            const newOptions = { ...state.options, ...changeOptions };
+            const newState = _.cloneDeep(INITIAL_STATE);
+            newState.options = newOptions;
+            return newState;
         },
     },
 });
