@@ -20,7 +20,6 @@
 
 import _ from 'lodash';
 import * as React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import {
     Alert,
@@ -33,10 +32,8 @@ import {
 } from '@patternfly/react-core';
 
 import { config } from '../config';
-import { useTitle } from '../hooks';
-import { RootStateType } from '../slices';
+import { useAppDispatch, useAppSelector, useTitle } from '../hooks';
 import { popAlert } from '../actions';
-import { IStateAlerts } from '../actions/types';
 import { DashboardPageHeader } from './PageHeader';
 
 type PageCommonProps = React.PropsWithChildren<React.ReactNode> & {
@@ -44,13 +41,11 @@ type PageCommonProps = React.PropsWithChildren<React.ReactNode> & {
 };
 
 export function ToastAlertGroup() {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const onClick = (key: number) => {
         dispatch(popAlert(key));
     };
-    const { alerts } = useSelector<RootStateType, IStateAlerts>(
-        (state) => state.alerts,
-    );
+    const { alerts } = useAppSelector((state) => state.alerts);
     return (
         <AlertGroup isToast>
             {_.map(alerts, ({ key, title, variant }) => (
