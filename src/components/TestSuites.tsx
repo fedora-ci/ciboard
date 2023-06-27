@@ -213,11 +213,11 @@ const TestCaseContent: React.FC<TestCaseContentProps> = (props) => {
     );
 };
 
-interface ArchitectureLabelProps {
+export interface ArchitectureLabelProps {
     architecture?: string;
 }
 
-const ArchitectureLabel: React.FC<ArchitectureLabelProps> = ({
+export const ArchitectureLabel: React.FC<ArchitectureLabelProps> = ({
     architecture,
 }) => {
     if (_.isEmpty(architecture)) return null;
@@ -431,10 +431,10 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
     const [msgError, setError] = useState<JSX.Element>();
     const { loading, data } = useQuery(ArtifactsXunitQuery, {
         variables: {
-            msg_id,
-            dbFieldName1: 'aid',
             atype: artifact.type,
+            dbFieldName1: 'aid',
             dbFieldValues1: [artifact.aid],
+            msg_id,
         },
         fetchPolicy: 'cache-first',
         errorPolicy: 'all',
