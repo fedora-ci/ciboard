@@ -53,11 +53,11 @@ import {
 
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
-import { FAKE_TEST_SUITES } from './fakeData';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestStatusIcon } from './TestStatusIcon';
 import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
 import { CiContact } from './types';
+import { Artifact } from '../../artifact';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -144,14 +144,17 @@ function KnownIssuesTab(props: {}) {
     );
 }
 
-function DetailsDrawerTabs(_props: {}) {
+interface DetailsDrawerTabsProps {
+    artifact?: Artifact;
+}
+
+function DetailsDrawerTabs(props: DetailsDrawerTabsProps) {
     const [activeTabKey, setActiveTabKey] = useState(0);
-    const testSuites = FAKE_TEST_SUITES;
 
     const tabs = [
         {
             title: 'Results',
-            content: <TestSuitesAccordion suites={testSuites} />,
+            content: <TestSuitesAccordion artifact={props.artifact} />,
         },
         {
             title: 'CI details',
@@ -165,6 +168,7 @@ function DetailsDrawerTabs(_props: {}) {
         {
             title: (
                 // TODO: Only show if there are any known issues.
+                // TODO: Pull real known issues from `selectedTest` metadata.
                 <>
                     Known issues <Badge isRead>2</Badge>
                 </>
@@ -271,6 +275,7 @@ function ContactWidget({ contact }: ContactWidgetProps) {
 }
 
 export type DetailsDrawerProps = PropsWithChildren<{
+    artifact?: Artifact;
     onClose?(): void;
 }>;
 
@@ -427,6 +432,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                 )}
             </DrawerPanelBody>
             <DetailsDrawerTabs
+                artifact={props.artifact}
                 // TODO: Use a unique ID for the `key` prop instead of `selectedTest?.name`.
                 key={selectedTest?.name}
             />
