@@ -199,11 +199,11 @@ const OutputsTable: React.FC<OutputsTableProps> = (props) => {
     );
 };
 
-interface TestCaseContentProps {
+export interface TestCaseContentProps {
     test: TestCase;
 }
 
-const TestCaseContent: React.FC<TestCaseContentProps> = (props) => {
+export const TestCaseContent: React.FC<TestCaseContentProps> = (props) => {
     const { test } = props;
     return (
         <>

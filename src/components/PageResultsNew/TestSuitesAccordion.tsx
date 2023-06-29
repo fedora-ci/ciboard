@@ -19,29 +19,49 @@
  */
 
 import * as _ from 'lodash';
-import { useState } from 'react';
+import { Buffer } from 'buffer';
+import pako from 'pako';
+import { useContext, useState } from 'react';
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionToggle,
     Alert,
-    Badge,
     DrawerPanelBody,
     Flex,
     FlexItem,
-    Label,
+    Spinner,
     Title,
 } from '@patternfly/react-core';
-import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
-import { TableComposable, Tbody, Td, Tr } from '@patternfly/react-table';
+import { OutlinedClockIcon } from '@patternfly/react-icons';
+import {
+    ExpandableRowContent,
+    TableComposable,
+    Tbody,
+    Td,
+    Tr,
+} from '@patternfly/react-table';
 import moment from 'moment';
 import update from 'immutability-helper';
 
 import './index.css';
-import { TestCase, TestSuite } from './types';
+import {
+    TestCase,
+    TestCaseLogsEntry,
+    TestSuite,
+    getProperty,
+    hasTestCaseContent,
+} from '../../testsuite';
 import { mkSeparatedList } from '../../utils/artifactsTable';
 import { TestStatusIcon } from '../../utils/artifactUtils';
+import { ExternalLink } from '../ExternalLink';
+import { ArchitectureLabel, TestCaseContent } from '../TestSuites';
+import { Artifact } from '../../artifact';
+import { SelectedTestContext } from './contexts';
+import { useQuery } from '@apollo/client';
+import { ArtifactsXunitQuery } from '../../queries/Artifacts';
+import { xunitParser } from '../../utils/xunitParser';
 
 function humanReadableTime(seconds: number) {
     // TODO: Migrate away from the moment library.
@@ -51,35 +71,96 @@ function humanReadableTime(seconds: number) {
     return duration.format('mm:ss', { trim: false });
 }
 
-interface ArchitectureLabelProps {
-    architecture?: string;
-}
-
-const ArchitectureLabel: React.FC<ArchitectureLabelProps> = ({
-    architecture,
-}) => {
-    if (_.isEmpty(architecture)) return null;
-    return (
-        <Label
-            icon={<MicrochipIcon className="pf-u-color-200" />}
-            isCompact
-            title={`This test was run on the ${architecture} machine architecture`}
-        >
-            {architecture}
-        </Label>
-    );
-};
-
 interface LogsLinksProps {
-    logs: string[];
+    logs?: TestCaseLogsEntry[];
 }
 
 function LogsLinks(props: LogsLinksProps) {
     const { logs } = props;
-    const makeLink = (name: string) => <a href="#">{name}</a>;
-    const linksList = mkSeparatedList(logs.map(makeLink, ', '));
+    if (_.isEmpty(logs)) return null;
+    const makeLink = (entry: TestCaseLogsEntry) => (
+        <ExternalLink href={entry.$.href}>{entry.$.name}</ExternalLink>
+    );
+    const linksList = mkSeparatedList(logs!.map(makeLink, ', '));
 
     return <div className="pf-u-font-size-sm">Logs: {linksList}</div>;
+}
+
+interface TestCaseRowProps {
+    rowIndex: number;
+    testCase?: TestCase;
+}
+
+function TestCaseRow(props: TestCaseRowProps) {
+    const { rowIndex, testCase } = props;
+    const [isExpanded, setExpanded] = useState(false);
+
+    if (!testCase) return null;
+
+    const hasContent = hasTestCaseContent(testCase);
+    const logsLinks = testCase.logs?.length > 0 && (
+        <LogsLinks logs={_.first(testCase.logs)?.log} />
+    );
+    const elapsedTime = !_.isEmpty(testCase.time) && (
+        <FlexItem
+            className="pf-u-ml-auto pf-u-color-200 pf-u-font-size-sm"
+            style={{
+                fontFamily: 'monospace',
+            }}
+        >
+            <OutlinedClockIcon title="Elapsed time" />
+            &nbsp;
+            {humanReadableTime(Number(testCase.time))}
+        </FlexItem>
+    );
+    const machineArchitecture = getProperty(testCase, 'baseosci.arch');
+    const onToggle = () => setExpanded(!isExpanded);
+
+    // TODO: Use a unique ID for the key.
+    return (
+        <Tbody key={testCase.name} isExpanded={isExpanded}>
+            <Tr>
+                <Td
+                    className="pf-u-pl-0"
+                    expand={
+                        hasContent
+                            ? { isExpanded, onToggle, rowIndex }
+                            : undefined
+                    }
+                    title="Toggle test outputs and phases"
+                />
+                <Td>
+                    <Flex flexWrap={{ default: 'nowrap' }}>
+                        <FlexItem>
+                            <TestStatusIcon status={testCase.status} />
+                        </FlexItem>
+                        <Flex
+                            direction={{ default: 'column' }}
+                            grow={{ default: 'grow' }}
+                        >
+                            <Title className="pf-u-mb-0" headingLevel="h4">
+                                {testCase.name}{' '}
+                                <ArchitectureLabel
+                                    architecture={machineArchitecture}
+                                />
+                            </Title>
+                            <Flex>
+                                {logsLinks}
+                                {elapsedTime}
+                            </Flex>
+                        </Flex>
+                    </Flex>
+                </Td>
+            </Tr>
+            <Tr isExpanded={isExpanded}>
+                <Td colSpan={2}>
+                    <ExpandableRowContent>
+                        <TestCaseContent test={testCase} />
+                    </ExpandableRowContent>
+                </Td>
+            </Tr>
+        </Tbody>
+    );
 }
 
 interface TestCasesTableProps {
@@ -101,57 +182,15 @@ function TestCasesTable(props: TestCasesTableProps) {
 
     return (
         <TableComposable className="testCasesTable" variant="compact">
-            <Tbody>
-                {cases.map((testCase) => (
-                    // TODO: Use a unique ID here later.
-                    <Tr key={testCase.name}>
-                        <Td>
-                            <Flex flexWrap={{ default: 'nowrap' }}>
-                                <FlexItem>
-                                    <TestStatusIcon status={testCase.status} />
-                                </FlexItem>
-                                <Flex
-                                    direction={{ default: 'column' }}
-                                    grow={{ default: 'grow' }}
-                                >
-                                    <Title
-                                        className="pf-u-mb-0"
-                                        headingLevel="h4"
-                                    >
-                                        {testCase.name}{' '}
-                                        <ArchitectureLabel architecture="x86_64" />
-                                    </Title>
-                                    <Flex>
-                                        {testCase.logs?.length && (
-                                            <LogsLinks logs={testCase.logs} />
-                                        )}
-                                        {testCase.time && (
-                                            <FlexItem
-                                                className="pf-u-ml-auto pf-u-color-200 pf-u-font-size-sm"
-                                                style={{
-                                                    fontFamily: 'monospace',
-                                                }}
-                                            >
-                                                <OutlinedClockIcon title="Elapsed time" />
-                                                &nbsp;
-                                                {humanReadableTime(
-                                                    testCase.time,
-                                                )}
-                                            </FlexItem>
-                                        )}
-                                    </Flex>
-                                </Flex>
-                            </Flex>
-                        </Td>
-                    </Tr>
-                ))}
-            </Tbody>
+            {cases.map((testCase, rowIndex) => (
+                <TestCaseRow rowIndex={rowIndex} testCase={testCase} />
+            ))}
         </TableComposable>
     );
 }
 
 export interface TestSuitesAccordionProps {
-    suites: TestSuite[];
+    artifact?: Artifact;
 }
 
 export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
@@ -164,8 +203,87 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
     const [expandedSuites, setExpandedSuites] = useState<
         Partial<Record<string, boolean>>
     >({});
-    const { suites } = props;
-    if (_.isEmpty(suites)) {
+    const { artifact } = props;
+
+    const selectedTest = useContext(SelectedTestContext);
+    let error: string | undefined;
+    let suites: TestSuite[] | undefined;
+
+    const {
+        data,
+        error: queryError,
+        loading,
+    } = useQuery(ArtifactsXunitQuery, {
+        variables: {
+            atype: artifact?.type,
+            dbFieldName1: 'aid',
+            dbFieldValues1: [artifact?.aid],
+            msg_id: selectedTest?.messageId,
+        },
+        fetchPolicy: 'cache-first',
+        errorPolicy: 'all',
+        skip: !artifact || !selectedTest?.messageId,
+        notifyOnNetworkStatusChange: true,
+    });
+
+    if (!artifact || !selectedTest) return null;
+
+    const haveData =
+        !loading &&
+        !_.isEmpty(data) &&
+        _.has(data, 'artifacts.artifacts[0].states');
+
+    const state = _.find(
+        /** this is a bit strange, that received data doesn't propage to original
+         * artifact object. Original artifact.states objects stays old */
+        _.get(data, 'artifacts.artifacts[0].states'),
+        (state) => state.kai_state?.msg_id === selectedTest.messageId,
+    );
+    if (haveData && !_.isNil(state)) {
+        const xunitRaw: string = state.broker_msg_xunit;
+        if (!_.isEmpty(xunitRaw)) {
+            try {
+                /** Decode base64 encoded gzipped data */
+                const compressed = Buffer.from(xunitRaw, 'base64');
+                const decompressed = pako.inflate(compressed);
+                const utf8Decoded = Buffer.from(decompressed).toString('utf8');
+                suites = xunitParser(utf8Decoded);
+            } catch (err) {
+                error = _.toString(err);
+                console.error(`Cannot parse detailed results:`, err);
+            }
+        }
+    } else {
+        error = queryError?.message;
+        console.error(
+            `GraphQL error when retrieving detailed results:`,
+            queryError,
+        );
+    }
+
+    if (loading) {
+        return (
+            <DrawerPanelBody>
+                <Spinner size="md" /> Loading detailed test results…
+            </DrawerPanelBody>
+        );
+    }
+
+    if (error) {
+        return (
+            <DrawerPanelBody>
+                <Alert
+                    isInline
+                    title="Detailed results not available"
+                    variant="danger"
+                >
+                    Could not retrieve detailed test results: {error}
+                </Alert>
+            </DrawerPanelBody>
+        );
+    }
+
+    if (_.isEmpty(suites) || !suites) {
         return (
             <DrawerPanelBody>
                 <Alert
@@ -180,6 +298,11 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
         );
     }
 
+    if (suites.length === 1 && _.isEmpty(expandedSuites)) {
+        // TODO: Use a unique ID here later.
+        setExpandedSuites({ [suites[0].name]: true });
+    }
+
     const onToggle = (name: string): void => {
         const newExpandedIds = update(expandedSuites, {
             $toggle: [name],
@@ -189,10 +312,16 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
 
     return (
         <Accordion isBordered>
-            {suites.map(({ cases, name }) => {
-                const failedCount = cases.filter(
-                    ({ status }) => status === 'fail',
-                ).length;
+            {suites.map(({ name, status, tests }) => {
+                const statusIcon = (
+                    <TestStatusIcon
+                        status={status}
+                        style={{
+                            marginRight: 'var(--pf-global--spacer--sm)',
+                            verticalAlign: '-0.125em',
+                        }}
+                    />
+                );
 
                 // TODO: Use a unique ID here later.
                 return (
@@ -202,13 +331,11 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
                             isExpanded={expandedSuites[name]}
                             onClick={() => onToggle(name)}
                         >
-                            {name}{' '}
-                            {failedCount > 0 && (
-                                <Badge isRead>{failedCount} failed</Badge>
-                            )}
+                            {statusIcon}
+                            {name}
                         </AccordionToggle>
                         <AccordionContent isHidden={!expandedSuites[name]}>
-                            <TestCasesTable cases={cases} />
+                            <TestCasesTable cases={tests} />
                         </AccordionContent>
                     </AccordionItem>
                 );
