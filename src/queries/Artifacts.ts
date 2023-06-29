@@ -308,28 +308,18 @@ export const ArtifactsListByFiltersQuery = gql`
 export const ArtifactsXunitQuery = gql`
     query ArtifactsXunitQuery(
         $atype: String!
-        $limit: Int
-        $aid_offset: String
-        $msg_id: [String]
         $dbFieldName1: String
         $dbFieldValues1: [String]
-        $dbFieldName2: String
-        $dbFieldValues2: [String]
-        $options: ArtifactsOptionsInputType
+        $msg_id: [String]
     ) {
         artifacts(
             atype: $atype
-            limit: $limit
-            options: $options
-            aid_offset: $aid_offset
             dbFieldName1: $dbFieldName1
             dbFieldValues1: $dbFieldValues1
-            dbFieldName2: $dbFieldName2
-            dbFieldValues2: $dbFieldValues2
+            limit: 1
         ) {
-            has_next
             artifacts {
-                ...StatesFragment
+                _id
                 states(onlyactual: true) {
                     kai_state {
                         msg_id
@@ -339,7 +329,6 @@ export const ArtifactsXunitQuery = gql`
             }
         }
     }
-    ${statesFragment}
 `;
 
 export interface PageGatingGetSSTTeamsData {

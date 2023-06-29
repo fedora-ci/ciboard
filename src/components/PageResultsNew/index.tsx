@@ -197,6 +197,7 @@ function transformTest(
     const contact = extractContact(test);
     const docsUrl = getDocsUrl(test);
     let error;
+    let messageId: string | undefined;
     const name = getTestcaseName(test);
     const rerunUrl = getRerunUrl(test);
     const required =
@@ -235,8 +236,10 @@ function transformTest(
         waiver = test.waiver;
     } else if (isKaiState(test)) {
         error = getMessageError(test.broker_msg_body);
+        messageId = test.kai_state.msg_id;
     } else if (isGreenwaveKaiState(test)) {
         error = getMessageError(test.ks.broker_msg_body);
+        messageId = test.ks.kai_state.msg_id;
         waiver = test.gs.waiver;
     }
 
@@ -244,6 +247,7 @@ function transformTest(
         contact,
         docsUrl,
         error,
+        messageId,
         name,
         required,
         rerunUrl,
@@ -306,7 +310,6 @@ export function PageResultsNew(_props: {}) {
         },
     );
 
-    // TODO: Loading state.
     // TODO: Error state.
     // TODO: Multiple results state?
 
@@ -354,6 +357,7 @@ export function PageResultsNew(_props: {}) {
                             <Title headingLevel="h2" size="lg">
                                 Failed to load artifact
                             </Title>
+                            {/* TODO: Render more specific error message. */}
                         </EmptyState>
                     </Bullseye>
                 </PageSection>
@@ -377,7 +381,10 @@ export function PageResultsNew(_props: {}) {
     return (
         <PageCommon title={pageTitle}>
             <SelectedTestContext.Provider value={selectedTest}>
-                <DetailsDrawer onClose={() => onTestSelect(undefined)}>
+                <DetailsDrawer
+                    artifact={artifact}
+                    onClose={() => onTestSelect(undefined)}
+                >
                     <PageSection variant={PageSectionVariants.light}>
                         <ArtifactHeader
                             artifact={artifact}

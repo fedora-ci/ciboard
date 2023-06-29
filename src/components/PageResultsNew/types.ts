@@ -50,6 +50,7 @@ export interface CiTest {
     docsUrl?: string;
     error?: MSG_V_1.MsgErrorType;
     labels?: string[];
+    messageId?: string;
     name: string;
     required?: boolean;
     rerunUrl?: string;
@@ -57,17 +58,4 @@ export interface CiTest {
     subtitle?: string;
     waivable?: boolean;
     waiver?: GreenwaveWaiveType;
-}
-
-export interface TestCase {
-    arch?: string;
-    logs?: string[];
-    name: string;
-    status: TestCaseStatus;
-    time?: number;
-}
-
-export interface TestSuite {
-    name: string;
-    cases: TestCase[];
 }
