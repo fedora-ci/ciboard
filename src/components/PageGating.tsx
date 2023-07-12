@@ -278,7 +278,10 @@ const CiSystemsTable = (props: CiSystemsTableProps) => {
             if (!isStateKai(kaiState)) {
                 continue;
             }
-            let ciSystemName: string = getTestcaseName(kaiState);
+            let ciSystemName = getTestcaseName(kaiState);
+            if (!ciSystemName) {
+                continue;
+            }
             const re = new RegExp(ciSystem, 'gi');
             if (ciSystem && !ciSystemName.match(re)) {
                 continue;

@@ -107,20 +107,22 @@ export interface PropsWithGreenwaveState {
     state: StateGreenwaveType;
 }
 
-export interface WaiveButtonProps extends PropsWithGreenwaveState {
+export interface WaiveButtonProps {
     artifact: Artifact;
+    testcase?: string;
 }
 
 export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
-    const { state, artifact } = props;
-    const { requirement } = state;
+    const { artifact, testcase } = props;
     const dispatch = useAppDispatch();
-    if (_.isNil(requirement?.testcase)) return null;
+
+    if (_.isEmpty(testcase)) return null;
     const onClick: React.MouseEventHandler = (e) => {
         e.stopPropagation();
-        dispatch(createWaiver(artifact, state));
+        dispatch(createWaiver(artifact, testcase));
     };
     const resultClasses = classNames(styles['actionButton']);
+
     return (
         <Button
             className={resultClasses}
@@ -145,11 +147,13 @@ export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
     const docsUrl = getGreenwaveDocsUrl(state);
     const rerunUrl = getRerunUrl(state);
     const showWaiveButton = isResultWaivable(state);
+    const testcase = getTestcaseName(state);
+
     return (
         <Flex style={{ minWidth: '20em' }}>
             <Flex flex={{ default: 'flex_1' }}>
                 {showWaiveButton && (
-                    <WaiveButton artifact={artifact} state={state} />
+                    <WaiveButton artifact={artifact} testcase={testcase} />
                 )}
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>

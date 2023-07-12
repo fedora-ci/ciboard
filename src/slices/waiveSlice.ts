@@ -33,7 +33,7 @@ import {
  */
 const INITIAL_STATE: IStateWaiver = {
     /* {testcase: "N/A"} */
-    state: undefined,
+    testcase: undefined,
     reason: '',
     waiveError: '',
     timestamp: undefined,
@@ -47,7 +47,7 @@ export const waiveSlice = createSlice({
         createWaiver: (state, action: PayloadAction<CreateWaiverPayload>) => {
             const { payload } = action;
             state.artifact = payload.artifact;
-            state.state = payload.state;
+            state.testcase = payload.testcase;
         },
         resetWaiver: (state) => {
             state.waiveError = '';

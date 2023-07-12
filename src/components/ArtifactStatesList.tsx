@@ -119,7 +119,7 @@ const mustExpandState = (state: StateType, expandedResult: string): boolean => {
 };
 
 const mkStateKey = (state: StateType): string => {
-    const testcase = getTestcaseName(state);
+    const testcase = getTestcaseName(state) || 'unknown';
     if (isKaiState(state)) {
         const { kai_state } = state;
         return `${testcase}-${kai_state.stage}-${kai_state.state}`;
