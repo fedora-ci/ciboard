@@ -408,6 +408,7 @@ export function PageResultsNew(_props: {}) {
                             </Card>
                             <Card>
                                 <TestResultsTable
+                                    artifact={artifact}
                                     onSelect={onTestSelect}
                                     tests={tests}
                                 />
