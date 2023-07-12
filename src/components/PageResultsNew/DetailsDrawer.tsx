@@ -370,8 +370,8 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             <DrawerPanelBody className="pf-u-pb-sm">
                 <ContactWidget contact={selectedTest?.contact} />
                 {(selectedTest?.status === 'error' ||
-                    (selectedTest?.status === 'waived' &&
-                        selectedTest.error)) && (
+                    (!_.isNil(selectedTest?.waiver) &&
+                        selectedTest?.error)) && (
                     <Alert
                         className="pf-u-mt-md"
                         isInline
