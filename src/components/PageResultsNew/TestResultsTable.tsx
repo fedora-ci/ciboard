@@ -32,7 +32,6 @@ import {
     BookIcon,
     LinkIcon,
     RedoIcon,
-    ThumbsUpIcon,
     UsersIcon,
 } from '@patternfly/react-icons';
 import {
@@ -45,21 +44,27 @@ import {
 } from '@patternfly/react-table';
 import { useHref } from 'react-router-dom';
 
+import { Artifact } from '../../artifact';
 import { SelectedTestContext } from './contexts';
 import { CiContact, CiTest, TestStatus } from './types';
 import { TestStatusIcon } from './TestStatusIcon';
 import { ExternalLink } from '../ExternalLink';
+import { WaiveButton } from './WaiveButton';
 
 interface SingleTestRowProps {
+    artifact: Artifact;
+    /** Contatct information for the test or CI owners. */
     contact?: CiContact;
     docsUrl?: string;
     isRequired?: boolean;
     isWaivable?: boolean;
     isWaived?: boolean;
     labels?: string[];
+    /** Test case name */
     name: string;
     rerunUrl?: string;
     status: TestStatus;
+    /** Optional short text below the test case name. */
     subtitle?: ReactNode;
 }
 
@@ -118,11 +123,6 @@ function SingleTestRow(props: SingleTestRowProps) {
                                 Waived
                             </Label>
                         )}
-                        {/* {props.isRequired && (
-                            <Label color="blue" isCompact>
-                                required
-                            </Label>
-                        )} */}
                         {props.contact?.team && (
                             <Label color="blue" icon={<UsersIcon />} isCompact>
                                 Team: {props.contact.team}
@@ -135,7 +135,6 @@ function SingleTestRow(props: SingleTestRowProps) {
                         ))}
                     </Flex>
                 </Flex>
-                {/* TODO: Implement handlers for the actions below. */}
                 <Flex
                     alignSelf={{ default: 'alignSelfCenter' }}
                     className="pf-u-ml-auto"
@@ -144,18 +143,10 @@ function SingleTestRow(props: SingleTestRowProps) {
                     }}
                 >
                     {props.isWaivable && (
-                        <Button
-                            icon={<ThumbsUpIcon />}
-                            onClick={(event) => {
-                                alert(
-                                    'Not implemented yet. This will show the waiving form.',
-                                );
-                                event.stopPropagation();
-                            }}
-                            variant="link"
-                        >
-                            Waive
-                        </Button>
+                        <WaiveButton
+                            artifact={props.artifact}
+                            testcase={props.name}
+                        />
                     )}
                     {props.rerunUrl && (
                         <Button
@@ -192,12 +183,13 @@ function SingleTestRow(props: SingleTestRowProps) {
 }
 
 export interface TestResultsTableProps {
+    artifact: Artifact;
     onSelect?(key: string | undefined): void;
     tests: CiTest[];
 }
 
 export function TestResultsTable(props: TestResultsTableProps) {
-    const { tests } = props;
+    const { artifact, tests } = props;
     const selectedTest = useContext(SelectedTestContext);
 
     if (_.isEmpty(tests)) {
@@ -231,6 +223,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        artifact={artifact}
                         contact={row.contact}
                         docsUrl={row.docsUrl}
                         isRequired
@@ -267,6 +260,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        artifact={artifact}
                         contact={row.contact}
                         docsUrl={row.docsUrl}
                         isRequired
@@ -298,6 +292,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        artifact={artifact}
                         contact={row.contact}
                         docsUrl={row.docsUrl}
                         isRequired
@@ -325,6 +320,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             >
                 <Td>
                     <SingleTestRow
+                        artifact={artifact}
                         contact={row.contact}
                         docsUrl={row.docsUrl}
                         labels={row.labels}

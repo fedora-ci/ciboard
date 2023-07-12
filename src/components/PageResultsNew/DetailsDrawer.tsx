@@ -302,11 +302,6 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         />
     ) : null;
 
-    /*
-     * TODO: Load (ArtifactsXunitQuery) and parse (xunitParser) xunit
-     * and pass the test suites/loading/error state to <DetailsDrawerTabs>.
-     */
-
     const panelContent = (
         <DrawerPanelContent
             defaultSize={drawerSize}
