@@ -73,6 +73,7 @@ function SingleTestRow(props: SingleTestRowProps) {
     const permalinkUrl = useHref(`?focus=${props.name}`);
     const statusIcon = (
         <TestStatusIcon
+            isWaived={props.isWaived}
             size="md"
             status={props.status}
             style={{ marginTop: '0.2em' }}
@@ -228,7 +229,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                         docsUrl={row.docsUrl}
                         isRequired
                         isWaivable={row.waivable}
-                        isWaived={row.status === 'waived'}
+                        isWaived={!_.isNil(row.waiver)}
                         labels={row.labels}
                         name={row.name}
                         rerunUrl={row.rerunUrl}
@@ -265,7 +266,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                         docsUrl={row.docsUrl}
                         isRequired
                         isWaivable={row.waivable}
-                        isWaived={row.status === 'waived'}
+                        isWaived={!_.isNil(row.waiver)}
                         labels={row.labels}
                         name={row.name}
                         rerunUrl={row.rerunUrl}
@@ -296,7 +297,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
                         contact={row.contact}
                         docsUrl={row.docsUrl}
                         isRequired
-                        isWaived={row.status === 'waived'}
+                        isWaived={!_.isNil(row.waiver)}
                         labels={row.labels}
                         name={row.name}
                         rerunUrl={row.rerunUrl}

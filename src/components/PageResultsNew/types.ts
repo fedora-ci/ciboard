@@ -29,8 +29,7 @@ export type TestStatus =
     | 'passed'
     | 'queued'
     | 'running'
-    | 'unknown'
-    | 'waived';
+    | 'unknown';
 
 export type TestCaseStatus = 'fail' | 'pass' | 'skip';
 

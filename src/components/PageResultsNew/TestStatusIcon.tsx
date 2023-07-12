@@ -35,6 +35,7 @@ import {
 import { TestStatus } from './types';
 
 export interface TestStatusIconProps {
+    isWaived?: boolean;
     size?: IconSize | keyof typeof IconSize;
     /**
      * String indicating the status/outcome of the test.
@@ -45,12 +46,27 @@ export interface TestStatusIconProps {
     style?: CSSProperties;
 }
 
-export function TestStatusIcon({ size, status, style }: TestStatusIconProps) {
+export function TestStatusIcon({
+    isWaived,
+    size,
+    status,
+    style,
+}: TestStatusIconProps) {
     const commonIconProps = {
         size: size || ('sm' as IconSize),
         style,
     };
 
+    // Waived status takes precedence over everything else.
+    if (isWaived)
+        return (
+            <HandPaperIcon
+                className="pf-u-warning-color-100"
+                title="Test failed but has been waived"
+                {...commonIconProps}
+            />
+        );
+    // Regular statuses follow.
     if (status === 'error')
         return (
             <ExclamationTriangleIcon
@@ -104,14 +120,6 @@ export function TestStatusIcon({ size, status, style }: TestStatusIconProps) {
             <InProgressIcon
                 className="pf-u-color-200"
                 title="Test is currently running"
-                {...commonIconProps}
-            />
-        );
-    if (status === 'waived')
-        return (
-            <HandPaperIcon
-                className="pf-u-warning-color-100"
-                title="Test failed but has been waived"
                 {...commonIconProps}
             />
         );
