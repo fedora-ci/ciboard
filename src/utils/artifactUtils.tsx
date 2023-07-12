@@ -357,7 +357,7 @@ export const getArtifactProduct = (artifact: Artifact): string | null => {
     return null;
 };
 
-export const getTestcaseName = (state: StateType): string => {
+export const getTestcaseName = (state: StateType): string | undefined => {
     let testCaseName: string | undefined;
     if (isKaiState(state)) {
         const { broker_msg_body, kai_state } = state;
@@ -384,7 +384,7 @@ export const getTestcaseName = (state: StateType): string => {
         testCaseName = state.gs.testcase;
     }
     if (_.isUndefined(testCaseName)) {
-        testCaseName = 'uknown testcase - please report an issue';
+        console.error('Could not identify testcase name in state', state);
     }
     return testCaseName;
 };

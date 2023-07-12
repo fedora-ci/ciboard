@@ -40,7 +40,6 @@ import { useApolloClient, useQuery } from '@apollo/client';
 
 import { docs } from '../config';
 import { createWaiver, submitWaiver, resetWaiverReply } from '../actions';
-import { getTestcaseName } from '../utils/artifactUtils';
 import { MetadataQuery } from '../queries/Metadata';
 import { MetadataQueryResult } from '../types';
 import { useAppDispatch, useAppSelector } from '../hooks';
@@ -65,7 +64,7 @@ const WaiveForm: React.FC<{}> = () => {
         setValidated(validated);
     };
 
-    const waiverFor = waiver.state ? getTestcaseName(waiver.state) : '';
+    const waiverFor = waiver.testcase;
     const {
         loading: qLoading,
         error: qError,
@@ -100,8 +99,8 @@ const WaiveForm: React.FC<{}> = () => {
     composes and unverified or failed builds can cause issues in system integration. Before waiving these tests it is good to check 
     other possible options, in particular some CI-systems can fail due to outages and different circumstances. It is good to restart 
     the test or to contact CI-owners for assistance. Proceed waiving test-result only when other efforts have not succeeded.`;
-    const { state, waiveError, timestamp } = waiver;
-    if (_.isNil(state)) {
+    const { testcase, waiveError, timestamp } = waiver;
+    if (_.isNil(testcase)) {
         return null;
     }
     return (
@@ -192,8 +191,8 @@ const WaiveForm: React.FC<{}> = () => {
 export const WaiveModal: React.FC<{}> = () => {
     const dispatch = useAppDispatch();
     const waiver = useAppSelector((store) => store.waive);
-    const { artifact, state, timestamp } = waiver;
-    const showWaiveForm = artifact && state && !timestamp;
+    const { artifact, testcase, timestamp } = waiver;
+    const showWaiveForm = artifact && !_.isEmpty(testcase) && !timestamp;
     const onClose = () => {
         dispatch(createWaiver(undefined, undefined));
     };
