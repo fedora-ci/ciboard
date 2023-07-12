@@ -74,12 +74,24 @@ import { PageCommon } from '../PageCommon';
 
 // TODO: This function is temporary only and will be removed once the UI is finalized.
 function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
-    if (['error', 'test-result-errored'].includes(stateName)) {
+    if (
+        ['error', 'test-result-errored', 'test-result-errored-waived'].includes(
+            stateName,
+        )
+    ) {
         return 'error';
-    } else if (['failed', 'test-result-failed'].includes(stateName)) {
+    } else if (
+        ['failed', 'test-result-failed', 'test-result-failed-waived'].includes(
+            stateName,
+        )
+    ) {
         return 'failed';
     } else if (
-        ['missing-gating-yaml', 'test-result-missing'].includes(stateName)
+        [
+            'missing-gating-yaml',
+            'test-result-missing',
+            'test-result-missing-waived',
+        ].includes(stateName)
     ) {
         return 'missing';
     } else if (
@@ -106,8 +118,6 @@ function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
         ['info', 'needs_inspection', 'not_applicable'].includes(stateName)
     ) {
         return 'info';
-    } else if (stateName.endsWith('-waived')) {
-        return 'waived';
     }
     // TODO: Handle `*-gating-yaml` statuses.
     return 'unknown';
@@ -206,19 +216,25 @@ function transformTest(
     const waivable = isResultWaivable(test);
     let waiver: GreenwaveWaiveType | undefined;
 
+    if (isGreenwaveState(test)) {
+        waiver = test.waiver;
+    } else if (isKaiState(test)) {
+        error = getMessageError(test.broker_msg_body);
+        messageId = test.kai_state.msg_id;
+    } else if (isGreenwaveKaiState(test)) {
+        error = getMessageError(test.ks.broker_msg_body);
+        messageId = test.ks.kai_state.msg_id;
+        waiver = test.gs.waiver;
+    }
+
     let status = transformUmbStatus(stateName);
-    if (
-        isGreenwaveState(test) &&
-        test.result &&
-        // stateName !== 'additional-tests' &&
-        status !== 'waived'
-    ) {
+    if (isGreenwaveState(test) && test.result && !waiver) {
         status = transformGreenwaveOutcome(test.result.outcome);
     } else if (
         isGreenwaveKaiState(test) &&
         test.gs.result &&
         stateName !== 'additional-tests' &&
-        status !== 'waived'
+        !waiver
     ) {
         status = transformGreenwaveOutcome(test.gs.result.outcome);
     } else if (isGreenwaveKaiState(test) && stateName === 'additional-tests') {
@@ -232,23 +248,12 @@ function transformTest(
         status = transformUmbStatus(getKaiExtendedStatus(test.ks));
     }
 
-    if (isGreenwaveState(test)) {
-        waiver = test.waiver;
-    } else if (isKaiState(test)) {
-        error = getMessageError(test.broker_msg_body);
-        messageId = test.kai_state.msg_id;
-    } else if (isGreenwaveKaiState(test)) {
-        error = getMessageError(test.ks.broker_msg_body);
-        messageId = test.ks.kai_state.msg_id;
-        waiver = test.gs.waiver;
-    }
-
     return {
         contact,
         docsUrl,
         error,
         messageId,
-        name,
+        name: name || '',
         required,
         rerunUrl,
         status,
