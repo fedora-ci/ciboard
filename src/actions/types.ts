@@ -57,7 +57,7 @@ export interface IStateAlerts {
 export interface IStateWaiver {
     artifact?: Artifact;
     reason: string;
-    state?: StateType;
+    testcase?: string;
     timestamp?: number;
     waiveError: string;
 }
@@ -105,8 +105,8 @@ export interface GASetSearchOptionsPayload {
 }
 
 export interface CreateWaiverPayload {
-    state: StateType | undefined;
     artifact: Artifact | undefined;
+    testcase: string | undefined;
 }
 
 export interface SubmitWaiverPayload {

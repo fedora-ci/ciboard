@@ -29,10 +29,10 @@ import * as authSlice from '../slices/authSlice';
 import * as filtersSlice from '../slices/filtersSlice';
 import * as gatingTestsFormSlice from '../slices/gatingTestsFormSlice';
 import * as waiveSlice from '../slices/waiveSlice';
-import { Artifact, PayloadRPMBuildType, StateType } from '../artifact';
+import { Artifact, PayloadRPMBuildType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
-import { db_field_from_atype, getTestcaseName } from '../utils/artifactUtils';
+import { db_field_from_atype } from '../utils/artifactUtils';
 
 export const cleanseGatingFormState = () => gatingTestsFormSlice.cleanse();
 
@@ -130,7 +130,7 @@ export const fetchUser = () => {
 
 export const createWaiver = (
     artifact: Artifact | undefined,
-    state: StateType | undefined,
+    testcase: string | undefined,
 ) => {
     return async (dispatch: AppDispatch, getState: GetState) => {
         const { displayName, nameID } = getState().auth;
@@ -146,7 +146,7 @@ export const createWaiver = (
             );
             return;
         }
-        dispatch(waiveSlice.createWaiver({ artifact, state }));
+        dispatch(waiveSlice.createWaiver({ artifact, testcase }));
     };
 };
 
@@ -167,8 +167,8 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
          * get NVR, for modules we need to convert it to 'brew' like form
          */
         let waiveError: string;
-        const { artifact, state } = getState().waive;
-        if (_.isNil(_.get(artifact, 'payload.nvr')) || _.isNil(state)) {
+        const { artifact, testcase } = getState().waive;
+        if (_.isNil(_.get(artifact, 'payload.nvr')) || _.isNil(testcase)) {
             return;
         }
         // NOTE: We know that artifact.payload is not null thanks to the check at the
@@ -190,7 +190,6 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
         if (artifactType === 'brew-build' && nvr.match(/.*-container-.*/)) {
             artifactType = 'redhat-container-image';
         }
-        let testcase: string = getTestcaseName(state);
         const product_version = greenwave.decision.product_version(
             nvr,
             artifactType,
