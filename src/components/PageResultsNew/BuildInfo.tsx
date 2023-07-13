@@ -66,6 +66,7 @@ import {
 } from '../../utils/artifactUtils';
 import { secondsToTimestampWithTz } from '../../utils/timeUtils';
 import {
+    ErrataAutomation,
     HistoryList,
     LimitWithScroll,
     LinkedAdvisories,
@@ -302,17 +303,24 @@ export function BuildInfo(props: BuildInfoProps) {
                 </LimitWithScroll>
             </Tab>
             <Tab
-                eventKey="advisories"
-                title={
-                    <TabTitleText>
-                        Related advisories{' '}
-                        {advisoryCount > 0 && (
-                            <Badge isRead>{advisoryCount}</Badge>
-                        )}
-                    </TabTitleText>
-                }
+                eventKey="errata automation"
+                title={<TabTitleText>Errata automation</TabTitleText>}
             >
-                <CardBody>
+                <LoadingData show={loadingAdvisories} />
+                <LimitWithScroll>
+                    <ErrataAutomation artifact={artifact} />
+                </LimitWithScroll>
+            </Tab>
+            {advisoryCount > 0 && (
+                <Tab
+                    eventKey="advisories"
+                    title={
+                        <TabTitleText>
+                            Related advisories{' '}
+                            <Badge isRead>{advisoryCount}</Badge>
+                        </TabTitleText>
+                    }
+                >
                     <LoadingData show={loadingAdvisories} />
                     <LimitWithScroll>
                         <LinkedAdvisories
@@ -321,8 +329,8 @@ export function BuildInfo(props: BuildInfoProps) {
                             }
                         />
                     </LimitWithScroll>
-                </CardBody>
-            </Tab>
+                </Tab>
+            )}
         </Tabs>
     );
 }
