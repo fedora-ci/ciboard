@@ -369,8 +369,8 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             <TextContent className="pf-u-font-size-sm">
                 {/* TODO: Replace with real error message. */}
                 <Text>
-                    This test has failed. Please see the list below for
-                    individual test cases.
+                    This test has failed. Please see the list of test cases
+                    below for details.
                 </Text>
             </TextContent>
         </Alert>
