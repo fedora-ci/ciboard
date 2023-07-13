@@ -33,8 +33,6 @@ import {
     DrawerPanelBody,
     DrawerPanelContent,
     Flex,
-    List,
-    ListItem,
     Tab,
     Tabs,
     TabTitleText,
@@ -45,7 +43,6 @@ import {
 import {
     BookIcon,
     ExclamationCircleIcon,
-    InfoCircleIcon,
     RedoIcon,
     ThumbsUpIcon,
     UsersIcon,
@@ -56,8 +53,9 @@ import { SelectedTestContext } from './contexts';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestStatusIcon } from './TestStatusIcon';
 import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
-import { CiContact } from './types';
+import { CiContact, CiTest } from './types';
 import { Artifact } from '../../artifact';
+import { KnownIssues } from './KnownIssues';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -111,45 +109,15 @@ export function mkSeparatedListNatural(
     );
 }
 
-function KnownIssuesTab(props: {}) {
-    return (
-        <DrawerPanelBody>
-            {/* TODO: Replace with real known issues. */}
-            <p>Known issues with the CI (if any) will be listed here.</p>
-            <List>
-                <ListItem>
-                    <ExclamationCircleIcon
-                        className="pf-u-danger-color-100"
-                        title="Blocker issue"
-                    />{' '}
-                    SP ResultsDB doesn't process messages (
-                    <ExternalLink href="https://example.com/KTTY-1916">
-                        KTTY-1916
-                    </ExternalLink>
-                    ).
-                </ListItem>
-                <ListItem>
-                    <InfoCircleIcon
-                        className="pf-u-info-color-100"
-                        title="Normal issue"
-                    />{' '}
-                    Test sometimes fails in guest setup stage because of{' '}
-                    <ExternalLink href="https://example.com/KTTY-7788">
-                        KTTY-7788
-                    </ExternalLink>
-                    .
-                </ListItem>
-            </List>
-        </DrawerPanelBody>
-    );
-}
-
 interface DetailsDrawerTabsProps {
     artifact?: Artifact;
+    knownIssues?: CiTest['knownIssues'];
 }
 
 function DetailsDrawerTabs(props: DetailsDrawerTabsProps) {
     const [activeTabKey, setActiveTabKey] = useState(0);
+
+    const { knownIssues } = props;
 
     const tabs = [
         {
@@ -167,13 +135,16 @@ function DetailsDrawerTabs(props: DetailsDrawerTabsProps) {
         },
         {
             title: (
-                // TODO: Only show if there are any known issues.
-                // TODO: Pull real known issues from `selectedTest` metadata.
                 <>
-                    Known issues <Badge isRead>2</Badge>
+                    Known issues <Badge isRead>{knownIssues?.length}</Badge>
                 </>
             ),
-            content: <KnownIssuesTab />,
+            // Hide the known issues tab if there are no known issues.
+            content: !_.isEmpty(knownIssues) ? (
+                <DrawerPanelBody>
+                    <KnownIssues issues={knownIssues} />
+                </DrawerPanelBody>
+            ) : undefined,
         },
         {
             title: 'Metadata',
@@ -194,15 +165,18 @@ function DetailsDrawerTabs(props: DetailsDrawerTabsProps) {
                 setActiveTabKey(Number(tabIndex));
             }}
         >
-            {tabs.map(({ content, title }, i) => (
-                <Tab
-                    eventKey={i}
-                    key={i}
-                    title={<TabTitleText>{title}</TabTitleText>}
-                >
-                    {content}
-                </Tab>
-            ))}
+            {tabs.map(({ content, title }, i) =>
+                // Only show the tab if it has any content.
+                !_.isNil(content) ? (
+                    <Tab
+                        eventKey={i}
+                        key={i}
+                        title={<TabTitleText>{title}</TabTitleText>}
+                    >
+                        {content}
+                    </Tab>
+                ) : undefined,
+            )}
         </Tabs>
     );
 }
@@ -439,6 +413,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             </DrawerPanelBody>
             <DetailsDrawerTabs
                 artifact={props.artifact}
+                knownIssues={selectedTest?.knownIssues}
                 // TODO: Use a unique ID for the `key` prop instead of `selectedTest?.name`.
                 key={selectedTest?.name}
             />
