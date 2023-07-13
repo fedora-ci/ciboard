@@ -85,7 +85,7 @@ export const otherRoutes: MenuEntry[] = [
         title: '',
         key: 'artifact',
         path: '/artifact/:type/:search/:value',
-        element: <PageByMongoField />,
+        element: <PageResultsNew />,
     },
     {
         title: '',
@@ -95,20 +95,8 @@ export const otherRoutes: MenuEntry[] = [
     },
     {
         title: '',
-        key: 'resultsnew-empty',
-        path: '/resultsnew',
-        element: <PageResultsNew />,
-    },
-    {
-        title: '',
-        key: 'resultsnew',
-        /*
-         * Further details on new address structure:
-         * - /artifact/:type/:field/:value - same as now, see PageByMongoField
-         * - /artifact/:type/:field/:value/tc/:testcase - show specific test in sidebar
-         * - /artifact/:type/:field/:value/...?
-         */
-        path: '/resultsnew/:type/:aid',
-        element: <PageResultsNew />,
+        key: 'resultsold',
+        path: '/resultsold/:type/:search/:value',
+        element: <PageByMongoField />,
     },
 ];

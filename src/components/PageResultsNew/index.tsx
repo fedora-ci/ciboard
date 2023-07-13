@@ -275,7 +275,7 @@ function extractTests(artifact: Artifact): CiTest[] {
     return _.sortBy(tests, (test) => test.name);
 }
 
-type PageResultsNewParams = 'aid' | 'type';
+type PageResultsNewParams = 'search' | 'type' | 'value';
 
 export function PageResultsNew(_props: {}) {
     const [selectedTest, setSelectedTest] = useState<CiTest | undefined>();
@@ -302,16 +302,19 @@ export function PageResultsNew(_props: {}) {
     // TODO: Update title dynamically.
     const pageTitle = `🚧 New test results | ${config.defaultTitle}`;
 
-    const aid = params.aid || '47942709';
-    const atype = params.type || 'brew-build';
+    const fieldName = params.search || '';
+    const fieldPath = fieldName === 'aid' ? fieldName : `payload.${fieldName}`;
+    const fieldValues = params.value?.split(',') || [];
+    const atype = params.type || '';
 
     const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
         ArtifactsCompleteQuery,
         {
             variables: {
                 atype,
-                dbFieldName1: 'aid',
-                dbFieldValues1: [aid],
+                dbFieldName1: fieldPath,
+                dbFieldValues1: fieldValues,
+                // TODO: Allow for more than one.
                 limit: 1,
             },
             errorPolicy: 'all',
@@ -320,7 +323,7 @@ export function PageResultsNew(_props: {}) {
     );
 
     // TODO: Error state.
-    // TODO: Multiple results state?
+    // TODO: Multiple results state.
 
     /*
      * TODO: Load build info and test results if `taskId` is specified.
@@ -330,7 +333,7 @@ export function PageResultsNew(_props: {}) {
      * For details, see `PageByMongoField`.
      */
 
-    const artifact = data?.artifacts.artifacts?.[0];
+    const artifact = data?.artifacts?.artifacts?.[0];
     const haveData = !_.isNil(artifact) && !error && !loading;
 
     if (loading) {

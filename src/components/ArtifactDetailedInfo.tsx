@@ -414,10 +414,11 @@ const getEtaMessageUrl = (
     return brokerMsgUrl;
 };
 
-interface ErrataAutomationProps {
+export interface ErrataAutomationProps {
     artifact: Artifact;
 }
-const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
+
+export const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
     const { artifact } = props;
     const latestState = artifact.states_eta?.at(-1);
     if (_.isNil(latestState)) {
