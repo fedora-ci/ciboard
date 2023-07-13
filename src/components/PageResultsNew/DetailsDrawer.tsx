@@ -302,6 +302,109 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         />
     ) : null;
 
+    /*
+     * Action and support buttons.
+     */
+    const docsButton = selectedTest?.docsUrl && (
+        <Button
+            className="pf-u-p-0"
+            component={ExternalLink}
+            href={selectedTest.docsUrl}
+            icon={<BookIcon />}
+            variant="link"
+        >
+            Docs
+        </Button>
+    );
+    const reportIssueButton = selectedTest?.contact?.reportIssueUrl && (
+        <Button
+            className="pf-u-p-0"
+            component={ExternalLink}
+            href={selectedTest.contact.reportIssueUrl}
+            icon={<ExclamationCircleIcon />}
+            variant="link"
+        >
+            Report issue
+        </Button>
+    );
+    const rerunButton = selectedTest?.rerunUrl && (
+        <Button
+            className="pf-u-p-0"
+            component={ExternalLink}
+            href={selectedTest.rerunUrl}
+            icon={<RedoIcon />}
+            variant="link"
+        >
+            Rerun
+        </Button>
+    );
+    const waiveButton = selectedTest?.waivable && (
+        <Button
+            className="pf-u-p-0"
+            icon={<ThumbsUpIcon />}
+            isDisabled
+            variant="link"
+        >
+            Waive
+        </Button>
+    );
+
+    /*
+     * Custom alerts for various states.
+     */
+    const errorAlert = (selectedTest?.status === 'error' ||
+        (!_.isNil(selectedTest?.waiver) && selectedTest?.error)) && (
+        <Alert
+            className="pf-u-mt-md"
+            isInline
+            title="Test not completed"
+            variant="danger"
+        >
+            {selectedTest.error && (
+                <TextContent className="pf-u-font-size-sm">
+                    <Text>
+                        <strong>Reason:</strong> {selectedTest.error.reason}
+                    </Text>
+                    {selectedTest.error.issue_url && (
+                        <Text>
+                            <ExternalLink href={selectedTest.error.issue_url}>
+                                Related issue report
+                            </ExternalLink>
+                        </Text>
+                    )}
+                </TextContent>
+            )}
+            {!selectedTest.error && (
+                <TextContent className="pf-u-font-size-sm">
+                    <Text>
+                        This test has failed to complete, but the CI system
+                        provided no more information. Please contact the team
+                        listed above for guidance.
+                    </Text>
+                </TextContent>
+            )}
+        </Alert>
+    );
+    const failedAlert = selectedTest?.status === 'failed' && (
+        <Alert
+            className="pf-u-mt-md"
+            isInline
+            title="Test failed"
+            variant="danger"
+        >
+            <TextContent className="pf-u-font-size-sm">
+                {/* TODO: Replace with real error message. */}
+                <Text>
+                    This test has failed. Please see the list below for
+                    individual test cases.
+                </Text>
+            </TextContent>
+        </Alert>
+    );
+    const waiverWidget = selectedTest?.waiver && (
+        <GreenwaveWaiver waiver={selectedTest?.waiver} />
+    );
+
     const panelContent = (
         <DrawerPanelContent
             defaultSize={drawerSize}
@@ -322,109 +425,17 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                         default: 'spaceItemsLg',
                     }}
                 >
-                    {selectedTest?.waivable && (
-                        <Button
-                            className="pf-u-p-0"
-                            icon={<ThumbsUpIcon />}
-                            isDisabled
-                            variant="link"
-                        >
-                            Waive
-                        </Button>
-                    )}
-                    {selectedTest?.rerunUrl && (
-                        <Button
-                            className="pf-u-p-0"
-                            component={ExternalLink}
-                            href={selectedTest.rerunUrl}
-                            icon={<RedoIcon />}
-                            variant="link"
-                        >
-                            Rerun
-                        </Button>
-                    )}
-                    {selectedTest?.docsUrl && (
-                        <Button
-                            className="pf-u-p-0"
-                            component={ExternalLink}
-                            href={selectedTest.docsUrl}
-                            icon={<BookIcon />}
-                            variant="link"
-                        >
-                            Docs
-                        </Button>
-                    )}
-                    {selectedTest?.contact?.reportIssueUrl && (
-                        <Button
-                            className="pf-u-p-0"
-                            component={ExternalLink}
-                            href={selectedTest.contact.reportIssueUrl}
-                            icon={<ExclamationCircleIcon />}
-                            variant="link"
-                        >
-                            Report issue
-                        </Button>
-                    )}
+                    {waiveButton}
+                    {rerunButton}
+                    {docsButton}
+                    {reportIssueButton}
                 </Flex>
             </DrawerHead>
             <DrawerPanelBody className="pf-u-pb-sm">
                 <ContactWidget contact={selectedTest?.contact} />
-                {(selectedTest?.status === 'error' ||
-                    (!_.isNil(selectedTest?.waiver) &&
-                        selectedTest?.error)) && (
-                    <Alert
-                        className="pf-u-mt-md"
-                        isInline
-                        title="Test not completed"
-                        variant="danger"
-                    >
-                        {selectedTest.error && (
-                            <TextContent className="pf-u-font-size-sm">
-                                <Text>
-                                    <strong>Reason:</strong>{' '}
-                                    {selectedTest.error.reason}
-                                </Text>
-                                {selectedTest.error.issue_url && (
-                                    <Text>
-                                        <ExternalLink
-                                            href={selectedTest.error.issue_url}
-                                        >
-                                            Related issue report
-                                        </ExternalLink>
-                                    </Text>
-                                )}
-                            </TextContent>
-                        )}
-                        {!selectedTest.error && (
-                            <TextContent className="pf-u-font-size-sm">
-                                <Text>
-                                    This test has failed to complete, but the CI
-                                    system provided no more information. Please
-                                    contact the team listed above for guidance.
-                                </Text>
-                            </TextContent>
-                        )}
-                    </Alert>
-                )}
-                {selectedTest?.status === 'failed' && (
-                    <Alert
-                        className="pf-u-mt-md"
-                        isInline
-                        title="Test failed"
-                        variant="danger"
-                    >
-                        <TextContent className="pf-u-font-size-sm">
-                            {/* TODO: Replace with real error message. */}
-                            <Text>
-                                This test has failed. Please see the list below
-                                for individual test cases.
-                            </Text>
-                        </TextContent>
-                    </Alert>
-                )}
-                {selectedTest?.waiver && (
-                    <GreenwaveWaiver waiver={selectedTest?.waiver} />
-                )}
+                {errorAlert}
+                {failedAlert}
+                {waiverWidget}
             </DrawerPanelBody>
             <DetailsDrawerTabs
                 artifact={props.artifact}
