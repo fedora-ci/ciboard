@@ -42,6 +42,17 @@
     );
 }
 
+.knownIssuesList .fixed {
+    color: var(--pf-global--Color--200);
+    text-decoration: line-through;
+}
+
+.knownIssuesList .irrelevant {
+    color: var(--pf-global--Color--200);
+    font-style: italic;
+    filter: grayscale(1);
+}
+
 .resultsNarrower {
     max-width: 80rem;
     margin: 0 auto;
