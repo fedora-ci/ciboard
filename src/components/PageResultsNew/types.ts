@@ -46,6 +46,7 @@ export interface CiContact {
 
 export interface CiTest {
     contact?: CiContact;
+    description?: string;
     docsUrl?: string;
     error?: MSG_V_1.MsgErrorType;
     knownIssues?: MetadataKnownIssue[];
