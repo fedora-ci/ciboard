@@ -124,10 +124,11 @@ const Dependency: React.FC<DependencyProps> = (props) => {
     );
 };
 
-interface KnownIssuesProps {
+export interface KnownIssuesProps {
     issues?: MetadataKnownIssue[];
 }
-const KnownIssues: React.FC<KnownIssuesProps> = (props) => {
+
+export const KnownIssues: React.FC<KnownIssuesProps> = (props) => {
     const { issues } = props;
     if (_.isEmpty(issues) || _.isNil(issues)) {
         return null;
