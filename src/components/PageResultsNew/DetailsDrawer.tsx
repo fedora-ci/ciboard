@@ -48,6 +48,7 @@ import {
     UsersIcon,
 } from '@patternfly/react-icons';
 
+import { LinkifyNewTab } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
@@ -324,10 +325,20 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     );
 
     /*
-     * Custom alerts for various states.
+     * Custom alerts and widgets for error states and additional info.
      */
-    const errorAlert = (selectedTest?.status === 'error' ||
-        (!_.isNil(selectedTest?.waiver) && selectedTest?.error)) && (
+    const descriptionWidget = !_.isEmpty(selectedTest?.description) && (
+        <TextContent className="pf-u-mb-md">
+            <Text>
+                <b>Description:</b>{' '}
+                <LinkifyNewTab>{selectedTest?.description}</LinkifyNewTab>
+            </Text>
+        </TextContent>
+    );
+    const shouldShowError =
+        selectedTest?.status === 'error' ||
+        (!_.isNil(selectedTest?.waiver) && selectedTest?.error);
+    const errorAlert = shouldShowError && (
         <Alert
             className="pf-u-mt-md"
             isInline
@@ -406,6 +417,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                 </Flex>
             </DrawerHead>
             <DrawerPanelBody className="pf-u-pb-sm">
+                {descriptionWidget}
                 <ContactWidget contact={selectedTest?.contact} />
                 {errorAlert}
                 {failedAlert}
