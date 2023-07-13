@@ -205,6 +205,7 @@ function transformTest(
     stateName: StateExtendedNameType,
 ): CiTest {
     const contact = extractContact(test);
+    let description: string | undefined;
     const docsUrl = getDocsUrl(test);
     let error;
     let knownIssues: CiTest['knownIssues'];
@@ -220,10 +221,12 @@ function transformTest(
     if (isGreenwaveState(test)) {
         waiver = test.waiver;
     } else if (isKaiState(test)) {
+        description = test.custom_metadata?.payload?.description;
         error = getMessageError(test.broker_msg_body);
         knownIssues = test.custom_metadata?.payload?.known_issues;
         messageId = test.kai_state.msg_id;
     } else if (isGreenwaveKaiState(test)) {
+        description = test.ks.custom_metadata?.payload?.description;
         error = getMessageError(test.ks.broker_msg_body);
         knownIssues = test.ks.custom_metadata?.payload?.known_issues;
         messageId = test.ks.kai_state.msg_id;
@@ -253,6 +256,7 @@ function transformTest(
 
     return {
         contact,
+        description,
         docsUrl,
         error,
         knownIssues,
