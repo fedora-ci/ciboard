@@ -19,7 +19,7 @@
  */
 
 import { GreenwaveWaiveType } from '../../artifact';
-import { MSG_V_1 } from '../../types';
+import { MSG_V_1, MetadataKnownIssue } from '../../types';
 
 export type TestStatus =
     | 'error'
@@ -48,6 +48,7 @@ export interface CiTest {
     contact?: CiContact;
     docsUrl?: string;
     error?: MSG_V_1.MsgErrorType;
+    knownIssues?: MetadataKnownIssue[];
     labels?: string[];
     messageId?: string;
     name: string;
