@@ -78,7 +78,7 @@ export function isGreenwaveKaiState(
 }
 
 /** Maps artifact type to DB field to use in next query */
-export const db_field_from_atype = {
+export const db_field_from_atype: Record<ArtifactType, string> = {
     'brew-build': 'NVR',
     'copr-build': 'Component',
     'koji-build-cs': 'NVR',
@@ -88,7 +88,7 @@ export const db_field_from_atype = {
     'redhat-module': 'NSVC',
 };
 
-const known_types = {
+const known_types: Record<ArtifactType, string> = {
     'brew-build': 'NVR',
     'copr-build': 'Component',
     'koji-build-cs': 'NVR',
@@ -98,7 +98,7 @@ const known_types = {
     'redhat-module': 'NSVC',
 };
 
-const known_aid_meaning = {
+const known_aid_meaning: Record<ArtifactType, string> = {
     'brew-build': 'Task ID',
     'copr-build': 'ID',
     'koji-build-cs': 'Task ID',
@@ -106,6 +106,16 @@ const known_aid_meaning = {
     'productmd-compose': 'Compose',
     'redhat-container-image': 'Task ID',
     'redhat-module': 'MBS ID',
+};
+
+const artifact_type_labels: Record<ArtifactType, string> = {
+    'brew-build': 'Brew',
+    'copr-build': 'Copr',
+    'koji-build': 'Koji',
+    'koji-build-cs': 'CS Koji',
+    'productmd-compose': 'Compose',
+    'redhat-container-image': 'Container',
+    'redhat-module': 'MBS',
 };
 
 export function getArtifactName(artifact: Artifact): string | undefined {
@@ -138,6 +148,19 @@ export const aidMeaningForType = (type: ArtifactType) => {
         return 'id';
     }
     return known_aid_meaning[type];
+};
+
+/**
+ * Return a human-readable label for a given artifact type,
+ * for example 'Brew' for 'brew-build'.
+ */
+export const getArtifactTypeLabel = (type: ArtifactType) => {
+    if (_.has(artifact_type_labels, type)) {
+        return artifact_type_labels[type];
+    }
+
+    console.error(`Unknown artifact type '${type}'`);
+    return 'Unknown';
 };
 
 export const convertNsvcToNvr = (nsvc: string) => {
