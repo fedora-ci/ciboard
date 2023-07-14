@@ -36,7 +36,11 @@ import {
 } from '@patternfly/react-icons';
 import { Artifact, isArtifactMBS, isArtifactRPM } from '../../artifact';
 
-import { getArtifactName, mkLinkKojiWebTask } from '../../utils/artifactUtils';
+import {
+    getArtifactName,
+    getArtifactTypeLabel,
+    mkLinkKojiWebTask,
+} from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';
 
@@ -105,8 +109,7 @@ export interface ArtifactHeaderProps {
 
 export function ArtifactHeader(props: ArtifactHeaderProps) {
     const { artifact } = props;
-    // TODO: Use the correct label (Brew, MBS, Compose).
-    const artifactLabel = `Brew #${artifact.aid}`;
+    const artifactTypeLabel = getArtifactTypeLabel(artifact.type);
     // TODO: Use the correct service and instance.
     const artifactUrl = mkLinkKojiWebTask(artifact.aid, 'rh');
     const externalLink = (
@@ -115,7 +118,7 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
                 className="pf-u-mr-xs"
                 style={{ verticalAlign: '-.125em' }}
             />{' '}
-            {artifactLabel}
+            {artifactTypeLabel} #${artifact.aid}
         </ExternalLink>
     );
 
