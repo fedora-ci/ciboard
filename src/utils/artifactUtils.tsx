@@ -380,6 +380,32 @@ export const getArtifactProduct = (artifact: Artifact): string | null => {
     return null;
 };
 
+/**
+ * Get the gating tag of the given artifact, if available. In general, gating tags
+ * are defined for MBS and RPM builds only.
+ * @param artifact Artifact of any type.
+ * @returns Gating tag if available or null if not applicable for given artifact type.
+ */
+export const getArtifactGatingTag = (artifact: Artifact): string | null => {
+    if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
+        return artifact.payload.gate_tag_name;
+    }
+    return null;
+};
+
+/**
+ * Get the name of the issuer or owner of the given artifact, if available.
+ * In general, issuer names are defined for MBS and RPM builds only.
+ * @param artifact Artifact of any type.
+ * @returns Issuer name if available or null if not applicable for given artifact type.
+ */
+export const getArtifacIssuer = (artifact: Artifact): string | null => {
+    if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
+        return artifact.payload.issuer;
+    }
+    return null;
+};
+
 export const getTestcaseName = (state: StateType): string | undefined => {
     let testCaseName: string | undefined;
     if (isKaiState(state)) {

@@ -103,27 +103,39 @@ export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRPM {
         artifact.type === 'koji-build-cs'
     );
 }
+
 export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMBS {
     return artifact.type === 'redhat-module';
 }
+
 export function isArtifactCompose(
     artifact: Artifact,
 ): artifact is ArtifactCompose {
     return artifact.type === 'productmd-compose';
 }
+
 export function isArtifactRedhatContainerImage(
     artifact: Artifact,
 ): artifact is ArtifactContainerImage {
     return artifact.type === 'redhat-container-image';
 }
+
 export function isStateKai(state: StateType): state is StateKaiType {
     return _.has(state, 'kai_state');
 }
 
-export type PayloadsType =
-    | PayloadComposeBuildType
-    | PayloadMBSBuildType
-    | PayloadRPMBuildType;
+export function isArtifactScratch(artifact: Artifact): boolean {
+    if (
+        isArtifactRedhatContainerImage(artifact) ||
+        isArtifactMBS(artifact) ||
+        isArtifactRPM(artifact)
+    ) {
+        return artifact.payload.scratch;
+    }
+    return false;
+}
+
+export type PayloadsType = Artifact['payload'];
 
 export interface ArtifactBase {
     _id: string;
