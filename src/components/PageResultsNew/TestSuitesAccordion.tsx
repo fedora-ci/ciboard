@@ -116,9 +116,8 @@ function TestCaseRow(props: TestCaseRowProps) {
     const machineArchitecture = getProperty(testCase, 'baseosci.arch');
     const onToggle = () => setExpanded(!isExpanded);
 
-    // TODO: Use a unique ID for the key.
     return (
-        <Tbody key={testCase.name} isExpanded={isExpanded}>
+        <Tbody key={testCase._uuid} isExpanded={isExpanded}>
             <Tr>
                 <Td
                     className="pf-u-pl-0"
@@ -194,14 +193,9 @@ export interface TestSuitesAccordionProps {
 }
 
 export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
-    /*
-     * TODO: Expand all suites by default?
-     * TOOD: Expand suites with failures by default?
-     * TODO: Render test cases directly if there is only a single suite?
-     * TODO: If only one test suite is present, expand it by default.
-     */
+    // TODO: Expand suites with failures by default?
     const [expandedSuites, setExpandedSuites] = useState<
-        Partial<Record<string, boolean>>
+        Partial<Record<number, boolean>>
     >({});
     const { artifact } = props;
 
@@ -299,20 +293,19 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
     }
 
     if (suites.length === 1 && _.isEmpty(expandedSuites)) {
-        // TODO: Use a unique ID here later.
-        setExpandedSuites({ [suites[0].name]: true });
+        setExpandedSuites({ 0: true });
     }
 
-    const onToggle = (name: string): void => {
+    const onToggle = (index: number): void => {
         const newExpandedIds = update(expandedSuites, {
-            $toggle: [name],
+            $toggle: [index],
         });
         setExpandedSuites(newExpandedIds);
     };
 
     return (
         <Accordion isBordered>
-            {suites.map(({ name, status, tests }) => {
+            {suites.map(({ _uuid, name, status, tests }, index) => {
                 const statusIcon = (
                     <TestStatusIcon
                         status={status}
@@ -323,18 +316,17 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
                     />
                 );
 
-                // TODO: Use a unique ID here later.
                 return (
-                    <AccordionItem key={name}>
+                    <AccordionItem key={index}>
                         <AccordionToggle
-                            id={name}
-                            isExpanded={expandedSuites[name]}
-                            onClick={() => onToggle(name)}
+                            id={_uuid}
+                            isExpanded={expandedSuites[index]}
+                            onClick={() => onToggle(index)}
                         >
                             {statusIcon}
                             {name}
                         </AccordionToggle>
-                        <AccordionContent isHidden={!expandedSuites[name]}>
+                        <AccordionContent isHidden={!expandedSuites[index]}>
                             <TestCasesTable cases={tests} />
                         </AccordionContent>
                     </AccordionItem>

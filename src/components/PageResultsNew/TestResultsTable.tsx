@@ -53,7 +53,7 @@ import { WaiveButton } from './WaiveButton';
 
 interface SingleTestRowProps {
     artifact: Artifact;
-    /** Contatct information for the test or CI owners. */
+    /** Contact information for the test or CI owners. */
     contact?: CiContact;
     docsUrl?: string;
     isRequired?: boolean;
@@ -211,14 +211,13 @@ export function TestResultsTable(props: TestResultsTableProps) {
             ({ required, status }) =>
                 required && (status === 'error' || status === 'failed'),
         )
-        .map((row) => (
+        .map((row, index) => (
             /* More inspo in the docs: https://www.patternfly.org/v4/components/tabs/react-demos/#tables-and-tabs */
             // TODO: Handle click → open drawer/change contents to match selected test.
             <Tr
                 isHoverable
                 isRowSelected={selectedTest?.name === row.name}
-                // TODO: Use unique key later on.
-                key={row.name}
+                key={index}
                 // TODO: Use unique key later on.
                 onRowClick={() => props.onSelect && props.onSelect(row.name)}
             >
@@ -248,14 +247,13 @@ export function TestResultsTable(props: TestResultsTableProps) {
                     status === 'queued' ||
                     status === 'running'),
         )
-        .map((row) => (
+        .map((row, index) => (
             /* More inspo in the docs: https://www.patternfly.org/v4/components/tabs/react-demos/#tables-and-tabs */
             // TODO: Handle click → open drawer/change contents to match selected test.
             <Tr
                 isHoverable
                 isRowSelected={selectedTest?.name === row.name}
-                // TODO: Use unique key later on.
-                key={row.name}
+                key={index}
                 // TODO: Use unique key later on.
                 onRowClick={() => props.onSelect && props.onSelect(row.name)}
             >
@@ -310,12 +308,11 @@ export function TestResultsTable(props: TestResultsTableProps) {
 
     const additionalRows = tests
         .filter(({ required }) => !required)
-        .map((row) => (
+        .map((row, index) => (
             <Tr
                 isHoverable
                 isRowSelected={selectedTest?.name === row.name}
-                // TODO: Use unique key later on.
-                key={row.name}
+                key={index}
                 // TODO: Use unique key later on.
                 onRowClick={() => props.onSelect && props.onSelect(row.name)}
             >
