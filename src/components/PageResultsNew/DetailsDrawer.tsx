@@ -44,7 +44,6 @@ import {
     BookIcon,
     ExclamationCircleIcon,
     RedoIcon,
-    ThumbsUpIcon,
     UsersIcon,
 } from '@patternfly/react-icons';
 
@@ -57,6 +56,7 @@ import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
 import { CiContact, CiTest } from './types';
 import { Artifact } from '../../artifact';
 import { KnownIssues } from './KnownIssues';
+import { WaiveButton } from './WaiveButton';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -265,6 +265,8 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     const selectedTest = useContext(SelectedTestContext);
     const isExpanded = !_.isNil(selectedTest);
 
+    if (!props.artifact) return null;
+
     const onCloseClick = () => props.onClose && props.onClose();
     const onResize = (newWidth: number) => setDrawerSize(`${newWidth}px`);
     const statusIcon = selectedTest ? (
@@ -304,7 +306,6 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     );
     const rerunButton = selectedTest?.rerunUrl && (
         <Button
-            className="pf-u-p-0"
             component={ExternalLink}
             href={selectedTest.rerunUrl}
             icon={<RedoIcon />}
@@ -314,14 +315,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         </Button>
     );
     const waiveButton = selectedTest?.waivable && (
-        <Button
-            className="pf-u-p-0"
-            icon={<ThumbsUpIcon />}
-            isDisabled
-            variant="link"
-        >
-            Waive
-        </Button>
+        <WaiveButton artifact={props.artifact} testcase={selectedTest.name} />
     );
 
     /*
