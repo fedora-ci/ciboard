@@ -72,6 +72,7 @@ import {
     isArtifactMBS,
     isArtifactRPM,
     KojiBuildInfo,
+    KojiBuildTag,
     koji_instance,
     KojiBuildTagging,
     KojiInstanceType,
@@ -229,22 +230,24 @@ const BuildInfo: React.FC<BuildInfoProps> = (props) => {
 };
 
 export interface TagsListProps {
-    build?: KojiBuildInfo;
     instance: KojiInstanceType;
+    tags?: KojiBuildTag[];
 }
 
 export const TagsList: React.FC<TagsListProps> = (props) => {
-    const { build, instance } = props;
-    if (_.isNil(build)) {
+    const { instance, tags } = props;
+
+    if (_.isNil(tags)) {
         return null;
     }
+
     return (
         <List
             className="pf-u-font-size-sm"
             component={ListComponent.ol}
             type={OrderType.number}
         >
-            {_.map(build.tags, (tag) => (
+            {_.map(tags, (tag) => (
                 <ListItem key={tag.id}>
                     <ExternalLink href={mkLinkKojiWebTagId(tag.id, instance)}>
                         {tag.name}
@@ -309,7 +312,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                 title={<TabTitleText>Active Koji Tags</TabTitleText>}
             >
                 <LimitWithScroll>
-                    <TagsList build={build} instance={instance} />
+                    <TagsList instance={instance} tags={build?.tags} />
                 </LimitWithScroll>
             </Tab>
             <Tab eventKey={2} title={<TabTitleText>Koji History</TabTitleText>}>
@@ -737,17 +740,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
                 title={<TabTitleText>Active Tags</TabTitleText>}
             >
                 <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
-                    <List component={ListComponent.ol} type={OrderType.number}>
-                        {_.map(build.tags, (tag) => (
-                            <ListItem key={tag.id}>
-                                <ExternalLink
-                                    href={mkLinkKojiWebTagId(tag.id, instance)}
-                                >
-                                    {tag.name}
-                                </ExternalLink>
-                            </ListItem>
-                        ))}
-                    </List>
+                    <TagsList instance={instance} tags={build.tags} />
                 </Flex>
             </Tab>
             <Tab
