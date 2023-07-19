@@ -32,3 +32,14 @@ export function secondsToTimestampWithTz(seconds: number) {
     const localTime = moment.unix(seconds).local();
     return localTime.format(TIMESTAMP_WITH_TZ_FORMAT);
 }
+
+/**
+ * Format a timestamp as a date and time with time zone offset.
+ * @param timestamp Any timestamp parsable by the moment library.
+ * Can be an ISO 8601 timestamp, e.g. 2022-12-21T02:30:50Z.
+ * @returns Formatted timestamp as a string.
+ */
+export function timestampToTimestampWithTz(timestamp: string) {
+    const localTime = moment.default(timestamp).local();
+    return localTime.format(TIMESTAMP_WITH_TZ_FORMAT);
+}
