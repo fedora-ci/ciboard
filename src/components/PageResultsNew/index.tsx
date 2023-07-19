@@ -45,8 +45,6 @@ import {
     Artifact,
     GreenwaveRequirementOutcome,
     GreenwaveWaiveType,
-    isArtifactMBS,
-    isArtifactRPM,
     StateExtendedNameType,
     StateKaiType,
     StateType,
@@ -360,7 +358,7 @@ export function PageResultsNew(_props: {}) {
         );
     }
 
-    if (!haveData || (!isArtifactMBS(artifact) && !isArtifactRPM(artifact))) {
+    if (!haveData) {
         return (
             <PageCommon title={pageTitle}>
                 <PageSection isFilled>
@@ -383,7 +381,6 @@ export function PageResultsNew(_props: {}) {
 
     tests = extractTests(artifact);
 
-    // TODO: Use unique key later on.
     const onTestSelect = (name: string | undefined) => {
         if (name && name !== selectedTest?.name) {
             setSelectedTest(findTestByName(name));
@@ -402,19 +399,9 @@ export function PageResultsNew(_props: {}) {
                     onClose={() => onTestSelect(undefined)}
                 >
                     <PageSection variant={PageSectionVariants.light}>
-                        <ArtifactHeader
-                            artifact={artifact}
-                            gatingStatus="fail"
-                            gatingTag={artifact.payload.gate_tag_name}
-                            // TODO: Is this logic correct?
-                            isScratch={_.isEmpty(
-                                artifact.payload.gate_tag_name,
-                            )}
-                            nvr={artifact.payload.nvr}
-                            owner={artifact.payload.issuer}
-                        />
+                        <ArtifactHeader artifact={artifact} />
                     </PageSection>
-                    <PageSection isFilled variant={PageSectionVariants.default}>
+                    <PageSection isFilled>
                         <Flex
                             className="resultsNarrower"
                             direction={{ default: 'column' }}
