@@ -97,11 +97,13 @@ export const GreenwaveKaiStateActions: React.FC<
     const docsUrl = getUmbDocsUrl(state.ks.broker_msg_body);
     const rerunUrl = getRerunUrl(state);
     const showWaiveButton = isResultWaivable(state.gs);
+    const testcase = getTestcaseName(state);
+
     return (
         <Flex style={{ minWidth: '20em' }}>
             <Flex flex={{ default: 'flex_1' }}>
                 {showWaiveButton && (
-                    <WaiveButton artifact={artifact} state={state.gs} />
+                    <WaiveButton artifact={artifact} testcase={testcase} />
                 )}
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
