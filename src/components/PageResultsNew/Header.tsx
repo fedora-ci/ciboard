@@ -34,9 +34,11 @@ import {
     CubeIcon,
     UserIcon,
 } from '@patternfly/react-icons';
-import { Artifact, isArtifactMBS, isArtifactRPM } from '../../artifact';
 
+import { Artifact, isArtifactScratch } from '../../artifact';
 import {
+    getArtifacIssuer,
+    getArtifactGatingTag,
     getArtifactName,
     getArtifactTypeLabel,
     mkLinkKojiWebTask,
@@ -56,33 +58,28 @@ function BackButton(_props: {}) {
 
 interface ArtifactTitleProps {
     artifact: Artifact;
-    gatingTag?: string;
-    isScratch?: boolean;
-    owner: string;
 }
 
 function ArtifactTitle(props: ArtifactTitleProps) {
-    const hasGatingDecision = !_.isNil(props.artifact.greenwave_decision);
-    const issuer =
-        isArtifactMBS(props.artifact) || isArtifactRPM(props.artifact)
-            ? props.artifact.payload.issuer
-            : null;
+    const { artifact } = props;
+    const gatingTag = getArtifactGatingTag(artifact);
+    const hasGatingDecision = !_.isNil(artifact.greenwave_decision);
+    const isScratch = isArtifactScratch(artifact);
+    const issuer = getArtifacIssuer(artifact);
 
     return (
         <Flex spaceItems={{ default: 'spaceItemsLg' }}>
             <TextContent className="pf-u-mr-auto">
-                <Title headingLevel="h1">
-                    {getArtifactName(props.artifact)}
-                </Title>
+                <Title headingLevel="h1">{getArtifactName(artifact)}</Title>
             </TextContent>
             <FlexItem spacer={{ default: 'spacerXl' }}></FlexItem>
             {hasGatingDecision && (
-                <ArtifactGreenwaveStatesSummary artifact={props.artifact} />
+                <ArtifactGreenwaveStatesSummary artifact={artifact} />
             )}
-            {props.isScratch && <span className="pf-u-color-200">scratch</span>}
-            {!props.isScratch && props.gatingTag && (
+            {isScratch && <span className="pf-u-color-200">scratch</span>}
+            {!isScratch && gatingTag && (
                 <span className="pf-u-color-200" title="Gating tag">
-                    <CodeBranchIcon /> {props.gatingTag}
+                    <CodeBranchIcon /> {gatingTag}
                 </span>
             )}
             {issuer && (
@@ -99,12 +96,7 @@ function ArtifactTitle(props: ArtifactTitleProps) {
 
 export interface ArtifactHeaderProps {
     artifact: Artifact;
-    gatingStatus?: 'fail' | 'pass';
-    gatingTag?: string;
     hasBackLink?: boolean;
-    isScratch?: boolean;
-    nvr: string;
-    owner: string;
 }
 
 export function ArtifactHeader(props: ArtifactHeaderProps) {
@@ -118,7 +110,7 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
                 className="pf-u-mr-xs"
                 style={{ verticalAlign: '-.125em' }}
             />{' '}
-            {artifactTypeLabel} #${artifact.aid}
+            {artifactTypeLabel} #{artifact.aid}
         </ExternalLink>
     );
 
@@ -131,12 +123,7 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
             )}
             <StackItem>{externalLink}</StackItem>
             <StackItem>
-                <ArtifactTitle
-                    artifact={artifact}
-                    isScratch={props.isScratch}
-                    gatingTag={props.gatingTag}
-                    owner={props.owner}
-                />
+                <ArtifactTitle artifact={artifact} />
             </StackItem>
         </Stack>
     );

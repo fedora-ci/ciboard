@@ -32,6 +32,10 @@ import {
     EmptyState,
     EmptyStateBody,
     EmptyStateIcon,
+    List,
+    ListComponent,
+    ListItem,
+    OrderType,
     Spinner,
     Tab,
     Tabs,
@@ -44,15 +48,21 @@ import classNames from 'classnames';
 
 import styles from '../../custom.module.css';
 import {
+    Artifact,
     ArtifactMBS,
     ArtifactRPM,
     KojiBuildInfo,
     KojiInstanceType,
+    MbsBuildInfo,
+    isArtifactMBS,
+    isArtifactRPM,
     koji_instance,
 } from '../../artifact';
 import {
     ArtifactsDetailedInfoKojiTask,
     ArtifactsDetailedInfoKojiTaskData,
+    ArtifactsDetailedInfoModuleBuild,
+    ArtifactsDetailedInfoModuleBuildData,
 } from '../../queries/Artifacts';
 import {
     ErrataLinkedAdvisoriesReply,
@@ -60,11 +70,17 @@ import {
 } from '../../queries/Errata';
 import {
     mkCommitHashFromSource,
+    mkLinkFileInGit,
     mkLinkKojiWebBuildId,
+    mkLinkKojiWebTask,
     mkLinkKojiWebUserId,
+    mkLinkMbsBuild,
     mkLinkPkgsDevelFromSource,
 } from '../../utils/artifactUtils';
-import { secondsToTimestampWithTz } from '../../utils/timeUtils';
+import {
+    secondsToTimestampWithTz,
+    timestampToTimestampWithTz,
+} from '../../utils/timeUtils';
 import {
     ErrataAutomation,
     HistoryList,
@@ -75,12 +91,142 @@ import {
 } from '../ArtifactDetailedInfo';
 import { ExternalLink } from '../ExternalLink';
 
-interface BuildMetadataProps {
+interface BuildMetadataMbsProps {
+    build: MbsBuildInfo;
+    instance: KojiInstanceType;
+}
+
+function BuildMetadataMbs(props: BuildMetadataMbsProps) {
+    const { build, instance } = props;
+
+    const moduleName = build.name;
+
+    const buildTimeWithTz = build.time_completed
+        ? timestampToTimestampWithTz(build.time_completed)
+        : 'n/a';
+    let commitTimeWithTz = 'n/a';
+    if (build.commit) {
+        commitTimeWithTz = secondsToTimestampWithTz(
+            build.commit.committer_date_seconds,
+        );
+    }
+
+    const buildWebUrl = mkLinkMbsBuild(build.id, instance);
+    const buildIdCell =
+        (buildWebUrl && (
+            <ExternalLink href={buildWebUrl}>{build.id}</ExternalLink>
+        )) ||
+        build.id.toString();
+
+    const gitCommitLink = !_.isEmpty(build.scmurl) && (
+        <ExternalLink
+            className={styles['commitHash']}
+            href={mkLinkPkgsDevelFromSource(build.scmurl!, instance)}
+        >
+            {mkCommitHashFromSource(build.scmurl!)}
+        </ExternalLink>
+    );
+
+    const modulemdLink = !_.isEmpty(build.scmurl) && (
+        <ExternalLink
+            href={mkLinkFileInGit(
+                moduleName,
+                'modules',
+                // Let's assume the Git URL is correct for now.
+                mkCommitHashFromSource(build.scmurl!)!,
+                `${moduleName}.yaml`,
+                instance,
+            )}
+        >
+            {moduleName}.yaml
+        </ExternalLink>
+    );
+
+    const items = [
+        {
+            label: 'Build ID',
+            value: buildIdCell,
+        },
+        {
+            label: 'Git commit',
+            value: gitCommitLink,
+        },
+        {
+            label: 'Modulemd',
+            value: modulemdLink,
+        },
+        {
+            label: 'Build owner',
+            value: (
+                <ExternalLink href={mkLinkKojiWebUserId(build.owner, instance)}>
+                    {build.owner}
+                </ExternalLink>
+            ),
+        },
+        {
+            label: 'Committer',
+            value: (
+                <>
+                    {build.commit?.committer_name || 'n/a'}
+                    &nbsp;&lt;
+                    {build.commit?.committer_email || 'n/a'}
+                    &gt;
+                </>
+            ),
+        },
+        {
+            // Intentionally left blank for alignment.
+        },
+        {
+            label: 'Build completed',
+            value: buildTimeWithTz,
+            className: styles['timestamp'],
+        },
+        {
+            label: 'Commit time',
+            value: commitTimeWithTz,
+            className: styles['timestamp'],
+        },
+    ];
+
+    const descListClassName = classNames(
+        'pf-u-px-lg',
+        'pf-u-py-md',
+        styles['buildInfo'],
+    );
+
+    return (
+        <DescriptionList
+            className={descListClassName}
+            columnModifier={{ default: '1Col', lg: '3Col' }}
+            isAutoColumnWidths
+            isCompact
+            isHorizontal
+        >
+            {items.map(({ className, label, value }, index) =>
+                value ? (
+                    <DescriptionListGroup key={index}>
+                        <DescriptionListTerm>{label}</DescriptionListTerm>
+                        <DescriptionListDescription className={className}>
+                            {value}
+                        </DescriptionListDescription>
+                    </DescriptionListGroup>
+                ) : (
+                    <DescriptionListGroup>
+                        {/* Intentionally left blank */}
+                    </DescriptionListGroup>
+                ),
+            )}
+        </DescriptionList>
+    );
+}
+
+interface BuildMetadataRpmProps {
     build: KojiBuildInfo;
     instance: KojiInstanceType;
 }
 
-function BuildMetadata(props: BuildMetadataProps) {
+function BuildMetadataRpm(props: BuildMetadataRpmProps) {
     const { build, instance } = props;
 
     const buildTimeWithTz = secondsToTimestampWithTz(build.completion_ts);
@@ -146,13 +292,15 @@ function BuildMetadata(props: BuildMetadataProps) {
         },
     ];
 
+    const descListClassName = classNames(
+        'pf-u-px-lg',
+        'pf-u-py-md',
+        styles['buildInfo'],
+    );
+
     return (
         <DescriptionList
-            className={classNames(
-                'pf-u-px-xl',
-                'pf-u-py-lg',
-                styles['buildInfo'],
-            )}
+            className={descListClassName}
             columnModifier={{ default: '1Col', lg: '2Col' }}
             isAutoColumnWidths
             isCompact
@@ -213,12 +361,144 @@ function BuildInfoLoading(_props: {}) {
     );
 }
 
-interface BuildInfoProps {
-    artifact: ArtifactMBS | ArtifactRPM;
+interface ModuleBuildComponentsProps {
+    build?: MbsBuildInfo;
+    instance: KojiInstanceType;
 }
 
-export function BuildInfo(props: BuildInfoProps) {
-    const { artifact } = props;
+function ModuleBuildComponents(props: ModuleBuildComponentsProps) {
+    const { build, instance } = props;
+
+    if (_.isNil(build)) return null;
+
+    return (
+        <List
+            className="pf-u-font-size-sm"
+            component={ListComponent.ol}
+            type={OrderType.number}
+        >
+            {_.map(build.tasks, (task) => (
+                <ListItem key={task.nvr}>
+                    {task.nvr}{' '}
+                    {task.id && (
+                        <ExternalLink
+                            href={mkLinkKojiWebTask(task.id, instance)}
+                        >
+                            (task #{task.id})
+                        </ExternalLink>
+                    )}
+                </ListItem>
+            ))}
+        </List>
+    );
+}
+
+interface BuildInfoMbsProps {
+    artifact: ArtifactMBS;
+}
+
+function BuildInfoMbs({ artifact }: BuildInfoMbsProps) {
+    const [activeTabKey, setActiveTabKey] = useState('summary');
+
+    const instance = koji_instance(artifact.type);
+
+    /*
+     * Fetch available information about the build -- NVR, commit and build time,
+     * source URL, build owner, tags and tagging history, and gating status (if
+     * available).
+     */
+    const { data, error, loading } =
+        useQuery<ArtifactsDetailedInfoModuleBuildData>(
+            ArtifactsDetailedInfoModuleBuild,
+            {
+                variables: {
+                    build_id: Number(artifact.aid),
+                    distgit_instance: instance,
+                    koji_instance: instance,
+                    mbs_instance: instance,
+                },
+                errorPolicy: 'all',
+            },
+        );
+
+    if (loading) {
+        return <BuildInfoLoading />;
+    }
+
+    if (error) {
+        return <BuildInfoError message={error.message} />;
+    }
+
+    const build = data?.mbs_build;
+
+    if (!build) {
+        return <BuildInfoEmpty />;
+    }
+
+    // Show different tab set for module builds (Components instead of 2× errata)
+    return (
+        <Tabs
+            className="pf-u-pt-sm"
+            activeKey={activeTabKey}
+            inset={{ default: 'insetLg' }}
+            onSelect={(_event, tabIndex) => {
+                setActiveTabKey(tabIndex.toString());
+            }}
+        >
+            <Tab
+                eventKey="summary"
+                title={<TabTitleText>Build summary</TabTitleText>}
+            >
+                <BuildMetadataMbs build={build} instance={instance} />
+            </Tab>
+            <Tab
+                eventKey="components"
+                title={<TabTitleText>Components</TabTitleText>}
+            >
+                <LimitWithScroll>
+                    <ModuleBuildComponents build={build} instance={instance} />
+                </LimitWithScroll>
+            </Tab>
+            {!_.isNil(build.tags) && (
+                <Tab
+                    eventKey="tags"
+                    title={
+                        <TabTitleText>
+                            Active tags{' '}
+                            <Badge isRead>{build.tags.length}</Badge>
+                        </TabTitleText>
+                    }
+                >
+                    <LimitWithScroll>
+                        <TagsList instance={instance} tags={build.tags} />
+                    </LimitWithScroll>
+                </Tab>
+            )}
+            <Tab
+                eventKey="history"
+                title={<TabTitleText>Tagging history</TabTitleText>}
+            >
+                <LimitWithScroll>
+                    <HistoryList history={build.tag_history?.tag_listing} />
+                </LimitWithScroll>
+            </Tab>
+            <Tab
+                eventKey="errata automation"
+                title={<TabTitleText>Errata automation</TabTitleText>}
+            >
+                <LimitWithScroll>
+                    <ErrataAutomation artifact={artifact} />
+                </LimitWithScroll>
+            </Tab>
+        </Tabs>
+    );
+}
+
+interface BuildInfoRpmProps {
+    artifact: ArtifactRPM;
+}
+
+function BuildInfoRpm({ artifact }: BuildInfoRpmProps) {
     const [activeTabKey, setActiveTabKey] = useState('summary');
 
     const kojiInstance = koji_instance(artifact.type);
@@ -242,7 +522,7 @@ export function BuildInfo(props: BuildInfoProps) {
         );
 
     // Fetch information on related advisories (errata).
-    const { loading: loadingAdvisories, data: dataAdvisories } =
+    const { data: dataAdvisories, loading: loadingAdvisories } =
         useQuery<ErrataLinkedAdvisoriesReply>(LinkedErrataAdvisories, {
             variables: {
                 nvrs: [artifact.payload.nvr],
@@ -280,7 +560,7 @@ export function BuildInfo(props: BuildInfoProps) {
                 eventKey="summary"
                 title={<TabTitleText>Build summary</TabTitleText>}
             >
-                <BuildMetadata build={build} instance={kojiInstance} />
+                <BuildMetadataRpm build={build} instance={kojiInstance} />
             </Tab>
             <Tab
                 eventKey="tags"
@@ -291,7 +571,7 @@ export function BuildInfo(props: BuildInfoProps) {
                 }
             >
                 <LimitWithScroll>
-                    <TagsList build={build} instance={kojiInstance} />
+                    <TagsList instance={kojiInstance} tags={build.tags} />
                 </LimitWithScroll>
             </Tab>
             <Tab
@@ -306,7 +586,6 @@ export function BuildInfo(props: BuildInfoProps) {
                 eventKey="errata automation"
                 title={<TabTitleText>Errata automation</TabTitleText>}
             >
-                <LoadingData show={loadingAdvisories} />
                 <LimitWithScroll>
                     <ErrataAutomation artifact={artifact} />
                 </LimitWithScroll>
@@ -333,4 +612,14 @@ export function BuildInfo(props: BuildInfoProps) {
             )}
         </Tabs>
     );
+}
+
+export interface BuildInfoProps {
+    artifact: Artifact;
+}
+
+export function BuildInfo({ artifact }: BuildInfoProps) {
+    if (isArtifactMBS(artifact)) return <BuildInfoMbs artifact={artifact} />;
+    if (isArtifactRPM(artifact)) return <BuildInfoRpm artifact={artifact} />;
+    return <BuildInfoEmpty />;
 }
