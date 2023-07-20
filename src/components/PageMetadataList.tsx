@@ -50,6 +50,7 @@ import {
     ActionListItem,
     ActionListGroup,
     EmptyStateVariant,
+    PageSection,
 } from '@patternfly/react-core';
 import {
     Tr,
@@ -503,11 +504,13 @@ const MetadataList: FunctionComponent<{}> = () => {
 export function PageMetadataList() {
     return (
         <PageCommon title={`Metadata | ${config.defaultTitle}`}>
-            <Flex grow={{ default: undefined }}>
-                <FlexItem>
-                    <MetadataList />
-                </FlexItem>
-            </Flex>
+            <PageSection isFilled>
+                <Flex grow={{ default: undefined }}>
+                    <FlexItem>
+                        <MetadataList />
+                    </FlexItem>
+                </Flex>
+            </PageSection>
         </PageCommon>
     );
 }
