@@ -19,7 +19,7 @@
  */
 
 import * as _ from 'lodash';
-import { ReactNode, useContext } from 'react';
+import { useContext } from 'react';
 import {
     Alert,
     Button,
@@ -46,39 +46,35 @@ import { useHref } from 'react-router-dom';
 
 import { Artifact } from '../../artifact';
 import { SelectedTestContext } from './contexts';
-import { CiContact, CiTest, TestStatus } from './types';
+import { CiTest } from './types';
 import { TestStatusIcon } from './TestStatusIcon';
 import { ExternalLink } from '../ExternalLink';
 import { WaiveButton } from './WaiveButton';
 
 interface SingleTestRowProps {
     artifact: Artifact;
-    /** Contact information for the test or CI owners. */
-    contact?: CiContact;
-    docsUrl?: string;
     isRequired?: boolean;
-    isWaivable?: boolean;
-    isWaived?: boolean;
-    labels?: string[];
-    /** Test case name */
-    name: string;
-    rerunUrl?: string;
-    status: TestStatus;
-    /** Optional short text below the test case name. */
-    subtitle?: ReactNode;
+    test: CiTest;
 }
 
 function SingleTestRow(props: SingleTestRowProps) {
+    const { artifact, test } = props;
+
+    const isWaived = !_.isNil(test.waiver);
+
     // TODO: Use unique ID later.
-    const permalinkUrl = useHref(`?focus=${props.name}`);
+    const permalinkUrl = useHref(`?focus=${test.name}`);
     const statusIcon = (
         <TestStatusIcon
-            isWaived={props.isWaived}
+            isWaived={isWaived}
             size="md"
-            status={props.status}
+            status={test.status}
             style={{ marginTop: '0.2em' }}
         />
     );
+
+    // TODO: Show dependencies.
+    let subtitle: string | undefined;
 
     return (
         <Flex
@@ -103,15 +99,15 @@ function SingleTestRow(props: SingleTestRowProps) {
                     }}
                 >
                     <Title className="pf-u-mb-0" headingLevel="h2" size="md">
-                        {props.name}
+                        {test.name}
                     </Title>
-                    {props.subtitle && (
+                    {subtitle && (
                         <Title
                             className="pf-u-color-200 pf-u-font-weight-light"
                             headingLevel="h3"
                             size="md"
                         >
-                            {props.subtitle}
+                            {subtitle}
                         </Title>
                     )}
                     <Flex
@@ -119,17 +115,17 @@ function SingleTestRow(props: SingleTestRowProps) {
                             default: 'spaceItemsXs',
                         }}
                     >
-                        {props.isWaived && (
+                        {isWaived && (
                             <Label color="orange" isCompact>
                                 Waived
                             </Label>
                         )}
-                        {props.contact?.team && (
+                        {test.contact?.team && (
                             <Label color="blue" icon={<UsersIcon />} isCompact>
-                                Team: {props.contact.team}
+                                Team: {test.contact.team}
                             </Label>
                         )}
-                        {props.labels?.map((label) => (
+                        {test.labels?.map((label) => (
                             <Label isCompact key={label}>
                                 {label}
                             </Label>
@@ -143,26 +139,23 @@ function SingleTestRow(props: SingleTestRowProps) {
                         default: 'spaceItemsNone',
                     }}
                 >
-                    {props.isWaivable && (
-                        <WaiveButton
-                            artifact={props.artifact}
-                            testcase={props.name}
-                        />
+                    {test.waivable && (
+                        <WaiveButton artifact={artifact} testcase={test.name} />
                     )}
-                    {props.rerunUrl && (
+                    {test.rerunUrl && (
                         <Button
                             component={ExternalLink}
-                            href={props.rerunUrl}
+                            href={test.rerunUrl}
                             icon={<RedoIcon />}
                             variant="link"
                         >
                             Rerun
                         </Button>
                     )}
-                    {props.docsUrl && (
+                    {test.docsUrl && (
                         <Button
                             component={ExternalLink}
-                            href={props.docsUrl}
+                            href={test.docsUrl}
                             icon={<BookIcon />}
                             variant="link"
                         >
@@ -211,30 +204,18 @@ export function TestResultsTable(props: TestResultsTableProps) {
             ({ required, status }) =>
                 required && (status === 'error' || status === 'failed'),
         )
-        .map((row, index) => (
+        .map((test, index) => (
             /* More inspo in the docs: https://www.patternfly.org/v4/components/tabs/react-demos/#tables-and-tabs */
             // TODO: Handle click → open drawer/change contents to match selected test.
             <Tr
                 isHoverable
-                isRowSelected={selectedTest?.name === row.name}
+                isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 // TODO: Use unique key later on.
-                onRowClick={() => props.onSelect && props.onSelect(row.name)}
+                onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
-                    <SingleTestRow
-                        artifact={artifact}
-                        contact={row.contact}
-                        docsUrl={row.docsUrl}
-                        isRequired
-                        isWaivable={row.waivable}
-                        isWaived={!_.isNil(row.waiver)}
-                        labels={row.labels}
-                        name={row.name}
-                        rerunUrl={row.rerunUrl}
-                        status={row.status}
-                        subtitle={row.subtitle}
-                    />
+                    <SingleTestRow artifact={artifact} isRequired test={test} />
                 </Td>
             </Tr>
         ));
@@ -247,30 +228,18 @@ export function TestResultsTable(props: TestResultsTableProps) {
                     status === 'queued' ||
                     status === 'running'),
         )
-        .map((row, index) => (
+        .map((test, index) => (
             /* More inspo in the docs: https://www.patternfly.org/v4/components/tabs/react-demos/#tables-and-tabs */
             // TODO: Handle click → open drawer/change contents to match selected test.
             <Tr
                 isHoverable
-                isRowSelected={selectedTest?.name === row.name}
+                isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 // TODO: Use unique key later on.
-                onRowClick={() => props.onSelect && props.onSelect(row.name)}
+                onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
-                    <SingleTestRow
-                        artifact={artifact}
-                        contact={row.contact}
-                        docsUrl={row.docsUrl}
-                        isRequired
-                        isWaivable={row.waivable}
-                        isWaived={!_.isNil(row.waiver)}
-                        labels={row.labels}
-                        name={row.name}
-                        rerunUrl={row.rerunUrl}
-                        status={row.status}
-                        subtitle={row.subtitle}
-                    />
+                    <SingleTestRow artifact={artifact} isRequired test={test} />
                 </Td>
             </Tr>
         ));
@@ -280,53 +249,33 @@ export function TestResultsTable(props: TestResultsTableProps) {
             ({ required, status }) =>
                 required && ['info', 'passed', 'waived'].includes(status),
         )
-        .map((row) => (
+        .map((test) => (
             <Tr
                 isHoverable
-                isRowSelected={selectedTest?.name === row.name}
+                isRowSelected={selectedTest?.name === test.name}
                 // TODO: Use unique key later on.
-                key={row.name}
+                key={test.name}
                 // TODO: Use unique key later on.
-                onRowClick={() => props.onSelect && props.onSelect(row.name)}
+                onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
-                    <SingleTestRow
-                        artifact={artifact}
-                        contact={row.contact}
-                        docsUrl={row.docsUrl}
-                        isRequired
-                        isWaived={!_.isNil(row.waiver)}
-                        labels={row.labels}
-                        name={row.name}
-                        rerunUrl={row.rerunUrl}
-                        status={row.status}
-                        subtitle={row.subtitle}
-                    />
+                    <SingleTestRow artifact={artifact} isRequired test={test} />
                 </Td>
             </Tr>
         ));
 
     const additionalRows = tests
         .filter(({ required }) => !required)
-        .map((row, index) => (
+        .map((test, index) => (
             <Tr
                 isHoverable
-                isRowSelected={selectedTest?.name === row.name}
+                isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 // TODO: Use unique key later on.
-                onRowClick={() => props.onSelect && props.onSelect(row.name)}
+                onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
-                    <SingleTestRow
-                        artifact={artifact}
-                        contact={row.contact}
-                        docsUrl={row.docsUrl}
-                        labels={row.labels}
-                        name={row.name}
-                        rerunUrl={row.rerunUrl}
-                        status={row.status}
-                        subtitle={row.subtitle}
-                    />
+                    <SingleTestRow artifact={artifact} test={test} />
                 </Td>
             </Tr>
         ));
