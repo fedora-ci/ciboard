@@ -19,7 +19,7 @@
  */
 
 import * as _ from 'lodash';
-import { useContext } from 'react';
+import { ReactNode, useContext } from 'react';
 import {
     Alert,
     Button,
@@ -29,6 +29,7 @@ import {
     Title,
 } from '@patternfly/react-core';
 import {
+    ArrowAltCircleRightIcon,
     BookIcon,
     LinkIcon,
     RedoIcon,
@@ -74,7 +75,18 @@ function SingleTestRow(props: SingleTestRowProps) {
     );
 
     // TODO: Show dependencies.
-    let subtitle: string | undefined;
+    let subtitle: string | ReactNode | undefined;
+    if (!_.isEmpty(test.dependencies)) {
+        const dependency = test.dependencies![0];
+        if (dependency.dependency === 'is_required') {
+            subtitle = (
+                <span>
+                    <ArrowAltCircleRightIcon /> Depends on{' '}
+                    <b>{dependency.testcase_name}</b>
+                </span>
+            );
+        }
+    }
 
     return (
         <Flex
@@ -89,6 +101,7 @@ function SingleTestRow(props: SingleTestRowProps) {
                     default: 'alignItemsFlexStart',
                 }}
                 flex={{ default: 'flex_1' }}
+                flexWrap={{ default: 'nowrap' }}
             >
                 <Flex
                     direction={{
@@ -135,6 +148,7 @@ function SingleTestRow(props: SingleTestRowProps) {
                 <Flex
                     alignSelf={{ default: 'alignSelfCenter' }}
                     className="pf-u-ml-auto"
+                    flexWrap={{ default: 'nowrap' }}
                     spaceItems={{
                         default: 'spaceItemsNone',
                     }}
