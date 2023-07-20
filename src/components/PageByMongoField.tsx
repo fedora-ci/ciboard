@@ -28,6 +28,7 @@ import React, {
     useState,
 } from 'react';
 import { useQuery } from '@apollo/client';
+import { PageSection } from '@patternfly/react-core';
 import {
     IRow,
     Table,
@@ -312,12 +313,14 @@ export function PageByMongoField() {
 
     return (
         <PageCommon title={pageTitle}>
-            <ArtifactsTable
-                artifactType={params.type || ''}
-                fieldName={params.search || ''}
-                fieldValues={fieldValues || []}
-                onArtifactsLoaded={onArtifactsLoaded}
-            />
+            <PageSection isFilled>
+                <ArtifactsTable
+                    artifactType={params.type || ''}
+                    fieldName={params.search || ''}
+                    fieldValues={fieldValues || []}
+                    onArtifactsLoaded={onArtifactsLoaded}
+                />
+            </PageSection>
             <ToastAlertGroup />
             <WaiveModal />
         </PageCommon>

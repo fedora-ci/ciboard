@@ -76,13 +76,7 @@ export function PageCommon(props: PageCommonProps) {
     if (searchParams.get('embedded') !== 'true') {
         to_render = (
             <Page header={<DashboardPageHeader />} mainContainerId={pageId}>
-                {/* TODO: Add this chunk to the old-style pages as necessary.
-                <PageSection
-                hasOverflowScroll
-                isFilled
-                >*/}
                 {props.children}
-                {/* </PageSection> */}
             </Page>
         );
     } else {
