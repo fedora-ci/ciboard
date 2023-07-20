@@ -68,7 +68,8 @@ import { TestResultsTable } from './TestResultsTable';
 import { BuildInfo } from './BuildInfo';
 import { DetailsDrawer } from './DetailsDrawer';
 import { ArtifactHeader } from './Header';
-import { PageCommon } from '../PageCommon';
+import { PageCommon, ToastAlertGroup } from '../PageCommon';
+import { WaiveModal } from '../WaiveForm';
 
 // TODO: This function is temporary only and will be removed once the UI is finalized.
 function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
@@ -420,6 +421,8 @@ export function PageResultsNew(_props: {}) {
                     </PageSection>
                 </DetailsDrawer>
             </SelectedTestContext.Provider>
+            <ToastAlertGroup />
+            <WaiveModal />
         </PageCommon>
     );
 }
