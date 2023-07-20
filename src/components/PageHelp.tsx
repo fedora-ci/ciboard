@@ -18,7 +18,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import * as React from 'react';
-import { TextContent, Text, CodeBlockCode } from '@patternfly/react-core';
+import {
+    TextContent,
+    Text,
+    CodeBlockCode,
+    PageSection,
+} from '@patternfly/react-core';
 
 import { config } from '../config';
 import { PageCommon } from './PageCommon';
@@ -82,10 +87,9 @@ const Help = () => (
             type of the artifact.
         </p>
         <p>
-            For Brew/Koji rpm builds and Red Hat modules
-            the search value is the component name. For Copr builds the artifact
-            name consists from the repository name plus the package, e.g.
-            @ksh/latest/ksh.
+            For Brew/Koji rpm builds and Red Hat modules the search value is the
+            component name. For Copr builds the artifact name consists from the
+            repository name plus the package, e.g. @ksh/latest/ksh.
         </p>
         <h3>Via URL</h3>
         <p>The dashboard provides advanced search via URL:</p>
@@ -189,8 +193,9 @@ const Help = () => (
         </table>
         <h3>Via GraphQL</h3>
         <p>
-            You can construct GraphQL queries and execute them on the dashboard's 
-            backend GraphQL server. The GraphQL backend is usually located at:
+            You can construct GraphQL queries and execute them on the
+            dashboard's backend GraphQL server. The GraphQL backend is usually
+            located at:
         </p>
         <p className="padding-left-20">
             {window.location.origin}
@@ -198,13 +203,14 @@ const Help = () => (
         </p>
         <h4> Disclaimers</h4>
         <p>
-            Note: the API is not officially supported and its primary use is 
-            for the CI Dashboard front-end. It is not guaranteed to be stable and 
-            it can change arbitrarily without prior notice.
+            Note: the API is not officially supported and its primary use is for
+            the CI Dashboard front-end. It is not guaranteed to be stable and it
+            can change arbitrarily without prior notice.
         </p>
         <h4>Examples</h4>
         <p>
-            To retrieve build tags by NVR, your query could look something like this:
+            To retrieve build tags by NVR, your query could look something like
+            this:
         </p>
         <p className="padding-left-20">
             <CodeBlockCode id="code-content">
@@ -230,8 +236,8 @@ const Help = () => (
             Dashboard is built using React.js, Patternfly and other JS goodies.
         </p>
         <p>
-            The project is currently developed on github.
-            Contributions are always welcome.
+            The project is currently developed on github. Contributions are
+            always welcome.
         </p>
         <table style={{ width: '45%' }}>
             <tbody>
@@ -269,10 +275,10 @@ const Help = () => (
 
 export function PageHelp() {
     return (
-        <PageCommon
-            title={`Help | ${config.defaultTitle}`}
-        >
-            <Help />
+        <PageCommon title={`Help | ${config.defaultTitle}`}>
+            <PageSection isFilled>
+                <Help />
+            </PageSection>
         </PageCommon>
     );
 }

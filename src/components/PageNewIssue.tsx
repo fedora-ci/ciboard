@@ -27,6 +27,7 @@ import {
     Flex,
     List,
     ListItem,
+    PageSection,
     Spinner,
     Text,
     TextContent,
@@ -204,22 +205,24 @@ const OsciCard: React.FC<{}> = () => (
 export function PageNewIssue() {
     return (
         <PageCommon title={`Report issue | ${config.defaultTitle}`}>
-            <Flex
-                direction={{ default: 'column', md: 'row' }}
-                spaceItems={{ default: 'spaceItemsLg' }}
-            >
+            <PageSection isFilled>
                 <Flex
-                    direction={{ default: 'column' }}
-                    flex={{ default: 'flexDefault', md: 'flex_1' }}
+                    direction={{ default: 'column', md: 'row' }}
                     spaceItems={{ default: 'spaceItemsLg' }}
                 >
-                    <OsciCard />
-                    <BaseOsCard />
+                    <Flex
+                        direction={{ default: 'column' }}
+                        flex={{ default: 'flexDefault', md: 'flex_1' }}
+                        spaceItems={{ default: 'spaceItemsLg' }}
+                    >
+                        <OsciCard />
+                        <BaseOsCard />
+                    </Flex>
+                    <Flex flex={{ default: 'flexDefault', md: 'flex_2' }}>
+                        <WaiverDbCard />
+                    </Flex>
                 </Flex>
-                <Flex flex={{ default: 'flexDefault', md: 'flex_2' }}>
-                    <WaiverDbCard />
-                </Flex>
-            </Flex>
+            </PageSection>
         </PageCommon>
     );
 }

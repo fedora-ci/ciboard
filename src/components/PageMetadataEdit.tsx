@@ -47,6 +47,7 @@ import {
     FormSelectOption,
     FormFieldGroup,
     FormFieldGroupHeader,
+    PageSection,
 } from '@patternfly/react-core';
 import {
     Tr,
@@ -1525,7 +1526,9 @@ export const MetadataForm: React.FunctionComponent = () => {
 export function PageMetadataEdit() {
     return (
         <PageCommon title={`Metadata edit | ${config.defaultTitle}`}>
-            <MetadataForm />
+            <PageSection isFilled>
+                <MetadataForm />
+            </PageSection>
         </PageCommon>
     );
 }
