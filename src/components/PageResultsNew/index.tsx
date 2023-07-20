@@ -49,7 +49,7 @@ import {
     StateKaiType,
     StateType,
 } from '../../artifact';
-import { MSG_V_1, MetadataContact } from '../../types';
+import { MSG_V_1, MetadataContact, MetadataDependency } from '../../types';
 import {
     getDocsUrl,
     getKaiExtendedStatus,
@@ -204,6 +204,7 @@ function transformTest(
     stateName: StateExtendedNameType,
 ): CiTest {
     const contact = extractContact(test);
+    let dependencies: MetadataDependency[] | undefined;
     let description: string | undefined;
     const docsUrl = getDocsUrl(test);
     let error;
@@ -220,11 +221,13 @@ function transformTest(
     if (isGreenwaveState(test)) {
         waiver = test.waiver;
     } else if (isKaiState(test)) {
+        dependencies = test.custom_metadata?.payload?.dependency;
         description = test.custom_metadata?.payload?.description;
         error = getMessageError(test.broker_msg_body);
         knownIssues = test.custom_metadata?.payload?.known_issues;
         messageId = test.kai_state.msg_id;
     } else if (isGreenwaveKaiState(test)) {
+        dependencies = test.ks.custom_metadata?.payload?.dependency;
         description = test.ks.custom_metadata?.payload?.description;
         error = getMessageError(test.ks.broker_msg_body);
         knownIssues = test.ks.custom_metadata?.payload?.known_issues;
@@ -255,6 +258,7 @@ function transformTest(
 
     return {
         contact,
+        dependencies,
         description,
         docsUrl,
         error,
