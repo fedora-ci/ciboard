@@ -25,7 +25,6 @@ import {
     Alert,
     AlertActionCloseButton,
     AlertGroup,
-    AlertVariant,
     Page,
 } from '@patternfly/react-core';
 
@@ -43,13 +42,15 @@ export function ToastAlertGroup() {
     const onClick = (key: number) => {
         dispatch(popAlert(key));
     };
+
     const { alerts } = useAppSelector((state) => state.alerts);
+
     return (
         <AlertGroup isToast>
             {_.map(alerts, ({ key, title, variant }) => (
                 <Alert
                     isLiveRegion
-                    variant={AlertVariant[variant]}
+                    variant={variant}
                     title={title}
                     actionClose={
                         <AlertActionCloseButton
@@ -77,9 +78,8 @@ export function PageCommon(props: PageCommonProps) {
             <Page header={<DashboardPageHeader />} mainContainerId={pageId}>
                 {/* TODO: Add this chunk to the old-style pages as necessary.
                 <PageSection
-                    variant={PageSectionVariants.default}
-                    isFilled
-                    hasOverflowScroll
+                hasOverflowScroll
+                isFilled
                 >*/}
                 {props.children}
                 {/* </PageSection> */}

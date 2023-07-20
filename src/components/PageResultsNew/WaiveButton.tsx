@@ -31,6 +31,11 @@ export interface WaiveButtonProps {
     testcase?: string;
 }
 
+/**
+ * Provide a waive function button which opens the waive form pop-up when clicked.
+ * This is pretty much a clone of the `WaiveButton` component from
+ * `ArtifactGreenwaveState.tsx` but with a different styling for the new page.
+ */
 export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
     const { artifact, testcase } = props;
     const dispatch = useAppDispatch();
