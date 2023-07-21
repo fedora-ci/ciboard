@@ -334,11 +334,19 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             variant="danger"
         >
             <TextContent className="pf-u-font-size-sm">
-                {/* TODO: Replace with real error message. */}
-                <Text>
-                    This test has failed. Please see the list of test cases
-                    below for details.
-                </Text>
+                {selectedTest.error && (
+                    // Show error message provided by CI if available.
+                    <Text>
+                        <b>Error:</b> {selectedTest.error.reason}
+                    </Text>
+                )}
+                {!selectedTest.error && (
+                    <Text>
+                        This test has failed, but no message was provided by the
+                        CI. Please inspect the list of test cases below, if
+                        available, for details.
+                    </Text>
+                )}
             </TextContent>
         </Alert>
     );
@@ -382,9 +390,12 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             </DrawerPanelBody>
             <DetailsDrawerTabs
                 artifact={props.artifact}
-                knownIssues={selectedTest?.knownIssues}
-                // TODO: Use a unique ID for the `key` prop instead of `selectedTest?.name`.
+                /*
+                 * Making the test name the element key makes sure that the child component
+                 * is re-rendered and state is reset after a new test is selected.
+                 */
                 key={selectedTest?.name}
+                knownIssues={selectedTest?.knownIssues}
             />
         </DrawerPanelContent>
     );
