@@ -62,34 +62,6 @@ import { WaiveButton } from './WaiveButton';
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
 
-/*
-function TogglableLabel(props: { outcome: 'pass' | 'fail' }) {
-    const { outcome } = props;
-    const [toggled, setToggled] = useState(true);
-
-    const color = outcome === 'pass' ? 'green' : 'red';
-    const icon =
-        outcome === 'pass' ? <CheckCircleIcon /> : <ExclamationCircleIcon />;
-    const onClick: MouseEventHandler<HTMLAnchorElement> = (event) => {
-        setToggled(!toggled);
-        event.preventDefault();
-        return false;
-    };
-
-    return (
-        <Label
-            className={toggled ? 'labelToggled' : ''}
-            color={color}
-            href="#"
-            icon={icon}
-            onClick={onClick}
-        >
-            14 {`${outcome}ed`}
-        </Label>
-    );
-}
-*/
-
 export function mkSeparatedListNatural(
     elements: React.ReactNode[],
     separator: React.ReactNode = ', ',
@@ -125,15 +97,6 @@ function DetailsDrawerTabs(props: DetailsDrawerTabsProps) {
         {
             title: 'Results',
             content: <TestSuitesAccordion artifact={props.artifact} />,
-        },
-        {
-            title: 'CI details',
-            content: (
-                <DrawerPanelBody>
-                    CI team name and contact info (email, IRC, GChat) will be
-                    here.
-                </DrawerPanelBody>
-            ),
         },
         {
             title: (

@@ -24,6 +24,19 @@ import * as moment from 'moment';
 const TIMESTAMP_WITH_TZ_FORMAT = 'YYYY-MM-DD HH:mm ZZ';
 
 /**
+ * Convert time in seconds to minutes or hours.
+ * @param seconds Time in seconds.
+ * @returns String in the format mm:ss, or hh:mm:ss if time is an hour or longer.
+ */
+export function humanReadableTime(seconds: number) {
+    // TODO: Migrate away from the moment library.
+    const duration = moment.duration(seconds, 'seconds');
+    if (duration.hours() >= 1)
+        return duration.format('hh:mm:ss', { trim: false });
+    return duration.format('mm:ss', { trim: false });
+}
+
+/**
  * Format a timestamp as a date and time with time zone offset.
  * @param seconds Number of seconds since the Unix epoch.
  * @returns Formatted timestamp as a string.
