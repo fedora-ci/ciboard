@@ -221,6 +221,7 @@ export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
         <Alert
             className="pf-u-mt-md"
             customIcon={<HandPaperIcon />}
+            isExpandable
             isInline
             title="Test result waived"
             variant="warning"
