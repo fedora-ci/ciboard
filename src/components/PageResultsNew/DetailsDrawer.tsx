@@ -47,6 +47,7 @@ import {
     UsersIcon,
 } from '@patternfly/react-icons';
 
+import './index.css';
 import { LinkifyNewTab } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
@@ -284,7 +285,6 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
      */
     const docsButton = selectedTest?.docsUrl && (
         <Button
-            className="pf-u-p-0"
             component={ExternalLink}
             href={selectedTest.docsUrl}
             icon={<BookIcon />}
@@ -295,7 +295,6 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     );
     const reportIssueButton = selectedTest?.contact?.reportIssueUrl && (
         <Button
-            className="pf-u-p-0"
             component={ExternalLink}
             href={selectedTest.contact.reportIssueUrl}
             icon={<ExclamationCircleIcon />}
@@ -386,6 +385,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
 
     const panelContent = (
         <DrawerPanelContent
+            className="detailsDrawerPanel"
             defaultSize={drawerSize}
             isResizable
             minSize="20rem"
