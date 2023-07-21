@@ -42,6 +42,10 @@
     );
 }
 
+.detailsDrawerPanel .pf-c-drawer__head .pf-c-button {
+    padding: 0;
+}
+
 .dependencyList {
     --pf-c-list--li--MarginTop: 0;
     color: var(--pf-global--Color--200);
