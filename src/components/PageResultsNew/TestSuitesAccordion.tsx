@@ -29,171 +29,26 @@ import {
     AccordionToggle,
     Alert,
     DrawerPanelBody,
-    Flex,
-    FlexItem,
     Spinner,
-    Title,
 } from '@patternfly/react-core';
-import { OutlinedClockIcon } from '@patternfly/react-icons';
-import {
-    ExpandableRowContent,
-    TableComposable,
-    Tbody,
-    Td,
-    Tr,
-} from '@patternfly/react-table';
-import moment from 'moment';
 import update from 'immutability-helper';
 
 import './index.css';
-import {
-    TestCase,
-    TestCaseLogsEntry,
-    TestSuite,
-    getProperty,
-    hasTestCaseContent,
-} from '../../testsuite';
-import { mkSeparatedList } from '../../utils/artifactsTable';
+import { TestSuite } from '../../testsuite';
 import { TestStatusIcon } from '../../utils/artifactUtils';
-import { ExternalLink } from '../ExternalLink';
-import { ArchitectureLabel, TestCaseContent } from '../TestSuites';
+import { TestSuiteDisplay } from '../TestSuites';
 import { Artifact } from '../../artifact';
 import { SelectedTestContext } from './contexts';
 import { useQuery } from '@apollo/client';
 import { ArtifactsXunitQuery } from '../../queries/Artifacts';
 import { xunitParser } from '../../utils/xunitParser';
 
-function humanReadableTime(seconds: number) {
-    // TODO: Migrate away from the moment library.
-    const duration = moment.duration(seconds, 'seconds');
-    if (duration.hours() >= 1)
-        return duration.format('hh:mm:ss', { trim: false });
-    return duration.format('mm:ss', { trim: false });
-}
-
-interface LogsLinksProps {
-    logs?: TestCaseLogsEntry[];
-}
-
-function LogsLinks(props: LogsLinksProps) {
-    const { logs } = props;
-    if (_.isEmpty(logs)) return null;
-    const makeLink = (entry: TestCaseLogsEntry) => (
-        <ExternalLink href={entry.$.href}>{entry.$.name}</ExternalLink>
-    );
-    const linksList = mkSeparatedList(logs!.map(makeLink, ', '));
-
-    return <div className="pf-u-font-size-sm">Logs: {linksList}</div>;
-}
-
-interface TestCaseRowProps {
-    rowIndex: number;
-    testCase?: TestCase;
-}
-
-function TestCaseRow(props: TestCaseRowProps) {
-    const { rowIndex, testCase } = props;
-    const [isExpanded, setExpanded] = useState(false);
-
-    if (!testCase) return null;
-
-    const hasContent = hasTestCaseContent(testCase);
-    const logsLinks = testCase.logs?.length > 0 && (
-        <LogsLinks logs={_.first(testCase.logs)?.log} />
-    );
-    const elapsedTime = !_.isEmpty(testCase.time) && (
-        <FlexItem
-            className="pf-u-ml-auto pf-u-color-200 pf-u-font-size-sm"
-            style={{
-                fontFamily: 'monospace',
-            }}
-        >
-            <OutlinedClockIcon title="Elapsed time" />
-            &nbsp;
-            {humanReadableTime(Number(testCase.time))}
-        </FlexItem>
-    );
-    const machineArchitecture = getProperty(testCase, 'baseosci.arch');
-    const onToggle = () => setExpanded(!isExpanded);
-
-    return (
-        <Tbody key={testCase._uuid} isExpanded={isExpanded}>
-            <Tr>
-                <Td
-                    className="pf-u-pl-0"
-                    expand={
-                        hasContent
-                            ? { isExpanded, onToggle, rowIndex }
-                            : undefined
-                    }
-                    title="Toggle test outputs and phases"
-                />
-                <Td>
-                    <Flex flexWrap={{ default: 'nowrap' }}>
-                        <FlexItem>
-                            <TestStatusIcon status={testCase.status} />
-                        </FlexItem>
-                        <Flex
-                            direction={{ default: 'column' }}
-                            grow={{ default: 'grow' }}
-                        >
-                            <Title className="pf-u-mb-0" headingLevel="h4">
-                                {testCase.name}{' '}
-                                <ArchitectureLabel
-                                    architecture={machineArchitecture}
-                                />
-                            </Title>
-                            <Flex>
-                                {logsLinks}
-                                {elapsedTime}
-                            </Flex>
-                        </Flex>
-                    </Flex>
-                </Td>
-            </Tr>
-            <Tr isExpanded={isExpanded}>
-                <Td colSpan={2}>
-                    <ExpandableRowContent>
-                        <TestCaseContent test={testCase} />
-                    </ExpandableRowContent>
-                </Td>
-            </Tr>
-        </Tbody>
-    );
-}
-
-interface TestCasesTableProps {
-    cases?: TestCase[];
-}
-
-function TestCasesTable(props: TestCasesTableProps) {
-    const { cases } = props;
-    if (!cases) return null;
-    if (!cases.length)
-        return (
-            <Alert
-                isInline
-                isPlain
-                title="No test cases in this suite."
-                variant="info"
-            />
-        );
-
-    return (
-        <TableComposable className="testCasesTable" variant="compact">
-            {cases.map((testCase, rowIndex) => (
-                <TestCaseRow rowIndex={rowIndex} testCase={testCase} />
-            ))}
-        </TableComposable>
-    );
-}
-
 export interface TestSuitesAccordionProps {
     artifact?: Artifact;
 }
 
 export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
-    // TODO: Expand suites with failures by default?
+    // TODO: Expand suites with failures by default?TODO
     const [expandedSuites, setExpandedSuites] = useState<
         Partial<Record<number, boolean>>
     >({});
@@ -305,7 +160,8 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
 
     return (
         <Accordion isBordered>
-            {suites.map(({ _uuid, name, status, tests }, index) => {
+            {suites.map((suite, index) => {
+                const { _uuid, name, status } = suite;
                 const statusIcon = (
                     <TestStatusIcon
                         status={status}
@@ -327,7 +183,7 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
                             {name}
                         </AccordionToggle>
                         <AccordionContent isHidden={!expandedSuites[index]}>
-                            <TestCasesTable cases={tests} />
+                            <TestSuiteDisplay suite={suite} />
                         </AccordionContent>
                     </AccordionItem>
                 );
