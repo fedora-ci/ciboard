@@ -19,7 +19,7 @@
  */
 
 import * as _ from 'lodash';
-import { ReactNode, useContext } from 'react';
+import { useContext } from 'react';
 import {
     Alert,
     Button,
@@ -29,7 +29,6 @@ import {
     Title,
 } from '@patternfly/react-core';
 import {
-    ArrowAltCircleRightIcon,
     BookIcon,
     LinkIcon,
     RedoIcon,
@@ -51,6 +50,7 @@ import { CiTest } from './types';
 import { TestStatusIcon } from './TestStatusIcon';
 import { ExternalLink } from '../ExternalLink';
 import { WaiveButton } from './WaiveButton';
+import { DependencyList } from './DependencyList';
 
 interface SingleTestRowProps {
     artifact: Artifact;
@@ -73,20 +73,6 @@ function SingleTestRow(props: SingleTestRowProps) {
             style={{ marginTop: '0.2em' }}
         />
     );
-
-    // TODO: Show dependencies.
-    let subtitle: string | ReactNode | undefined;
-    if (!_.isEmpty(test.dependencies)) {
-        const dependency = test.dependencies![0];
-        if (dependency.dependency === 'is_required') {
-            subtitle = (
-                <span>
-                    <ArrowAltCircleRightIcon /> Depends on{' '}
-                    <b>{dependency.testcase_name}</b>
-                </span>
-            );
-        }
-    }
 
     return (
         <Flex
@@ -114,15 +100,7 @@ function SingleTestRow(props: SingleTestRowProps) {
                     <Title className="pf-u-mb-0" headingLevel="h2" size="md">
                         {test.name}
                     </Title>
-                    {subtitle && (
-                        <Title
-                            className="pf-u-color-200 pf-u-font-weight-light"
-                            headingLevel="h3"
-                            size="md"
-                        >
-                            {subtitle}
-                        </Title>
-                    )}
+                    <DependencyList dependencies={test.dependencies} />
                     <Flex
                         spaceItems={{
                             default: 'spaceItemsXs',
