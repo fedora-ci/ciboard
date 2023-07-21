@@ -25,6 +25,7 @@ import {
     Bullseye,
     Card,
     EmptyState,
+    EmptyStateBody,
     EmptyStateIcon,
     Flex,
     PageSection,
@@ -64,6 +65,7 @@ export function PageResultsNew(_props: {}) {
     const findTestByName = (name: string) =>
         _.find(tests, (test) => test.name === name);
 
+    // FIXME: This might not be working the best right now.
     useEffect(() => {
         // Set selected test based on URL, if present.
         if (searchParams.has('focus')) {
@@ -76,8 +78,7 @@ export function PageResultsNew(_props: {}) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
 
-    // TODO: Update title dynamically.
-    const pageTitle = `🚧 New test results | ${config.defaultTitle}`;
+    let pageTitle = `Artifact search results | ${config.defaultTitle}`;
 
     const fieldName = params.search || '';
     const fieldPath = fieldName === 'aid' ? fieldName : `payload.${fieldName}`;
@@ -99,16 +100,7 @@ export function PageResultsNew(_props: {}) {
         },
     );
 
-    // TODO: Error state.
     // TODO: Multiple results state.
-
-    /*
-     * TODO: Load build info and test results if `taskId` is specified.
-     * - build info: ArtifactsDetailedInfoKojiTask for RPMs,
-     *               ArtifactsDetailedInfoModuleBuild for modules
-     * - list of artifacts: ArtifactsCompleteQuery
-     * For details, see `PageByMongoField`.
-     */
 
     const artifact = data?.artifacts?.artifacts?.[0];
     const haveData = !_.isNil(artifact) && !error && !loading;
@@ -146,12 +138,24 @@ export function PageResultsNew(_props: {}) {
                             <Title headingLevel="h2" size="lg">
                                 Failed to load artifact
                             </Title>
-                            {/* TODO: Render more specific error message. */}
+                            {error && (
+                                <EmptyStateBody>
+                                    Error: {error.toString()}
+                                </EmptyStateBody>
+                            )}
                         </EmptyState>
                     </Bullseye>
                 </PageSection>
             </PageCommon>
         );
+    }
+
+    // Construct a specific title for the single-artifact case.
+    pageTitle = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
+    if (artifact.greenwave_decision?.summary) {
+        if (artifact.greenwave_decision.policies_satisfied)
+            pageTitle = `✅ ${pageTitle}`;
+        else pageTitle = `❌ ${pageTitle}`;
     }
 
     tests = extractTests(artifact);
