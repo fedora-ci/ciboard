@@ -64,7 +64,6 @@ function SingleTestRow(props: SingleTestRowProps) {
 
     const isWaived = !_.isNil(test.waiver);
 
-    // TODO: Use unique ID later.
     const permalinkUrl = useHref(`?focus=${test.name}`);
     const statusIcon = (
         <TestStatusIcon
@@ -201,12 +200,10 @@ export function TestResultsTable(props: TestResultsTableProps) {
         )
         .map((test, index) => (
             /* More inspo in the docs: https://www.patternfly.org/v4/components/tabs/react-demos/#tables-and-tabs */
-            // TODO: Handle click → open drawer/change contents to match selected test.
             <Tr
                 isHoverable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
-                // TODO: Use unique key later on.
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
@@ -229,13 +226,10 @@ export function TestResultsTable(props: TestResultsTableProps) {
                     status === 'running'),
         )
         .map((test, index) => (
-            /* More inspo in the docs: https://www.patternfly.org/v4/components/tabs/react-demos/#tables-and-tabs */
-            // TODO: Handle click → open drawer/change contents to match selected test.
             <Tr
                 isHoverable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
-                // TODO: Use unique key later on.
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
@@ -258,9 +252,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
             <Tr
                 isHoverable
                 isRowSelected={selectedTest?.name === test.name}
-                // TODO: Use unique key later on.
                 key={test.name}
-                // TODO: Use unique key later on.
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
@@ -276,7 +268,6 @@ export function TestResultsTable(props: TestResultsTableProps) {
                 isHoverable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
-                // TODO: Use unique key later on.
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
@@ -289,16 +280,6 @@ export function TestResultsTable(props: TestResultsTableProps) {
             </Tr>
         ));
 
-    /*
-     * TODO: Refactor the table for readability.
-     * TODO: Sorts tests within sections:
-     *      - in failed: alphabetically
-     *      - in awaited: missing first, then running, then alphabetically
-     *      - in passed: waived first, then alphabetically
-     *      - in additional: failed+errored+needs_inspection first,
-     *          then info/not_applicable, then
-     * TODO: Where to put waived tests in this order?
-     */
     return (
         <TableComposable variant="compact">
             {failedRequiredRows.length > 0 && (

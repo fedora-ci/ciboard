@@ -48,7 +48,6 @@ export interface TestSuitesAccordionProps {
 }
 
 export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
-    // TODO: Expand suites with failures by default?TODO
     const [expandedSuites, setExpandedSuites] = useState<
         Partial<Record<number, boolean>>
     >({});
