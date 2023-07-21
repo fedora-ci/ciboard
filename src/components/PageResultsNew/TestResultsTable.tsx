@@ -55,6 +55,7 @@ import { DependencyList } from './DependencyList';
 interface SingleTestRowProps {
     artifact: Artifact;
     isRequired?: boolean;
+    showDependencies?: boolean;
     test: CiTest;
 }
 
@@ -100,7 +101,9 @@ function SingleTestRow(props: SingleTestRowProps) {
                     <Title className="pf-u-mb-0" headingLevel="h2" size="md">
                         {test.name}
                     </Title>
-                    <DependencyList dependencies={test.dependencies} />
+                    {props.showDependencies && (
+                        <DependencyList dependencies={test.dependencies} />
+                    )}
                     <Flex
                         spaceItems={{
                             default: 'spaceItemsXs',
@@ -207,7 +210,12 @@ export function TestResultsTable(props: TestResultsTableProps) {
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
-                    <SingleTestRow artifact={artifact} isRequired test={test} />
+                    <SingleTestRow
+                        artifact={artifact}
+                        isRequired
+                        showDependencies
+                        test={test}
+                    />
                 </Td>
             </Tr>
         ));
@@ -231,7 +239,12 @@ export function TestResultsTable(props: TestResultsTableProps) {
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
-                    <SingleTestRow artifact={artifact} isRequired test={test} />
+                    <SingleTestRow
+                        artifact={artifact}
+                        isRequired
+                        showDependencies
+                        test={test}
+                    />
                 </Td>
             </Tr>
         ));
@@ -239,7 +252,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
     const passedRequiredRows = tests
         .filter(
             ({ required, status }) =>
-                required && ['info', 'passed', 'waived'].includes(status),
+                required && ['info', 'passed'].includes(status),
         )
         .map((test) => (
             <Tr
@@ -267,7 +280,11 @@ export function TestResultsTable(props: TestResultsTableProps) {
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
             >
                 <Td>
-                    <SingleTestRow artifact={artifact} test={test} />
+                    <SingleTestRow
+                        artifact={artifact}
+                        showDependencies
+                        test={test}
+                    />
                 </Td>
             </Tr>
         ));

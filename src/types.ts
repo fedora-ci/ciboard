@@ -129,60 +129,41 @@ export namespace MSG_V_1 {
         recipients?: string[];
     };
 
-    export type MsgRPMBuildTestComplete = {
+    export type MessagesRPMBuildType =
+        | MsgRPMBuildTestComplete
+        | MsgRPMBuildTestError
+        | MsgRPMBuildTestQueued
+        | MsgRPMBuildTestRunning;
+
+    interface MessageRPMBuildTestCommon {
+        artifact: MsgRPMBuildType;
+        contact: MsgContactType;
+        generated_at: MsgCommonType['generated_at'];
+        pipeline: MsgPipelineType;
+        test: MsgTestCommonType;
         run: MsgRunType;
+        version: MsgCommonType['version'];
+    }
+
+    export interface MsgRPMBuildTestComplete extends MessageRPMBuildTestCommon {
         test: MsgTestCommonType & MsgTestCompleteType;
         system: MsgSystemType[];
-        version: MsgCommonType['version'];
-        contact: MsgContactType;
-        artifact: MsgRPMBuildType;
-        pipeline: MsgPipelineType;
-        generated_at: MsgCommonType['generated_at'];
         notification?: MsgNotificationType;
-    };
+    }
 
     export type MsgErrorType = {
         reason: string;
         issue_url?: string;
     };
 
-    export type MsgRPMBuildTestError = {
-        run: MsgRunType;
-        test: MsgTestCommonType;
+    export interface MsgRPMBuildTestError extends MessageRPMBuildTestCommon {
         error: MsgErrorType;
-        version: MsgCommonType['version'];
-        contact: MsgContactType;
-        artifact: MsgRPMBuildType;
-        pipeline: MsgPipelineType;
-        generated_at: MsgCommonType['generated_at'];
         notification?: MsgNotificationType;
-    };
+    }
 
-    export type MsgRPMBuildTestQueued = {
-        run: MsgRunType;
-        test: MsgTestCommonType;
-        contact: MsgContactType;
-        version: MsgCommonType['version'];
-        artifact: MsgRPMBuildType;
-        pipeline: MsgPipelineType;
-        generated_at: MsgCommonType['generated_at'];
-    };
+    export interface MsgRPMBuildTestQueued extends MessageRPMBuildTestCommon {}
 
-    export type MsgRPMBuildTestRunning = {
-        run: MsgRunType;
-        test: MsgTestCommonType;
-        contact: MsgContactType;
-        version: MsgCommonType['version'];
-        artifact: MsgRPMBuildType;
-        pipeline: MsgPipelineType;
-        generated_at: MsgCommonType['generated_at'];
-    };
-
-    export type MessagesRPMBuildType =
-        | MsgRPMBuildTestComplete
-        | MsgRPMBuildTestError
-        | MsgRPMBuildTestQueued
-        | MsgRPMBuildTestRunning;
+    export interface MsgRPMBuildTestRunning extends MessageRPMBuildTestCommon {}
 
     export function isMsg(msg: BrokerMessagesType): msg is MessagesType {
         return msg.version.startsWith('0.2.') || msg.version.startsWith('1.');
@@ -226,73 +207,42 @@ export namespace MSG_V_0_1 {
         | MsgRPMBuildTestQueued
         | MsgRPMBuildTestRunning;
 
-    export type MsgRPMBuildTestComplete = {
-        ci: MsgContactType;
-        run: MsgRunType;
+    interface MessageRPMBuildTestCommon {
         artifact: MsgRPMBuildType;
-        system: MsgSystemType[];
-        docs: string;
         category: TestCategoryType;
-        type: string;
+        ci: MsgContactType;
+        generated_at: number;
         label: string;
+        namespace: string;
+        note: string;
+        run: MsgRunType;
+        thread_id: string;
+        type: string;
+        version: string;
+    }
+
+    export interface MsgRPMBuildTestComplete extends MessageRPMBuildTestCommon {
+        docs: string;
+        recipients: string[];
         status: TestResultType;
+        system: MsgSystemType[];
         web_url: string;
         xunit: string;
-        recipients: string[];
-        thread_id: string;
-        namespace: string;
-        note: string;
-        generated_at: number;
-        version: string;
-    };
+    }
 
-    export type MsgRPMBuildTestError = {
-        ci: MsgContactType;
-        run: MsgRunType;
-        artifact: MsgRPMBuildType;
+    export interface MsgRPMBuildTestError extends MessageRPMBuildTestCommon {
         docs: string;
-        category: TestCategoryType;
-        type: string;
-        label: string;
-        reason: string;
         issue_url: string;
+        reason: string;
         recipients: string[];
-        thread_id: string;
-        namespace: string;
-        note: string;
-        generated_at: number;
-        version: string;
-    };
+    }
 
-    export type MsgRPMBuildTestQueued = {
-        ci: MsgContactType;
-        run: MsgRunType;
-        artifact: MsgRPMBuildType;
-        category: TestCategoryType;
-        type: string;
-        label: string;
-        thread_id: string;
-        namespace: string;
-        note: string;
-        generated_at: number;
-        version: string;
-    };
+    export interface MsgRPMBuildTestQueued extends MessageRPMBuildTestCommon {}
 
-    export type MsgRPMBuildTestRunning = {
-        ci: MsgContactType;
-        run: MsgRunType;
-        artifact: MsgRPMBuildType;
-        category: TestCategoryType;
-        type: string;
-        label: string;
+    export interface MsgRPMBuildTestRunning extends MessageRPMBuildTestCommon {
         lifetime: number;
-        thread_id: string;
-        namespace: string;
-        note: string;
         progress: number;
-        generated_at: number;
-        version: string;
-    };
+    }
 
     export type MsgContactType = {
         name: string;
