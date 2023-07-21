@@ -42,6 +42,18 @@
     );
 }
 
+.dependencyList {
+    --pf-c-list--li--MarginTop: 0;
+    color: var(--pf-global--Color--200);
+}
+
+/*
+ * Underline the text if there's a comment available per UX guidelines.
+ */
+.dependencyList li[title] {
+    text-decoration: underline dashed 1px;
+}
+
 .knownIssuesList .fixed {
     color: var(--pf-global--Color--200);
     text-decoration: line-through;
