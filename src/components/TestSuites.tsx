@@ -21,7 +21,6 @@
 import _ from 'lodash';
 import * as React from 'react';
 import pako from 'pako';
-import moment from 'moment';
 import { Buffer } from 'buffer';
 import 'moment-duration-format';
 import { useQuery } from '@apollo/client';
@@ -73,6 +72,7 @@ import {
 } from '../testsuite';
 import styles from '../custom.module.css';
 import { ExternalLink } from './ExternalLink';
+import { humanReadableTime } from '../utils/timeUtils';
 
 interface TestSuitesInternalProps {
     xunit: TestSuite[];
@@ -240,11 +240,7 @@ interface TestCaseItemProps {
 const TestCaseItem: React.FC<TestCaseItemProps> = (props) => {
     const { test } = props;
     const [expanded, setExpanded] = useState(false);
-    const time = test.time
-        ? moment
-              .duration(Number(test.time), 'seconds')
-              .format('hh:mm:ss', { trim: false })
-        : null;
+    const time = humanReadableTime(Number(test.time));
 
     const toggle = () => {
         setExpanded(!expanded);
@@ -352,11 +348,11 @@ function compareTestCases(tc1: TestCase, tc2: TestCase) {
     return 0; // keep original order of tc1 and tc2
 }
 
-interface TestSuiteDisplayProps {
+export interface TestSuiteDisplayProps {
     suite: TestSuite;
 }
 
-const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
+export const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
     const { suite } = props;
     const initialToggleState = _.pickBy(
         DEFAULT_TOGGLE_STATE,
@@ -373,44 +369,43 @@ const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
         setToggleState({ ...toggleState, [outcome]: !isChecked });
     };
 
+    const checkboxes = _.map(
+        toggleState,
+        (isChecked: boolean, outcome: TestSuiteStatus) => {
+            if (_.isNil(isChecked)) return <></>;
+            const label = (
+                <>
+                    <TestStatusIcon status={outcome} /> {suite.count[outcome]}
+                </>
+            );
+            return (
+                <Checkbox
+                    aria-label={`Toggle display of results in status ${outcome}`}
+                    id={`check-${outcome}-${suite._uuid}`}
+                    isChecked={isChecked}
+                    label={label}
+                    name={outcome}
+                    onChange={() => onToggle(outcome, isChecked)}
+                />
+            );
+        },
+    );
+
+    const filteredCases = suite.tests
+        .filter((test) => toggleState[test.status])
+        .sort(compareTestCases);
+
     return (
         <>
-            <Flex>
-                {_.map(
-                    toggleState,
-                    (isChecked: boolean, outcome: TestSuiteStatus) => {
-                        if (_.isNil(isChecked)) return <></>;
-                        const label = (
-                            <>
-                                <TestStatusIcon status={outcome} />{' '}
-                                {suite.count[outcome]}
-                            </>
-                        );
-                        return (
-                            <FlexItem key={outcome}>
-                                <Checkbox
-                                    aria-label={`Toggle display of results in status ${outcome}`}
-                                    id={`check-${outcome}-${suite._uuid}`}
-                                    isChecked={isChecked}
-                                    label={label}
-                                    name={outcome}
-                                    onChange={() =>
-                                        onToggle(outcome, isChecked)
-                                    }
-                                />
-                            </FlexItem>
-                        );
-                    },
-                )}
-            </Flex>
+            <Flex className="pf-u-ml-lg pf-u-mb-md">{checkboxes}</Flex>
 
+            {_.isEmpty(filteredCases) && (
+                <Alert isInline title="No test cases selected" variant="info" />
+            )}
             <DataList aria-label="Test suite items" isCompact>
-                {suite.tests
-                    .filter((test) => toggleState[test.status])
-                    .sort(compareTestCases)
-                    .map((test, index) => (
-                        <TestCaseItem key={index} test={test} />
-                    ))}
+                {filteredCases.map((test, index) => (
+                    <TestCaseItem key={index} test={test} />
+                ))}
             </DataList>
         </>
     );
