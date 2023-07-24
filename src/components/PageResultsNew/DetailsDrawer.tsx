@@ -44,44 +44,23 @@ import {
     BookIcon,
     ExclamationCircleIcon,
     RedoIcon,
-    UsersIcon,
 } from '@patternfly/react-icons';
 
 import './index.css';
 import { LinkifyNewTab } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
+import { ContactWidget } from './ContactWidget';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestStatusIcon } from './TestStatusIcon';
 import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
-import { CiContact, CiTest } from './types';
+import { CiTest } from './types';
 import { Artifact } from '../../artifact';
 import { KnownIssues } from './KnownIssues';
 import { WaiveButton } from './WaiveButton';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
-
-export function mkSeparatedListNatural(
-    elements: React.ReactNode[],
-    separator: React.ReactNode = ', ',
-    lastSeparator: React.ReactNode = ' and ',
-) {
-    if (_.isNil(elements)) return null;
-    return elements.reduce(
-        (acc, el, i) =>
-            acc === null ? (
-                <>{el}</>
-            ) : (
-                <>
-                    {acc}
-                    {i === elements.length - 1 ? lastSeparator : separator}
-                    {el}
-                </>
-            ),
-        null,
-    );
-}
 
 interface DetailsDrawerTabsProps {
     artifact?: Artifact;
@@ -143,73 +122,6 @@ function DetailsDrawerTabs(props: DetailsDrawerTabsProps) {
                 ) : undefined,
             )}
         </Tabs>
-    );
-}
-
-interface ContactWidgetProps {
-    contact?: CiContact;
-}
-
-function ContactWidget({ contact }: ContactWidgetProps) {
-    if (!contact) return null;
-
-    let contactLinks: JSX.Element[] = [];
-
-    if (contact.slackChannelUrl) {
-        contactLinks.push(
-            <ExternalLink
-                className="pf-u-font-weight-bold"
-                href={contact.slackChannelUrl}
-            >
-                via Slack
-            </ExternalLink>,
-        );
-    }
-    if (contact.gchatRoomUrl) {
-        contactLinks.push(
-            <ExternalLink
-                className="pf-u-font-weight-bold"
-                href={contact.gchatRoomUrl}
-            >
-                via Chat
-            </ExternalLink>,
-        );
-    }
-    if (contact.email) {
-        contactLinks.push(
-            <>
-                via email at{' '}
-                <ExternalLink
-                    className="pf-u-font-weight-bold"
-                    href={`mailto:${contact.email}`}
-                >
-                    {contact.email}
-                </ExternalLink>
-            </>,
-        );
-    }
-
-    let reachOutText = contactLinks.length ? (
-        <>
-            If you need help with this test, you can reach out to the team{' '}
-            {mkSeparatedListNatural(contactLinks, ', ', ' or ')}.
-        </>
-    ) : null;
-
-    return (
-        <Alert
-            customIcon={<UsersIcon />}
-            isInline
-            title={`Test owned by ${contact.team}`}
-            variant="info"
-        >
-            <TextContent>
-                <Text>
-                    This test result is provided by the <b>{contact.team}</b>{' '}
-                    team. {reachOutText}
-                </Text>
-            </TextContent>
-        </Alert>
     );
 }
 
@@ -283,6 +195,8 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     /*
      * Custom alerts and widgets for error states and additional info.
      */
+    // TODO: Pull contact info from API if status is 'missing'.
+    const contactWidget = <ContactWidget contact={selectedTest?.contact} />;
     const descriptionWidget = !_.isEmpty(selectedTest?.description) && (
         <TextContent className="pf-u-mb-md">
             <Text>
@@ -383,7 +297,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             </DrawerHead>
             <DrawerPanelBody className="pf-u-pb-sm">
                 {descriptionWidget}
-                <ContactWidget contact={selectedTest?.contact} />
+                {contactWidget}
                 {errorAlert}
                 {failedAlert}
                 {waiverWidget}
