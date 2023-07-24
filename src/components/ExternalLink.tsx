@@ -19,8 +19,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import { ExternalLinkAltIcon } from '@patternfly/react-icons';
+
 export interface ExternalLinkProps {
     className?: string;
+    hasIcon?: boolean;
     href?: string;
 }
 
@@ -30,6 +33,11 @@ export function ExternalLink(
     return (
         <a target="_blank" rel="noopener noreferrer" {...props}>
             {props.children}
+            {props.hasIcon && (
+                <ExternalLinkAltIcon
+                    style={{ height: '.8em', marginLeft: '0.4em' }}
+                />
+            )}
         </a>
     );
 }
