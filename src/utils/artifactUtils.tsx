@@ -361,7 +361,7 @@ export const getThreadID = (args: {
     return null;
 };
 
-export const getArtifactProduct = (artifact: Artifact): string | null => {
+export const getArtifactProduct = (artifact: Artifact): string | undefined => {
     /*
      * Gating based on Brew tags is available only in RHEL.
      * Cenots/Fedora doesn't have gating workflow.
@@ -369,15 +369,14 @@ export const getArtifactProduct = (artifact: Artifact): string | null => {
     if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
         const { gate_tag_name } = artifact.payload;
         if (_.isEmpty(gate_tag_name)) {
-            return null;
+            return;
         }
         const product = gate_tag_name.match(/^.*(rhel-\d\d?)\.$/);
         if (_.isNil(product)) {
-            return null;
+            return;
         }
         return product[1];
     }
-    return null;
 };
 
 /**
