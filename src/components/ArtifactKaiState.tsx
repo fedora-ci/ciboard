@@ -56,10 +56,10 @@ import {
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
-import { mappingDatagrepperUrl } from '../config';
 import { TestSuites } from './TestSuites';
 import {
     getArtifactProduct,
+    getDatagrepperUrl,
     getKaiExtendedStatus,
     getRerunUrl,
     getTestcaseName,
@@ -286,10 +286,7 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
     } else {
         return null;
     }
-    const brokerMsgUrl: string = new URL(
-        `id?id=${kai_state.msg_id}&is_raw=true&size=extra-large`,
-        mappingDatagrepperUrl[artifact.type],
-    ).toString();
+    const brokerMsgUrl = getDatagrepperUrl(kai_state.msg_id, artifact.type);
     pairs.push(['broker msg', brokerMsgUrl]);
     const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'green'),
