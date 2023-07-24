@@ -20,11 +20,14 @@
 
 import * as _ from 'lodash';
 import * as React from 'react';
-import { Alert, Text, TextContent } from '@patternfly/react-core';
+import { useQuery } from '@apollo/client';
+import { Alert, Spinner, Text, TextContent } from '@patternfly/react-core';
 import { UsersIcon } from '@patternfly/react-icons';
 
 import { ExternalLink } from '../ExternalLink';
 import { CiContact } from './types';
+import { MetadataQuery } from '../../queries/Metadata';
+import { MetadataQueryResult } from '../MetadataInfo';
 
 function mkSeparatedListNatural(
     elements: React.ReactNode[],
@@ -112,4 +115,56 @@ export function ContactWidget({ contact }: ContactWidgetProps) {
             </TextContent>
         </Alert>
     );
+}
+
+export interface MissingTestContactWidgetProps {
+    productVersion?: string;
+    testcaseName?: string;
+}
+
+export function MissingTestContactWidget(props: MissingTestContactWidgetProps) {
+    const variables: any = { testcase_name: props.testcaseName };
+    if (!_.isNil(props.productVersion)) {
+        variables.product_version = props.productVersion;
+    }
+
+    const { data, loading } = useQuery<MetadataQueryResult>(MetadataQuery, {
+        variables,
+        errorPolicy: 'all',
+        /* need to re-fetch each time when user press save/back button */
+        fetchPolicy: 'cache-and-network',
+        notifyOnNetworkStatusChange: true,
+        skip: _.isEmpty(props.testcaseName),
+    });
+
+    const metadataContact = data?.metadata_consolidated.payload?.contact;
+    const haveData = !loading && !_.isEmpty(metadataContact);
+
+    if (loading) {
+        return (
+            <Alert
+                customIcon={<Spinner size="sm" />}
+                isInline
+                title="Loading contact info"
+                variant="info"
+            />
+        );
+    }
+
+    if (!haveData) {
+        return null;
+    }
+
+    let contact: CiContact = {
+        docsUrl: metadataContact.docs,
+        email: metadataContact.email,
+        gchatRoomUrl: metadataContact.gchat_room_url,
+        name: metadataContact.name,
+        reportIssueUrl: metadataContact.report_issue_url,
+        slackChannelUrl: metadataContact.slack_channel_url,
+        team: metadataContact.team,
+        url: metadataContact.url,
+    };
+
+    return <ContactWidget contact={contact} />;
 }

@@ -47,10 +47,10 @@ import {
 } from '@patternfly/react-icons';
 
 import './index.css';
-import { LinkifyNewTab } from '../../utils/artifactUtils';
+import { LinkifyNewTab, getArtifactProduct } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
-import { ContactWidget } from './ContactWidget';
+import { ContactWidget, MissingTestContactWidget } from './ContactWidget';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestStatusIcon } from './TestStatusIcon';
 import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
@@ -195,8 +195,16 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     /*
      * Custom alerts and widgets for error states and additional info.
      */
-    // TODO: Pull contact info from API if status is 'missing'.
-    const contactWidget = <ContactWidget contact={selectedTest?.contact} />;
+    const contactWidget =
+        selectedTest?.status === 'missing' ? (
+            // Pull contact info if test is missing, because we have no other data.
+            <MissingTestContactWidget
+                productVersion={getArtifactProduct(props.artifact)}
+                testcaseName={selectedTest?.name}
+            />
+        ) : (
+            <ContactWidget contact={selectedTest?.contact} />
+        );
     const descriptionWidget = !_.isEmpty(selectedTest?.description) && (
         <TextContent className="pf-u-mb-md">
             <Text>
