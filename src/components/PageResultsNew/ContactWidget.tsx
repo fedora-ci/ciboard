@@ -21,7 +21,13 @@
 import * as _ from 'lodash';
 import * as React from 'react';
 import { useQuery } from '@apollo/client';
-import { Alert, Spinner, Text, TextContent } from '@patternfly/react-core';
+import {
+    Alert,
+    Bullseye,
+    Spinner,
+    Text,
+    TextContent,
+} from '@patternfly/react-core';
 import { UsersIcon } from '@patternfly/react-icons';
 
 import { ExternalLink } from '../ExternalLink';
@@ -143,16 +149,31 @@ export function MissingTestContactWidget(props: MissingTestContactWidgetProps) {
     if (loading) {
         return (
             <Alert
-                customIcon={<Spinner size="sm" />}
+                customIcon={<UsersIcon />}
                 isInline
-                title="Loading contact info"
+                title="Loading contact info…"
                 variant="info"
-            />
+            >
+                <Bullseye>
+                    <Spinner size="lg" />
+                </Bullseye>
+            </Alert>
         );
     }
 
     if (!haveData) {
-        return null;
+        return (
+            <Alert
+                customIcon={<UsersIcon />}
+                isInline
+                title="No contact information available"
+                variant="warning"
+            >
+                Unfortunately, we were unable to obtain any ownership or contact
+                information for this test. Who owns or maintains it remains a
+                mystery.
+            </Alert>
+        );
     }
 
     let contact: CiContact = {
