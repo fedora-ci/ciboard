@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { GreenwaveWaiveType } from '../../artifact';
+import { GreenwaveWaiveType, StateType } from '../../artifact';
 import { MSG_V_1, MetadataDependency, MetadataKnownIssue } from '../../types';
 
 export type TestStatus =
@@ -54,6 +54,7 @@ export interface CiTest {
     labels?: string[];
     messageId?: string;
     name: string;
+    originalState: StateType;
     required?: boolean;
     rerunUrl?: string;
     status: TestStatus;

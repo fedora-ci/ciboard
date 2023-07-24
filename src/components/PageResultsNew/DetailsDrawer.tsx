@@ -58,6 +58,7 @@ import { CiTest } from './types';
 import { Artifact } from '../../artifact';
 import { KnownIssues } from './KnownIssues';
 import { WaiveButton } from './WaiveButton';
+import { TestResultMetadata } from './TestResultMetadata';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -94,8 +95,7 @@ function DetailsDrawerTabs(props: DetailsDrawerTabsProps) {
             title: 'Metadata',
             content: (
                 <DrawerPanelBody>
-                    Test result metadata will be here (time submitted, UMB
-                    message ID, datagrapper link, ResultsDB link, etc.)
+                    <TestResultMetadata artifact={props.artifact} />
                 </DrawerPanelBody>
             ),
         },

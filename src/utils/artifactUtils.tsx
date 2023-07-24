@@ -54,7 +54,7 @@ import {
     StateKaiType,
     StateType,
 } from '../artifact';
-import { config } from '../config';
+import { config, mappingDatagrepperUrl } from '../config';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 /**
  *Typescript guards
@@ -861,4 +861,15 @@ export function getKaiExtendedStatus(
         return msg.test.result;
     }
     return state.kai_state.state;
+}
+
+export function getDatagrepperUrl(
+    messageId: string,
+    artifactType: ArtifactType,
+) {
+    const url = new URL(
+        `id?id=${messageId}&is_raw=true&size=extra-large`,
+        mappingDatagrepperUrl[artifactType],
+    );
+    return url.toString();
 }
