@@ -247,6 +247,7 @@ function transformTest(
         knownIssues,
         messageId,
         name: name || '',
+        originalState: test,
         required,
         rerunUrl,
         status,
