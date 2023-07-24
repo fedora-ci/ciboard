@@ -56,24 +56,27 @@ import { getArtifactName } from '../../utils/artifactUtils';
 type PageResultsNewParams = 'search' | 'type' | 'value';
 
 export function PageResultsNew(_props: {}) {
-    const [selectedTest, setSelectedTest] = useState<CiTest | undefined>();
+    const [selectedTestName, setSelectedTestName] = useState<string>();
     const params = useParams<PageResultsNewParams>();
     // Docs: https://reactrouter.com/en/main/hooks/use-search-params
     const [searchParams, setSearchParams] = useSearchParams();
 
     let tests: CiTest[] = [];
-    const findTestByName = (name: string) =>
-        _.find(tests, (test) => test.name === name);
+    const findTestByName = (name?: string) => {
+        if (!name) return;
+        return _.find(tests, (test) => test.name === name);
+    };
 
-    // FIXME: This might not be working the best right now.
+    /*
+     * Change currently selected test whenever the `?focus` URL parameter
+     * changes. This can happend when user clicks the back button, for instance.
+     */
     useEffect(() => {
-        // Set selected test based on URL, if present.
         if (searchParams.has('focus')) {
             // NOTE: We know that `.get()` must return non-null since `.has()` is true.
-            const test = findTestByName(searchParams.get('focus')!);
-            setSelectedTest(test);
+            setSelectedTestName(searchParams.get('focus')!);
         } else {
-            setSelectedTest(undefined);
+            setSelectedTestName(undefined);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
@@ -160,12 +163,14 @@ export function PageResultsNew(_props: {}) {
 
     tests = extractTests(artifact);
 
+    const selectedTest = findTestByName(selectedTestName);
+
     const onTestSelect = (name: string | undefined) => {
-        if (name && name !== selectedTest?.name) {
-            setSelectedTest(findTestByName(name));
+        if (name && name !== selectedTestName) {
+            setSelectedTestName(name);
             setSearchParams({ focus: name });
         } else {
-            setSelectedTest(undefined);
+            setSelectedTestName(undefined);
             setSearchParams({});
         }
     };
