@@ -33,14 +33,16 @@ import {
     Spinner,
     Title,
 } from '@patternfly/react-core';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';
 import { useQuery } from '@apollo/client';
 
 import './index.css';
+import { Artifact } from '../../artifact';
 import {
     ArtifactsCompleteQuery,
     ArtifactsCompleteQueryData,
 } from '../../queries/Artifacts';
+import { getArtifactName } from '../../utils/artifactUtils';
 import { config } from '../../config';
 import { CiTest } from './types';
 import { SelectedTestContext } from './contexts';
@@ -51,13 +53,18 @@ import { ArtifactHeader } from './Header';
 import { PageCommon, ToastAlertGroup } from '../PageCommon';
 import { WaiveModal } from '../WaiveForm';
 import { extractTests } from './artifactTests';
-import { getArtifactName } from '../../utils/artifactUtils';
+import { ArtifactsListNew } from './ArtifactsListNew';
 
 type PageResultsNewParams = 'search' | 'type' | 'value';
 
-export function PageResultsNew(_props: {}) {
+interface SingleArtifactViewProps {
+    artifact: Artifact;
+}
+
+function SingleArtifactView(props: SingleArtifactViewProps) {
+    const { artifact } = props;
+
     const [selectedTestName, setSelectedTestName] = useState<string>();
-    const params = useParams<PageResultsNewParams>();
     // Docs: https://reactrouter.com/en/main/hooks/use-search-params
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -82,76 +89,6 @@ export function PageResultsNew(_props: {}) {
     }, [searchParams]);
 
     let pageTitle = `Artifact search results | ${config.defaultTitle}`;
-
-    const fieldName = params.search || '';
-    const fieldPath = fieldName === 'aid' ? fieldName : `payload.${fieldName}`;
-    const fieldValues = params.value?.split(',') || [];
-    const atype = params.type || '';
-
-    const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
-        ArtifactsCompleteQuery,
-        {
-            variables: {
-                atype,
-                dbFieldName1: fieldPath,
-                dbFieldValues1: fieldValues,
-                // TODO: Allow for more than one.
-                limit: 1,
-            },
-            errorPolicy: 'all',
-            fetchPolicy: 'cache-first',
-        },
-    );
-
-    // TODO: Multiple results state.
-
-    const artifact = data?.artifacts?.artifacts?.[0];
-    const haveData = !_.isNil(artifact) && !error && !loading;
-
-    if (loading) {
-        return (
-            <PageCommon title={pageTitle}>
-                <PageSection isFilled>
-                    <Bullseye>
-                        <EmptyState>
-                            <EmptyStateIcon
-                                variant="container"
-                                component={Spinner}
-                            />
-                            <Title headingLevel="h2" size="lg">
-                                Loading artifact…
-                            </Title>
-                        </EmptyState>
-                    </Bullseye>
-                </PageSection>
-            </PageCommon>
-        );
-    }
-
-    if (!haveData) {
-        return (
-            <PageCommon title={pageTitle}>
-                <PageSection isFilled>
-                    <Bullseye>
-                        <EmptyState>
-                            <EmptyStateIcon
-                                className="pf-u-danger-color-100"
-                                icon={ExclamationCircleIcon}
-                            />
-                            <Title headingLevel="h2" size="lg">
-                                Failed to load artifact
-                            </Title>
-                            {error && (
-                                <EmptyStateBody>
-                                    Error: {error.toString()}
-                                </EmptyStateBody>
-                            )}
-                        </EmptyState>
-                    </Bullseye>
-                </PageSection>
-            </PageCommon>
-        );
-    }
 
     // Construct a specific title for the single-artifact case.
     pageTitle = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
@@ -206,6 +143,168 @@ export function PageResultsNew(_props: {}) {
             </SelectedTestContext.Provider>
             <ToastAlertGroup />
             <WaiveModal />
+        </PageCommon>
+    );
+}
+
+export function PageResultsNew(_props: {}) {
+    const params = useParams<PageResultsNewParams>();
+
+    // Used for pagination in the multi-artifact view.
+    const [aidStack, setAidStack] = useState<string[]>([]);
+    const aidOffset = _.last(aidStack);
+    const currentPage = 1 + aidStack.length;
+
+    const artifactType = params.type || '';
+    const fieldName = params.search || '';
+    const fieldPath = fieldName === 'aid' ? fieldName : `payload.${fieldName}`;
+    const fieldValues = params.value?.split(',') || [];
+
+    let pageTitle = `Artifact search results | ${config.defaultTitle}`;
+
+    const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
+        ArtifactsCompleteQuery,
+        {
+            variables: {
+                atype: artifactType,
+                aid_offset: aidOffset,
+                dbFieldName1: fieldPath,
+                dbFieldValues1: fieldValues,
+            },
+            errorPolicy: 'all',
+            fetchPolicy: 'cache-first',
+        },
+    );
+
+    const artifacts = data?.artifacts?.artifacts;
+    const haveData = !_.isNil(artifacts) && !error && !loading;
+
+    // Show spinner while the query is loading.
+    if (loading) {
+        return (
+            <PageCommon title={pageTitle}>
+                <PageSection isFilled>
+                    <Bullseye>
+                        <EmptyState>
+                            <EmptyStateIcon
+                                variant="container"
+                                component={Spinner}
+                            />
+                            <Title headingLevel="h2" size="lg">
+                                Loading artifact(s)…
+                            </Title>
+                        </EmptyState>
+                    </Bullseye>
+                </PageSection>
+            </PageCommon>
+        );
+    }
+
+    // Show error page if the query failed.
+    if (!haveData) {
+        return (
+            <PageCommon title={pageTitle}>
+                <PageSection isFilled>
+                    <Bullseye>
+                        <EmptyState>
+                            <EmptyStateIcon
+                                className="pf-u-danger-color-100"
+                                icon={ExclamationCircleIcon}
+                            />
+                            <Title headingLevel="h2" size="lg">
+                                Failed to load artifact
+                            </Title>
+                            {error && (
+                                <EmptyStateBody>
+                                    Error: {error.toString()}
+                                </EmptyStateBody>
+                            )}
+                        </EmptyState>
+                    </Bullseye>
+                </PageSection>
+            </PageCommon>
+        );
+    }
+
+    // Show information message if query succeeded but no artifacts were returned.
+    if (haveData && _.isEmpty(artifacts)) {
+        return (
+            <PageCommon title={pageTitle}>
+                <PageSection isFilled>
+                    <Bullseye>
+                        <EmptyState>
+                            <EmptyStateIcon icon={SearchIcon} />
+                            <Title headingLevel="h2" size="lg">
+                                No artifacts found
+                            </Title>
+                            <EmptyStateBody>
+                                No matching artifacts found in database
+                            </EmptyStateBody>
+                        </EmptyState>
+                    </Bullseye>
+                </PageSection>
+            </PageCommon>
+        );
+    }
+
+    /*
+     * Single-artifact view – show the page with build info, test results table,
+     * and drawer with details on test suites, metadata and other information.
+     */
+    if (fieldName === 'aid' && fieldValues.length === 1) {
+        if (artifacts.length !== 1) {
+            // There should only ever be one single artifact for a given AID.
+            console.error(
+                `More than one '${artifactType}' artifacts are associated with ID '${_.first(
+                    fieldValues,
+                )}'`,
+            );
+        }
+
+        return (
+            <SingleArtifactView
+                artifact={artifacts[0]}
+                // Re-render the whole component if the artifact ID changes.
+                key={artifacts[0].aid}
+            />
+        );
+    }
+
+    /*
+     * Multi-artfifact view – show the search results table with the matching
+     * artifacts as rows.
+     */
+
+    const hasNextPage = data?.artifacts.has_next;
+
+    const onClickNext = () => {
+        const lastAid = _.last(artifacts)?.aid;
+        // This should not happen, but just to be sure...
+        if (!hasNextPage || !lastAid) return;
+        const newAidStack = aidStack.slice();
+        newAidStack.push(lastAid);
+        setAidStack(newAidStack);
+    };
+
+    const onClickPrev = () => {
+        // This should not happen, but just to be sure...
+        if (currentPage <= 1) return;
+        const newAidStack = _.dropRight(aidStack, 1);
+        setAidStack(newAidStack);
+    };
+
+    return (
+        <PageCommon title={pageTitle}>
+            <PageSection isFilled>
+                <ArtifactsListNew
+                    artifacts={artifacts}
+                    artifactType={artifactType}
+                    currentPage={currentPage}
+                    hasNextPage={hasNextPage}
+                    onClickNext={onClickNext}
+                    onClickPrev={onClickPrev}
+                />
+            </PageSection>
         </PageCommon>
     );
 }
