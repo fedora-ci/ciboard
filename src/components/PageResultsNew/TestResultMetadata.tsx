@@ -45,6 +45,7 @@ import {
 import {
     getDatagrepperUrl,
     getKaiExtendedStatus,
+    getThreadID,
     isGreenwaveKaiState,
     isGreenwaveState,
     isKaiState,
@@ -181,6 +182,10 @@ function KaiMetadata(props: KaiMetadataProps) {
         {
             label: 'Status',
             value: getKaiExtendedStatus(state),
+        },
+        {
+            label: 'Thread ID',
+            value: getThreadID(state),
         },
         {
             label: 'Message version',
