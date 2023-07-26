@@ -19,9 +19,8 @@
  */
 
 import * as _ from 'lodash';
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@apollo/client';
+import { ApolloError } from '@apollo/client';
 import {
     Bullseye,
     EmptyState,
@@ -40,10 +39,6 @@ import {
     Tr,
 } from '@patternfly/react-table';
 
-import {
-    ArtifactsCompleteQuery,
-    ArtifactsCompleteQueryData,
-} from '../../queries/Artifacts';
 import { getArtifactLocalPath } from '../../utils/artifactUtils';
 import { Artifact } from '../../artifact';
 import {
@@ -116,79 +111,40 @@ const NoArtifactsState = (_props: {}) => (
 );
 
 export interface ArtifactsListNewProps {
+    artifacts?: Artifact[];
     /** The type of artifacts to look up. */
     artifactType: string;
-    /** The artifact property to match against. */
-    fieldName?: string;
-    /** The desired property value(s). */
-    fieldValues: string[];
-    /** Match filter values as regular expressions against the property value. */
-    matchRegex?: boolean;
-    /** Exclude scratch builds from the search. */
-    skipScratch?: boolean;
+    currentPage: number;
+    error?: ApolloError;
+    hasNextPage?: boolean;
+    loading?: boolean;
+    onClickNext(): void;
+    onClickPrev(): void;
 }
 
 export function ArtifactsListNew(props: ArtifactsListNewProps) {
-    const { artifactType, fieldName, fieldValues } = props;
+    const { artifacts, currentPage, error, loading } = props;
 
-    const [aidStack, setAidStack] = useState<string[]>([]);
-    const aidOffset = _.last(aidStack);
-    const currentPage = 1 + aidStack.length;
+    const columns = tableColumns(props.artifactType);
 
-    const fieldPath = fieldName
-        ? fieldName === 'aid'
-            ? fieldName
-            : // Fields other than `aid` are found inside the payload.
-              `payload.${fieldName}`
-        : // Keep the path undefined if no field name was specified.
-          undefined;
-    const columns = tableColumns(artifactType);
-
-    const queryValid = !_.isEmpty(artifactType) && !_.isEmpty(fieldValues);
-    const queryOptions = {
-        reduced: true,
-        skipScratch: props.skipScratch,
-        valuesAreRegex1: props.matchRegex,
-    };
-
-    const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
-        ArtifactsCompleteQuery,
-        {
-            variables: {
-                atype: artifactType,
-                aid_offset: aidOffset,
-                dbFieldName1: fieldPath,
-                dbFieldValues1: fieldValues,
-                options: queryOptions,
-            },
-            fetchPolicy: 'cache-first',
-            notifyOnNetworkStatusChange: true,
-            errorPolicy: 'all',
-            skip: !queryValid,
-        },
-    );
-
-    const haveData = !loading && data && !_.isEmpty(data.artifacts?.artifacts);
-    let hasNext = false;
-    let artifactRows: any[] = [];
+    let artifactRows: JSX.Element[] = [];
     let emptyRow: JSX.Element | undefined;
-    if (haveData) {
-        artifactRows = data.artifacts?.artifacts.map((artifact) => (
+    if (!_.isNil(artifacts)) {
+        artifactRows = artifacts.map((artifact) => (
             <ArtifactRow artifact={artifact} key={artifact.aid} />
         ));
-        hasNext = data.artifacts?.has_next;
-    }
 
-    if (!loading && data && _.isEmpty(data.artifacts?.artifacts)) {
-        emptyRow = (
-            <Tr>
-                <Td colSpan={columns.length}>
-                    <Bullseye>
-                        <NoArtifactsState />
-                    </Bullseye>
-                </Td>
-            </Tr>
-        );
+        if (_.isEmpty(artifacts)) {
+            emptyRow = (
+                <Tr>
+                    <Td colSpan={columns.length}>
+                        <Bullseye>
+                            <NoArtifactsState />
+                        </Bullseye>
+                    </Td>
+                </Tr>
+            );
+        }
     }
 
     const loadingRow = loading && (
@@ -209,32 +165,16 @@ export function ArtifactsListNew(props: ArtifactsListNewProps) {
         </Tr>
     );
 
-    const onClickLoadNext = () => {
-        const lastAid = _.last(data?.artifacts?.artifacts)?.aid;
-        // This should not happen, but just to be sure...
-        if (!hasNext || !lastAid) return;
-        const newAidStack = aidStack.slice();
-        newAidStack.push(lastAid);
-        setAidStack(newAidStack);
-    };
-
-    const onClickLoadPrev = () => {
-        // This should not happen, but just to be sure...
-        if (currentPage <= 1) return;
-        const newAidStack = _.dropRight(aidStack, 1);
-        setAidStack(newAidStack);
-    };
-
-    const paginationProps = {
-        currentPage,
-        isLoading: loading,
-        loadNextIsDisabled: !hasNext,
-        loadPrevIsDisabled: currentPage <= 1,
-        onClickLoadNext,
-        onClickLoadPrev,
-    };
-
-    const paginationToolbar = <PaginationToolbar {...paginationProps} />;
+    const paginationToolbar = (
+        <PaginationToolbar
+            currentPage={currentPage}
+            isLoading={loading}
+            loadNextIsDisabled={!props.hasNextPage}
+            loadPrevIsDisabled={currentPage <= 1}
+            onClickLoadNext={props.onClickNext}
+            onClickLoadPrev={props.onClickPrev}
+        />
+    );
 
     return (
         <>

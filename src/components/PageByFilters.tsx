@@ -20,8 +20,9 @@
 
 import { Buffer } from 'buffer';
 import _ from 'lodash';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@apollo/client';
 import {
     Flex,
     Button,
@@ -37,7 +38,6 @@ import {
     ToolbarGroup,
     ToolbarFilter,
     ToolbarContent,
-    SelectOptionObject,
     PageSection,
     SelectProps,
 } from '@patternfly/react-core';
@@ -48,7 +48,14 @@ import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { addFilter, deleteFilter, setOptionsForFilters } from '../actions';
 import { WaiveModal } from './WaiveForm';
 import { useAppDispatch, useAppSelector } from '../hooks';
-import { ArtifactsListNew } from './PageResultsNew/ArtifactsListNew';
+import {
+    ArtifactsListNew,
+    ArtifactsListNewProps,
+} from './PageResultsNew/ArtifactsListNew';
+import {
+    ArtifactsCompleteQuery,
+    ArtifactsCompleteQueryData,
+} from '../queries/Artifacts';
 
 /**
  * These are default search-field for each artifact type
@@ -73,7 +80,7 @@ const statusMenuItems = _.map(menuTypes, (menuName, key) => (
     <SelectOption key={key} value={menuName} />
 ));
 
-const SearchToolbar = () => {
+function SearchToolbar(_props: {}) {
     const dispatch = useAppDispatch();
     const filters = useAppSelector((state) => state.filters);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -275,9 +282,97 @@ const SearchToolbar = () => {
     }
 
     return toolBar;
-};
+}
 
-export function PageByFilters() {
+interface ArtifactSearchProps {
+    /** The type of artifacts to look up. */
+    artifactType: string;
+    /** The artifact property to match against. */
+    fieldName?: string;
+    /** The desired property value(s). */
+    fieldValues: string[];
+    /** Match filter values as regular expressions against the property value. */
+    matchRegex?: boolean;
+    /** Exclude scratch builds from the search. */
+    skipScratch?: boolean;
+}
+
+export function ArtifactSearch(props: ArtifactSearchProps) {
+    const { artifactType, fieldName, fieldValues } = props;
+
+    const [aidStack, setAidStack] = useState<string[]>([]);
+    const aidOffset = _.last(aidStack);
+    const currentPage = 1 + aidStack.length;
+
+    const fieldPath = fieldName
+        ? fieldName === 'aid'
+            ? fieldName
+            : // Fields other than `aid` are found inside the payload.
+              `payload.${fieldName}`
+        : // Keep the path undefined if no field name was specified.
+          undefined;
+
+    const queryValid = !_.isEmpty(artifactType) && !_.isEmpty(fieldValues);
+    const queryOptions = {
+        reduced: true,
+        skipScratch: props.skipScratch,
+        valuesAreRegex1: props.matchRegex,
+    };
+
+    const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
+        ArtifactsCompleteQuery,
+        {
+            variables: {
+                atype: artifactType,
+                aid_offset: aidOffset,
+                dbFieldName1: fieldPath,
+                dbFieldValues1: fieldValues,
+                options: queryOptions,
+            },
+            fetchPolicy: 'cache-first',
+            notifyOnNetworkStatusChange: true,
+            errorPolicy: 'all',
+            skip: !queryValid,
+        },
+    );
+
+    const haveData = !loading && data && !_.isNil(data.artifacts?.artifacts);
+    let hasNextPage = false;
+    if (haveData) {
+        hasNextPage = data.artifacts?.has_next;
+    }
+
+    const onClickNext = () => {
+        const lastAid = _.last(data?.artifacts?.artifacts)?.aid;
+        // This should not happen, but just to be sure...
+        if (!hasNextPage || !lastAid) return;
+        const newAidStack = aidStack.slice();
+        newAidStack.push(lastAid);
+        setAidStack(newAidStack);
+    };
+
+    const onClickPrev = () => {
+        // This should not happen, but just to be sure...
+        if (currentPage <= 1) return;
+        const newAidStack = _.dropRight(aidStack, 1);
+        setAidStack(newAidStack);
+    };
+
+    const artifactsListProps: ArtifactsListNewProps = {
+        artifactType,
+        artifacts: data?.artifacts?.artifacts,
+        currentPage,
+        error,
+        hasNextPage,
+        loading,
+        onClickNext,
+        onClickPrev,
+    };
+
+    return <ArtifactsListNew {...artifactsListProps} />;
+}
+
+export function PageByFilters(_props: {}) {
     const filters = useAppSelector((state) => state.filters);
 
     // If left undefined, the default is used in `PageCommon`.
@@ -300,7 +395,7 @@ export function PageByFilters() {
         <PageCommon title={pageTitle}>
             <PageSection isFilled>
                 <SearchToolbar />
-                <ArtifactsListNew
+                <ArtifactSearch
                     artifactType={filters.type}
                     fieldValues={queryRegexes}
                     matchRegex={true}
