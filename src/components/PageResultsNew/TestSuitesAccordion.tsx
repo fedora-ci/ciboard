@@ -146,8 +146,27 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
         );
     }
 
+    /*
+     * Automatically expand the only test suite if there's only one.
+     * Note that the `_.isEmpty()` condition is only true on the first
+     * render so user interaction doesn't retrigger the change state
+     * and doesn't cause an infinite loop.
+     */
     if (suites.length === 1 && _.isEmpty(expandedSuites)) {
         setExpandedSuites({ 0: true });
+    }
+
+    /*
+     * Similarly, if there are multiple test suites, expand those that
+     * contain failed or errored test cases.
+     */
+    if (suites.length > 1 && _.isEmpty(expandedSuites)) {
+        const expandedPairs = suites.map((suite, index) => {
+            const erroredCount = suite.count['error'] || 0;
+            const failedCount = suite.count['fail'] || 0;
+            return [index, erroredCount + failedCount > 0];
+        });
+        setExpandedSuites(_.fromPairs(expandedPairs));
     }
 
     const onToggle = (index: number): void => {
