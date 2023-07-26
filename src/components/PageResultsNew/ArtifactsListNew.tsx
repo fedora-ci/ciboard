@@ -19,6 +19,7 @@
  */
 
 import * as _ from 'lodash';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import {
@@ -130,8 +131,9 @@ export interface ArtifactsListNewProps {
 export function ArtifactsListNew(props: ArtifactsListNewProps) {
     const { artifactType, fieldName, fieldValues } = props;
 
-    const aidOffset = '';
-    const currentPage = 1;
+    const [aidStack, setAidStack] = useState<string[]>([]);
+    const aidOffset = _.last(aidStack);
+    const currentPage = 1 + aidStack.length;
 
     const fieldPath = fieldName
         ? fieldName === 'aid'
@@ -145,6 +147,7 @@ export function ArtifactsListNew(props: ArtifactsListNewProps) {
     const queryValid = !_.isEmpty(artifactType) && !_.isEmpty(fieldValues);
     const queryOptions = {
         reduced: true,
+        skipScratch: props.skipScratch,
         valuesAreRegex1: props.matchRegex,
     };
 
@@ -206,13 +209,29 @@ export function ArtifactsListNew(props: ArtifactsListNewProps) {
         </Tr>
     );
 
+    const onClickLoadNext = () => {
+        const lastAid = _.last(data?.artifacts?.artifacts)?.aid;
+        // This should not happen, but just to be sure...
+        if (!hasNext || !lastAid) return;
+        const newAidStack = aidStack.slice();
+        newAidStack.push(lastAid);
+        setAidStack(newAidStack);
+    };
+
+    const onClickLoadPrev = () => {
+        // This should not happen, but just to be sure...
+        if (currentPage <= 1) return;
+        const newAidStack = _.dropRight(aidStack, 1);
+        setAidStack(newAidStack);
+    };
+
     const paginationProps = {
+        currentPage,
         isLoading: loading,
-        currentPage: 1,
-        loadPrevIsDisabled: currentPage <= 1,
         loadNextIsDisabled: !hasNext,
-        onClickLoadPrev: () => void 0,
-        onClickLoadNext: () => void 0,
+        loadPrevIsDisabled: currentPage <= 1,
+        onClickLoadNext,
+        onClickLoadPrev,
     };
 
     const paginationToolbar = <PaginationToolbar {...paginationProps} />;
