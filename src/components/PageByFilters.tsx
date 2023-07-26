@@ -39,6 +39,7 @@ import {
     ToolbarContent,
     SelectOptionObject,
     PageSection,
+    SelectProps,
 } from '@patternfly/react-core';
 import { SearchIcon } from '@patternfly/react-icons';
 
@@ -68,17 +69,9 @@ const menuTypes = {
     'Compose ID': 'productmd-compose',
 };
 
-const statusMenuItems = _.map(_.toPairs(menuTypes), ([menuName, key]) => (
+const statusMenuItems = _.map(menuTypes, (menuName, key) => (
     <SelectOption key={key} value={menuName} />
 ));
-
-function usePrevious(value: number) {
-    const ref = useRef(0);
-    useEffect(() => {
-        ref.current = value;
-    });
-    return ref.current;
-}
 
 const SearchToolbar = () => {
     const dispatch = useAppDispatch();
@@ -90,16 +83,17 @@ const SearchToolbar = () => {
     const [statusSelected, setSelected] = useState<string | null>(
         menu_default_entry,
     );
+
     const onInputChange = (newValue: string) => {
         setInputValue(newValue);
     };
     const onStatusToggle = (isExpanded: boolean) => {
         setIsExpanded(isExpanded);
     };
-    const onStatusSelect = (
-        _event: React.MouseEvent | React.ChangeEvent,
-        selection: string | SelectOptionObject,
-        isPlaceholder?: boolean | undefined,
+    const onStatusSelect: SelectProps['onSelect'] = (
+        _event,
+        selection,
+        isPlaceholder,
     ) => {
         if (isPlaceholder) clearStatusSelection();
         setIsExpanded(false);
@@ -107,25 +101,22 @@ const SearchToolbar = () => {
             setSelected(selection);
         }
     };
+
     const toggleScratch = (checked: boolean) => {
-        console.log('Setting checkbox to', checked);
         dispatch(setOptionsForFilters({ skipScratch: checked }));
     };
     const clearStatusSelection = () => {
         setSelected(null);
         setIsExpanded(false);
     };
-    const prevFiltersLen = usePrevious(_.size(filters.active));
+
     useEffect(() => {
-        if (
-            _.isEmpty(filters.active) &&
-            searchParams.has('filters') &&
-            prevFiltersLen > 0
-        ) {
-            console.log('Remove filters from URL');
+        // Drop URL parameter if no filters are active.
+        if (_.isEmpty(filters.active) && searchParams.has('filters')) {
             setSearchParams({});
         }
-    }, [filters, prevFiltersLen, searchParams, setSearchParams]);
+    }, [filters.active, searchParams, setSearchParams]);
+
     useEffect(() => {
         /** Check if there are filters. */
         const filters_enc = searchParams.get('filters');
@@ -136,10 +127,12 @@ const SearchToolbar = () => {
         /** There are some filters. */
         try {
             /** Filters from URL */
-            const filters = JSON.parse(atob(filters_enc));
+            const filters = JSON.parse(
+                Buffer.from(filters_enc, 'base64').toString(),
+            );
+            dispatch(setOptionsForFilters(filters.options));
             for (const filter of filters.active) {
                 /** Add filters from URL */
-                dispatch(setOptionsForFilters(filters.options));
                 dispatch(addFilter(filter, filters.type));
             }
         } catch (e) {
@@ -150,6 +143,7 @@ const SearchToolbar = () => {
          * That will not invoke re-renders because dispatch value will not change
          */
     }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const onKeyPress = (keyEvent: React.KeyboardEvent) => {
         if (!statusSelected) {
             return;
@@ -161,6 +155,7 @@ const SearchToolbar = () => {
             keyEvent.preventDefault();
         }
     };
+
     const onClick = () => {
         if (!statusSelected) {
             return;
@@ -174,6 +169,7 @@ const SearchToolbar = () => {
             dispatch(addFilter(inputValue, atype));
         }
     };
+
     const toggleGroupItems = (
         <>
             <ToolbarItem>
@@ -195,7 +191,7 @@ const SearchToolbar = () => {
                         type="search"
                         aria-label="search input example"
                         onChange={onInputChange}
-                        onKeyPress={onKeyPress}
+                        onKeyDown={onKeyPress}
                         value={inputValue}
                     />
                     <Button
@@ -223,6 +219,7 @@ const SearchToolbar = () => {
             </ToolbarGroup>
         </>
     );
+
     const toolbarItems = (
         <ToolbarGroup variant="icon-button-group">
             {toggleGroupItems}
@@ -238,6 +235,7 @@ const SearchToolbar = () => {
             </ToolbarItem>
         </ToolbarGroup>
     );
+
     const toolBar = (
         <Flex
             grow={{ default: 'grow' }}
