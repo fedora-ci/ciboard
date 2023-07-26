@@ -76,12 +76,6 @@ function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
             'excluded',
             'passed',
             'test-result-passed',
-            /*
-             * TODO: Handle this more appropriately. This is just a flag used by
-             * Greenwave, but the outcome can be anything from `running` to `passed`
-             * to `failed` or `not_applicable`.
-             */
-            // 'additional-tests',
         ].includes(stateName)
     ) {
         return 'passed';
@@ -94,16 +88,16 @@ function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
     ) {
         return 'info';
     }
-    // TODO: Handle `*-gating-yaml` statuses.
     return 'unknown';
 }
 
 function transformGreenwaveOutcome(
     outcome: GreenwaveRequirementOutcome,
+    isRequired?: boolean,
 ): TestStatus {
-    // TODO: NOT_APPLICABLE is fine for additional-tests but not for required tests. Make
-    // sure this works as expected.
-    if (outcome === 'INFO' || outcome === 'NOT_APPLICABLE') return 'info';
+    // NOT_APPLICABLE is fine for unrequired tests but not for required ones.
+    if (outcome === 'INFO' || (outcome === 'NOT_APPLICABLE' && !isRequired))
+        return 'info';
     if (outcome === 'PASSED') return 'passed';
     if (outcome === 'RUNNING') return 'running';
     return 'failed';
@@ -137,12 +131,10 @@ function extractContact(test: StateType): CiContact {
     let contact: CiContact = {};
     let metadataContact: MetadataContact | undefined;
 
-    /*
-     * TODO: What to do in the Greenwave-only case? Is there any info
-     * in the Greenwave response? As a last resort, we would need to
-     * query our API for custom metadata.
-     */
-    // if (isGreenwaveState(test)) return;
+    if (isGreenwaveState(test)) {
+        // This is handled later in the UI by querying custom metadata.
+        return contact;
+    }
     if (isKaiState(test)) {
         _.merge(contact, extractContactFromUmb(test));
         metadataContact = test.custom_metadata?.payload?.contact;
@@ -225,14 +217,17 @@ function transformTest(
 
     let status = transformUmbStatus(stateName);
     if (isGreenwaveState(test) && test.result && !waiver) {
-        status = transformGreenwaveOutcome(test.result.outcome);
+        status = transformGreenwaveOutcome(
+            test.result.outcome,
+            stateName !== 'additional-tests',
+        );
     } else if (
         isGreenwaveKaiState(test) &&
         test.gs.result &&
         stateName !== 'additional-tests' &&
         !waiver
     ) {
-        status = transformGreenwaveOutcome(test.gs.result.outcome);
+        status = transformGreenwaveOutcome(test.gs.result.outcome, true);
     } else if (isGreenwaveKaiState(test) && stateName === 'additional-tests') {
         /*
          * TODO: For some osci and baseos-ci tests, this will return `failed`
