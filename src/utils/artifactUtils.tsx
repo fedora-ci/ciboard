@@ -224,7 +224,13 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
     return osVersion;
 };
 
-export const artifactUrl = (artifact: Artifact) => {
+/**
+ * Construct the URL for the original resource associated with the artifact,
+ * for example the corresponding Koji task.
+ * @returns URL to the remote resource associated with the artifact or empty string
+ * if no URL could be reliably constructed.
+ */
+export const getArtifactRemoteUrl = (artifact: Artifact) => {
     const urlMap = {
         'brew-build': `${config.koji.rh.webUrl}/taskinfo?taskID=${artifact.aid}`,
         'koji-build': `${config.koji.fp.webUrl}/taskinfo?taskID=${artifact.aid}`,
@@ -243,6 +249,13 @@ export const artifactUrl = (artifact: Artifact) => {
     };
     return urlMap[artifact.type];
 };
+
+/**
+ * Construct the relative path which uniquely identifies artifact in CI Dashboard UI.
+ * @returns Subpath relative to the CI Dashboard root.
+ */
+export const getArtifactLocalPath = (artifact: Artifact) =>
+    `/artifact/${artifact.type}/aid/${artifact.aid}`;
 
 /**
  * Extract testcase documentation URL from a UMB message.
