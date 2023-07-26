@@ -52,11 +52,13 @@ export interface CiTest {
     error?: MSG_V_1.MsgErrorType;
     knownIssues?: MetadataKnownIssue[];
     labels?: string[];
+    logsUrl?: string;
     messageId?: string;
     name: string;
     originalState: StateType;
     required?: boolean;
     rerunUrl?: string;
+    runDetailsUrl?: string;
     status: TestStatus;
     waivable?: boolean;
     waiver?: GreenwaveWaiveType;

@@ -191,12 +191,14 @@ function transformTest(
     const docsUrl = getDocsUrl(test);
     let error: MSG_V_1.MsgErrorType | undefined;
     let knownIssues: CiTest['knownIssues'];
+    let logsUrl: string | undefined;
     let messageId: string | undefined;
     const name = getTestcaseName(test);
     const rerunUrl = getRerunUrl(test);
     const required =
         (isGreenwaveState(test) || isGreenwaveKaiState(test)) &&
         stateName !== 'additional-tests';
+    let runDetailsUrl: string | undefined;
     const waivable = isResultWaivable(test);
     let waiver: GreenwaveWaiveType | undefined;
 
@@ -207,13 +209,17 @@ function transformTest(
         description = test.custom_metadata?.payload?.description;
         error = getMessageError(test.broker_msg_body);
         knownIssues = test.custom_metadata?.payload?.known_issues;
+        logsUrl = test.broker_msg_body.run.log;
         messageId = test.kai_state.msg_id;
+        runDetailsUrl = test.broker_msg_body.run.url;
     } else if (isGreenwaveKaiState(test)) {
         dependencies = test.ks.custom_metadata?.payload?.dependency;
         description = test.ks.custom_metadata?.payload?.description;
         error = getMessageError(test.ks.broker_msg_body);
         knownIssues = test.ks.custom_metadata?.payload?.known_issues;
+        logsUrl = test.ks.broker_msg_body.run.log;
         messageId = test.ks.kai_state.msg_id;
+        runDetailsUrl = test.ks.broker_msg_body.run.url;
         waiver = test.gs.waiver;
     }
 
@@ -245,11 +251,13 @@ function transformTest(
         docsUrl,
         error,
         knownIssues,
+        logsUrl,
         messageId,
-        name: name || '',
+        name: name || 'unknown',
         originalState: test,
         required,
         rerunUrl,
+        runDetailsUrl,
         status,
         waivable,
         waiver,

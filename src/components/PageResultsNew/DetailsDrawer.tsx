@@ -59,6 +59,7 @@ import { Artifact } from '../../artifact';
 import { KnownIssues } from './KnownIssues';
 import { WaiveButton } from './WaiveButton';
 import { TestResultMetadata } from './TestResultMetadata';
+import { TestResultQuickLinks } from './TestResultQuickLinks';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -76,7 +77,12 @@ function DetailsDrawerTabs(props: DetailsDrawerTabsProps) {
     const tabs = [
         {
             title: 'Results',
-            content: <TestSuitesAccordion artifact={props.artifact} />,
+            content: (
+                <>
+                    <TestResultQuickLinks />
+                    <TestSuitesAccordion artifact={props.artifact} />
+                </>
+            ),
         },
         {
             title: (
