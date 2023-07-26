@@ -20,7 +20,6 @@
 
 import * as _ from 'lodash';
 import {
-    Button,
     Flex,
     FlexItem,
     Stack,
@@ -28,12 +27,7 @@ import {
     TextContent,
     Title,
 } from '@patternfly/react-core';
-import {
-    AngleLeftIcon,
-    CodeBranchIcon,
-    CubeIcon,
-    UserIcon,
-} from '@patternfly/react-icons';
+import { CodeBranchIcon, CubeIcon, UserIcon } from '@patternfly/react-icons';
 
 import { Artifact, isArtifactScratch } from '../../artifact';
 import {
@@ -42,20 +36,9 @@ import {
     getArtifactName,
     getArtifactRemoteUrl,
     getArtifactTypeLabel,
-    mkLinkKojiWebTask,
 } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';
-
-function BackButton(_props: {}) {
-    // const navigate = useNavigate();
-    // TODO: Call `navigate(-1)` on click to go to the previous page.
-    return (
-        <Button className="pf-u-px-0" icon={<AngleLeftIcon />} variant="link">
-            Back to results list
-        </Button>
-    );
-}
 
 interface ArtifactTitleProps {
     artifact: Artifact;
@@ -84,10 +67,7 @@ function ArtifactTitle(props: ArtifactTitleProps) {
                 </span>
             )}
             {issuer && (
-                <span
-                    className="pf-u-color-200"
-                    title="Build issuer / packager"
-                >
+                <span className="pf-u-color-200" title="Build issuer/packager">
                     <UserIcon /> {issuer}
                 </span>
             )}
@@ -97,7 +77,6 @@ function ArtifactTitle(props: ArtifactTitleProps) {
 
 export interface ArtifactHeaderProps {
     artifact: Artifact;
-    hasBackLink?: boolean;
 }
 
 export function ArtifactHeader(props: ArtifactHeaderProps) {
@@ -116,11 +95,6 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
 
     return (
         <Stack className="resultsNarrower">
-            {props.hasBackLink && (
-                <StackItem>
-                    <BackButton />
-                </StackItem>
-            )}
             <StackItem>{externalLink}</StackItem>
             <StackItem>
                 <ArtifactTitle artifact={artifact} />
