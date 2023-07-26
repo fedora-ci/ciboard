@@ -38,15 +38,16 @@ import {
     ToolbarFilter,
     ToolbarContent,
     SelectOptionObject,
+    PageSection,
 } from '@patternfly/react-core';
 import { SearchIcon } from '@patternfly/react-icons';
 
 import { config } from '../config';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
-import { ArtifactsListByFilters } from './ArtifactsListByFilters';
 import { addFilter, deleteFilter, setOptionsForFilters } from '../actions';
 import { WaiveModal } from './WaiveForm';
 import { useAppDispatch, useAppSelector } from '../hooks';
+import { ArtifactsListNew } from './PageResultsNew/ArtifactsListNew';
 
 /**
  * These are default search-field for each artifact type
@@ -279,26 +280,35 @@ const SearchToolbar = () => {
 };
 
 export function PageByFilters() {
-    const { active: activeFilters } = useAppSelector((state) => state.filters);
-    const [pageTitle, setPageTitle] = useState<string | undefined>();
+    const filters = useAppSelector((state) => state.filters);
 
-    useEffect(() => {
-        if (!_.isEmpty(activeFilters)) {
-            let queryForTitle = activeFilters.join(' ');
-            // Trim the search query to 40 characters and ellipsize.
-            if (queryForTitle.length > 40) {
-                queryForTitle = queryForTitle.substring(0, 40).trimEnd() + '…';
-            }
-            setPageTitle(
-                `Results for ‘${queryForTitle}’ | ${config.defaultTitle}`,
-            );
+    // If left undefined, the default is used in `PageCommon`.
+    let pageTitle: string | undefined;
+    // Set page title dynamically if any search criteria are specified.
+    if (!_.isEmpty(filters.active)) {
+        let queryForTitle = filters.active.join(' ');
+        // Trim the search query to 40 characters and ellipsize.
+        if (queryForTitle.length > 40) {
+            queryForTitle = queryForTitle.substring(0, 40).trimEnd() + '…';
         }
-    }, [activeFilters]);
+        pageTitle = `Results for ‘${queryForTitle}’ | ${config.defaultTitle}`;
+    }
+
+    const queryRegexes = _.map(filters.active, (regex) =>
+        regex.startsWith('^') ? regex : `^${regex}`,
+    );
 
     return (
         <PageCommon title={pageTitle}>
-            <SearchToolbar />
-            <ArtifactsListByFilters />
+            <PageSection isFilled>
+                <SearchToolbar />
+                <ArtifactsListNew
+                    artifactType={filters.type}
+                    fieldValues={queryRegexes}
+                    matchRegex={true}
+                    skipScratch={filters.options.skipScratch}
+                />
+            </PageSection>
             <ToastAlertGroup />
             <WaiveModal />
         </PageCommon>

@@ -19,9 +19,7 @@
  */
 
 import _ from 'lodash';
-import * as React from 'react';
 import { useQuery } from '@apollo/client';
-import { useSelector } from 'react-redux';
 import { useState, useRef, useEffect } from 'react';
 import {
     IRow,
@@ -44,14 +42,20 @@ import {
     CustomRowWrapper,
     OnCollapseEventType,
 } from '../utils/artifactsTable';
-import { RootStateType } from '../slices';
-import { IStateFilters } from '../actions/types';
 import { PaginationToolbar } from './PaginationToolbar';
 import { Artifact } from '../artifact';
 import styles from '../custom.module.css';
 import { isGatingArtifact } from '../utils/artifactUtils';
 
-const ArtifactsTable: React.FC = () => {
+export interface ArtifactsListByFiltersProps {
+    artifactsType: string;
+    filters: string[];
+    skipScratch: boolean;
+}
+
+export function ArtifactsListByFilters(props: ArtifactsListByFiltersProps) {
+    const { artifactsType, filters, skipScratch } = props;
+
     const scrollRef = useRef<HTMLTableRowElement>(null);
     const waitForRef = useRef<HTMLElement>(null);
     const aid_offset_pages = useRef<string[]>([]);
@@ -59,16 +63,9 @@ const ArtifactsTable: React.FC = () => {
     const [opened, setOpened] = useState<number | null>(null);
     /** maps to page number */
     const [aid_offset, setAidOffset] = useState<string | undefined>(undefined);
-    const activeFilters = useSelector<RootStateType, IStateFilters>(
-        (state) => state.filters,
-    );
-    const {
-        type: artifactsType,
-        active: artifactsFilters,
-        options: { skipScratch },
-    } = activeFilters;
+
     const columns = tableColumns(artifactsType);
-    const regexs = _.map(artifactsFilters, (regex) =>
+    const regexs = _.map(filters, (regex) =>
         regex.startsWith('^') ? regex : `^${regex}`,
     );
     /** XXX */
@@ -100,7 +97,7 @@ const ArtifactsTable: React.FC = () => {
         known_pages.splice(0, len);
         setOpened(null);
         setAidOffset(undefined);
-    }, [artifactsFilters, known_pages]);
+    }, [filters, known_pages]);
     /** XXX */
     const searchOptions: any = { valuesAreRegex1: true, reduced: true };
     if (skipScratch) {
@@ -261,8 +258,4 @@ const ArtifactsTable: React.FC = () => {
         </>
     );
     return results;
-};
-
-export function ArtifactsListByFilters() {
-    return <ArtifactsTable />;
 }
