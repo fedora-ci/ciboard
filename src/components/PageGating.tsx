@@ -102,7 +102,7 @@ import {
 } from '../queries/Artifacts';
 import { PaginationToolbar } from './PaginationToolbar';
 import {
-    artifactUrl,
+    getArtifactRemoteUrl,
     getArtifactName,
     getTestcaseName,
 } from '../utils/artifactUtils';
@@ -446,7 +446,7 @@ function mkArtifactRow(artifact: Artifact, ciSystem: string): IRow {
     const artifactLink = (
         <div style={{ whiteSpace: 'nowrap' }}>
             <a
-                href={artifactUrl(artifact)}
+                href={getArtifactRemoteUrl(artifact)}
                 onClick={(e) => e.stopPropagation()}
                 rel="noopener noreferrer"
                 target="_blank"

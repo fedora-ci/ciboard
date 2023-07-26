@@ -40,14 +40,19 @@ import {
     TextVariants,
     Title,
 } from '@patternfly/react-core';
-import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
+import {
+    TableProps,
+    RowWrapperProps,
+    IRow,
+    ICell,
+} from '@patternfly/react-table';
 import { nowrap, expandable, fitContent } from '@patternfly/react-table';
 import { ExclamationCircleIcon, LinkIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 
 import {
     aidMeaningForType,
-    artifactUrl,
+    getArtifactRemoteUrl,
     getArtifactName,
     isGatingArtifact,
     nameFieldForType,
@@ -58,10 +63,11 @@ import { ArtifactDetailedInfo } from '../components/ArtifactDetailedInfo';
 import { ArtifactGreenwaveStatesSummary } from '../components/GatingStatus';
 import styles from '../custom.module.css';
 
-interface ArtifactNameProps {
+export interface ArtifactNameProps {
     artifact: Artifact;
 }
-const ArtifactName: React.FC<ArtifactNameProps> = ({ artifact }) => {
+
+export const ArtifactName: React.FC<ArtifactNameProps> = ({ artifact }) => {
     return (
         <TextContent>
             <Title size="lg" headingLevel="h4" className="pf-u-m-0">
@@ -72,10 +78,13 @@ const ArtifactName: React.FC<ArtifactNameProps> = ({ artifact }) => {
     );
 };
 
-interface ArtifactDestinationProps {
+export interface ArtifactDestinationProps {
     artifact: Artifact;
 }
-const ArtifactDestination: React.FC<ArtifactDestinationProps> = (props) => {
+
+export const ArtifactDestination: React.FC<ArtifactDestinationProps> = (
+    props,
+) => {
     const { artifact } = props;
     const gating_tag: string | undefined = _.get(
         artifact,
@@ -98,16 +107,17 @@ const ArtifactDestination: React.FC<ArtifactDestinationProps> = (props) => {
     return null;
 };
 
-interface ArtifactUrlProps {
+export interface ArtifactUrlProps {
     artifact: Artifact;
 }
-const ArtifactUrl: React.FC<ArtifactUrlProps> = (props) => {
+
+export const ArtifactUrl: React.FC<ArtifactUrlProps> = (props) => {
     const { artifact } = props;
     return (
         <TextContent>
             <Text component={TextVariants.small}>
                 <a
-                    href={artifactUrl(artifact)}
+                    href={getArtifactRemoteUrl(artifact)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
@@ -151,7 +161,7 @@ export const CustomRowWrapper = (
     );
 };
 
-export const tableColumns = (buildType: any): TableProps['cells'] => {
+export const tableColumns = (buildType: any): ICell[] => {
     /**
      * width: 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 60 | 70 | 80 | 90 | 'max' %
      */
@@ -170,12 +180,12 @@ export const tableColumns = (buildType: any): TableProps['cells'] => {
             cellTransforms: [nowrap],
         },
         {
-            title: 'Gating tag',
+            title: 'Gating status',
             transforms: [fitContent],
             cellTransforms: [nowrap],
         },
         {
-            title: 'Gating status',
+            title: 'Gating tag',
             transforms: [fitContent],
             cellTransforms: [nowrap],
         },
@@ -185,7 +195,7 @@ export const tableColumns = (buildType: any): TableProps['cells'] => {
             cellTransforms: [nowrap],
         },
         {
-            title: 'Info',
+            title: 'Link',
         },
     ];
 };
@@ -308,15 +318,15 @@ export const mkArtifactRow = (
             title: <ArtifactName artifact={artifact} />,
         },
         {
-            title: <ArtifactDestination artifact={artifact} />,
-        },
-        {
             title: (
                 <ArtifactGreenwaveStatesSummary
                     artifact={artifact}
                     isLoading={gatingDecisionIsLoading}
                 />
             ),
+        },
+        {
+            title: <ArtifactDestination artifact={artifact} />,
         },
         {
             title: <div style={{ whiteSpace: 'nowrap' }}>{packager}</div>,
