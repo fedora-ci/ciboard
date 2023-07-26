@@ -40,6 +40,7 @@ import {
     getArtifacIssuer,
     getArtifactGatingTag,
     getArtifactName,
+    getArtifactRemoteUrl,
     getArtifactTypeLabel,
     mkLinkKojiWebTask,
 } from '../../utils/artifactUtils';
@@ -102,8 +103,7 @@ export interface ArtifactHeaderProps {
 export function ArtifactHeader(props: ArtifactHeaderProps) {
     const { artifact } = props;
     const artifactTypeLabel = getArtifactTypeLabel(artifact.type);
-    // TODO: Use the correct service and instance.
-    const artifactUrl = mkLinkKojiWebTask(artifact.aid, 'rh');
+    const artifactUrl = getArtifactRemoteUrl(artifact);
     const externalLink = (
         <ExternalLink href={artifactUrl}>
             <CubeIcon
