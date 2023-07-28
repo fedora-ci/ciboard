@@ -170,6 +170,37 @@ function SingleTestRow(props: SingleTestRowProps) {
     );
 }
 
+/**
+ * Awaited tests are those whose results are missing, are queued or
+ * currently running AND haven't been waived.
+ * @returns `true` if the test is required for gating and can be
+ * considered missing/awaited, `false` or `undefined` otherwise.
+ */
+const isRequiredAwaited = ({ required, status, waiver }: CiTest) =>
+    required &&
+    (status === 'missing' || status === 'queued' || status === 'running') &&
+    !waiver;
+
+/**
+ * Failed tests are those that have ended with either an error or
+ * a failure AND haven't been waived.
+ * @returns `true` if the test is required for gating and can be
+ * considered failing, `false` or `undefined` otherwise.
+ */
+const isRequiredFailed = ({ required, status, waiver }: CiTest) =>
+    required &&
+    (status === 'error' || status === 'failed' || status === 'unknown') &&
+    !waiver;
+
+/**
+ * Passed tests are those that have either 'passed' or 'info' status OR
+ * have been waived (regardless of original status).
+ * @returns `true` if the test is required for gating and can be
+ * considered passing, `false` or `undefined` otherwise.
+ */
+const isRequiredPassed = ({ required, status, waiver }: CiTest) =>
+    required && (['info', 'passed'].includes(status) || !_.isNil(waiver));
+
 export interface TestResultsTableProps {
     artifact: Artifact;
     onSelect?(key: string | undefined): void;
@@ -194,12 +225,8 @@ export function TestResultsTable(props: TestResultsTableProps) {
     }
 
     const failedRequiredRows = tests
-        .filter(
-            ({ required, status }) =>
-                required && (status === 'error' || status === 'failed'),
-        )
+        .filter((test) => isRequiredFailed(test))
         .map((test, index) => (
-            /* More inspo in the docs: https://www.patternfly.org/v4/components/tabs/react-demos/#tables-and-tabs */
             <Tr
                 isHoverable
                 isRowSelected={selectedTest?.name === test.name}
@@ -218,13 +245,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
         ));
 
     const awaitedRequiredRows = tests
-        .filter(
-            ({ required, status }) =>
-                required &&
-                (status === 'missing' ||
-                    status === 'queued' ||
-                    status === 'running'),
-        )
+        .filter((test) => isRequiredAwaited(test))
         .map((test, index) => (
             <Tr
                 isHoverable
@@ -244,10 +265,7 @@ export function TestResultsTable(props: TestResultsTableProps) {
         ));
 
     const passedRequiredRows = tests
-        .filter(
-            ({ required, status }) =>
-                required && ['info', 'passed'].includes(status),
-        )
+        .filter((test) => isRequiredPassed(test))
         .map((test) => (
             <Tr
                 isHoverable
