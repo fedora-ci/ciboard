@@ -189,7 +189,7 @@ const isRequiredAwaited = ({ required, status, waiver }: CiTest) =>
  */
 const isRequiredFailed = ({ required, status, waiver }: CiTest) =>
     required &&
-    (status === 'error' || status === 'failed' || status === 'unknown') &&
+    (status === 'error' || status === 'failed') &&
     !waiver;
 
 /**
