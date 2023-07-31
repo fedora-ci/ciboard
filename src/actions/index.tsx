@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -83,11 +83,12 @@ export const addFilter = (newval = '', type = '') => {
         const activeFilters = filters.active;
         const foreignRegex = /[^\u0000-\u007f]/;
         if (foreignRegex.test(newval)) {
-            console.log('Ignoring filter with no-latin character:', newval);
+            console.log('Ignoring filter with no-latin character: %s', newval);
             return null;
         }
+        console.log('%O', { newval, type });
         if (!_.has(db_field_from_atype, type)) {
-            console.log('Ignoring filter with unsupported type:', type);
+            console.log('Ignoring filter with unsupported type: %s', type);
             return null;
         }
         console.log('Add new filter', type, newval);
