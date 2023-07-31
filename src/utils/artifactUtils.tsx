@@ -797,12 +797,17 @@ const SATISFIED_REQUIREMENT_TYPES: GreenwaveRequirementTypesType[] = [
     'test-result-passed',
 ];
 
-const isRequirementSatisfied = (state: StateGreenwaveType): boolean =>
-    _.includes(SATISFIED_REQUIREMENT_TYPES, state.requirement?.type);
+const isRequirementSatisfied = (state: StateGreenwaveType): boolean => {
+    if (!state.requirement) {
+        return true;
+    }
+    return _.includes(SATISFIED_REQUIREMENT_TYPES, state.requirement?.type);
+};
 
 /**
  * Should we display a waive button for this result in the dashboard?
  * Show the button only if the test is blocking gating.
+ * Greenwave shows all known tests from ResultsDB.
  * @param state The state object of the test result in question.
  */
 export const isResultWaivable = (state: StateType): boolean => {
