@@ -2,6 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2022 Matěj Grabovský <mgrabovs@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,6 +37,8 @@ import {
 import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';
 import { useQuery } from '@apollo/client';
 
+import { useNavigate } from 'react-router-dom';
+
 import './index.css';
 import { Artifact } from '../../artifact';
 import {
@@ -53,7 +56,7 @@ import { ArtifactHeader } from './Header';
 import { PageCommon, ToastAlertGroup } from '../PageCommon';
 import { WaiveModal } from '../WaiveForm';
 import { extractTests } from './artifactTests';
-import { ArtifactsListNew } from './ArtifactsListNew';
+//import { ArtifactsListNew } from './ArtifactsListNew';
 
 type PageResultsNewParams = 'search' | 'type' | 'value';
 
@@ -147,7 +150,7 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
     );
 }
 
-export function PageResultsNew(_props: {}) {
+export function PageDetails(_props: {}) {
     const params = useParams<PageResultsNewParams>();
 
     // Used for pagination in the multi-artifact view.
@@ -247,64 +250,15 @@ export function PageResultsNew(_props: {}) {
         );
     }
 
-    /*
-     * Single-artifact view – show the page with build info, test results table,
-     * and drawer with details on test suites, metadata and other information.
-     */
-    if (fieldName === 'aid' && fieldValues.length === 1) {
-        if (artifacts.length !== 1) {
-            // There should only ever be one single artifact for a given AID.
-            console.error(
-                `More than one '${artifactType}' artifacts are associated with ID '${_.first(
-                    fieldValues,
-                )}'`,
-            );
-        }
-
-        return (
-            <SingleArtifactView
-                artifact={artifacts[0]}
-                // Re-render the whole component if the artifact ID changes.
-                key={artifacts[0].aid}
-            />
-        );
-    }
-
-    /*
-     * Multi-artfifact view – show the search results table with the matching
-     * artifacts as rows.
-     */
-
-    const hasNextPage = data?.artifacts.has_next;
-
-    const onClickNext = () => {
-        const lastAid = _.last(artifacts)?.aid;
-        // This should not happen, but just to be sure...
-        if (!hasNextPage || !lastAid) return;
-        const newAidStack = aidStack.slice();
-        newAidStack.push(lastAid);
-        setAidStack(newAidStack);
-    };
-
-    const onClickPrev = () => {
-        // This should not happen, but just to be sure...
-        if (currentPage <= 1) return;
-        const newAidStack = _.dropRight(aidStack, 1);
-        setAidStack(newAidStack);
-    };
+    //   const navigate = useNavigate();
+    //   const handleNavigation = () => {
+    // Programmatically navigate to another route within your app
+    //   navigate('/another-route');
+    // };
 
     return (
         <PageCommon title={pageTitle}>
-            <PageSection isFilled>
-                <ArtifactsListNew
-                    artifacts={artifacts}
-                    artifactType={artifactType}
-                    currentPage={currentPage}
-                    hasNextPage={hasNextPage}
-                    onClickNext={onClickNext}
-                    onClickPrev={onClickPrev}
-                />
-            </PageSection>
+            <PageSection isFilled></PageSection>
         </PageCommon>
     );
 }
