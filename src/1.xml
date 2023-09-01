@@ -1,0 +1,23 @@
+<EntitiesDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" Name="urn:keycloak">
+	<EntityDescriptor entityID="https://auth.redhat.com/auth/realms/EmployeeIDP">
+		<IDPSSODescriptor WantAuthnRequestsSigned="true" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+			<KeyDescriptor use="signing">
+				<dsig:KeyInfo>
+					<dsig:KeyName>APbMv27WYbGMYVaBNtILEQpnmprNUEuV76uCtODDZGs</dsig:KeyName>
+					<dsig:X509Data>
+						<dsig:X509Certificate>MIIE+jCCA+KgAwIBAgIED/4AJzANBgkqhkiG9w0BAQsFADBBMRAwDgYDVQQKDAdSZWQgSGF0MQ0wCwYDVQQLDARwcm9kMR4wHAYDVQQDDBVDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwHhcNMTcwNjIwMTI1MTQwWhcNMjIwNjE5MTI1MTQwWjCBqTELMAkGA1UEBhMCVVMxFzAVBgNVBAgMDk5vcnRoIENhcm9saW5hMRAwDgYDVQQHDAdSYWxlaWdoMRYwFAYDVQQKDA1SZWQgSGF0LCBJbmMuMQwwCgYDVQQLDANJQU0xIjAgBgNVBAMMGVJlZCBIYXQgUHJvZCBFbXBsb3llZSBTU08xJTAjBgkqhkiG9w0BCQEWFnNlcnZpY2VkZXNrQHJlZGhhdC5jb20wggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC089RqFDc8mGgKpKy9ZOdH+arhvDg94+kGCNCVFXNQFnBbmxwodtRnF0r2pGFfd+Yw7PRU3cfgD7WVq6cInPnpuVAU3H0+Fni+RrzeoKs2O2WvmVBmxFK4JQ7bzeAnfTd92pCGaua95VnfgqVRt6FzL+bvWc/3YCr+KcgI3lcOZdEPJ3/WMOXWhPpcKYRo7rsu/vI9R19NBHwN+/DjyWeq6kVLp1tjdA07RgcihqeZ5f3BqjcMuKhcEQVjwiwcqKbSUBW2VCJ5YKXmOv1R6asjHMJsiRPBWSPIzhAyhw0GGXvM6F8q3w0EExUDOet08Ffl1Sl73paoKcNQ7hR9ljobpsy7Hhq0j4Ink0XR+pSVUQT+yCeyO4aaSxOc+75CAzvqvMSLrUP+UST0sW+1mv0jCvWJabng63isNyHx0aLTC8p9MWOxskNBZ6ce3+n70kGk3cMbhveAB/RgMs232XhUKcJApsuGjPL83vhE9n23t15IXuv+2X68ECGuoGW4VNq7Diq3QoZSHAa2gwa9bcLYRoOgGtWdysQ++Kks+XXPgL4UHcKWULKJlzOh20Jypi9N2KBU5IGccRve1jCfIQ0w246aRfTthsUF62vMD6T28e5XHijBPlNPAA+Vx3uCECZYpAksmyqK+wuUscOAH3FW0yrbSftROjzNvd0/wpnwXQIDAQABo4GQMIGNMB8GA1UdIwQYMBaAFHvaCfVJXdnXXMk2+FXSG5eeES9+MDsGCCsGAQUFBwEBBC8wLTArBggrBgEFBQcwAYYfaHR0cDovL29jc3AucmVkaGF0LmNvbS9jYS9vY3NwLzAOBgNVHQ8BAf8EBAMCBPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMA0GCSqGSIb3DQEBCwUAA4IBAQDBPTR0hAB/LTUWzi5jOG8Ni54gl6GDu/klaoOXjXzOUJY4keiNKKytyec9nEhUrUfuSMXGrteGnUc+8xq1WNmY9qHeaKHU2u8wsA8ekvmhSx550qZ1nocOumbswNKzSknTU9l1TH/GONgZwW99xxpbAmj6g7CjrsfQ2mESNkEzTT373eRUJriz/AgfxxgSyvBoxbNPx6IoekNUL8d/kHy1Jd7rOXbqBmYjeI7tMtidzezWDFAJkoQ05I3pDYvJfL999pYj/ykbqHg8Hkv/P+zLWSUuoI8ReIUCQDIO57+PTUMM9q7LwMX/viyym6jv2dKzDTGrB3AEYkRbBKxKng+u</dsig:X509Certificate>
+					</dsig:X509Data>
+				</dsig:KeyInfo>
+			</KeyDescriptor>
+			<SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://auth.redhat.com/auth/realms/EmployeeIDP/protocol/saml" />
+			<SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://auth.redhat.com/auth/realms/EmployeeIDP/protocol/saml" />
+			<NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</NameIDFormat>
+			<NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+			<NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
+			<NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
+			<SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://auth.redhat.com/auth/realms/EmployeeIDP/protocol/saml" />
+			<SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://auth.redhat.com/auth/realms/EmployeeIDP/protocol/saml" />
+			<SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://auth.redhat.com/auth/realms/EmployeeIDP/protocol/saml" />
+		</IDPSSODescriptor>
+	</EntityDescriptor>
+</EntitiesDescriptor>

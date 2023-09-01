@@ -21,18 +21,20 @@
 
 import { combineReducers } from 'redux';
 
-import { alertsReducer } from './alertsSlice';
 import { authReducer } from './authSlice';
-import { filtersReducer } from './filtersSlice';
-import { gatingTestsFormReducer } from './gatingTestsFormSlice';
 import { waiveReducer } from './waiveSlice';
+import { alertsReducer } from './alertsSlice';
+import { artifactsReducer } from './artifactsSlice';
+import { artifactsQueryReducer } from './artifactsQuerySlice';
+import { gatingTestsFormReducer } from './gatingTestsFormSlice';
 
 export const rootReducer = combineReducers({
-    alerts: alertsReducer,
     auth: authReducer,
-    filters: filtersReducer,
-    gatingTestsForm: gatingTestsFormReducer,
     waive: waiveReducer,
+    alerts: alertsReducer,
+    artifacts: artifactsReducer,
+    artifactsQuery: artifactsQueryReducer,
+    gatingTestsForm: gatingTestsFormReducer,
 });
 
 export type RootStateType = ReturnType<typeof rootReducer>;

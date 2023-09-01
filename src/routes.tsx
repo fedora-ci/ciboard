@@ -18,16 +18,14 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as React from 'react';
-import { PageByFilters } from './components/PageByFilters';
-import { PageByMongoField } from './components/PageByMongoField';
-import { PageGating } from './components/PageGating';
+import { PageSST } from './components/PageSST';
 import { PageHelp } from './components/PageHelp';
+import { PageDetails } from './components/PageDetails';
+import { PageNewIssue } from './components/PageNewIssue';
+import { PageQueryString } from './components/PageQueryString';
 import { PageMetadataEdit } from './components/PageMetadataEdit';
 import { PageMetadataList } from './components/PageMetadataList';
-import { PageNewIssue } from './components/PageNewIssue';
-import { PageResultsNew } from './components/PageResultsNew';
-import { PageSST } from './components/PageSST';
+import { PageDbFieldLegacy } from './components/PageDbFieldLegacy';
 
 export interface MenuEntry {
     element: JSX.Element;
@@ -44,7 +42,7 @@ export const menuRoutes: MenuEntry[] = [
         title: 'Search test results',
         key: 'artifact-search',
         path: '/search',
-        element: <PageByFilters />,
+        element: <PageQueryString />,
     },
     {
         title: 'Subsystems',
@@ -52,12 +50,6 @@ export const menuRoutes: MenuEntry[] = [
         path: '/sst',
         route: '/sst/*',
         element: <PageSST />,
-    },
-    {
-        title: 'Gating tests',
-        key: 'gatingtests',
-        path: '/gating',
-        element: <PageGating />,
     },
     {
         title: 'Report issue',
@@ -85,18 +77,12 @@ export const otherRoutes: MenuEntry[] = [
         title: '',
         key: 'artifact',
         path: '/artifact/:type/:search/:value',
-        element: <PageResultsNew />,
+        element: <PageDbFieldLegacy />,
     },
     {
         title: '',
         key: 'metadata-edit',
         path: '/metadata/edit/:id?/:clone?',
         element: <PageMetadataEdit />,
-    },
-    {
-        title: '',
-        key: 'resultsold',
-        path: '/resultsold/:type/:search/:value',
-        element: <PageByMongoField />,
     },
 ];

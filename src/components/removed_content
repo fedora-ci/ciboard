@@ -1,0 +1,386 @@
+
+            <ToolbarGroup variant="filter-group">
+                <ToolbarFilter
+                    chips={filters.active}
+                    deleteChip={(ignore, delval) => {
+                        if (!_.isString(delval)) {
+                            return;
+                        }
+                        dispatch(deleteFilter(delval));
+                    }}
+                    categoryName={filters.type}
+                >
+                    <></>
+                </ToolbarFilter>
+            </ToolbarGroup>
+            
+			
+			<ToolbarItem>
+                <InputGroup>
+                    <Select
+                        variant={SelectVariant.single}
+                        aria-label="Select Input"
+                        onToggle={onStatusToggle}
+                        onSelect={onStatusSelect}
+                        selections={statusSelected?.toString()}
+                        isOpen={statusIsExpanded}
+                    >
+                        {statusMenuItems}
+                    </Select>
+                    <TextInput
+                        name="textInput2"
+                        id="textInput2"
+                        style={{ minWidth: '15em' }}
+                        type="search"
+                        aria-label="search input example"
+                        onChange={onInputChange}
+                        onKeyDown={onKeyPress}
+                        value={inputValue}
+                    />
+                    <Button
+                        variant={ButtonVariant.control}
+                        aria-label="search button for search input"
+                        onClick={onClick}
+                    >
+                        <SearchIcon />
+                    </Button>
+                </InputGroup>
+            </ToolbarItem>
+                
+			
+			
+			
+			
+			<ActionGroup>
+                    <Button variant="primary">Submit</Button>
+                    <Button variant="link">Cancel</Button>
+                </ActionGroup>
+    
+    
+    
+    
+    
+    
+    
+   // ========= from PageByFilters 
+    
+    
+    
+
+    interface ArtifactSearchProps {
+    /** The type of artifacts to look up. */
+    artifactType: string;
+    /** The artifact property to match against. */
+    fieldName?: string;
+    /** The desired property value(s). */
+    fieldValues: string[];
+    /** Match filter values as regular expressions against the property value. */
+    matchRegex?: boolean;
+    /** Exclude scratch builds from the search. */
+    skipScratch?: boolean;
+}
+
+export function FoundArtifacts(props: ArtifactSearchProps) {
+    const { artifactType, fieldName, fieldValues } = props;
+
+    const [aidStack, setAidStack] = useState<string[]>([]);
+    const aidOffset = _.last(aidStack);
+    const currentPage = 1 + aidStack.length;
+
+    const fieldPath = fieldName
+        ? fieldName === 'aid'
+            ? fieldName
+            : // Fields other than `aid` are found inside the payload.
+              `payload.${fieldName}`
+        : // Keep the path undefined if no field name was specified.
+          undefined;
+
+    const queryValid = !_.isEmpty(artifactType) && !_.isEmpty(fieldValues);
+    const queryOptions = {
+        reduced: true,
+        skipScratch: props.skipScratch,
+        valuesAreRegex1: props.matchRegex,
+    };
+
+    const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
+        ArtifactsCompleteQuery,
+        {
+            variables: {
+                atype: artifactType,
+                aid_offset: aidOffset,
+                dbFieldName1: fieldPath,
+                dbFieldValues1: fieldValues,
+                options: queryOptions,
+            },
+            fetchPolicy: 'cache-first',
+            notifyOnNetworkStatusChange: true,
+            errorPolicy: 'all',
+            skip: !queryValid,
+        },
+    );
+
+    const haveData = !loading && data && !_.isNil(data.artifacts?.artifacts);
+    let hasNextPage = false;
+    if (haveData) {
+        hasNextPage = data.artifacts?.has_next;
+    }
+
+    const onClickNext = () => {
+        const lastAid = _.last(data?.artifacts?.artifacts)?.aid;
+        // This should not happen, but just to be sure...
+        if (!hasNextPage || !lastAid) return;
+        const newAidStack = aidStack.slice();
+        newAidStack.push(lastAid);
+        setAidStack(newAidStack);
+    };
+
+    const onClickPrev = () => {
+        // This should not happen, but just to be sure...
+        if (currentPage <= 1) return;
+        const newAidStack = _.dropRight(aidStack, 1);
+        setAidStack(newAidStack);
+    };
+
+    const artifactsListProps: ArtifactsListNewProps = {
+        artifactType,
+        artifacts: data?.artifacts?.artifacts,
+        currentPage,
+        error,
+        hasNextPage,
+        loading,
+        onClickNext,
+        onClickPrev,
+    };
+
+    return <ArtifactsListNew {...artifactsListProps} />;
+}
+            
+
+<TableComposable variant="compact">
+                <Thead>
+                    <Tr>
+                        {columns.map(({ title }, index) => (
+                            <Th key={index}>{title}</Th>
+                        ))}
+                    </Tr>
+                </Thead>
+                <Tbody>
+                    {loadingRow}
+                    {errorRow}
+                    {emptyRow}
+                    {artifactRows}
+                </Tbody>
+            </TableComposable>
+    
+    
+    
+    
+            const columns = tableColumns(props.artifactType);
+
+    let artifactRows: JSX.Element[] = [];
+    let emptyRow: JSX.Element | undefined;
+    if (!_.isNil(artifacts)) {
+        artifactRows = artifacts.map((artifact) => (
+            <ArtifactRow artifact={artifact} key={artifact.aid} />
+        ));
+
+        if (_.isEmpty(artifacts)) {
+            emptyRow = (
+                <Tr>
+                    <Td colSpan={columns.length}>
+                        <Bullseye>
+                            <NoArtifactsState />
+                        </Bullseye>
+                    </Td>
+                </Tr>
+            );
+        }
+    }
+
+    const loadingRow = loading && (
+        <Tr>
+            <Td colSpan={columns.length}>
+                <Bullseye>
+                    <LoadingState />
+                </Bullseye>
+            </Td>
+        </Tr>
+    );
+
+    const errorRow = error && (
+        <Tr>
+            <Td colSpan={columns.length}>
+                <ShowErrors error={error} />
+            </Td>
+        </Tr>
+    );
+
+
+    const LoadingState = (_props: {}) => (
+    <EmptyState variant="small">
+        <EmptyStateIcon component={Spinner} variant="container" />
+        <Title headingLevel="h3" size="md">
+            Loading artifacts…
+        </Title>
+    </EmptyState>
+);
+
+const NoArtifactsState = (_props: {}) => (
+    <EmptyState variant="small">
+        <EmptyStateIcon component={SearchIcon} variant="container" />
+        <Title headingLevel="h3" size="md">
+            No results found
+        </Title>
+        <EmptyStateBody>
+            No artifacts match your query. Try to adjust your criteria and
+            search again.
+        </EmptyStateBody>
+    </EmptyState>
+);
+
+
+
+function ArtifactRow(props: ArtifactRowProps) {
+    const { artifact } = props;
+
+    const navigate = useNavigate();
+
+    const artifactPath = getArtifactLocalPath(artifact);
+    const artifactLink = (
+        <Link to={artifactPath}>
+            <LinkIcon />
+        </Link>
+    );
+    const packager =
+        'issuer' in artifact.payload ? artifact.payload.issuer : 'Unknown';
+
+    const onRowClick = () => navigate(artifactPath);
+
+    return (
+        <Tr isHoverable onRowClick={onRowClick}>
+            <Td>{artifact.aid}</Td>
+            <Td>
+                <ArtifactName artifact={artifact} />
+            </Td>
+            <Td>
+                <ArtifactGreenwaveStatesSummary artifact={artifact} />
+            </Td>
+            <Td>
+                <ArtifactDestination artifact={artifact} />
+            </Td>
+            <Td style={{ whiteSpace: 'nowrap' }}>{packager}</Td>
+            <Td>{artifactLink}</Td>
+        </Tr>
+    );
+}
+    
+
+
+const onClickNext = () => {
+        const lastAid = _.last(artifacts)?.aid;
+        // This should not happen, but just to be sure...
+        if (!hasNextPage || !lastAid) return;
+        const newAidStack = aidStack.slice();
+        newAidStack.push(lastAid);
+        setAidStack(newAidStack);
+    };
+
+    const onClickPrev = () => {
+        // This should not happen, but just to be sure...
+        if (currentPage <= 1) return;
+        const newAidStack = _.dropRight(aidStack, 1);
+        setAidStack(newAidStack);
+    };
+
+
+
+
+interface SingleArtifactViewProps {
+    artifact: Artifact;
+}
+
+function SingleArtifactView(props: SingleArtifactViewProps) {
+    const { artifact } = props;
+
+    const [selectedTestName, setSelectedTestName] = useState<string>();
+    // Docs: https://reactrouter.com/en/main/hooks/use-search-params
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    let tests: CiTest[] = [];
+    const findTestByName = (name?: string) => {
+        if (!name) return;
+        return _.find(tests, (test) => test.name === name);
+    };
+
+    /*
+     * Change currently selected test whenever the `?focus` URL parameter
+     * changes. This can happend when user clicks the back button, for instance.
+     */
+    useEffect(() => {
+        if (searchParams.has('focus')) {
+            // NOTE: We know that `.get()` must return non-null since `.has()` is true.
+            setSelectedTestName(searchParams.get('focus')!);
+        } else {
+            setSelectedTestName(undefined);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
+
+    let pageTitle = `Artifact search results | ${config.defaultTitle}`;
+
+    // Construct a specific title for the single-artifact case.
+    pageTitle = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
+    if (artifact.greenwave_decision?.summary) {
+        if (artifact.greenwave_decision.policies_satisfied)
+            pageTitle = `✅ ${pageTitle}`;
+        else pageTitle = `❌ ${pageTitle}`;
+    }
+
+    tests = extractTests(artifact);
+
+    const selectedTest = findTestByName(selectedTestName);
+
+    const onTestSelect = (name: string | undefined) => {
+        if (name && name !== selectedTestName) {
+            setSelectedTestName(name);
+            setSearchParams({ focus: name });
+        } else {
+            setSelectedTestName(undefined);
+            setSearchParams({});
+        }
+    };
+
+    return (
+        <PageCommon title={pageTitle}>
+            <SelectedTestContext.Provider value={selectedTest}>
+                <DetailsDrawer
+                    artifact={artifact}
+                    onClose={() => onTestSelect(undefined)}
+                >
+                    <PageSection variant={PageSectionVariants.light}>
+                        <ArtifactHeader artifact={artifact} />
+                    </PageSection>
+                    <PageSection isFilled>
+                        <Flex
+                            className="resultsNarrower"
+                            direction={{ default: 'column' }}
+                        >
+                            <Card>
+                                <BuildInfo artifact={artifact} />
+                            </Card>
+                            <Card>
+                                <TestResultsTable
+                                    artifact={artifact}
+                                    onSelect={onTestSelect}
+                                    tests={tests}
+                                />
+                            </Card>
+                        </Flex>
+                    </PageSection>
+                </DetailsDrawer>
+            </SelectedTestContext.Provider>
+            <ToastAlertGroup />
+            <WaiveModal />
+        </PageCommon>
+    );
+}
