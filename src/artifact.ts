@@ -31,10 +31,10 @@ export type RPMArtifactType =
     | 'koji-build-cs';
 
 export type ArtifactType =
-    | ComposeArtifactType
-    | ContainerImageArtifactType
+    | RPMArtifactType
     | MBSArtifactType
-    | RPMArtifactType;
+    | ComposeArtifactType
+    | ContainerImageArtifactType;
 
 export type ComposeType = 'gate' | 'production' | 'testing';
 
@@ -97,27 +97,31 @@ export interface PayloadMBSBuildType {
  * TypeScript guards
  */
 export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRPM {
+    const { hitSource } = artifact;
     return (
-        artifact.type === 'brew-build' ||
-        artifact.type === 'koji-build' ||
-        artifact.type === 'koji-build-cs'
+        hitSource.aType === 'brew-build' ||
+        hitSource.aType === 'koji-build' ||
+        hitSource.aType === 'koji-build-cs'
     );
 }
 
 export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMBS {
-    return artifact.type === 'redhat-module';
+    const { hitSource } = artifact;
+    return hitSource.aType === 'redhat-module';
 }
 
 export function isArtifactCompose(
     artifact: Artifact,
 ): artifact is ArtifactCompose {
-    return artifact.type === 'productmd-compose';
+    const { hitSource } = artifact;
+    return hitSource.aType === 'productmd-compose';
 }
 
 export function isArtifactRedhatContainerImage(
     artifact: Artifact,
 ): artifact is ArtifactContainerImage {
-    return artifact.type === 'redhat-container-image';
+    const { hitSource } = artifact;
+    return hitSource.aType === 'redhat-container-image';
 }
 
 export function isStateKai(state: StateType): state is StateKaiType {
@@ -126,53 +130,87 @@ export function isStateKai(state: StateType): state is StateKaiType {
 
 export function isArtifactScratch(artifact: Artifact): boolean {
     if (
-        isArtifactRedhatContainerImage(artifact) ||
+        isArtifactRPM(artifact) ||
         isArtifactMBS(artifact) ||
-        isArtifactRPM(artifact)
+        isArtifactRedhatContainerImage(artifact)
     ) {
-        return artifact.payload.scratch;
+        return artifact.hitSource.scratch;
     }
     return false;
 }
 
-export type PayloadsType = Artifact['payload'];
-
 export interface ArtifactBase {
-    _id: string;
-    _updated: string;
-    _version: string;
-    aid: string;
+    hitInfo: HitInfo;
+    hitSource: HitSource;
+    // XXX
     states: StateKaiType[];
     states_eta: StateErrataToolAutomationType[];
-    type: ArtifactType;
-    payload?: {};
     component_mapping?: ComponentComponentMappingType;
     greenwave_decision?: GreenwaveDecisionReplyType;
     resultsdb_testscase: number[];
 }
 
-export type ArtifactRPM = ArtifactBase & {
-    type: RPMArtifactType;
-    payload: PayloadRPMBuildType;
-};
-export type ArtifactMBS = ArtifactBase & {
-    type: MBSArtifactType;
-    payload: PayloadMBSBuildType;
-};
-export type ArtifactContainerImage = ArtifactBase & {
-    type: ContainerImageArtifactType;
-    payload: PayloadContainerImageType;
-};
-export type ArtifactCompose = ArtifactBase & {
-    type: ComposeArtifactType;
-    payload: PayloadComposeBuildType;
-};
+export interface HitInfo {
+    _id: string;
+    _index: string;
+    _score: number;
+    _routing: string;
+}
+
+export type HitSource =
+    | HitSourceRpm
+    | HitSourceMBS
+    | HitSourceCompose
+    | HitSourceContainerImage;
 
 export type Artifact =
     | ArtifactRPM
     | ArtifactMBS
-    | ArtifactContainerImage
-    | ArtifactCompose;
+    | ArtifactCompose
+    | ArtifactContainerImage;
+
+export type ArtifactRPM = ArtifactBase & {
+    hitSource: HitSourceRpm;
+};
+
+export type ArtifactMBS = ArtifactBase & {
+    hitSource: HitSourceMBS;
+};
+
+export type ArtifactCompose = ArtifactBase & {
+    hitSource: HitSourceCompose;
+};
+
+export type ArtifactContainerImage = ArtifactBase & {
+    hitSource: HitSourceContainerImage;
+};
+
+export type HitSourceRpm = {
+    nvr: string;
+    aType: string;
+    taskId: string;
+    issuer: string;
+    source: string;
+    scratch: boolean;
+    buildId: string;
+    gateTag: string;
+    component: string;
+    brokerMsgIdGateTag: string;
+};
+
+export type HitSourceMBS = {
+    aType: string;
+    scratch: boolean;
+};
+
+export type HitSourceContainerImage = {
+    aType: string;
+    scratch: boolean;
+};
+
+export type HitSourceCompose = {
+    aType: string;
+};
 
 /**
  * Decision requirements types
