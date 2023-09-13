@@ -71,37 +71,47 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
     const { artifact } = props;
     const { hitInfo, hitSource } = artifact;
     return (
-        <Card id={hitInfo._id} isCompact style={{ minWidth: '600px' }}>
+        <Card id={hitInfo._id} isCompact>
             <CardHeader>
                 <CardActions hasNoOffset={true}>
                     <Button variant="secondary">details</Button>
                 </CardActions>
-                <Brand alt="Red hat build" widths={{ default: '30px' }}>
-                    <source srcSet={rhLogo} />
-                </Brand>
-                <Flex spaceItems={{ default: 'spaceItemsMd' }}>
-                    <Flex></Flex>
-                    <FlexItem>{hitSource.aType}</FlexItem>
+                <Flex>
                     <FlexItem>
+                        <Brand alt="Red hat build" widths={{ default: '30px' }}>
+                            <source srcSet={rhLogo} />
+                        </Brand>
+                    </FlexItem>
+                    <FlexItem>{hitSource.aType}</FlexItem>
+                    <FlexItem style={{ marginLeft: '10px' }}>
                         <Link to="">{hitSource.taskId}</Link>
                     </FlexItem>
-                </Flex>
-            </CardHeader>
-            <CardTitle>{hitSource.nvr}</CardTitle>
-            <CardBody isFilled={false}>
-                <Flex>
+                    <FlexItem
+                        style={{
+                            fontWeight: 'var(--pf-c-card__title--FontWeight)',
+                            fontSize: 'var(--pf-c-card__title--FontSize)',
+                            fontFamily: 'var(--pf-c-card__title--FontFamily)',
+                        }}
+                    >
+                        {hitSource.nvr}
+                    </FlexItem>
                     <FlexItem>{hitSource.issuer}</FlexItem>
                     <FlexItem>{hitSource.scratch}</FlexItem>
-                    <FlexItem>{hitSource.component}</FlexItem>
-                    <FlexItem>{hitSource.buildId}</FlexItem>
                     <FlexItem>{hitSource.gateTag}</FlexItem>
-                    <FlexItem>{hitSource.issuer}</FlexItem>
-                    <FlexItem>{hitSource.brokerMsgIdGateTag}</FlexItem>
                 </Flex>
-            </CardBody>
+            </CardHeader>
         </Card>
     );
 };
+/**
+            <CardBody isFilled={false}></CardBody>
+            <CardBody>
+                <FlexItem>{hitSource.component}</FlexItem>
+                <FlexItem>{hitSource.buildId}</FlexItem>
+                <FlexItem>{hitSource.brokerMsgIdGateTag}</FlexItem>
+            </CardBody>
+ * 
+ */
 
 interface ArtifactCardProps {
     artifact: Artifact;
@@ -118,6 +128,7 @@ const ArtifactCard = (props: ArtifactCardProps) => {
     );
 };
 
+//<ArtifactCard artifact={artifact} />
 interface ArtListProps {}
 const ArtList = (_props: ArtListProps) => {
     const { artList } = useAppSelector((state) => state.artifacts);
@@ -127,7 +138,7 @@ const ArtList = (_props: ArtListProps) => {
         entries.push(
             <Flex>
                 <FlexItem style={{ flex: '0 0 20%' }} />
-                <FlexItem>
+                <FlexItem style={{ flexBasis: '60%' }}>
                     <ArtifactCard artifact={artifact} />
                 </FlexItem>
             </Flex>,
@@ -135,7 +146,13 @@ const ArtList = (_props: ArtListProps) => {
     });
     return (
         <>
-            <Flex direction={{ default: 'column' }}>{entries}</Flex>
+            <Flex
+                spaceItems={{ default: 'spaceItemsXs' }}
+                direction={{ default: 'column' }}
+                flexWrap={{ default: 'nowrap' }}
+            >
+                {entries}
+            </Flex>
         </>
     );
 };
