@@ -19,14 +19,17 @@
  */
 
 import _ from 'lodash';
-import { ApolloClient } from '@apollo/client';
-import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import { ApolloClient, QueryOptions } from '@apollo/client';
+import { Dispatch, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 // XXX: add global ApoloError redux?
 
 import { Artifact } from '../artifact';
 import { GetState } from '../reduxStore';
-import { ArtifactsCompleteQuery } from '../queries/Artifacts';
+import {
+    ArtifactsGreenwaveQuery,
+    ArtifactsShallowQuery,
+} from '../queries/Artifacts';
 
 interface IStateArtifacts {
     error?: string;
@@ -34,6 +37,7 @@ interface IStateArtifacts {
     hitsInfo?: any;
     isLoading: boolean;
     totalHits: number;
+    isLoadingExtended: boolean;
 }
 
 const INITIAL_STATE: IStateArtifacts = {
@@ -42,6 +46,7 @@ const INITIAL_STATE: IStateArtifacts = {
     hitsInfo: {},
     isLoading: false,
     totalHits: 0,
+    isLoadingExtended: false,
 };
 
 interface artListPayload {
@@ -59,6 +64,7 @@ export const artifactsSlice = createSlice({
             state.artList = action.payload.hits;
             state.hitsInfo = action.payload.hitsInfo;
             state.isLoading = false;
+            state.isLoadingExtended = false;
             state.totalHits = _.get(action.payload, 'hitsInfo.total.value', 0);
         },
         isLoading: (
@@ -73,6 +79,13 @@ export const artifactsSlice = createSlice({
                 state.error = undefined;
             }
         },
+        isLoadingExtended: (
+            state,
+            action: PayloadAction<IStateArtifacts['isLoadingExtended']>,
+        ) => {
+            const isLoadingExtended = action.payload;
+            state.isLoadingExtended = isLoadingExtended;
+        },
     },
 });
 
@@ -86,10 +99,24 @@ export const {
     /** set isLoading to true */
     artList: actArtList,
     isLoading: actIsLoading,
+    isLoadingExtended: actIsLoadingExtended,
 } = artifactsSlice.actions;
 
+const responseToState = (response: any) => {
+    const { hits: hits_, hits_info: hitsInfo } = response.data.artifacts;
+    const hits = _.map(
+        hits_,
+        ({ hit_info, hit_source, greenwaveDecision }) => ({
+            hitInfo: hit_info,
+            hitSource: hit_source,
+            greenwaveDecision: greenwaveDecision,
+        }),
+    );
+    return { hits: hits as Artifact[], hitsInfo };
+};
+
 export const actLoad =
-    (client: ApolloClient<object>) =>
+    (client: ApolloClient<object>, complete?: boolean) =>
     async (dispatch: Dispatch, getState: GetState) => {
         const {
             page,
@@ -103,33 +130,46 @@ export const actLoad =
         let errorText: string;
         try {
             dispatch(actIsLoading(true));
-            const response = await client.query({
-                query: ArtifactsCompleteQuery,
-                variables: {
-                    sortBy,
-                    artTypes,
-                    newerThen,
-                    queryString,
-                    paginationSize,
-                    paginationFrom,
-                },
+            const queryVars = {
+                sortBy,
+                artTypes,
+                newerThen,
+                queryString,
+                paginationSize,
+                paginationFrom,
+            };
+            const query: QueryOptions = {
+                query: ArtifactsShallowQuery,
+                variables: queryVars,
+                errorPolicy: 'all',
                 fetchPolicy: 'cache-first',
                 notifyOnNetworkStatusChange: true,
-                errorPolicy: 'all',
-            });
-            const { hits: hits_, hits_info: hitsInfo } =
-                response.data.artifacts;
-            const hits = _.map(hits_, ({ hit_info, hit_source }) => ({
-                hitInfo: hit_info,
-                hitSource: hit_source,
-            }));
-            dispatch(actArtList({ hits: hits as Artifact[], hitsInfo }));
+            };
+            let response = await client.query(query);
+            let artList = responseToState(response);
+            dispatch(actArtList(artList));
+            /** Second stage */
+            if (_.isEmpty(artList.hits)) {
+                // No results, skip second query
+                return;
+            }
+            query.query = ArtifactsGreenwaveQuery;
+            dispatch(actIsLoadingExtended(true));
+            response = await client.query(query);
+            artList = responseToState(response);
+            dispatch(actArtList(artList));
         } catch (error) {
             if (_.isError(error)) {
                 errorText = error.message;
             } else {
                 errorText = _.toString(error);
             }
-            dispatch(actArtList({ hits: [], hitsInfo: [], error: errorText }));
+            dispatch(
+                actArtList({
+                    hits: [],
+                    hitsInfo: { total: { value: 0 } },
+                    error: errorText,
+                }),
+            );
         }
     };
