@@ -239,7 +239,7 @@ export interface ArtifactsCompleteQueryData {
                     paginationFrom,
 */
 
-export const ArtifactsCompleteQuery = gql`
+export const ArtifactsShallowQuery = gql`
     query ArtifactsComplete(
         $sortBy: String
         $artTypes: [String]
@@ -261,6 +261,50 @@ export const ArtifactsCompleteQuery = gql`
                 hit_source
             }
             hits_info
+        }
+    }
+`;
+
+/*
+children {
+                hits_info
+                hits {
+                    hit_info
+                    hit_source
+                }
+            }
+            */
+
+export const ArtifactsGreenwaveQuery = gql`
+    query ArtifactsComplete(
+        $sortBy: String
+        $artTypes: [String]
+        $newerThen: String
+        $queryString: String
+        $paginationSize: Int
+        $paginationFrom: Int
+    ) {
+        artifacts(
+            sortBy: $sortBy
+            artTypes: $artTypes
+            newerThen: $newerThen
+            queryString: $queryString
+            paginationSize: $paginationSize
+            paginationFrom: $paginationFrom
+        ) {
+            hits_info
+            hits {
+                hit_info
+                hit_source
+                greenwaveDecision {
+                    results
+                    waivers
+                    summary
+                    policies_satisfied
+                    satisfied_requirements
+                    unsatisfied_requirements
+                }
+            }
         }
     }
 `;
