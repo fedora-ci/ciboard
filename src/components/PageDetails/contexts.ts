@@ -2,6 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +19,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { createContext } from 'react';
 import { CiTest } from './types';
+import { createContext } from 'react';
 
 export const SelectedTestContext = createContext<CiTest | undefined>(undefined);
