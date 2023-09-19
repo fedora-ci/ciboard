@@ -21,41 +21,41 @@
 import _ from 'lodash';
 import { CSSProperties } from 'react';
 import {
-    CheckCircleIcon,
-    ExclamationTriangleIcon,
-    GhostIcon,
-    HistoryIcon,
     InfoIcon,
-    InProgressIcon,
-    OutlinedQuestionCircleIcon,
-    TimesCircleIcon,
-    TrafficLightIcon,
+    GhostIcon,
     UnlinkIcon,
+    HistoryIcon,
+    InProgressIcon,
+    TimesCircleIcon,
+    CheckCircleIcon,
+    TrafficLightIcon,
+    ExclamationTriangleIcon,
+    OutlinedQuestionCircleIcon,
 } from '@patternfly/react-icons';
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon';
 import moment from 'moment';
 import Linkify from 'linkify-react';
 import { IntermediateRepresentation } from 'linkifyjs';
-
 import {
     Artifact,
-    ArtifactType,
-    DistGitInstanceType,
-    GreenwaveRequirementTypesType,
-    isArtifactMBS,
-    isArtifactRedhatContainerImage,
-    isArtifactRPM,
-    KaiStateType,
-    KojiInstanceType,
-    MbsInstanceType,
-    StateExtendedKaiNameType,
-    StateGreenwaveKaiType,
-    StateGreenwaveType,
-    StateKaiType,
     StateType,
+    ArtifactType,
+    StateKaiType,
+    KaiStateType,
+    isArtifactMBS,
+    isArtifactRPM,
+    MbsInstanceType,
+    KojiInstanceType,
+    StateGreenwaveType,
+    DistGitInstanceType,
+    StateGreenwaveKaiType,
+    StateExtendedKaiNameType,
+    GreenwaveRequirementTypesType,
+    isArtifactRedhatContainerImage,
 } from '../artifact';
 import { config, mappingDatagrepperUrl } from '../config';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
+
 /**
  *Typescript guards
  */
@@ -119,16 +119,16 @@ const artifact_type_labels: Record<ArtifactType, string> = {
 };
 
 export function getArtifactName(artifact: Artifact): string | undefined {
-    switch (artifact.type) {
+    switch (artifact.hitSource.aType) {
         case 'brew-build':
         case 'copr-build':
         case 'koji-build':
         case 'redhat-container-image':
-            return artifact.payload.nvr;
+            return artifact.hitSource.nvr;
         case 'redhat-module':
-            return artifact.payload.nsvc;
+            return artifact.hitSource.nsvc;
         case 'productmd-compose':
-            return artifact.aid;
+            return artifact.hitSource.aid;
         default:
             return;
     }
@@ -254,8 +254,9 @@ export const getArtifactRemoteUrl = (artifact: Artifact) => {
  * Construct the relative path which uniquely identifies artifact in CI Dashboard UI.
  * @returns Subpath relative to the CI Dashboard root.
  */
+
 export const getArtifactLocalPath = (artifact: Artifact) =>
-    `/artifact/${artifact.type}/aid/${artifact.aid}`;
+    `/details/${artifact.hitInfo._id}`;
 
 /**
  * Extract testcase documentation URL from a UMB message.
@@ -400,7 +401,7 @@ export const getArtifactProduct = (artifact: Artifact): string | undefined => {
  */
 export const getArtifactGatingTag = (artifact: Artifact): string | null => {
     if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
-        return artifact.payload.gate_tag_name;
+        return artifact.hitSource.gateTag;
     }
     return null;
 };
@@ -413,7 +414,7 @@ export const getArtifactGatingTag = (artifact: Artifact): string | null => {
  */
 export const getArtifacIssuer = (artifact: Artifact): string | null => {
     if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
-        return artifact.payload.issuer;
+        return artifact.hitSource.issuer;
     }
     return null;
 };

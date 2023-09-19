@@ -2,6 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,45 +19,44 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { useState } from 'react';
-import {
-    Alert,
-    Badge,
-    Bullseye,
-    CardBody,
-    DescriptionList,
-    DescriptionListDescription,
-    DescriptionListGroup,
-    DescriptionListTerm,
-    EmptyState,
-    EmptyStateBody,
-    EmptyStateIcon,
-    List,
-    ListComponent,
-    ListItem,
-    OrderType,
-    Spinner,
-    Tab,
-    Tabs,
-    TabTitleText,
-    Title,
-} from '@patternfly/react-core';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { useQuery } from '@apollo/client';
 import classNames from 'classnames';
-
+import {
+    Tab,
+    Tabs,
+    List,
+    Title,
+    Alert,
+    Badge,
+    Spinner,
+    ListItem,
+    Bullseye,
+    CardBody,
+    OrderType,
+    EmptyState,
+    TabTitleText,
+    ListComponent,
+    EmptyStateBody,
+    EmptyStateIcon,
+    DescriptionList,
+    DescriptionListTerm,
+    DescriptionListGroup,
+    DescriptionListDescription,
+} from '@patternfly/react-core';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import styles from '../../custom.module.css';
 import {
     Artifact,
     ArtifactMBS,
     ArtifactRPM,
     KojiBuildInfo,
-    KojiInstanceType,
     MbsBuildInfo,
     isArtifactMBS,
     isArtifactRPM,
     koji_instance,
+    KojiInstanceType,
 } from '../../artifact';
 import {
     ArtifactsDetailedInfoKojiTask,
@@ -65,16 +65,16 @@ import {
     ArtifactsDetailedInfoModuleBuildData,
 } from '../../queries/Artifacts';
 import {
-    ErrataLinkedAdvisoriesReply,
     LinkedErrataAdvisories,
+    ErrataLinkedAdvisoriesReply,
 } from '../../queries/Errata';
 import {
-    mkCommitHashFromSource,
+    mkLinkMbsBuild,
     mkLinkFileInGit,
-    mkLinkKojiWebBuildId,
     mkLinkKojiWebTask,
     mkLinkKojiWebUserId,
-    mkLinkMbsBuild,
+    mkLinkKojiWebBuildId,
+    mkCommitHashFromSource,
     mkLinkPkgsDevelFromSource,
 } from '../../utils/artifactUtils';
 import {
@@ -82,12 +82,12 @@ import {
     timestampToTimestampWithTz,
 } from '../../utils/timeUtils';
 import {
-    ErrataAutomation,
-    HistoryList,
-    LimitWithScroll,
-    LinkedAdvisories,
-    LoadingData,
     TagsList,
+    HistoryList,
+    LoadingData,
+    LimitWithScroll,
+    ErrataAutomation,
+    LinkedAdvisories,
 } from '../ArtifactDetailedInfo';
 import { ExternalLink } from '../ExternalLink';
 
@@ -412,7 +412,7 @@ function BuildInfoMbs({ artifact }: BuildInfoMbsProps) {
             ArtifactsDetailedInfoModuleBuild,
             {
                 variables: {
-                    build_id: Number(artifact.aid),
+                    build_id: Number(artifact.hitSource.buildId),
                     distgit_instance: instance,
                     koji_instance: instance,
                     mbs_instance: instance,

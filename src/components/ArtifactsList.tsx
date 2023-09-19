@@ -28,10 +28,8 @@ import {
     Brand,
     Button,
     Spinner,
-    CardBody,
     FlexItem,
     Bullseye,
-    CardTitle,
     CardHeader,
     EmptyState,
     TextContent,
@@ -39,25 +37,25 @@ import {
     EmptyStateIcon,
     TitleSizes,
 } from '@patternfly/react-core';
+import { Link } from 'react-router-dom';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
-import { ReactComponent as RhLogo } from './../img/rhfavicon.svg';
 import rhLogo from './../img/rhfavicon.svg';
 
 import { useAppSelector } from '../hooks';
 import { PaginationToolbar } from './PaginationToolbar';
 import {
-    Artifact,
-    ArtifactRPM,
-    GreenwaveDecisionReplyType,
-    isArtifactRPM,
-} from '../artifact';
-import { ExclamationCircleIcon, PlusCircleIcon } from '@patternfly/react-icons';
-import { Link } from 'react-router-dom';
-import {
     resultColor,
     isGatingArtifact,
     GatingStatusIcon,
+    getArtifactLocalPath,
 } from '../utils/artifactUtils';
+import {
+    Artifact,
+    ArtifactRPM,
+    isArtifactRPM,
+    GreenwaveDecisionReplyType,
+} from '../artifact';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
@@ -170,13 +168,15 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
         (state) => state.artifacts,
     );
     const { artifact } = props;
-    const { hitInfo, hitSource, greenwaveDecision } = artifact;
-    const hasGatingDecision = !_.isNil(greenwaveDecision);
+    const { hitInfo, hitSource } = artifact;
+    const href = getArtifactLocalPath(artifact);
     return (
         <Card id={hitInfo._id} isCompact>
             <CardHeader>
                 <CardActions hasNoOffset={true}>
-                    <Button variant="secondary">details</Button>
+                    <Link to={href}>
+                        <Button variant="secondary">details</Button>
+                    </Link>
                 </CardActions>
                 <Flex
                     style={{ flexGrow: 1 }}
