@@ -22,44 +22,30 @@ import _ from 'lodash';
 import * as React from 'react';
 import { LegacyRef, useState } from 'react';
 import {
+    List,
+    Text,
+    Title,
+    Spinner,
     Bullseye,
-    DropdownProps,
-    DropdownToggleProps,
+    ListItem,
+    OrderType,
     EmptyState,
+    TextContent,
+    TextVariants,
+    DropdownProps,
+    ListComponent,
     EmptyStateBody,
     EmptyStateIcon,
     EmptyStateVariant,
     ExpandableSection,
-    List,
-    ListComponent,
-    ListItem,
-    OrderType,
-    Spinner,
-    Text,
-    TextContent,
-    TextVariants,
-    Title,
+    DropdownToggleProps,
 } from '@patternfly/react-core';
-import {
-    TableProps,
-    RowWrapperProps,
-    IRow,
-    ICell,
-} from '@patternfly/react-table';
-import { nowrap, expandable, fitContent } from '@patternfly/react-table';
+import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
 import { ExclamationCircleIcon, LinkIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 
-import {
-    aidMeaningForType,
-    getArtifactRemoteUrl,
-    getArtifactName,
-    isGatingArtifact,
-    nameFieldForType,
-} from './artifactUtils';
+import { getArtifactName, getArtifactRemoteUrl } from './artifactUtils';
 import { Artifact } from '../artifact';
-import { ArtifactStatesList } from '../components/ArtifactStatesList';
-import { ArtifactDetailedInfo } from '../components/ArtifactDetailedInfo';
 import { ArtifactGreenwaveStatesSummary } from '../components/GatingStatus';
 import styles from '../custom.module.css';
 
@@ -159,45 +145,6 @@ export const CustomRowWrapper = (
             ref={ref}
         />
     );
-};
-
-export const tableColumns = (buildType: any): ICell[] => {
-    /**
-     * width: 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 60 | 70 | 80 | 90 | 'max' %
-     */
-    const fieldName = nameFieldForType(buildType);
-    const aidMeaning = aidMeaningForType(buildType);
-    return [
-        {
-            title: aidMeaning,
-            transforms: [fitContent],
-            cellTransforms: [nowrap],
-            cellFormatters: [expandable],
-        },
-        {
-            title: fieldName,
-            transforms: [fitContent],
-            cellTransforms: [nowrap],
-        },
-        {
-            title: 'Gating status',
-            transforms: [fitContent],
-            cellTransforms: [nowrap],
-        },
-        {
-            title: 'Gating tag',
-            transforms: [fitContent],
-            cellTransforms: [nowrap],
-        },
-        {
-            title: 'Packager',
-            transforms: [fitContent],
-            cellTransforms: [nowrap],
-        },
-        {
-            title: 'Link',
-        },
-    ];
 };
 
 export const ShowErrors = ({ error, forceExpand }: any) => {
@@ -356,61 +303,6 @@ export type InputArtifactRowType = {
     gatingDecisionIsLoading: boolean;
 };
 
-export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
-    const { artifacts, opened, gatingDecisionIsLoading } = args;
-    if (_.isEmpty(artifacts)) {
-        return [];
-    }
-    let rows: IRow[] = artifacts.flatMap((artifact, index: number) => [
-        mkArtifactRow(artifact, gatingDecisionIsLoading),
-        {
-            parent: index * 2,
-            isOpen: false,
-            fullWidth: true,
-            noPadding: true,
-            cells: [
-                {
-                    title: 'Loading…',
-                    transforms: [fitContent],
-                    cellTransforms: [nowrap],
-                    cellFormatters: [expandable],
-                },
-            ],
-        },
-    ]);
-    if (!_.isNil(opened)) {
-        const aOpen = opened / 2;
-        rows[opened].isOpen = true;
-        let title: JSX.Element;
-        if (isGatingArtifact(artifacts[aOpen]) && gatingDecisionIsLoading) {
-            title = <Spinner size="sm" />;
-        } else {
-            title = (
-                <>
-                    <ArtifactDetailedInfo artifact={artifacts[aOpen]} />
-                    <ArtifactStatesList artifact={artifacts[aOpen]} />
-                </>
-            );
-        }
-        rows[opened + 1] = {
-            /** 1, 3, 5, 7, 9, ... */
-            parent: opened,
-            isOpen: true,
-            fullWidth: true,
-            noPadding: true,
-            cells: [
-                {
-                    title,
-                    transforms: [fitContent],
-                    cellTransforms: [nowrap],
-                    cellFormatters: [expandable],
-                },
-            ],
-        };
-    }
-    return rows;
-};
-
 export function mkSeparatedList(
     elements: React.ReactNode[],
     separator: React.ReactNode = ', ',
@@ -430,3 +322,99 @@ export function mkSeparatedList(
         null,
     );
 }
+
+// REMOVED
+
+// export const tableColumns = (buildType: any): ICell[] => {
+//     /**
+//      * width: 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 60 | 70 | 80 | 90 | 'max' %
+//      */
+//     const fieldName = nameFieldForType(buildType);
+//     const aidMeaning = aidMeaningForType(buildType);
+//     return [
+//         {
+//             title: aidMeaning,
+//             transforms: [fitContent],
+//             cellTransforms: [nowrap],
+//             cellFormatters: [expandable],
+//         },
+//         {
+//             title: fieldName,
+//             transforms: [fitContent],
+//             cellTransforms: [nowrap],
+//         },
+//         {
+//             title: 'Gating status',
+//             transforms: [fitContent],
+//             cellTransforms: [nowrap],
+//         },
+//         {
+//             title: 'Gating tag',
+//             transforms: [fitContent],
+//             cellTransforms: [nowrap],
+//         },
+//         {
+//             title: 'Packager',
+//             transforms: [fitContent],
+//             cellTransforms: [nowrap],
+//         },
+//         {
+//             title: 'Link',
+//         },
+//     ];
+// };
+
+// export const mkArtifactsRows = (args: InputArtifactRowType): IRow[] => {
+//     const { artifacts, opened, gatingDecisionIsLoading } = args;
+//     if (_.isEmpty(artifacts)) {
+//         return [];
+//     }
+//     let rows: IRow[] = artifacts.flatMap((artifact, index: number) => [
+//         mkArtifactRow(artifact, gatingDecisionIsLoading),
+//         {
+//             parent: index * 2,
+//             isOpen: false,
+//             fullWidth: true,
+//             noPadding: true,
+//             cells: [
+//                 {
+//                     title: 'Loading…',
+//                     transforms: [fitContent],
+//                     cellTransforms: [nowrap],
+//                     cellFormatters: [expandable],
+//                 },
+//             ],
+//         },
+//     ]);
+//     if (!_.isNil(opened)) {
+//         const aOpen = opened / 2;
+//         rows[opened].isOpen = true;
+//         let title: JSX.Element;
+//         if (isGatingArtifact(artifacts[aOpen]) && gatingDecisionIsLoading) {
+//             title = <Spinner size="sm" />;
+//         } else {
+//             title = (
+//                 <>
+//                     <ArtifactDetailedInfo artifact={artifacts[aOpen]} />
+//                     <ArtifactStatesList artifact={artifacts[aOpen]} />
+//                 </>
+//             );
+//         }
+//         rows[opened + 1] = {
+//             /** 1, 3, 5, 7, 9, ... */
+//             parent: opened,
+//             isOpen: true,
+//             fullWidth: true,
+//             noPadding: true,
+//             cells: [
+//                 {
+//                     title,
+//                     transforms: [fitContent],
+//                     cellTransforms: [nowrap],
+//                     cellFormatters: [expandable],
+//                 },
+//             ],
+//         };
+//     }
+//     return rows;
+// };

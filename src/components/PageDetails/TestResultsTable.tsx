@@ -60,7 +60,7 @@ interface SingleTestRowProps {
     test: CiTest;
 }
 
-function SingleTestRow(props: SingleTestRowProps) {
+const SingleTestRow: React.FC<SingleTestRowProps> = (props) => {
     const { artifact, test } = props;
 
     const isWaived = !_.isNil(test.waiver);
@@ -169,7 +169,7 @@ function SingleTestRow(props: SingleTestRowProps) {
             </Flex>
         </Flex>
     );
-}
+};
 
 /**
  * Awaited tests are those whose results are missing, are queued or
@@ -206,7 +206,7 @@ export interface TestResultsTableProps {
     tests: CiTest[];
 }
 
-export function TestResultsTable(props: TestResultsTableProps) {
+export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
     const { artifact, tests } = props;
     const selectedTest = useContext(SelectedTestContext);
 
@@ -353,4 +353,4 @@ export function TestResultsTable(props: TestResultsTableProps) {
             )}
         </TableComposable>
     );
-}
+};

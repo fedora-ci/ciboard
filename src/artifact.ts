@@ -21,6 +21,13 @@
 import _ from 'lodash';
 import { BrokerMessagesType, EtaBrokerMessagesType, Metadata } from './types';
 
+export interface HitInfo {
+    _id: string;
+    _index: string;
+    _score: number;
+    _routing: string;
+}
+
 export type ComposeArtifactType = 'productmd-compose';
 export type ContainerImageArtifactType = 'redhat-container-image';
 export type MBSArtifactType = 'redhat-module';
@@ -38,156 +45,58 @@ export type ArtifactType =
 
 export type ComposeType = 'gate' | 'production' | 'testing';
 
-export interface PayloadComposeBuildType {
-    compose_id: string;
-    compose_type: ComposeType;
-}
-
-export interface PayloadRPMBuildType {
-    nvr: string;
-    source: string;
-    issuer: string;
-    task_id: number;
-    build_id: number;
-    scratch: boolean;
-    component: string;
-    gate_tag_name: string;
-}
-
-/*
- * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/redhat-container-image.yaml
- */
-export interface PayloadContainerImageType {
-    id: string;
-    nvr: string;
-    tag?: string;
-    name?: string;
-    source?: string;
-    issuer: string;
-    task_id: number;
-    build_id?: number;
-    scratch: boolean;
-    component: string;
-    namespace?: string;
-    full_names: string[];
-    registry_url?: string;
-    /*
-     * Entries come from: VirtualTopic.eng.brew.build.complete
-     * https://datagrepper.engineering.redhat.com/raw?topic=/topic/VirtualTopic.eng.brew.build.complete&delta=86400&contains=container_build
-     */
-    osbs_subtypes?: string[];
-}
-
-export interface PayloadMBSBuildType {
-    context: string;
-    id: number;
-    issuer: string;
-    name: string;
-    nsvc: string;
-    nvr: string;
-    stream: string;
-    version: string;
-    source: string;
-    scratch: boolean;
-    component: string;
-    gate_tag_name: string;
-}
-
-/**
- * TypeScript guards
- */
-export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRPM {
-    const { hitSource } = artifact;
-    return (
-        hitSource.aType === 'brew-build' ||
-        hitSource.aType === 'koji-build' ||
-        hitSource.aType === 'koji-build-cs'
-    );
-}
-
-export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMBS {
-    const { hitSource } = artifact;
-    return hitSource?.aType === 'redhat-module';
-}
-
-export function isArtifactCompose(
-    artifact: Artifact,
-): artifact is ArtifactCompose {
-    const { hitSource } = artifact;
-    return hitSource.aType === 'productmd-compose';
-}
-
-export function isArtifactRedhatContainerImage(
-    artifact: Artifact,
-): artifact is ArtifactContainerImage {
-    const { hitSource } = artifact;
-    return hitSource.aType === 'redhat-container-image';
-}
-
+// XXX
+// ETA + Test -> are all children
 export function isStateKai(state: StateType): state is StateKaiType {
     return _.has(state, 'kai_state');
 }
 
-export function isArtifactScratch(artifact: Artifact): boolean {
-    if (
-        isArtifactRPM(artifact) ||
-        isArtifactMBS(artifact) ||
-        isArtifactRedhatContainerImage(artifact)
-    ) {
-        return artifact.hitSource.scratch;
-    }
-    return false;
-}
-
 export interface ArtifactBase {
     hitInfo: HitInfo;
-    hitSource: HitSource;
-    // XXX
-    states: StateKaiType[];
+    children: ArtifactChildren;
+    hitSource: HitSourceArtifact;
     states_eta: StateErrataToolAutomationType[];
     component_mapping?: ComponentComponentMappingType;
     greenwaveDecision?: GreenwaveDecisionReplyType;
     resultsdb_testscase: number[];
 }
 
-export interface HitInfo {
-    _id: string;
-    _index: string;
-    _score: number;
-    _routing: string;
-}
+export type StateErrataToolAutomationType = {
+    broker_msg_body: EtaBrokerMessagesType;
+    kai_state: DbErrataToolAutomationStateType;
+};
 
-export type HitSource =
-    | HitSourceRpm
-    | HitSourceMBS
-    | HitSourceCompose
-    | HitSourceContainerImage;
+export type HitSourceArtifact =
+    | HitSourceArtifactRpm
+    | HitSourceArtifactMbs
+    | HitSourceArtifactCompose
+    | HitSourceArtifactContainerImage;
 
 export type Artifact =
-    | ArtifactRPM
-    | ArtifactMBS
+    | ArtifactRpm
+    | ArtifactMbs
     | ArtifactCompose
     | ArtifactContainerImage;
 
-export type ArtifactRPM = ArtifactBase & {
-    hitSource: HitSourceRpm;
+export type ArtifactRpm = ArtifactBase & {
+    hitSource: HitSourceArtifactRpm;
 };
 
-export type ArtifactMBS = ArtifactBase & {
-    hitSource: HitSourceMBS;
+export type ArtifactMbs = ArtifactBase & {
+    hitSource: HitSourceArtifactMbs;
 };
 
 export type ArtifactCompose = ArtifactBase & {
-    hitSource: HitSourceCompose;
+    hitSource: HitSourceArtifactCompose;
 };
 
 export type ArtifactContainerImage = ArtifactBase & {
-    hitSource: HitSourceContainerImage;
+    hitSource: HitSourceArtifactContainerImage;
 };
 
-export type HitSourceRpm = {
+export type HitSourceArtifactRpm = {
     nvr: string;
-    aType: string;
+    aType: RPMArtifactType;
     taskId: string;
     issuer: string;
     source: string;
@@ -198,20 +107,26 @@ export type HitSourceRpm = {
     brokerMsgIdGateTag: string;
 };
 
-export type HitSourceMBS = {
-    aType: string;
+export type HitSourceArtifactMbs = {
+    nsvc: string;
+    mbsId: string;
+    aType: MBSArtifactType;
+    issuer: string;
     scratch: boolean;
     gateTag: string;
-    issuer: string;
+    buildId: string;
 };
 
-export type HitSourceContainerImage = {
-    aType: string;
+export type HitSourceArtifactContainerImage = {
+    nvr: string;
+    aType: ContainerImageArtifactType;
+    taskId: string;
     scratch: boolean;
 };
 
-export type HitSourceCompose = {
-    aType: string;
+export type HitSourceArtifactCompose = {
+    aType: ComposeArtifactType;
+    composeId: string;
 };
 
 /**
@@ -237,7 +152,7 @@ export type GreenwaveRequirementTypesType =
     | 'failed-fetch-gating-yaml-waived';
 
 /**
- * Opposite to Kai-db state, greenwave/resultsdb state
+ * Opposite to messages-db state, greenwave/resultsdb state
  */
 export type GreenwaveRequirementType = {
     type: GreenwaveRequirementTypesType;
@@ -397,73 +312,89 @@ export type StateNameType = 'error' | 'queued' | 'running' | 'complete';
  * - needs_inspection
  * - not_applicable
  */
-export type StateExtendedKaiNameType =
+export type StateExtendedTestMsgNameType =
+    | 'info'
     | 'passed'
     | 'failed'
-    | 'info'
-    | 'needs_inspection'
     | 'not_applicable'
+    | 'needs_inspection'
     | StateNameType;
 
 export type StateExtendedNameType =
     /* greenwave result */
     | 'additional-tests'
-    | StateExtendedKaiNameType
+    | StateExtendedTestMsgNameType
     | GreenwaveRequirementTypesType;
 
-export interface StateGreenwaveKaiType {
-    /* kai state */
-    ks: StateKaiType;
+export interface StateGreenwaveDbType {
+    /* db state */
+    dbs: ArtifactChild;
     /* greenwave state */
     gs: StateGreenwaveType;
 }
 
 export type StateType =
-    | StateKaiType
+    | ArtifactChild
     | StateGreenwaveType
-    | StateGreenwaveKaiType;
+    | StateGreenwaveDbType;
 
 export type StatesByCategoryType = {
     [key in StateExtendedNameType]?: StateType[];
 };
 
 export interface StateGreenwaveType {
-    testcase: string;
     waiver?: GreenwaveWaiveType;
     result?: GreenwaveResultType;
+    testcase: string;
     requirement?: GreenwaveRequirementType;
 }
 
-export interface KaiStateType {
-    stage: StageNameType;
-    state: StateNameType;
+export interface DbErrataToolAutomationStateType {
     msg_id: string;
     version: string;
-    thread_id: string;
     timestamp: number;
-    origin: {
-        reason: string;
-        creator: string;
+}
+
+export type ArtifactChild = ArtifactChildTestMessage;
+
+export interface ArtifactChildren {
+    hits: ArtifactChild[];
+    hitsInfo: HitsInfo;
+}
+
+export interface HitsInfo {
+    total: { value: number };
+}
+
+export interface ArtifactChildTestMessage {
+    hitInfo: HitInfo;
+    hitSource: HitSourceChildTestMessage;
+    customMetadata?: Metadata;
+}
+
+export interface HitSourceChildTestMessage {
+    nvr: string;
+    aType: string;
+    taskId: string;
+    issuer: string;
+    scratch: boolean;
+    threadId: string;
+    component: string;
+    testState: string;
+    testStage: string;
+    brokerTopic: string;
+    brokerMsgId: string;
+    testCaseName: string;
+    msgFullText: string;
+    rawData: {
+        message: {
+            brokerExtra: any;
+            brokerMsgId: string;
+            brokerMsgBody: any;
+            brokerMsgTopic: string;
+        };
     };
-    test_case_name: string;
 }
-
-export interface KaiErrataToolAutomationStateType {
-    msg_id: string;
-    version: string;
-    timestamp: number;
-}
-
-export type StateKaiType = {
-    broker_msg_body: BrokerMessagesType;
-    custom_metadata?: Metadata;
-    kai_state: KaiStateType;
-};
-
-export type StateErrataToolAutomationType = {
-    broker_msg_body: EtaBrokerMessagesType;
-    kai_state: KaiErrataToolAutomationStateType;
-};
 
 export const KnownKaiStates: StateNameType[] = [
     'error',
@@ -497,7 +428,7 @@ export type DistGitInstanceType = KojiInstanceType;
  */
 export type MbsInstanceType = KojiInstanceType;
 
-export const koji_instance = (type: ArtifactType): KojiInstanceType => {
+export const kojiInstance = (type: ArtifactType): KojiInstanceType => {
     switch (type) {
         case 'koji-build':
             return 'fp';
@@ -584,3 +515,129 @@ export interface ErrataLinkedAdvisory {
     advisory_name: string;
     advisory_status: string;
 }
+
+/**
+ * TypeScript guards
+ */
+export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRpm {
+    const { hitSource } = artifact;
+    return (
+        hitSource.aType === 'brew-build' ||
+        hitSource.aType === 'koji-build' ||
+        hitSource.aType === 'koji-build-cs'
+    );
+}
+
+export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMbs {
+    const { hitSource } = artifact;
+    return hitSource.aType === 'redhat-module';
+}
+
+export function isArtifactCompose(
+    artifact: Artifact,
+): artifact is ArtifactCompose {
+    const { hitSource } = artifact;
+    return hitSource.aType === 'productmd-compose';
+}
+
+export function isArtifactRedhatContainerImage(
+    artifact: Artifact,
+): artifact is ArtifactContainerImage {
+    const { hitSource } = artifact;
+    return hitSource.aType === 'redhat-container-image';
+}
+
+export function isArtifactScratch(artifact: Artifact): boolean {
+    if (
+        isArtifactRPM(artifact) ||
+        isArtifactMBS(artifact) ||
+        isArtifactRedhatContainerImage(artifact)
+    ) {
+        return artifact.hitSource.scratch;
+    }
+    return false;
+}
+
+// REMOVED
+
+// /*
+//  * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/redhat-container-image.yaml
+//  */
+// export interface PayloadContainerImageType {
+//     id: string;
+//     nvr: string;
+//     tag?: string;
+//     name?: string;
+//     source?: string;
+//     issuer: string;
+//     task_id: number;
+//     build_id?: number;
+//     scratch: boolean;
+//     component: string;
+//     namespace?: string;
+//     full_names: string[];
+//     registry_url?: string;
+//     /*
+//      * Entries come from: VirtualTopic.eng.brew.build.complete
+//      * https://datagrepper.engineering.redhat.com/raw?topic=/topic/VirtualTopic.eng.brew.build.complete&delta=86400&contains=container_build
+//      */
+//     osbs_subtypes?: string[];
+// }
+//
+// export interface PayloadComposeBuildType {
+//     compose_id: string;
+//     compose_type: ComposeType;
+// }
+//
+// export interface PayloadRPMBuildType {
+//     nvr: string;
+//     source: string;
+//     issuer: string;
+//     task_id: number;
+//     build_id: number;
+//     scratch: boolean;
+//     component: string;
+//     gate_tag_name: string;
+// }
+//
+// export interface PayloadMBSBuildType {
+//     context: string;
+//     id: number;
+//     issuer: string;
+//     name: string;
+//     nsvc: string;
+//     nvr: string;
+//     stream: string;
+//     version: string;
+//     source: string;
+//     scratch: boolean;
+//     component: string;
+//     gate_tag_name: string;
+// }
+//
+
+/*
+export type StateKaiType = {
+    broker_msg_body: BrokerMessagesType;
+    custom_metadata?: Metadata;
+    kai_state: KaiStateType;
+};
+
+    broker_msg_body: BrokerMessagesType;
+    custom_metadata?: Metadata;
+    kai_state: KaiStateType;
+
+export interface KaiStateType {
+    stage: StageNameType;
+    state: StateNameType;
+    msg_id: string;
+    version: string;
+    thread_id: string;
+    timestamp: number;
+    origin: {
+        reason: string;
+        creator: string;
+    };
+    test_case_name: string;
+}
+*/

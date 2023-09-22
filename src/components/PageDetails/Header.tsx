@@ -21,21 +21,22 @@
 import * as _ from 'lodash';
 import {
     Flex,
-    FlexItem,
     Stack,
+    Title,
+    FlexItem,
     StackItem,
     TextContent,
-    Title,
 } from '@patternfly/react-core';
 import { CodeBranchIcon, CubeIcon, UserIcon } from '@patternfly/react-icons';
 
 import { Artifact, isArtifactScratch } from '../../artifact';
 import {
+    getArtifactName,
     getArtifacIssuer,
     getArtifactGatingTag,
-    getArtifactName,
     getArtifactRemoteUrl,
     getArtifactTypeLabel,
+    getArtifactId,
 } from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
 import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';
@@ -46,8 +47,9 @@ interface ArtifactTitleProps {
 
 function ArtifactTitle(props: ArtifactTitleProps) {
     const { artifact } = props;
+    const { hitSource } = artifact;
     const gatingTag = getArtifactGatingTag(artifact);
-    const hasGatingDecision = !_.isNil(artifact.greenwave_decision);
+    const hasGatingDecision = !_.isNil(artifact.greenwaveDecision);
     const isScratch = isArtifactScratch(artifact);
     const issuer = getArtifacIssuer(artifact);
 
@@ -81,7 +83,10 @@ export interface ArtifactHeaderProps {
 
 export function ArtifactHeader(props: ArtifactHeaderProps) {
     const { artifact } = props;
-    const artifactTypeLabel = getArtifactTypeLabel(artifact.type);
+    const { hitSource } = artifact;
+    const { aType } = hitSource;
+    const artId = getArtifactId(artifact);
+    const artifactTypeLabel = getArtifactTypeLabel(aType);
     const artifactUrl = getArtifactRemoteUrl(artifact);
     const externalLink = (
         <ExternalLink href={artifactUrl}>
@@ -89,7 +94,7 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
                 className="pf-u-mr-xs"
                 style={{ verticalAlign: '-.125em' }}
             />{' '}
-            {artifactTypeLabel} #{artifact.aid}
+            {artifactTypeLabel} #{artId}
         </ExternalLink>
     );
 
