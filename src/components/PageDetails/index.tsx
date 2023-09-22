@@ -206,13 +206,7 @@ export function PageDetails(_props: {}) {
     }
     const artList = dataToArtList(data);
 
-    return (
-        <PageCommon title={pageTitle}>
-            <PageSection isFilled>
-                <SingleArtifactView artifact={artList.hits[0]} />
-            </PageSection>
-        </PageCommon>
-    );
+    return <SingleArtifactView artifact={artList.hits[0]} />;
 }
 
 // Show information message if query succeeded but no artifacts were returned.
