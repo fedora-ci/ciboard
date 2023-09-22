@@ -51,17 +51,17 @@ import {
     Artifact,
     ArtifactMBS,
     ArtifactRPM,
-    KojiBuildInfo,
     MbsBuildInfo,
+    kojiInstance,
+    KojiBuildInfo,
     isArtifactMBS,
     isArtifactRPM,
-    koji_instance,
     KojiInstanceType,
 } from '../../artifact';
 import {
     ArtifactsDetailedInfoKojiTask,
-    ArtifactsDetailedInfoKojiTaskData,
     ArtifactsDetailedInfoModuleBuild,
+    ArtifactsDetailedInfoKojiTaskData,
     ArtifactsDetailedInfoModuleBuildData,
 } from '../../queries/Artifacts';
 import {
@@ -88,7 +88,7 @@ import {
     LimitWithScroll,
     ErrataAutomation,
     LinkedAdvisories,
-} from '../ArtifactDetailedInfo';
+} from './ArtifactDetailedInfo';
 import { ExternalLink } from '../ExternalLink';
 
 interface BuildMetadataMbsProps {
@@ -396,11 +396,11 @@ function ModuleBuildComponents(props: ModuleBuildComponentsProps) {
 interface BuildInfoMbsProps {
     artifact: ArtifactMBS;
 }
-
-function BuildInfoMbs({ artifact }: BuildInfoMbsProps) {
+const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
+    const { artifact } = props;
+    const { hitSource } = artifact;
     const [activeTabKey, setActiveTabKey] = useState('summary');
-
-    const instance = koji_instance(artifact.type);
+    const instance = kojiInstance(hitSource.aType);
 
     /*
      * Fetch available information about the build -- NVR, commit and build time,
@@ -492,16 +492,17 @@ function BuildInfoMbs({ artifact }: BuildInfoMbsProps) {
             </Tab>
         </Tabs>
     );
-}
+};
 
 interface BuildInfoRpmProps {
     artifact: ArtifactRPM;
 }
-
-function BuildInfoRpm({ artifact }: BuildInfoRpmProps) {
+const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
+    const { artifact } = props;
+    const { hitSource } = artifact;
     const [activeTabKey, setActiveTabKey] = useState('summary');
 
-    const kojiInstance = koji_instance(artifact.type);
+    const kojiInst = kojiInstance(artifact.hitSource.aType);
 
     /*
      * Fetch available information about the build -- NVR, commit and build time,
@@ -513,9 +514,9 @@ function BuildInfoRpm({ artifact }: BuildInfoRpmProps) {
             ArtifactsDetailedInfoKojiTask,
             {
                 variables: {
-                    distgit_instance: kojiInstance,
-                    koji_instance: kojiInstance,
-                    task_id: Number(artifact.aid),
+                    distgit_instance: kojiInst,
+                    koji_instance: kojiInst,
+                    task_id: _.toNumber(hitSource.taskId),
                 },
                 errorPolicy: 'all',
             },
@@ -525,7 +526,7 @@ function BuildInfoRpm({ artifact }: BuildInfoRpmProps) {
     const { data: dataAdvisories, loading: loadingAdvisories } =
         useQuery<ErrataLinkedAdvisoriesReply>(LinkedErrataAdvisories, {
             variables: {
-                nvrs: [artifact.payload.nvr],
+                nvrs: [artifact.hitSource.nvr],
             },
             errorPolicy: 'all',
         });
@@ -560,7 +561,7 @@ function BuildInfoRpm({ artifact }: BuildInfoRpmProps) {
                 eventKey="summary"
                 title={<TabTitleText>Build summary</TabTitleText>}
             >
-                <BuildMetadataRpm build={build} instance={kojiInstance} />
+                <BuildMetadataRpm build={build} instance={kojiInst} />
             </Tab>
             <Tab
                 eventKey="tags"
@@ -571,7 +572,7 @@ function BuildInfoRpm({ artifact }: BuildInfoRpmProps) {
                 }
             >
                 <LimitWithScroll>
-                    <TagsList instance={kojiInstance} tags={build.tags} />
+                    <TagsList instance={kojiInst} tags={build.tags} />
                 </LimitWithScroll>
             </Tab>
             <Tab
@@ -612,7 +613,7 @@ function BuildInfoRpm({ artifact }: BuildInfoRpmProps) {
             )}
         </Tabs>
     );
-}
+};
 
 export interface BuildInfoProps {
     artifact: Artifact;
