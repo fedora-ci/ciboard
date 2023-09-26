@@ -81,18 +81,6 @@ export namespace MSG_V_1 {
         version?: string;
     };
 
-    export type MsgRPMBuildType = {
-        id: number;
-        nvr: string;
-        type: RPMBuildsType;
-        issuer: string;
-        source?: string;
-        scratch: boolean;
-        baseline?: string;
-        component: string;
-        dependencies?: string[];
-    };
-
     export type MsgStageType = {
         name: string;
     };
@@ -129,20 +117,32 @@ export namespace MSG_V_1 {
         recipients?: string[];
     };
 
+    export type MsgRpmBuild = {
+        id: number;
+        nvr: string;
+        type: RPMBuildsType;
+        issuer: string;
+        source?: string;
+        scratch: boolean;
+        baseline?: string;
+        component: string;
+        dependencies?: string[];
+    };
+
     export type MessagesRPMBuildType =
-        | MsgRPMBuildTestComplete
         | MsgRPMBuildTestError
         | MsgRPMBuildTestQueued
-        | MsgRPMBuildTestRunning;
+        | MsgRPMBuildTestRunning
+        | MsgRPMBuildTestComplete;
 
     interface MessageRPMBuildTestCommon {
-        artifact: MsgRPMBuildType;
-        contact: MsgContactType;
-        generated_at: MsgCommonType['generated_at'];
-        pipeline: MsgPipelineType;
-        test: MsgTestCommonType;
         run: MsgRunType;
+        test: MsgTestCommonType;
         version: MsgCommonType['version'];
+        contact: MsgContactType;
+        pipeline: MsgPipelineType;
+        artifact: MsgRpmBuild;
+        generated_at: MsgCommonType['generated_at'];
     }
 
     export interface MsgRPMBuildTestComplete extends MessageRPMBuildTestCommon {
@@ -208,32 +208,32 @@ export namespace MSG_V_0_1 {
         | MsgRPMBuildTestRunning;
 
     interface MessageRPMBuildTestCommon {
-        artifact: MsgRPMBuildType;
-        category: TestCategoryType;
         ci: MsgContactType;
-        generated_at: number;
-        label: string;
-        namespace: string;
-        note: string;
         run: MsgRunType;
-        thread_id: string;
+        note: string;
         type: string;
+        label: string;
         version: string;
+        artifact: MsgRpmBuild;
+        category: TestCategoryType;
+        thread_id: string;
+        namespace: string;
+        generated_at: number;
     }
 
     export interface MsgRPMBuildTestComplete extends MessageRPMBuildTestCommon {
         docs: string;
-        recipients: string[];
+        xunit: string;
         status: TestResultType;
         system: MsgSystemType[];
         web_url: string;
-        xunit: string;
+        recipients: string[];
     }
 
     export interface MsgRPMBuildTestError extends MessageRPMBuildTestCommon {
         docs: string;
-        issue_url: string;
         reason: string;
+        issue_url: string;
         recipients: string[];
     }
 
@@ -265,16 +265,16 @@ export namespace MSG_V_0_1 {
         additional_urls?: {};
     };
 
-    export type MsgRPMBuildType = {
-        type: RPMBuildsType;
+    export type MsgRpmBuild = {
         id: number;
-        component: string;
-        issuer: string;
-        scratch: boolean;
         nvr: string;
-        baseline?: string;
-        dependencies?: string[];
+        type: RPMBuildsType;
+        issuer: string;
         source?: string;
+        scratch: boolean;
+        baseline?: string;
+        component: string;
+        dependencies?: string[];
     };
 
     export type MsgSystemType = {
@@ -478,3 +478,637 @@ export interface MetadataKnownIssue {
     status: 'active' | 'fixed' | 'irrelevant';
     severity: 'blocker' | 'critical' | 'major' | 'normal' | 'minor';
 }
+
+export interface HitInfo {
+    _id: string;
+    _index: string;
+    _score: number;
+    _routing: string;
+}
+
+export type ATypesRpm =
+    | 'brew-build'
+    | 'copr-build'
+    | 'koji-build'
+    | 'koji-build-cs';
+export type ATypesMbs = 'redhat-module';
+export type ATypesCompose = 'productmd-compose';
+export type ATypesContainerImage = 'redhat-container-image';
+
+export type ArtifactType =
+    | ATypesRpm
+    | ATypesMbs
+    | ATypesCompose
+    | ATypesContainerImage;
+
+export type ComposeType = 'gate' | 'production' | 'testing';
+
+export interface ArtifactBase {
+    hitInfo: HitInfo;
+    children: ArtifactChildren;
+    hitSource: HitSourceArtifact;
+    component_mapping?: ComponentComponentMappingType;
+    greenwaveDecision?: GreenwaveDecisionReplyType;
+    resultsdb_testscase: number[];
+}
+
+export type StateErrataToolAutomationType = {
+    broker_msg_body: EtaBrokerMessagesType;
+    kai_state: DbErrataToolAutomationStateType;
+};
+
+export type HitSourceArtifact =
+    | HitSourceArtifactRpm
+    | HitSourceArtifactMbs
+    | HitSourceArtifactCompose
+    | HitSourceArtifactContainerImage;
+
+export type Artifact =
+    | ArtifactRpm
+    | ArtifactMbs
+    | ArtifactCompose
+    | ArtifactContainerImage;
+
+export type ArtifactRpm = ArtifactBase & {
+    hitSource: HitSourceArtifactRpm;
+};
+
+export type ArtifactMbs = ArtifactBase & {
+    hitSource: HitSourceArtifactMbs;
+};
+
+export type ArtifactCompose = ArtifactBase & {
+    hitSource: HitSourceArtifactCompose;
+};
+
+export type ArtifactContainerImage = ArtifactBase & {
+    hitSource: HitSourceArtifactContainerImage;
+};
+
+export type HitSourceArtifactRpm = {
+    nvr: string;
+    aType: ATypesRpm;
+    taskId: string;
+    issuer: string;
+    source: string;
+    scratch: boolean;
+    buildId: string;
+    gateTag: string;
+    component: string;
+    brokerMsgIdGateTag: string;
+};
+
+export type HitSourceArtifactMbs = {
+    nsvc: string;
+    mbsId: string;
+    aType: ATypesMbs;
+    issuer: string;
+    scratch: boolean;
+    gateTag: string;
+    buildId: string;
+};
+
+export type HitSourceArtifactContainerImage = {
+    nvr: string;
+    aType: ATypesContainerImage;
+    taskId: string;
+    scratch: boolean;
+};
+
+export type HitSourceArtifactCompose = {
+    aType: ATypesCompose;
+    composeId: string;
+};
+
+/**
+ * Decision requirements types
+ * https://gating-greenwave.readthedocs.io/en/latest/decision_requirements.html
+ */
+export type GreenwaveRequirementTypes =
+    | 'excluded'
+    | 'blacklisted'
+    | 'test-result-failed'
+    | 'test-result-passed'
+    | 'test-result-missing'
+    | 'test-result-errored'
+    | 'invalid-gating-yaml'
+    | 'fetched-gating-yaml'
+    | 'missing-gating-yaml'
+    | 'failed-fetch-gating-yaml'
+    | 'invalid-gating-yaml-waived'
+    | 'missing-gating-yaml-waived'
+    | 'test-result-failed-waived'
+    | 'test-result-missing-waived'
+    | 'test-result-errored-waived'
+    | 'failed-fetch-gating-yaml-waived';
+
+/**
+ * Opposite to messages-db state, greenwave/resultsdb state
+ */
+export type GreenwaveRequirementType = {
+    item: { type: ArtifactType; identifier: string };
+    type: GreenwaveRequirementTypes;
+    source?: string;
+    details?: string;
+    testcase: string;
+    scenario?: string | null;
+    result_id?: number;
+    subject_type: string;
+    /* python2-flask-1.0.2-1.rawhide */
+    error_reason?: string;
+    subject_identifier: string;
+};
+
+export type GreenwaveRequirementOutcome =
+    | 'INFO'
+    | 'ERROR'
+    | 'PASSED'
+    | 'FAILED'
+    | 'RUNNING'
+    | 'NOT_APPLICABLE'
+    | 'NEEDS_INSPECTION';
+
+/**
+ * Based on documentation from:
+ * https://pagure.io/greenwave/blob/master/f/greenwave/api_v1.py
+ * 
+    "data": {
+        "arch": [ "armhfp" ],
+        "item": [ "bodhi-5.1.1-1.fc32" ],
+        "seconds_taken": [ "1" ],
+        "type": [ "koji_build" ]
+    },
+    "groups": [ "c038df76-47f5-11ea-839f-525400364adf" ],
+    "href": "https://taskotron.fedoraproject.org/resultsdb_api/api/v2.0/results/38088806",
+    "id": 38088806,
+    "note": "no binary RPMs",
+    "outcome": "PASSED",
+    "ref_url": "https://taskotron.fedoraproject.org/artifacts/all/c038df76-47f5-11ea-839f-525400364adf/tests.yml/bodhi-5.1.1-1.fc32.log",
+    "submit_time": "2020-02-07T03:14:43.076427",
+    "testcase": {
+        "href": "https://taskotron.fedoraproject.org/resultsdb_api/api/v2.0/testcases/dist.abicheck",
+        "name": "dist.abicheck",
+        "ref_url": "http://faketestcasesRus.com/scratch.abicheck"
+    }
+ * 
+ */
+export type GreenwaveResultType = {
+    data: {
+        brew_task_id: string[];
+        category?: string[];
+        ci_docs?: string[];
+        ci_email?: string[];
+        ci_irc?: string[];
+        ci_name?: string[];
+        ci_team?: string[];
+        ci_url?: string[];
+        component?: string[];
+        issuer?: string[];
+        item: string[];
+        log?: string[];
+        msg_id: string[];
+        publisher_id?: string[];
+        rebuild?: string[];
+        scratch: string[];
+        system_os?: string[];
+        system_provider?: string[];
+        arch?: string[];
+        seconds_taken?: string[];
+        type: ArtifactType[];
+    };
+    groups: string[];
+    href: string;
+    id: number;
+    note: string;
+    /**
+     * Based on mapping at:
+     * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-complete.yaml#_8
+     * https://pagure.io/fedora-ci/messages/blob/master/f/mappings/results/brew-build.test.complete.yaml#_3
+     * https://pagure.io/fedora-ci/messages/blob/master/f/mappings/results/brew-build.test.error.yaml#_3
+     */
+    outcome: GreenwaveRequirementOutcome;
+    /**
+     * ref_url - always run.url, for old and new mapping:
+     * https://github.com/release-engineering/resultsdb-updater/blob/master/resultsdbupdater/utils.py#L343
+     */
+    ref_url: string;
+    submit_time: string;
+    testcase: {
+        href: string;
+        name: string;
+        ref_url: string;
+    };
+};
+
+/**
+    "comment": "The tests were never even started.",
+    "id": 256,
+    "product_version": "fedora-32",
+    "proxied_by": "bodhi@service",
+    "subject": {
+        "item": "bodhi-5.1.1-1.fc32",
+        "type": "koji_build"
+    },
+    "subject_identifier": "bodhi-5.1.1-1.fc32",
+    "subject_type": "koji_build",
+    "testcase": "dist.rpmdeplint",
+    "timestamp": "2020-02-03T14:16:32.017146",
+    "username": "alice",
+    "waived": true
+*/
+export type GreenwaveWaiveType = {
+    comment: string;
+    id: number;
+    product_version: string;
+    proxied_by: string;
+    subject: {
+        item: string;
+        type: string;
+    };
+    subject_identifier: string;
+    subject_type: string;
+    testcase: string;
+    timestamp: string;
+    username: string;
+    waived: boolean;
+};
+
+export type GreenwaveDecisionReplyType = {
+    policies_satisfied: boolean;
+    summary: string;
+    applicable_policies: string[];
+    waivers: GreenwaveWaiveType[];
+    results: GreenwaveResultType[];
+    satisfied_requirements: GreenwaveRequirementType[];
+    unsatisfied_requirements: GreenwaveRequirementType[];
+};
+
+export type StageNameType =
+    | 'test'
+    | 'build'
+    | 'dispatcher'
+    | 'dispatch'
+    | 'greenwave';
+
+export type StateNameType = 'error' | 'queued' | 'running' | 'complete';
+
+/**
+ * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-complete.yaml#_14
+ *
+ * complete is expanded to:
+ *
+ * - passed
+ * - failed
+ * - info
+ * - needs_inspection
+ * - not_applicable
+ */
+export type StateExtendedTestMsgName =
+    | 'info'
+    | 'passed'
+    | 'failed'
+    | 'not_applicable'
+    | 'needs_inspection'
+    | StateNameType;
+
+export type StateExtendedName =
+    /* greenwave result */
+    'additional-tests' | StateExtendedTestMsgName | GreenwaveRequirementTypes;
+
+export interface StateGreenwaveAndTestMsg {
+    /* greenwave state */
+    gs: StateGreenwave;
+    /* message state */
+    ms: StateTestMsg;
+}
+
+export type StateMsg = StateTestMsg | StateEtaMsg;
+
+export type ArtifactState =
+    | StateMsg
+    | StateGreenwave
+    | StateGreenwaveAndTestMsg;
+
+export type StatesByCategoryType = {
+    [key in StateExtendedName]?: ArtifactState[];
+};
+
+export interface StateGreenwave {
+    waiver?: GreenwaveWaiveType;
+    result?: GreenwaveResultType;
+    testcase: string;
+    requirement?: GreenwaveRequirementType;
+}
+
+export interface DbErrataToolAutomationStateType {
+    msg_id: string;
+    version: string;
+    timestamp: number;
+}
+
+export interface ArtifactChildren {
+    hits: StateMsg[];
+    hitsInfo: HitsInfo;
+}
+
+export interface HitsInfo {
+    total: { value: number };
+}
+
+export interface StateTestMsg {
+    hitInfo: HitInfo;
+    hitSource: HitSourceChildTestMsg;
+    customMetadata?: Metadata;
+}
+
+export interface StateEtaMsg {
+    hitInfo: HitInfo;
+    hitSource: HitSourceChildEtaMessage;
+}
+
+export interface HitSourceChildEtaMessage {
+    nvr: string;
+    aType: string;
+    taskId: string;
+    issuer: string;
+    component: string;
+    brokerMsgId: string;
+    brokerTopic: string;
+    etaCiRunUrl: string;
+    etaCiRunOutcome: string;
+    etaCiRunExplanation: string;
+}
+
+export interface HitSourceChildTestMsg {
+    nvr: string;
+    aType: string;
+    taskId: string;
+    issuer: string;
+    scratch: boolean;
+    threadId: string;
+    component: string;
+    testState: string;
+    testStage: string;
+    brokerTopic: string;
+    brokerMsgId: string;
+    testCaseName: string;
+    msgFullText: string;
+    rawData: {
+        message: {
+            brokerExtra: any;
+            brokerMsgId: string;
+            brokerMsgBody: any;
+            brokerMsgTopic: string;
+        };
+    };
+    artToMsgs: {
+        name: 'message';
+        parent: string;
+    };
+}
+
+export const KnownKaiStates: StateNameType[] = [
+    'error',
+    'queued',
+    'running',
+    'complete',
+];
+
+export type ComponentComponentMappingType = {
+    component_name: string;
+    product_id: number;
+    description: string;
+    def_assignee: string;
+    def_assignee_name: string;
+    qa_contact: string;
+    qa_contact_name: string;
+    sst_team_name: string;
+    _updated: string;
+};
+
+/**
+ * GraphQL KojiInstanceInputType
+ */
+export type KojiInstance = 'cs' | 'fp' | 'rh';
+/**
+ * GraphQL DistGitInstanceInputType
+ */
+export type DistGitInstance = KojiInstance;
+/**
+ * GraphQL MbsInstanceInputType
+ */
+export type MbsInstanceType = KojiInstance;
+
+export const kojiInstance = (type: ArtifactType): KojiInstance => {
+    switch (type) {
+        case 'koji-build':
+            return 'fp';
+        case 'koji-build-cs':
+            return 'cs';
+        case 'brew-build':
+        case 'redhat-module':
+            return 'rh';
+        default:
+            throw new Error(`Unknown type: ${type}`);
+    }
+};
+
+export interface CommitObject {
+    committer_date_seconds: number;
+    committer_email: string;
+    committer_name: string;
+}
+
+export interface KojiBuildTag {
+    id: number;
+    name: string;
+}
+
+export interface KojiBuildTagging {
+    active: boolean;
+    create_ts: number;
+    creator_id: number;
+    creator_name: string;
+    revoke_ts?: number;
+    revoker_id?: number;
+    revoker_name?: string;
+    tag_id: number;
+    tag_name: string;
+}
+
+export interface KojiHistory {
+    tag_listing: KojiBuildTagging[];
+}
+
+export interface KojiBuildInfo {
+    build_id: number;
+    commit_obj?: CommitObject;
+    completion_time: string;
+    completion_ts: number;
+    history?: KojiHistory;
+    name: string;
+    nvr: string;
+    owner_id: number;
+    owner_name: string;
+    package_id?: number;
+    release?: string;
+    source: string;
+    tags: KojiBuildTag[];
+    version?: string;
+}
+
+export interface KojiTaskInfo {
+    builds?: KojiBuildInfo[];
+}
+
+export interface MbsTask {
+    id?: number;
+    nvr: string;
+}
+
+export interface MbsBuildInfo {
+    commit?: CommitObject;
+    id: number;
+    name: string;
+    owner: string;
+    scmurl?: string;
+    tag_history?: KojiHistory;
+    tags?: KojiBuildTag[];
+    tasks: MbsTask[];
+    time_completed?: string;
+}
+
+export interface ErrataLinkedAdvisory {
+    build_id: number;
+    build_nvr: string;
+    advisory_id: number;
+    product_name: string;
+    advisory_name: string;
+    advisory_status: string;
+}
+
+/**
+ * TypeScript guards
+ */
+export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRpm {
+    const { hitSource } = artifact;
+    return (
+        hitSource.aType === 'brew-build' ||
+        hitSource.aType === 'koji-build' ||
+        hitSource.aType === 'koji-build-cs'
+    );
+}
+
+export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMbs {
+    const { hitSource } = artifact;
+    return hitSource.aType === 'redhat-module';
+}
+
+export function isArtifactCompose(
+    artifact: Artifact,
+): artifact is ArtifactCompose {
+    const { hitSource } = artifact;
+    return hitSource.aType === 'productmd-compose';
+}
+
+export function isArtifactRedhatContainerImage(
+    artifact: Artifact,
+): artifact is ArtifactContainerImage {
+    const { hitSource } = artifact;
+    return hitSource.aType === 'redhat-container-image';
+}
+
+export function isArtifactScratch(artifact: Artifact): boolean {
+    if (
+        isArtifactRPM(artifact) ||
+        isArtifactMBS(artifact) ||
+        isArtifactRedhatContainerImage(artifact)
+    ) {
+        return artifact.hitSource.scratch;
+    }
+    return false;
+}
+
+// REMOVED
+
+// /*
+//  * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/redhat-container-image.yaml
+//  */
+// export interface PayloadContainerImageType {
+//     id: string;
+//     nvr: string;
+//     tag?: string;
+//     name?: string;
+//     source?: string;
+//     issuer: string;
+//     task_id: number;
+//     build_id?: number;
+//     scratch: boolean;
+//     component: string;
+//     namespace?: string;
+//     full_names: string[];
+//     registry_url?: string;
+//     /*
+//      * Entries come from: VirtualTopic.eng.brew.build.complete
+//      * https://datagrepper.engineering.redhat.com/raw?topic=/topic/VirtualTopic.eng.brew.build.complete&delta=86400&contains=container_build
+//      */
+//     osbs_subtypes?: string[];
+// }
+//
+// export interface PayloadComposeBuildType {
+//     compose_id: string;
+//     compose_type: ComposeType;
+// }
+//
+// export interface PayloadRPMBuildType {
+//     nvr: string;
+//     source: string;
+//     issuer: string;
+//     task_id: number;
+//     build_id: number;
+//     scratch: boolean;
+//     component: string;
+//     gate_tag_name: string;
+// }
+//
+// export interface PayloadMBSBuildType {
+//     context: string;
+//     id: number;
+//     issuer: string;
+//     name: string;
+//     nsvc: string;
+//     nvr: string;
+//     stream: string;
+//     version: string;
+//     source: string;
+//     scratch: boolean;
+//     component: string;
+//     gate_tag_name: string;
+// }
+//
+
+/*
+export type StateKaiType = {
+    broker_msg_body: BrokerMessagesType;
+    custom_metadata?: Metadata;
+    kai_state: KaiStateType;
+};
+
+    broker_msg_body: BrokerMessagesType;
+    custom_metadata?: Metadata;
+    kai_state: KaiStateType;
+
+export interface KaiStateType {
+    stage: StageNameType;
+    state: StateNameType;
+    msg_id: string;
+    version: string;
+    thread_id: string;
+    timestamp: number;
+    origin: {
+        reason: string;
+        creator: string;
+    };
+    test_case_name: string;
+}
+*/
