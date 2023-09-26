@@ -21,10 +21,10 @@
 import { gql } from '@apollo/client';
 import {
     Artifact,
-    ComponentComponentMappingType,
     KojiTaskInfo,
     MbsBuildInfo,
-} from '../artifact';
+    ComponentComponentMappingType,
+} from '../types';
 
 const stateEntryFragment = gql`
     fragment StateEntryFragment on StateType {
@@ -63,6 +63,7 @@ const statesFragment = gql`
     ${stateEntryFragment}
 `;
 
+/**
 const etaStatesFragment = gql`
     fragment EtaStatesFragment on ArtifactType {
         _id
@@ -78,7 +79,6 @@ const etaStatesFragment = gql`
     ${stateEntryFragment}
 `;
 
-/**
 export const ArtifactsQuery = gql`
     query Artifacts(
         $atype: String!
