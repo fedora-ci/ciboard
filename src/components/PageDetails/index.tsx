@@ -38,18 +38,18 @@ import { useQuery, ApolloError, QueryHookOptions } from '@apollo/client';
 import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';
 
 import './index.css';
-import { config } from '../../config';
 import { CiTest } from './types';
-import { Artifact } from '../../artifact';
 import { BuildInfo } from './BuildInfo';
 import { WaiveModal } from '../WaiveForm';
 import { extractTests } from './artifactTests';
 import { DetailsDrawer } from './DetailsDrawer';
 import { ArtifactHeader } from './Header';
-import { getArtifactName } from '../../utils/artifactUtils';
 import { TestResultsTable } from './TestResultsTable';
 import { SelectedTestContext } from './contexts';
 import { PageCommon, ToastAlertGroup } from '../PageCommon';
+import { config } from '../../config';
+import { Artifact } from '../../types';
+import { getArtifactName } from '../../utils/artifact_utils';
 import {
     ArtifactsCompleteQuery,
     ArtifactsCompleteQueryData,
@@ -172,7 +172,6 @@ export function PageDetails(_props: {}) {
     const params = useParams<PageResultsNewParams>();
     const artifactId = params.artifactId || '';
     const artifactType = getArtType(artifactId);
-    let pageTitle = `Artifact search results | ${config.defaultTitle}`;
     const artTypes = [artifactType];
     const queryString = `_id: "${artifactId}"`;
     const queryVars = {

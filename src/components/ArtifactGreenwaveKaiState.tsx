@@ -60,7 +60,7 @@ import {
     getUmbDocsUrl,
     isResultWaivable,
     TestStatusIcon,
-} from '../utils/artifactUtils';
+} from '../utils/artifact_utils';
 import { ArtifactStateProps, StateLink } from './ArtifactState';
 import {
     GreenwaveDetails,
@@ -83,7 +83,7 @@ import {
     useOnceCall,
 } from './MetadataInfo';
 import { MetadataQuery } from '../queries/Metadata';
-import { getTestcaseName, getArtifactProduct } from '../utils/artifactUtils';
+import { getTestcaseName, getArtifactProduct } from '../utils/artifact_utils';
 
 interface GreenwaveKaiStateActionsProps {
     artifact: Artifact;
