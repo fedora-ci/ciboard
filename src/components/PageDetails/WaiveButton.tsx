@@ -2,6 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,12 +19,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { Button } from '@patternfly/react-core';
 import { ThumbsUpIcon } from '@patternfly/react-icons';
 
+import { Artifact } from '../../types';
 import { createWaiver } from '../../actions';
-import { Artifact } from '../../artifact';
 import { useAppDispatch } from '../../hooks';
 
 export interface WaiveButtonProps {

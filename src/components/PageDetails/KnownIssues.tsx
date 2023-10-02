@@ -28,7 +28,7 @@ import {
 
 import './index.css';
 import { MetadataKnownIssue } from '../../types';
-import { LinkifyNewTab } from '../../utils/artifactUtils';
+import { LinkifyNewTab } from '../../utils/artifact_utils';
 
 interface KnownIssueIconProps {
     severity: MetadataKnownIssue['severity'];

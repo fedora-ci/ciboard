@@ -2,6 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,38 +19,37 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { useContext } from 'react';
 import {
-    DescriptionList,
-    DescriptionListDescription,
-    DescriptionListGroup,
-    DescriptionListTerm,
-    Divider,
     Flex,
+    Text,
+    Title,
     Label,
     Stack,
-    Text,
+    Divider,
     TextContent,
-    Title,
+    DescriptionList,
+    DescriptionListTerm,
+    DescriptionListGroup,
+    DescriptionListDescription,
 } from '@patternfly/react-core';
 
 import styles from '../../custom.module.css';
 import {
     Artifact,
-    ArtifactType,
-    StateGreenwaveType,
-    StateKaiType,
-    StateType,
-} from '../../artifact';
-import {
-    getDatagrepperUrl,
-    getKaiExtendedStatus,
+    getAType,
     getThreadID,
-    isGreenwaveKaiState,
+    ArtifactType,
+    StateTestMsg,
+    ArtifactState,
+    isStateTestMsg,
+    StateGreenwave,
     isGreenwaveState,
-    isKaiState,
-} from '../../utils/artifactUtils';
+    getDatagrepperUrl,
+    isGreenwaveAndTestMsg,
+    getTestMsgExtendedStatus,
+} from '../../types';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
 import {
@@ -58,7 +58,7 @@ import {
 } from '../../utils/timeUtils';
 
 interface GreenwaveMetadataProps {
-    state: StateGreenwaveType;
+    state: StateGreenwave;
 }
 
 function GreenwaveMetadata({ state }: GreenwaveMetadataProps) {
@@ -144,16 +144,16 @@ function GreenwaveMetadata({ state }: GreenwaveMetadataProps) {
 
 interface KaiMetadataProps {
     artifactType: ArtifactType;
-    state: StateKaiType;
+    state: StateTestMsg;
 }
 
 function KaiMetadata(props: KaiMetadataProps) {
     const { artifactType, state } = props;
 
-    const messageId = state.kai_state.msg_id;
+    const messageId = state.hitSource.rawData.message.brokerMsgId;
     const datagrepperUrl = getDatagrepperUrl(messageId, artifactType);
     // The original time is in milliseconds since the Unix epoch.
-    const timestampMillis = state.kai_state.timestamp;
+    const timestampMillis = state.hitSource.timestamp;
     const timestampUnix = timestampMillis / 1000;
     const submitTime = secondsToTimestampWithTz(timestampUnix);
     // `Date()`, on the other hand, expects milliseconds.
@@ -181,7 +181,7 @@ function KaiMetadata(props: KaiMetadataProps) {
         },
         {
             label: 'Status',
-            value: getKaiExtendedStatus(state),
+            value: getTestMsgExtendedStatus(state),
         },
         {
             label: 'Thread ID',
@@ -216,16 +216,16 @@ function KaiMetadata(props: KaiMetadataProps) {
 }
 
 interface SourceLabelsProps {
-    state: StateType;
+    state: ArtifactState;
 }
 
 function SourceLabels({ state }: SourceLabelsProps) {
     return (
         <>
-            {(isGreenwaveState(state) || isGreenwaveKaiState(state)) && (
+            {(isGreenwaveState(state) || isGreenwaveAndTestMsg(state)) && (
                 <Label color="green">Greenwave</Label>
             )}
-            {(isKaiState(state) || isGreenwaveKaiState(state)) && (
+            {(isStateTestMsg(state) || isGreenwaveAndTestMsg(state)) && (
                 <Label color="green">UMB</Label>
             )}
         </>
@@ -238,10 +238,9 @@ interface TestResultMetadataProps {
 
 export function TestResultMetadata({ artifact }: TestResultMetadataProps) {
     const selectedTest = useContext(SelectedTestContext);
-
     if (!artifact || !selectedTest) return null;
-
     const state = selectedTest.originalState;
+    const aType = getAType(artifact);
 
     return (
         <Stack hasGutter>
@@ -261,21 +260,18 @@ export function TestResultMetadata({ artifact }: TestResultMetadataProps) {
                     <GreenwaveMetadata state={state} />
                 </>
             )}
-            {isKaiState(state) && (
+            {isStateTestMsg(state) && (
                 <>
                     <Divider />
-                    <KaiMetadata artifactType={artifact.type} state={state} />
+                    <KaiMetadata artifactType={aType} state={state} />
                 </>
             )}
-            {isGreenwaveKaiState(state) && (
+            {isGreenwaveAndTestMsg(state) && (
                 <>
                     <Divider />
                     <GreenwaveMetadata state={state.gs} />
                     <Divider />
-                    <KaiMetadata
-                        artifactType={artifact.type}
-                        state={state.ks}
-                    />
+                    <KaiMetadata artifactType={aType} state={state.ms} />
                 </>
             )}
         </Stack>

@@ -20,6 +20,7 @@
 
 import _ from 'lodash';
 import { TabsProps } from '@patternfly/react-core';
+import { mappingDatagrepperUrl } from './config';
 
 /**
  * Valid for: Version: 1.y.z
@@ -165,7 +166,7 @@ export namespace MSG_V_1 {
 
     export interface MsgRPMBuildTestRunning extends MessageRPMBuildTestCommon {}
 
-    export function isMsg(msg: BrokerMessagesType): msg is MessagesType {
+    export function isMsg(msg: BrokerTestMsg): msg is MessagesType {
         return msg.version.startsWith('0.2.') || msg.version.startsWith('1.');
     }
 }
@@ -285,18 +286,22 @@ export namespace MSG_V_0_1 {
         label?: string;
     };
 
-    export function isMsg(msg: BrokerMessagesType): msg is MessagesType {
+    export function isMsg(msg: BrokerTestMsg): msg is MessagesType {
         return msg.version.startsWith('0.1.');
     }
 
     export function resultHasDocs(
-        msg: BrokerMessagesType,
+        msg: BrokerTestMsg,
     ): msg is MsgRPMBuildTestComplete | MsgRPMBuildTestError {
         return _.has(msg, 'docs');
     }
 }
 
-export type BrokerMessagesType = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;
+export type BrokerMsg = BrokerTestMsg | BrokerEtaMsg;
+export type BrokerEtaMsg = unknown;
+export type BrokerTestMsg = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;
+
+// CHILD!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 /**
  * Based on all possible outcomes from: https://gitlab.cee.redhat.com/osci/errata-automation/-/blob/master/main.py
@@ -817,16 +822,16 @@ export interface HitsInfo {
 
 export interface StateTestMsg {
     hitInfo: HitInfo;
-    hitSource: HitSourceChildTestMsg;
+    hitSource: HitSourceTest;
     customMetadata?: Metadata;
 }
 
 export interface StateEtaMsg {
     hitInfo: HitInfo;
-    hitSource: HitSourceChildEtaMessage;
+    hitSource: HitSourceEta;
 }
 
-export interface HitSourceChildEtaMessage {
+export interface HitSourceEta {
     nvr: string;
     aType: string;
     taskId: string;
@@ -837,9 +842,17 @@ export interface HitSourceChildEtaMessage {
     etaCiRunUrl: string;
     etaCiRunOutcome: string;
     etaCiRunExplanation: string;
+    rawData: {
+        message: {
+            brokerExtra: any;
+            brokerMsgId: string;
+            brokerMsgBody: BrokerEtaMsg;
+            brokerMsgTopic: string;
+        };
+    };
 }
 
-export interface HitSourceChildTestMsg {
+export interface HitSourceTest {
     nvr: string;
     aType: string;
     taskId: string;
@@ -847,7 +860,7 @@ export interface HitSourceChildTestMsg {
     scratch: boolean;
     threadId: string;
     component: string;
-    testState: string;
+    testState: StateNameType;
     testStage: string;
     brokerTopic: string;
     brokerMsgId: string;
@@ -857,7 +870,7 @@ export interface HitSourceChildTestMsg {
         message: {
             brokerExtra: any;
             brokerMsgId: string;
-            brokerMsgBody: any;
+            brokerMsgBody: BrokerTestMsg;
             brokerMsgTopic: string;
         };
     };
@@ -990,7 +1003,7 @@ export interface ErrataLinkedAdvisory {
 /**
  * TypeScript guards
  */
-export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRpm {
+export function isArtifactRpm(artifact: Artifact): artifact is ArtifactRpm {
     const { hitSource } = artifact;
     return (
         hitSource.aType === 'brew-build' ||
@@ -999,7 +1012,7 @@ export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRpm {
     );
 }
 
-export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMbs {
+export function isArtifactMbs(artifact: Artifact): artifact is ArtifactMbs {
     const { hitSource } = artifact;
     return hitSource.aType === 'redhat-module';
 }
@@ -1020,13 +1033,108 @@ export function isArtifactRedhatContainerImage(
 
 export function isArtifactScratch(artifact: Artifact): boolean {
     if (
-        isArtifactRPM(artifact) ||
-        isArtifactMBS(artifact) ||
+        isArtifactRpm(artifact) ||
+        isArtifactMbs(artifact) ||
         isArtifactRedhatContainerImage(artifact)
     ) {
         return artifact.hitSource.scratch;
     }
     return false;
+}
+
+export function isStateMsg(
+    state: ArtifactState | undefined,
+): state is StateMsg {
+    return _.has(state, 'hitInfo');
+}
+
+export function isStateEtaMsg(
+    state: ArtifactState | undefined,
+): state is StateEtaMsg {
+    return _.has(state, 'hitSource.etaCiRunUrl');
+}
+
+export function isStateTestMsg(
+    state: ArtifactState | undefined,
+): state is StateTestMsg {
+    return _.has(state, 'hitSource.testState');
+}
+
+export function isGreenwaveState(
+    state: ArtifactState | undefined,
+): state is StateGreenwave {
+    return _.has(state, 'testcase');
+}
+
+export function isGreenwaveAndTestMsg(
+    state: ArtifactState | undefined,
+): state is StateGreenwaveAndTestMsg {
+    return _.has(state, 'gs') && _.has(state, 'ms');
+}
+
+/**
+ * Getters
+ */
+
+export const getMsgBody = (state: StateMsg): BrokerMsg => {
+    return state.hitSource.rawData.message.brokerMsgBody;
+};
+
+export const getAType = (artifact: Artifact): ArtifactType => {
+    return artifact.hitSource.aType;
+};
+
+export const getTestMsgBody = (state: StateTestMsg): BrokerTestMsg => {
+    return state.hitSource.rawData.message.brokerMsgBody;
+};
+
+export const getThreadID = (args: {
+    testStateMsg?: StateTestMsg;
+    brokerMsgBody?: BrokerTestMsg;
+}) => {
+    const { testStateMsg, brokerMsgBody } = args;
+    if (brokerMsgBody) {
+        if (MSG_V_0_1.isMsg(brokerMsgBody)) {
+            if (brokerMsgBody.thread_id) return brokerMsgBody.thread_id;
+        }
+        if (MSG_V_1.isMsg(brokerMsgBody)) {
+            if (brokerMsgBody.pipeline && brokerMsgBody.pipeline.id)
+                return brokerMsgBody.pipeline.id;
+        }
+    }
+    if (testStateMsg) {
+        return testStateMsg.hitSource.threadId;
+    }
+    return null;
+};
+
+export function getDatagrepperUrl(
+    messageId: string,
+    artifactType: ArtifactType,
+) {
+    const url = new URL(
+        `id?id=${messageId}&is_raw=true&size=extra-large`,
+        mappingDatagrepperUrl[artifactType],
+    );
+    return url.toString();
+}
+
+// was: getKaiExtendedStatus
+export function getTestMsgExtendedStatus(
+    state: StateTestMsg,
+): StateExtendedTestMsgName {
+    const testMsg = getTestMsgBody(state);
+    if (MSG_V_0_1.isMsg(testMsg) && 'status' in testMsg) {
+        return testMsg.status;
+    }
+    if (
+        MSG_V_1.isMsg(testMsg) &&
+        'test' in testMsg &&
+        'result' in testMsg.test
+    ) {
+        return testMsg.test.result;
+    }
+    return state.hitSource.testState;
 }
 
 // REMOVED

@@ -37,29 +37,32 @@ import moment from 'moment';
 import Linkify from 'linkify-react';
 import { IntermediateRepresentation } from 'linkifyjs';
 import {
+    MSG_V_1,
     Artifact,
-    StateMsg,
+    MSG_V_0_1,
     KojiInstance,
     ArtifactType,
     StateTestMsg,
+    BrokerTestMsg,
     isArtifactMBS,
     isArtifactRPM,
     ArtifactState,
+    getTestMsgBody,
+    isStateTestMsg,
     StateGreenwave,
-    MbsInstanceType,
     DistGitInstance,
+    MbsInstanceType,
+    isGreenwaveState,
     isArtifactCompose,
     HitSourceArtifactRpm,
     HitSourceArtifactMbs,
-    HitSourceChildTestMsg,
-    StateGreenwaveAndTestMsg,
+    isGreenwaveAndTestMsg,
     StateExtendedTestMsgName,
     GreenwaveRequirementTypes,
     isArtifactRedhatContainerImage,
     HitSourceArtifactContainerImage,
 } from '../types';
 import { config, mappingDatagrepperUrl } from '../config';
-import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 
 /**
  * Typescript guards
@@ -68,28 +71,6 @@ import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 // XXX
 // ETA + Test -> are all children
 // states_eta: StateErrataToolAutomationType[];
-export function isStateArtifactChild(state: ArtifactState): state is StateMsg {
-    return _.has(state, 'hitInfo');
-}
-
-export function isStateMsg(
-    state: ArtifactState | undefined,
-): state is StateMsg {
-    return _.has(state, 'hitInfo');
-}
-
-export function isGreenwaveState(
-    state: ArtifactState | undefined,
-): state is StateGreenwave {
-    return _.has(state, 'testcase');
-}
-
-export function isGreenwaveAndTestMsg(
-    state: ArtifactState | undefined,
-): state is StateGreenwaveAndTestMsg {
-    return _.has(state, 'gs') && _.has(state, 'ms');
-}
-
 /**
  * Return a human-readable label for a given artifact type,
  * for example 'Brew' for 'brew-build'.
@@ -268,7 +249,7 @@ export const getArtifactLocalPath = (artifact: Artifact) =>
  * @returns URL to documentation as provided by the CI system or `undefined`.
  */
 export function getUmbDocsUrl(
-    brokerMessage: BrokerMessagesType,
+    brokerMessage: BrokerTestMsg,
 ): string | undefined {
     if (MSG_V_0_1.isMsg(brokerMessage)) {
         if (MSG_V_0_1.resultHasDocs(brokerMessage)) {
@@ -297,10 +278,16 @@ export const getGreenwaveDocsUrl = (state: StateGreenwave) =>
  */
 export function getDocsUrl(state: ArtifactState): string | undefined {
     // Prefer URL from UMB message, if present.
-    if (isKaiState(state)) return getUmbDocsUrl(state.broker_msg_body);
-    if (isGreenwaveState(state)) return getGreenwaveDocsUrl(state);
-    if (isGreenwaveKaiState(state)) {
-        let docsUrl = getUmbDocsUrl(state.ks.broker_msg_body);
+    if (isStateTestMsg(state)) {
+        const testMsg = getTestMsgBody(state);
+        return getUmbDocsUrl(testMsg);
+    }
+    if (isGreenwaveState(state)) {
+        return getGreenwaveDocsUrl(state);
+    }
+    if (isGreenwaveAndTestMsg(state)) {
+        const testMsg = getTestMsgBody(state.ms);
+        let docsUrl = getUmbDocsUrl(testMsg);
         if (!docsUrl) docsUrl = getGreenwaveDocsUrl(state.gs);
         return docsUrl;
     }
@@ -311,12 +298,18 @@ export function getDocsUrl(state: ArtifactState): string | undefined {
  * @param state Gating state response object from backend.
  * @returns URL to re-run the test or `undefined` if no URL is available.
  */
-export function getRerunUrl(state: StateType): string | undefined {
+export function getRerunUrl(state: ArtifactState): string | undefined {
     // Prefer URL from UMB message, if present.
-    if (isKaiState(state)) return state.broker_msg_body.run.rebuild;
-    if (isGreenwaveState(state)) return state.result?.data.rebuild?.[0];
-    if (isGreenwaveKaiState(state)) {
-        let rerunUrl = state.ks.broker_msg_body.run.rebuild;
+    if (isStateTestMsg(state)) {
+        const testMsg = getTestMsgBody(state);
+        return testMsg.run.rebuild;
+    }
+    if (isGreenwaveState(state)) {
+        return state.result?.data.rebuild?.[0];
+    }
+    if (isGreenwaveAndTestMsg(state)) {
+        const testMsg = getTestMsgBody(state.ms);
+        let rerunUrl = testMsg.run.rebuild;
         // Try to fall back to URL stored in ResultsDB.
         if (!rerunUrl) rerunUrl = state.gs.result?.data.rebuild?.[0];
         return rerunUrl;
@@ -357,26 +350,6 @@ export const resultColors = {
 
 export const resultColor = (result: string) => {
     return _.findKey(resultColors, (item) => item.indexOf(result) !== -1);
-};
-
-export const getThreadID = (args: {
-    kai_state?: KaiStateType;
-    broker_msg_body?: BrokerMessagesType;
-}) => {
-    const { kai_state, broker_msg_body } = args;
-    if (broker_msg_body) {
-        if (MSG_V_0_1.isMsg(broker_msg_body)) {
-            if (broker_msg_body.thread_id) return broker_msg_body.thread_id;
-        }
-        if (MSG_V_1.isMsg(broker_msg_body)) {
-            if (broker_msg_body.pipeline && broker_msg_body.pipeline.id)
-                return broker_msg_body.pipeline.id;
-        }
-    }
-    if (kai_state) {
-        return kai_state.thread_id;
-    }
-    return null;
 };
 
 export const getArtifactProduct = (artifact: Artifact): string | undefined => {
@@ -423,21 +396,23 @@ export const getArtifacIssuer = (artifact: Artifact): string | null => {
     return null;
 };
 
-export const getTestcaseName = (state: StateType): string | undefined => {
+export const getTestcaseName = (state: ArtifactState): string | undefined => {
     let testCaseName: string | undefined;
-    if (isKaiState(state)) {
-        const { broker_msg_body, kai_state } = state;
-        if (kai_state?.test_case_name) {
-            testCaseName = kai_state.test_case_name;
+    if (isStateTestMsg(state)) {
+        const { hitSource } = state;
+        const { testCaseName: tcn } = hitSource;
+        const brokerMsgBody = getTestMsgBody(state);
+        if (tcn) {
+            testCaseName = tcn;
         }
-        if (broker_msg_body && _.isEmpty(testCaseName)) {
-            if (MSG_V_0_1.isMsg(broker_msg_body)) {
-                const { category, namespace, type } = broker_msg_body;
+        if (brokerMsgBody && _.isEmpty(testCaseName)) {
+            if (MSG_V_0_1.isMsg(brokerMsgBody)) {
+                const { category, namespace, type } = brokerMsgBody;
                 if (category && namespace && type)
                     testCaseName = `${namespace}.${type}.${category}`;
             }
-            if (MSG_V_1.isMsg(broker_msg_body)) {
-                const { category, namespace, type } = broker_msg_body.test;
+            if (MSG_V_1.isMsg(brokerMsgBody)) {
+                const { category, namespace, type } = brokerMsgBody.test;
                 if (category && namespace && type)
                     testCaseName = `${namespace}.${type}.${category}`;
             }
@@ -446,7 +421,7 @@ export const getTestcaseName = (state: StateType): string | undefined => {
     if (isGreenwaveState(state) && state.testcase) {
         testCaseName = state.testcase;
     }
-    if (isGreenwaveKaiState(state) && state.gs.testcase) {
+    if (isGreenwaveAndTestMsg(state) && state.gs.testcase) {
         testCaseName = state.gs.testcase;
     }
     if (_.isUndefined(testCaseName)) {
@@ -455,27 +430,27 @@ export const getTestcaseName = (state: StateType): string | undefined => {
     return testCaseName;
 };
 
-export const getXunit = (broker_msg_body: BrokerMessagesType) => {
-    if (MSG_V_0_1.isMsg(broker_msg_body)) {
-        if ('xunit' in broker_msg_body && broker_msg_body.xunit)
-            return broker_msg_body.xunit;
+export const getXunit = (brokerMsgBody: BrokerTestMsg) => {
+    if (MSG_V_0_1.isMsg(brokerMsgBody)) {
+        if ('xunit' in brokerMsgBody && brokerMsgBody.xunit)
+            return brokerMsgBody.xunit;
     }
-    if (MSG_V_1.isMsg(broker_msg_body)) {
-        if (broker_msg_body.test && broker_msg_body.test.xunit)
-            return broker_msg_body.test.xunit;
+    if (MSG_V_1.isMsg(brokerMsgBody)) {
+        if (brokerMsgBody.test && brokerMsgBody.test.xunit)
+            return brokerMsgBody.test.xunit;
     }
     return null;
 };
 
-export const getMessageError = (broker_msg_body: BrokerMessagesType) => {
-    if (MSG_V_0_1.isMsg(broker_msg_body) && 'reason' in broker_msg_body) {
+export const getMessageError = (brokerMsgBody: BrokerTestMsg) => {
+    if (MSG_V_0_1.isMsg(brokerMsgBody) && 'reason' in brokerMsgBody) {
         return {
-            issue_url: broker_msg_body.issue_url,
-            reason: broker_msg_body.reason,
+            issue_url: brokerMsgBody.issue_url,
+            reason: brokerMsgBody.reason,
         };
     }
-    if (MSG_V_1.isMsg(broker_msg_body) && 'error' in broker_msg_body) {
-        return broker_msg_body.error;
+    if (MSG_V_1.isMsg(brokerMsgBody) && 'error' in brokerMsgBody) {
+        return brokerMsgBody.error;
     }
 };
 
@@ -688,7 +663,7 @@ export const mkCommitHashFromSource = (source: string): string | undefined => {
  */
 export const mkLinkPkgsDevelFromSource = (
     source: string,
-    instance: KojiInstanceType,
+    instance: KojiInstance,
 ) => {
     const components = parseScmUrl(source);
     if (!components) return '';
@@ -711,7 +686,7 @@ export const mkLinkFileInGit = (
     namespace: 'rpms' | 'modules',
     commit: string,
     fileName: string,
-    instance: DistGitInstanceType,
+    instance: DistGitInstance,
 ) => {
     switch (instance) {
         case 'cs':
@@ -744,7 +719,7 @@ export const mkLinkMbsBuild = (
 
 export const mkLinkKojiWebBuildId = (
     buildId: number | string,
-    instance: KojiInstanceType,
+    instance: KojiInstance,
 ) => {
     if (!_.has(config.koji, instance)) {
         console.error(`Unknown Koji instance: ${instance}`);
@@ -756,7 +731,7 @@ export const mkLinkKojiWebBuildId = (
 
 export const mkLinkKojiWebTask = (
     taskId: number | string,
-    instance: KojiInstanceType,
+    instance: KojiInstance,
 ) => {
     if (!_.has(config.koji, instance)) {
         console.error(`Unknown Koji instance: ${instance}`);
@@ -768,7 +743,7 @@ export const mkLinkKojiWebTask = (
 
 export const mkLinkKojiWebUserId = (
     userId: number | string,
-    instance: KojiInstanceType,
+    instance: KojiInstance,
 ) => {
     if (!_.has(config.koji, instance)) {
         console.error(`Unknown Koji instance: ${instance}`);
@@ -780,7 +755,7 @@ export const mkLinkKojiWebUserId = (
 
 export const mkLinkKojiWebTagId = (
     tagId: number | string,
-    instance: KojiInstanceType,
+    instance: KojiInstance,
 ) => {
     if (!_.has(config.koji, instance)) {
         console.error(`Unknown Koji instance: ${instance}`);
@@ -795,14 +770,14 @@ export const mkLinkKojiWebTagId = (
  * See [Greenwave documentation](https://gating-greenwave.readthedocs.io/en/latest/decision_requirements.html)
  * for details.
  */
-const SATISFIED_REQUIREMENT_TYPES: GreenwaveRequirementTypesType[] = [
+const SATISFIED_REQUIREMENT_TYPES: GreenwaveRequirementTypes[] = [
     'blacklisted',
     'excluded',
     'fetched-gating-yaml',
     'test-result-passed',
 ];
 
-const isRequirementSatisfied = (state: StateGreenwaveType): boolean => {
+const isRequirementSatisfied = (state: StateGreenwave): boolean => {
     if (!state.requirement) {
         return true;
     }
@@ -815,8 +790,8 @@ const isRequirementSatisfied = (state: StateGreenwaveType): boolean => {
  * Greenwave shows all known tests from ResultsDB.
  * @param state The state object of the test result in question.
  */
-export const isResultWaivable = (state: StateType): boolean => {
-    if (isGreenwaveKaiState(state)) return !isRequirementSatisfied(state.gs);
+export const isResultWaivable = (state: ArtifactState): boolean => {
+    if (isGreenwaveAndTestMsg(state)) return !isRequirementSatisfied(state.gs);
     if (isGreenwaveState(state)) return !isRequirementSatisfied(state);
     return false;
 };
@@ -824,14 +799,14 @@ export const isResultWaivable = (state: StateType): boolean => {
 /**
  * List of Greenwave requirement types that we consider as missing.
  */
-const MISSING_REQUIREMENT_TYPES: GreenwaveRequirementTypesType[] = [
+const MISSING_REQUIREMENT_TYPES: GreenwaveRequirementTypes[] = [
     'missing-gating-yaml',
     'missing-gating-yaml-waived',
     'test-result-missing',
     'test-result-missing-waived',
 ];
 
-const isRequirementMissing = (state: StateGreenwaveType): boolean =>
+const isRequirementMissing = (state: StateGreenwave): boolean =>
     _.includes(MISSING_REQUIREMENT_TYPES, state.requirement?.type);
 
 /**
@@ -839,8 +814,8 @@ const isRequirementMissing = (state: StateGreenwaveType): boolean =>
  * @param state The Greenwave state to check.
  * @returns `true` if the required result is missing in Greenwave, `false` otherwise.
  */
-export const isResultMissing = (state: StateType): boolean => {
-    if (isGreenwaveKaiState(state)) return isRequirementMissing(state.gs);
+export const isResultMissing = (state: StateTestMsg): boolean => {
+    if (isGreenwaveAndTestMsg(state)) return isRequirementMissing(state.gs);
     if (isGreenwaveState(state)) return isRequirementMissing(state);
     return false;
 };
@@ -872,30 +847,6 @@ export type LinkifyNewTabProps = React.PropsWithChildren<{}>;
 export const LinkifyNewTab = (props: LinkifyNewTabProps) => (
     <Linkify options={{ render: renderNewTabLink }}>{props.children}</Linkify>
 );
-
-export function getKaiExtendedStatus(
-    state: StateKaiType,
-): StateExtendedKaiNameType {
-    const msg = state.broker_msg_body;
-    if (MSG_V_0_1.isMsg(msg) && 'status' in msg) {
-        return msg.status;
-    }
-    if (MSG_V_1.isMsg(msg) && 'test' in msg && 'result' in msg.test) {
-        return msg.test.result;
-    }
-    return state.kai_state.state;
-}
-
-export function getDatagrepperUrl(
-    messageId: string,
-    artifactType: ArtifactType,
-) {
-    const url = new URL(
-        `id?id=${messageId}&is_raw=true&size=extra-large`,
-        mappingDatagrepperUrl[artifactType],
-    );
-    return url.toString();
-}
 
 // REMOVED
 
