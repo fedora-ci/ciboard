@@ -44,25 +44,16 @@ import {
     ArtifactType,
     StateTestMsg,
     BrokerTestMsg,
-    isArtifactMBS,
-    isArtifactRPM,
     ArtifactState,
-    getTestMsgBody,
-    isStateTestMsg,
     StateGreenwave,
     DistGitInstance,
     MbsInstanceType,
     isGreenwaveState,
-    isArtifactCompose,
-    HitSourceArtifactRpm,
-    HitSourceArtifactMbs,
     isGreenwaveAndTestMsg,
-    StateExtendedTestMsgName,
     GreenwaveRequirementTypes,
     isArtifactRedhatContainerImage,
-    HitSourceArtifactContainerImage,
 } from '../types';
-import { config, mappingDatagrepperUrl } from '../config';
+import { config } from '../config';
 
 /**
  * Typescript guards
@@ -71,53 +62,6 @@ import { config, mappingDatagrepperUrl } from '../config';
 // XXX
 // ETA + Test -> are all children
 // states_eta: StateErrataToolAutomationType[];
-/**
- * Return a human-readable label for a given artifact type,
- * for example 'Brew' for 'brew-build'.
- */
-export const getArtifactTypeLabel = (type: ArtifactType) => {
-    const artifactTypeLabels: Record<ArtifactType, string> = {
-        'brew-build': 'Brew',
-        'copr-build': 'Copr',
-        'koji-build': 'Koji',
-        'koji-build-cs': 'CS Koji',
-        'redhat-module': 'MBS',
-        'productmd-compose': 'Compose',
-        'redhat-container-image': 'Container',
-    };
-    if (_.has(artifactTypeLabels, type)) {
-        return artifactTypeLabels[type];
-    }
-
-    console.error(`Unknown artifact type '${type}'`);
-    return 'Unknown';
-};
-
-export function getArtifactName(artifact: Artifact): string | undefined {
-    if (isArtifactRPM(artifact)) {
-        return artifact.hitSource.nvr;
-    } else if (isArtifactRedhatContainerImage(artifact)) {
-        return artifact.hitSource.nvr;
-    } else if (isArtifactMBS(artifact)) {
-        return artifact.hitSource.nsvc;
-    } else if (isArtifactCompose(artifact)) {
-        return artifact.hitSource.composeId;
-    }
-    return;
-}
-
-export function getArtifactId(artifact: Artifact): string | undefined {
-    if (isArtifactRPM(artifact)) {
-        return artifact.hitSource.taskId;
-    } else if (isArtifactRedhatContainerImage(artifact)) {
-        return artifact.hitSource.taskId;
-    } else if (isArtifactMBS(artifact)) {
-        return artifact.hitSource.mbsId;
-    } else if (isArtifactCompose(artifact)) {
-        return artifact.hitSource.composeId;
-    }
-    return;
-}
 
 const knownAidMeaning: Record<ArtifactType, string> = {
     'brew-build': 'Task ID',
@@ -198,124 +142,6 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
     return osVersion;
 };
 
-/**
- * Construct the URL for the original resource associated with the artifact,
- * for example the corresponding Koji task.
- * @returns URL to the remote resource associated with the artifact or empty string
- * if no URL could be reliably constructed.
- */
-export const getArtifactRemoteUrl = (artifact: Artifact): string => {
-    const { hitSource } = artifact;
-    const urlMap: Record<ArtifactType, string> = {
-        'brew-build': `${config.koji.rh.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceArtifactRpm).taskId
-        }`,
-        'koji-build': `${config.koji.fp.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceArtifactRpm).taskId
-        }`,
-        'koji-build-cs': `${config.koji.cs.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceArtifactRpm).taskId
-        }`,
-        'redhat-container-image': `${config.koji.rh.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceArtifactContainerImage).taskId
-        }`,
-        'copr-build': (() => {
-            // XXX: fixme
-            // const component = artifact.payload.component;
-            // const coprRepo = component.match('.*/')[0].replace('@', 'g/');
-            // const bid = artifact.aid.match('[^:]*')[0];
-            // return `https://copr.fedorainfracloud.org/coprs/${coprRepo}build/${bid}`;
-            return 'fixme';
-        })(),
-        'redhat-module': `${config.mbs.rh.webUrl}/mbs-ui/module/${
-            (hitSource as HitSourceArtifactMbs).mbsId
-        }`,
-        'productmd-compose': '',
-    };
-    return urlMap[hitSource.aType];
-};
-
-/**
- * Construct the relative path which uniquely identifies artifact in CI Dashboard UI.
- * @returns Subpath relative to the CI Dashboard root.
- */
-
-export const getArtifactLocalPath = (artifact: Artifact) =>
-    `/details/${artifact.hitInfo._id}`;
-
-/**
- * Extract testcase documentation URL from a UMB message.
- * @param brokerMessage UMB message from CI system.
- * @returns URL to documentation as provided by the CI system or `undefined`.
- */
-export function getUmbDocsUrl(
-    brokerMessage: BrokerTestMsg,
-): string | undefined {
-    if (MSG_V_0_1.isMsg(brokerMessage)) {
-        if (MSG_V_0_1.resultHasDocs(brokerMessage)) {
-            return brokerMessage.docs;
-        }
-        return brokerMessage.ci.docs;
-    }
-    if (MSG_V_1.isMsg(brokerMessage)) {
-        return brokerMessage.test.docs;
-    }
-    return;
-}
-
-/**
- * Extract testcase documentation URL from Greenwave server response.
- * @param state Gating state response from Greenwave.
- * @returns URL to documentation as provided by the CI system or `undefined`.
- */
-export const getGreenwaveDocsUrl = (state: StateGreenwave) =>
-    state.result?.testcase.ref_url;
-
-/**
- * Extract the URL for the documentation of a CI test.
- * @param state Gating state response object from backend.
- * @returns URL of test documentation or `undefined` if none is available.
- */
-export function getDocsUrl(state: ArtifactState): string | undefined {
-    // Prefer URL from UMB message, if present.
-    if (isStateTestMsg(state)) {
-        const testMsg = getTestMsgBody(state);
-        return getUmbDocsUrl(testMsg);
-    }
-    if (isGreenwaveState(state)) {
-        return getGreenwaveDocsUrl(state);
-    }
-    if (isGreenwaveAndTestMsg(state)) {
-        const testMsg = getTestMsgBody(state.ms);
-        let docsUrl = getUmbDocsUrl(testMsg);
-        if (!docsUrl) docsUrl = getGreenwaveDocsUrl(state.gs);
-        return docsUrl;
-    }
-}
-
-/**
- * Extract the URL to re-run a test. This is typically a link to a Jenkins instance.
- * @param state Gating state response object from backend.
- * @returns URL to re-run the test or `undefined` if no URL is available.
- */
-export function getRerunUrl(state: ArtifactState): string | undefined {
-    // Prefer URL from UMB message, if present.
-    if (isStateTestMsg(state)) {
-        const testMsg = getTestMsgBody(state);
-        return testMsg.run.rebuild;
-    }
-    if (isGreenwaveState(state)) {
-        return state.result?.data.rebuild?.[0];
-    }
-    if (isGreenwaveAndTestMsg(state)) {
-        const testMsg = getTestMsgBody(state.ms);
-        let rerunUrl = testMsg.run.rebuild;
-        // Try to fall back to URL stored in ResultsDB.
-        if (!rerunUrl) rerunUrl = state.gs.result?.data.rebuild?.[0];
-        return rerunUrl;
-    }
-}
-
 export const resultColors = {
     '--pf-global--success-color--100': [
         'complete',
@@ -350,96 +176,6 @@ export const resultColors = {
 
 export const resultColor = (result: string) => {
     return _.findKey(resultColors, (item) => item.indexOf(result) !== -1);
-};
-
-export const getArtifactProduct = (artifact: Artifact): string | undefined => {
-    /*
-     * Gating based on Brew tags is available only in RHEL.
-     * Cenots/Fedora doesn't have gating workflow.
-     */
-    if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
-        const { gateTag } = artifact.hitSource;
-        if (_.isEmpty(gateTag)) {
-            return;
-        }
-        const product = gateTag.match(/^.*(rhel-\d\d?)\.$/);
-        if (_.isNil(product)) {
-            return;
-        }
-        return product[1];
-    }
-};
-
-/**
- * Get the gating tag of the given artifact, if available. In general, gating tags
- * are defined for MBS and RPM builds only.
- * @param artifact Artifact of any type.
- * @returns Gating tag if available or null if not applicable for given artifact type.
- */
-export const getArtifactGatingTag = (artifact: Artifact): string | null => {
-    if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
-        return artifact.hitSource.gateTag;
-    }
-    return null;
-};
-
-/**
- * Get the name of the issuer or owner of the given artifact, if available.
- * In general, issuer names are defined for MBS and RPM builds only.
- * @param artifact Artifact of any type.
- * @returns Issuer name if available or null if not applicable for given artifact type.
- */
-export const getArtifacIssuer = (artifact: Artifact): string | null => {
-    if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
-        return artifact.hitSource.issuer;
-    }
-    return null;
-};
-
-export const getTestcaseName = (state: ArtifactState): string | undefined => {
-    let testCaseName: string | undefined;
-    if (isStateTestMsg(state)) {
-        const { hitSource } = state;
-        const { testCaseName: tcn } = hitSource;
-        const brokerMsgBody = getTestMsgBody(state);
-        if (tcn) {
-            testCaseName = tcn;
-        }
-        if (brokerMsgBody && _.isEmpty(testCaseName)) {
-            if (MSG_V_0_1.isMsg(brokerMsgBody)) {
-                const { category, namespace, type } = brokerMsgBody;
-                if (category && namespace && type)
-                    testCaseName = `${namespace}.${type}.${category}`;
-            }
-            if (MSG_V_1.isMsg(brokerMsgBody)) {
-                const { category, namespace, type } = brokerMsgBody.test;
-                if (category && namespace && type)
-                    testCaseName = `${namespace}.${type}.${category}`;
-            }
-        }
-    }
-    if (isGreenwaveState(state) && state.testcase) {
-        testCaseName = state.testcase;
-    }
-    if (isGreenwaveAndTestMsg(state) && state.gs.testcase) {
-        testCaseName = state.gs.testcase;
-    }
-    if (_.isUndefined(testCaseName)) {
-        console.error('Could not identify testcase name in state', state);
-    }
-    return testCaseName;
-};
-
-export const getXunit = (brokerMsgBody: BrokerTestMsg) => {
-    if (MSG_V_0_1.isMsg(brokerMsgBody)) {
-        if ('xunit' in brokerMsgBody && brokerMsgBody.xunit)
-            return brokerMsgBody.xunit;
-    }
-    if (MSG_V_1.isMsg(brokerMsgBody)) {
-        if (brokerMsgBody.test && brokerMsgBody.test.xunit)
-            return brokerMsgBody.test.xunit;
-    }
-    return null;
 };
 
 export const getMessageError = (brokerMsgBody: BrokerTestMsg) => {

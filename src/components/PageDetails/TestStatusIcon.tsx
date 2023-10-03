@@ -20,16 +20,16 @@
 
 import { CSSProperties } from 'react';
 import {
-    CheckCircleIcon,
-    ExclamationCircleIcon,
-    ExclamationTriangleIcon,
+    IconSize,
     GhostIcon,
     HandPaperIcon,
-    HourglassHalfIcon,
-    IconSize,
     InfoCircleIcon,
     InProgressIcon,
+    CheckCircleIcon,
+    HourglassHalfIcon,
     QuestionCircleIcon,
+    ExclamationCircleIcon,
+    ExclamationTriangleIcon,
 } from '@patternfly/react-icons';
 
 import { TestStatus } from './types';
