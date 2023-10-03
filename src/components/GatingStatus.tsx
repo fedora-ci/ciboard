@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import _ from 'lodash';
-import * as React from 'react';
+import React from 'react';
 import {
     Flex,
     Text,
@@ -30,11 +30,11 @@ import {
 } from '@patternfly/react-core';
 
 import {
+    resultColor,
     GatingStatusIcon,
     isGatingArtifact,
-    resultColor,
 } from '../utils/artifact_utils';
-import { Artifact, GreenwaveDecisionReplyType } from '../types';
+import { Artifact, getGwDecision } from '../types';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
@@ -69,8 +69,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     if (!isGatingArtifact(artifact)) {
         return null;
     }
-    const decision: GreenwaveDecisionReplyType | undefined =
-        artifact.hitSource.greenwaveDecision;
+    const decision = getGwDecision(artifact);
     const isScratch = _.get(artifact, 'payload.scratch', true);
     if (isScratch) {
         return null;
@@ -78,7 +77,6 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     if (_.isNil(decision) && !isLoading) {
         return null;
     }
-
     const reqSummary: { [name: string]: number } = {};
     /*
      * Ignore the 'fetched-gating-yaml' virtual test as we dont display it in the UI.
@@ -95,13 +93,11 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     if (satisfiedCount) {
         reqSummary['ok'] = satisfiedCount;
     }
-
     const gatingPassed = decision?.policies_satisfied;
     const iconStyle = { height: '1.2em' };
     const statusIcon = isLoading ? null : (
         <GatingStatusIcon status={gatingPassed} style={iconStyle} />
     );
-
     return (
         <Flex flexWrap={{ default: 'nowrap' }}>
             <FlexItem>
