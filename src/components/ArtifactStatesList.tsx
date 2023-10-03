@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,30 +23,28 @@ import _ from 'lodash';
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-    Alert,
-    DataList,
-    DataListCell,
-    DataListItem,
-    DataListItemCells,
-    DataListItemRow,
-    Flex,
-    FlexItem,
     Text,
+    Flex,
+    Alert,
+    FlexItem,
+    DataList,
     TextContent,
     TextVariants,
+    DataListCell,
+    DataListItem,
+    DataListItemRow,
+    DataListItemCells,
 } from '@patternfly/react-core';
 
 import {
     Artifact,
-    StateExtendedNameType,
+    ArtifactState,
     StageNameType,
-    StateType,
-} from '../artifact';
-import {
+    StateExtendedName,
+    isKaiState,
     getTestcaseName,
     isGreenwaveState,
-    isKaiState,
-} from '../utils/artifact_utils';
+} from '../types';
 import { ArtifactState } from './ArtifactState';
 import {
     StageNameStateNameStatesType,
