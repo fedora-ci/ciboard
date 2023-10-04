@@ -19,18 +19,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { StateGreenwaveType, StateKaiType } from '../artifact';
-import {
-    ScmUrlComponents,
-    isResultWaivable,
-    parseScmUrl,
-    getRerunUrl,
-} from './artifact_utils';
+import { StateGreenwave, StateTestMsg, getRerunUrl } from '../types';
+import { ScmUrlComponents, isResultWaivable, parseScmUrl } from './utils';
 
 describe('getRerunUrl', () => {
     test('get rerun URL from pure Greenwave state', () => {
         const rerunUrl = 'https://example.com/jenkins/job/12345/rerun';
-        const greenwaveState: StateGreenwaveType = {
+        const greenwaveState: StateGreenwave = {
             testcase: 'fedora-ci.koji-build.tier0.functional',
             requirement: {
                 type: 'test-result-passed',
@@ -71,7 +66,7 @@ describe('getRerunUrl', () => {
     });
 
     test('return undefined if rerun URL not in pure Greenwave state', () => {
-        const greenwaveState: StateGreenwaveType = {
+        const greenwaveState: StateGreenwave = {
             testcase: 'fedora-ci.koji-build.tier0.functional',
             requirement: {
                 type: 'test-result-passed',
@@ -92,7 +87,7 @@ describe('getRerunUrl', () => {
 
 describe('isResultWaiable', () => {
     test('passed result is not waivable', () => {
-        const greenwaveState: StateGreenwaveType = {
+        const greenwaveState: StateGreenwave = {
             testcase: 'fedora-ci.koji-build.tier0.functional',
             requirement: {
                 type: 'test-result-passed',
@@ -111,7 +106,7 @@ describe('isResultWaiable', () => {
     });
 
     test('excluded result is not waivable', () => {
-        const greenwaveState: StateGreenwaveType = {
+        const greenwaveState: StateGreenwave = {
             testcase: 'fedora-ci.koji-build.tier1.functional',
             requirement: {
                 type: 'excluded',
@@ -130,7 +125,7 @@ describe('isResultWaiable', () => {
     });
 
     test('failed result is waivable', () => {
-        const greenwaveState: StateGreenwaveType = {
+        const greenwaveState: StateGreenwave = {
             testcase: 'fedora-ci.koji-build.rpminspect.static-analysis',
             requirement: {
                 type: 'test-result-failed',
@@ -149,7 +144,7 @@ describe('isResultWaiable', () => {
     });
 
     test('waived failed result is waivable', () => {
-        const greenwaveState: StateGreenwaveType = {
+        const greenwaveState: StateGreenwave = {
             testcase: 'fedora-ci.koji-build.rpminspect.static-analysis',
             requirement: {
                 type: 'test-result-failed-waived',
@@ -168,36 +163,48 @@ describe('isResultWaiable', () => {
     });
 
     test('pure UMB result is not waivable', () => {
-        const kaiState: StateKaiType = {
-            broker_msg_body: {
-                run: { log: 'empty', url: 'https://example.com/test-run' },
-                test: {
-                    category: 'static-analysis',
-                    namespace: 'fedora-ci.koji-build',
-                    result: 'passed',
-                    type: 'rpminspect',
+        const kaiState: StateTestMsg = {
+            hitSource: {
+                rawData: {
+                    message: {
+                        brokerExtra: 'any',
+                        brokerMsgId: 'string',
+                        brokerMsgTopic: 'string',
+                        brokerMsgBody: {
+                            run: {
+                                log: 'empty',
+                                url: 'https://example.com/test-run',
+                            },
+                            test: {
+                                category: 'static-analysis',
+                                namespace: 'fedora-ci.koji-build',
+                                result: 'passed',
+                                type: 'rpminspect',
+                            },
+                            system: [],
+                            version: '1.2.0',
+                            contact: {
+                                docs: 'https://testing.example.com/docs',
+                                email: 'testing@example.com',
+                                name: 'Testing Team CI',
+                                team: 'Testing Team',
+                            },
+                            artifact: {
+                                component: 'gnome-abrt',
+                                id: 50915701,
+                                issuer: 'auto-build',
+                                nvr: 'gnome-abrt-1.4.2-1.fc36',
+                                scratch: false,
+                                type: 'brew-build',
+                            },
+                            pipeline: {
+                                id: 'testing-pipeline/job/xy/1112',
+                                name: 'rpminspect pipeline',
+                            },
+                            generated_at: '2023-03-01 11:57 +01:00',
+                        },
+                    },
                 },
-                system: [],
-                version: '1.2.0',
-                contact: {
-                    docs: 'https://testing.example.com/docs',
-                    email: 'testing@example.com',
-                    name: 'Testing Team CI',
-                    team: 'Testing Team',
-                },
-                artifact: {
-                    component: 'gnome-abrt',
-                    id: 50915701,
-                    issuer: 'auto-build',
-                    nvr: 'gnome-abrt-1.4.2-1.fc36',
-                    scratch: false,
-                    type: 'brew-build',
-                },
-                pipeline: {
-                    id: 'testing-pipeline/job/xy/1112',
-                    name: 'rpminspect pipeline',
-                },
-                generated_at: '2023-03-01 11:57 +01:00',
             },
             kai_state: {
                 msg_id: 'ID:testing-jenkings:919191:1:0:1',
