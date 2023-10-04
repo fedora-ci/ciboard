@@ -36,7 +36,7 @@ import {
     getArtifactRemoteUrl,
     getArtifactTypeLabel,
     getArtifactId,
-} from '../../utils/artifact_utils';
+} from '../../utils/utils';
 import { ExternalLink } from '../ExternalLink';
 import { Artifact, isArtifactScratch } from '../../types';
 import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';

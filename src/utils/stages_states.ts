@@ -19,35 +19,52 @@
  */
 import _ from 'lodash';
 
-import { getTestcaseName } from './artifact_utils';
 import {
     MSG_V_1,
     Artifact,
-    StateMsg,
+    ChildMsg,
     MSG_V_0_1,
-    StateTestMsg,
-    ArtifactState,
-    StateNameType,
-    StageNameType,
-    KnownKaiStates,
+    StateName,
+    MsgStageName,
+    ChildTestMsg,
+    ArtifactChild,
+    KnownMsgStates,
     getTestMsgBody,
-    StateGreenwave,
-    isGreenwaveState,
-    isStateTestMsg,
-    GreenwaveResultType,
-    StatesByCategoryType,
+    ChildGreenwave,
+    isChildTestMsg,
+    getTestcaseName,
+    GreenwaveResult,
+    isGreenwaveChild,
+    ChildrenByStateName,
+    GreenwaveRequirement,
     isGreenwaveAndTestMsg,
-    StateExtendedTestMsgName,
-    StateGreenwaveAndTestMsg,
-    GreenwaveRequirementType,
+    GreenwaveDecisionReply,
+    TestMsgStateName,
+    ChildGreenwaveAndTestMsg,
     GreenwaveRequirementTypes,
-    GreenwaveDecisionReplyType,
 } from '../types';
 
+/**
+ * Derived from topic
+ *
+ * Stage can be: 'build', 'dispatch', 'test', 'promote', etc....
+ * stage (in standard called as `event`) is always the second item from the end of the topic
+ * Examples:
+ *
+ * * pull-request.test.error -> test
+ * * brew-build.promote.error -> promote
+ *
+ * State is always the latest part of the topic
+ * Examples:
+ *
+ *  * brew-build.promote.error -> error
+ *  * brew-build.test.complete -> complete
+ */
+
 export type StageNameStateNameStates = [
-    StageNameType,
-    StateExtendedTestMsgName,
-    ArtifactState[],
+    MsgStageName,
+    TestMsgStateName,
+    ArtifactChild[],
 ];
 
 /**
@@ -57,8 +74,8 @@ export const mkStagesAndStates = (
     artifact: Artifact,
 ): StageNameStateNameStates[] => {
     const stagesStates: Array<{
-        stage: StageNameType;
-        states: StatesByCategoryType;
+        stage: MsgStageName;
+        children: ChildrenByStateName;
     }> = [];
     // Preprocess Kai results into a list of results sorted by stage and state.
     const kaiStagesStates = mkStagesTestStates(artifact);
@@ -106,7 +123,7 @@ export const mkStagesAndStates = (
  * @returns All items from the `stagesStates` array that are in the stage `stage`.
  */
 const filterByStageName = (
-    stage: StageNameType,
+    stage: MsgStageName,
     stagesStates: StageNameStateNameStates[],
 ) =>
     _.filter(
@@ -116,10 +133,10 @@ const filterByStageName = (
 
 const getKaiState = (
     states: StageNameStateNameStates[],
-    stateNameReq: StateExtendedTestMsgName,
+    stateNameReq: TestMsgStateName,
     runUrl: string,
     msgId: string | undefined,
-): StateTestMsg | undefined => {
+): ChildTestMsg | undefined => {
     const s = _.find(
         states,
         ([_stageName, stateName, _states]) =>
@@ -127,9 +144,9 @@ const getKaiState = (
     );
     if (_.isNil(s)) return;
     const [_stageName, _stateName, testStates] = s;
-    const kaiState = _.find(testStates as StateTestMsg[], (state) => {
+    const kaiState = _.find(testStates as ChildTestMsg[], (child) => {
         /* this is broken and should be removed */
-        const testMsg = getTestMsgBody(state);
+        const testMsg = getTestMsgBody(child);
         const theSameRefUrl = runUrl === testMsg.run.url;
         /*
          * Next test should stay. It must be the only 1 way to test Greenwave-to-Kai correspondance.
@@ -139,7 +156,7 @@ const getKaiState = (
         const theSameMsgId =
             _.isString(msgId) &&
             !_.isEmpty(msgId) &&
-            msgId === state.hitSource.rawData.message.brokerMsgId;
+            msgId === child.hitSource.rawData.message.brokerMsgId;
         return theSameMsgId || theSameRefUrl;
     });
     return kaiState;
@@ -190,8 +207,8 @@ const getKaiState = (
 const mkStagesTestStates = (
     artifact: Artifact,
 ): {
-    stage: StageNameType;
-    states: StatesByCategoryType;
+    stage: MsgStageName;
+    children: ChildrenByStateName;
 }[] => {
     const stageStates = [];
     const buildStates = _.omitBy(
@@ -199,7 +216,7 @@ const mkStagesTestStates = (
         (x) => _.isEmpty(x),
     );
     if (_.some(_.values(buildStates), 'length')) {
-        const stage: StageNameType = 'build';
+        const stage: MsgStageName = 'build';
         stageStates.push({ stage, states: buildStates });
     }
     /*
@@ -213,23 +230,24 @@ const mkStagesTestStates = (
             running: []
         }
     */
-    let testStates: StatesByCategoryType = transformTestMsgStates(
+    // XXXXXXXX ?????????????
+    let testStates: ChildrenByStateName = transformTestMsgStates(
         artifact.children.hits,
         'test',
     );
     testStates = _.omitBy(testStates, (x) => _.isEmpty(x));
     if (_.some(_.values(testStates), 'length')) {
-        const stage: StageNameType = 'test';
+        const stage: MsgStageName = 'test';
         stageStates.push({ stage, states: testStates });
     }
     return stageStates;
 };
 
 const mkGreenwaveStateReq = (
-    req: GreenwaveRequirementType,
-    decision: GreenwaveDecisionReplyType,
-): StateGreenwave => {
-    const state: StateGreenwave = {
+    req: GreenwaveRequirement,
+    decision: GreenwaveDecisionReply,
+): ChildGreenwave => {
+    const state: ChildGreenwave = {
         testcase: req.testcase,
         requirement: req,
     };
@@ -243,13 +261,13 @@ const mkGreenwaveStateReq = (
 };
 
 const mkGreenwaveStageStates = (
-    decision: GreenwaveDecisionReplyType,
+    decision: GreenwaveDecisionReply,
 ): {
     /* stage is always `greenwave` */
-    stage: StageNameType;
-    states: StatesByCategoryType;
+    stage: MsgStageName;
+    children: ChildrenByStateName;
 } => {
-    const states: StatesByCategoryType = {};
+    const children: ChildrenByStateName = {};
     const reqStatesGreenwave = mkReqStatesGreenwave(decision);
     const resultStatesGreenwave = mkResultStatesGreenwave(decision);
     _.assign(states, reqStatesGreenwave, resultStatesGreenwave);
@@ -257,25 +275,25 @@ const mkGreenwaveStageStates = (
 };
 
 const mkReqStatesGreenwave = (
-    decision: GreenwaveDecisionReplyType,
-): StatesByCategoryType => {
+    decision: GreenwaveDecisionReply,
+): ChildrenByStateName => {
     const { satisfied_requirements, unsatisfied_requirements } = decision;
-    const requirements: GreenwaveRequirementType[] = _.concat(
+    const requirements: GreenwaveRequirement[] = _.concat(
         satisfied_requirements,
         unsatisfied_requirements,
     );
     /* {'test-result-passed' : [GreenwaveRequirementType], 'fetched-gating-yaml' : ... } */
     const requirementsByType = _.groupBy(requirements, 'type');
     /* {'test-result-passed' : [StateGreenWaveType], 'fetched-gating-yaml' : ... } */
-    const statesByReqType: StatesByCategoryType = {};
+    const statesByReqType: ChildrenByStateName = {};
     _.forOwn(
         requirementsByType,
         (
-            reqsByType: GreenwaveRequirementType[],
+            reqsByType: GreenwaveRequirement[],
             reqType /* GreenwaveRequirementTypesType */,
         ) => {
             /* [r1,r2,r3] => [{req:r1}, {req:r2}, {req:r3}] */
-            const greenwaveStates: StateGreenwave[] = _.map(reqsByType, (req) =>
+            const greenwaveStates: ChildGreenwave[] = _.map(reqsByType, (req) =>
                 mkGreenwaveStateReq(req, decision),
             );
             statesByReqType[reqType as GreenwaveRequirementTypes] =
@@ -286,22 +304,22 @@ const mkReqStatesGreenwave = (
 };
 
 const mkResultStatesGreenwave = (
-    decision: GreenwaveDecisionReplyType,
-): StatesByCategoryType => {
+    decision: GreenwaveDecisionReply,
+): ChildrenByStateName => {
     const { satisfied_requirements, unsatisfied_requirements, results } =
         decision;
-    const requirements: GreenwaveRequirementType[] = _.concat(
+    const requirements: GreenwaveRequirement[] = _.concat(
         satisfied_requirements,
         unsatisfied_requirements,
     );
-    const resultsToShow: GreenwaveResultType[] = _.filter(
+    const resultsToShow: GreenwaveResult[] = _.filter(
         results,
         (result) =>
             !requirements.some((req) => result.testcase.name === req.testcase),
     );
-    const resultStates: StateGreenwave[] = _.map(
+    const resultStates: ChildGreenwave[] = _.map(
         resultsToShow,
-        (res): StateGreenwave => ({
+        (res): ChildGreenwave => ({
             testcase: res.testcase.name,
             result: res,
         }),
@@ -318,8 +336,8 @@ stage_states_array is the second form:
 */
 const mkStageStatesArray = (
     stageStates: Array<{
-        stage: StageNameType;
-        states: StatesByCategoryType;
+        stage: MsgStageName;
+        children: ChildrenByStateName;
     }>,
 ): StageNameStateNameStates[] => {
     const stageStatesArray: StageNameStateNameStates[] = [];
@@ -328,7 +346,7 @@ const mkStageStatesArray = (
             /** _.toPairs(obj) ===> [pair1, pair2, pair3] where pair == [key, value] */
             stageStatesArray.push([
                 stage,
-                stateName as StateExtendedTestMsgName,
+                stateName as TestMsgStateName,
                 statesList,
             ]);
         }
@@ -349,8 +367,8 @@ const mergeKaiAndGreenwaveState = (
         stageStatesArray,
     );
     const kaiStageStates = filterByStageName('test', stageStatesArray);
-    _.forEach(greenwaveStageStates, ([_stageName, _stateName, states]) => {
-        _.forEach(states as StateGreenwave[], (greenwaveState, index) => {
+    _.forEach(greenwaveStageStates, ([_stageName, _stateName, children]) => {
+        _.forEach(children as ChildGreenwave[], (greenwaveState, index) => {
             const outcome = greenwaveState.result?.outcome;
             const refUrl = greenwaveState.result?.ref_url;
             const msgId = greenwaveState.result?.data.msg_id?.[0];
@@ -359,18 +377,18 @@ const mergeKaiAndGreenwaveState = (
             }
             const kaiState = getKaiState(
                 kaiStageStates,
-                _.toLower(outcome) as StateExtendedTestMsgName,
+                _.toLower(outcome) as TestMsgStateName,
                 refUrl,
                 msgId,
             );
             if (_.isNil(kaiState)) {
                 return;
             }
-            const newState: StateGreenwaveAndTestMsg = {
+            const newState: ChildGreenwaveAndTestMsg = {
                 gs: greenwaveState,
                 ms: kaiState,
             };
-            states[index] = newState;
+            children[index] = newState;
         });
     });
 };
@@ -386,7 +404,7 @@ const minimizeStagesStates = (
     const greenwaveTestNames: string[] = [];
     _.forEach(greenwave, ([_stageName, _stateName, states]) =>
         _.forEach(states, (state) => {
-            if (isGreenwaveState(state)) {
+            if (isGreenwaveChild(state)) {
                 greenwaveTestNames.push(state.testcase);
             }
             if (isGreenwaveAndTestMsg(state)) {
@@ -396,12 +414,12 @@ const minimizeStagesStates = (
     );
     // Remove Kai results that appear in the above array.
     const test = filterByStageName('test', stageStatesArray);
-    _.forEach(test, ([_stageName, _stateName, states]) => {
-        _.remove(states, (state) => {
-            if (!isStateTestMsg(state)) {
+    _.forEach(test, ([_stageName, _stateName, children]) => {
+        _.remove(children, (child) => {
+            if (!isChildTestMsg(child)) {
                 return false;
             }
-            const testCaseName = getTestcaseName(state);
+            const testCaseName = getTestcaseName(child);
             return _.includes(greenwaveTestNames, testCaseName);
         });
     });
@@ -412,13 +430,13 @@ const minimizeStagesStates = (
 };
 
 const getTestCompleteResult = (
-    state: StateTestMsg,
-    reqStage: StageNameType,
-    reqState: StateNameType,
+    state: ChildTestMsg,
+    reqStage: MsgStageName,
+    reqState: StateName,
 ): string | undefined => {
     if (
-        state.hitSource.testStage !== reqStage ||
-        state.hitSource.testState !== reqState
+        state.hitSource.msgStage !== reqStage ||
+        state.hitSource.msgState !== reqState
     ) {
         return undefined;
     }
@@ -448,133 +466,144 @@ const getTestCompleteResult = (
  */
 // was: transformKaiStates
 export const transformTestMsgStates = (
-    states: StateMsg[],
-    stage: StageNameType,
-): StatesByCategoryType => {
-    const states_by_category: StatesByCategoryType = {};
+    children: ChildMsg[],
+    stage: MsgStageName,
+): ChildrenByStateName => {
+    const statesByCategory: ChildrenByStateName = {};
     /** statesNames: ['running', 'complete'] */
-    const statesNames: StateNameType[] = _.intersection<StateNameType>(
-        _.map(
-            states,
-            _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),
-        ),
-        KnownKaiStates,
+    const statesNames: StateName[] = _.intersection<StateName>(
+        _.map(children, _.flow(_.identity, _.partialRight(_.get, 'msgState'))),
+        KnownMsgStates,
     );
-    _.forEach(statesNames, (state_name) => {
+    _.forEach(statesNames, (stateName) => {
         /**
          * For complete test states, count failed, passed and other events
          */
         /**
          * complete tests to extended: [passed, failed, info, needs_inspection, not_applicable]
          */
-        if (state_name === 'complete' && stage === 'test') {
+        if (stateName === 'complete' && stage === 'test') {
             /**
              * pass tests
              */
-            const category_passed = _.filter(states, (state: StateTestMsg) => {
-                const testResult = getTestCompleteResult(
-                    state,
-                    stage,
-                    state_name,
-                );
-                return _.includes(['PASS', 'PASSED'], _.toUpper(testResult));
-            });
+            const category_passed = _.filter(
+                children,
+                (child: ChildTestMsg) => {
+                    const testResult = getTestCompleteResult(
+                        child,
+                        stage,
+                        stateName,
+                    );
+                    return _.includes(
+                        ['PASS', 'PASSED'],
+                        _.toUpper(testResult),
+                    );
+                },
+            );
             if (!_.isEmpty(category_passed)) {
-                states_by_category.passed = category_passed;
+                statesByCategory.passed = category_passed;
             }
             /**
              * failed tests
              */
-            const category_failed = _.filter(states, (state: StateTestMsg) => {
-                const testResult = getTestCompleteResult(
-                    state,
-                    stage,
-                    state_name,
-                );
-                return _.includes(['FAIL', 'FAILED'], _.toUpper(testResult));
-            });
+            const category_failed = _.filter(
+                children,
+                (child: ChildTestMsg) => {
+                    const testResult = getTestCompleteResult(
+                        child,
+                        stage,
+                        stateName,
+                    );
+                    return _.includes(
+                        ['FAIL', 'FAILED'],
+                        _.toUpper(testResult),
+                    );
+                },
+            );
             if (!_.isEmpty(category_failed)) {
-                states_by_category.failed = category_failed;
+                statesByCategory.failed = category_failed;
             }
             /**
              * info tests
              */
-            const category_info = _.filter(states, (state: StateTestMsg) => {
+            const category_info = _.filter(children, (child: ChildTestMsg) => {
                 const testResult = getTestCompleteResult(
-                    state,
+                    child,
                     stage,
-                    state_name,
+                    stateName,
                 );
                 return _.isEqual('INFO', _.toUpper(testResult));
             });
             if (!_.isEmpty(category_info)) {
-                states_by_category.info = category_info;
+                statesByCategory.info = category_info;
             }
             /**
              * needs_inspection tests
              */
             const category_needs_inspections = _.filter(
-                states,
-                (state: StateTestMsg) => {
+                children,
+                (state: ChildTestMsg) => {
                     const testResult = getTestCompleteResult(
                         state,
                         stage,
-                        state_name,
+                        stateName,
                     );
                     return _.isEqual('NEEDS_INSPECTION', _.toUpper(testResult));
                 },
             );
             if (!_.isEmpty(category_needs_inspections)) {
-                states_by_category.needs_inspection =
-                    category_needs_inspections;
+                statesByCategory.needs_inspection = category_needs_inspections;
             }
             /**
              * not_applicable tests
              */
             const category_not_applicable = _.filter(
-                states,
-                (state: StateTestMsg) => {
+                children,
+                (child: ChildTestMsg) => {
                     const testResult = getTestCompleteResult(
-                        state,
+                        child,
                         stage,
-                        state_name,
+                        stateName,
                     );
                     return _.isEqual('NOT_APPLICABLE', _.toUpper(testResult));
                 },
             );
             if (!_.isEmpty(category_not_applicable)) {
-                states_by_category.not_applicable = category_not_applicable;
+                statesByCategory.not_applicable = category_not_applicable;
             }
-        } else if (state_name === 'error' && stage === 'build') {
-            const category_failed = _.filter(states, (state: StateTestMsg) => {
-                if (
-                    state.hitSource.testStage === stage &&
-                    state.hitSource.testState === state_name
-                ) {
-                    return true;
-                }
-                return false;
-            });
+        } else if (stateName === 'error' && stage === 'build') {
+            const category_failed = _.filter(
+                children,
+                (child: ChildTestMsg) => {
+                    if (
+                        child.hitSource.msgStage === stage &&
+                        child.hitSource.msgState === stateName
+                    ) {
+                        return true;
+                    }
+                    return false;
+                },
+            );
             if (!_.isEmpty(category_failed)) {
-                states_by_category.failed = category_failed;
+                statesByCategory.failed = category_failed;
             }
         } else {
             /** other categories for asked stage */
-            const category_other = _.filter(states, (state: StateTestMsg) => {
-                const hitSource = state.hitSource;
+            const category_other = _.filter(children, (child: ChildTestMsg) => {
+                const hitSource = child.hitSource;
                 if (
-                    hitSource.testStage === stage &&
-                    hitSource.testState === state_name
+                    hitSource.msgStage === stage &&
+                    hitSource.msgState === stateName
                 ) {
                     return true;
                 }
                 return false;
             });
             if (!_.isEmpty(category_other)) {
-                states_by_category[state_name] = category_other;
+                statesByCategory[stateName] = category_other;
             }
         }
     });
 
-    return states_by_category;
+    return statesByCategory;
 };

@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,75 +19,76 @@
  */
 
 import _ from 'lodash';
-import classNames from 'classnames';
-import * as React from 'react';
+import React from 'react';
 import { useState } from 'react';
+import classNames from 'classnames';
 import {
-    DataListCell,
-    DataListContent,
-    DataListItem,
-    DataListItemCells,
-    DataListItemRow,
-    DataListToggle,
+    Tab,
     Flex,
-    FlexItem,
+    Tabs,
+    Text,
     Label,
     Spinner,
-    Tab,
-    Tabs,
+    FlexItem,
     TabsProps,
+    TextContent,
     TabTitleIcon,
     TabTitleText,
-    Text,
-    TextContent,
     TextVariants,
+    DataListCell,
+    DataListItem,
+    DataListToggle,
+    DataListItemRow,
+    DataListContent,
+    DataListItemCells,
 } from '@patternfly/react-core';
 import { useLazyQuery } from '@apollo/client';
 import {
+    ListIcon,
+    WeeblyIcon,
+    RegistryIcon,
+    InfoCircleIcon,
+    RegisteredIcon,
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
-    InfoCircleIcon,
-    ListIcon,
-    RegisteredIcon,
-    RegistryIcon,
-    WeeblyIcon,
 } from '@patternfly/react-icons';
 
 import styles from '../custom.module.css';
-import { Artifact, StateGreenwaveKaiType } from '../artifact';
 import {
+    Artifact,
     getRerunUrl,
     getUmbDocsUrl,
-    isResultWaivable,
-    TestStatusIcon,
-} from '../utils/artifact_utils';
+    getTestcaseName,
+    getArtifactProduct,
+    ChildGreenwaveAndTestMsg,
+} from '../types';
+import { TestStatusIcon, isResultWaivable } from '../utils/utils';
 import { ArtifactStateProps, StateLink } from './ArtifactState';
 import {
+    WaiveButton,
+    GreenwaveWaiver,
     GreenwaveDetails,
     GreenwaveResultInfo,
-    GreenwaveWaiver,
-    WaiveButton,
 } from './ArtifactGreenwaveState';
 import {
-    KaiDetailedResults,
+    ResultNote,
     KaiDocsButton,
     KaiRerunButton,
     KaiStateMapping,
-    ResultNote,
+    KaiDetailedResults,
 } from './ArtifactKaiState';
 import {
-    MetadataQueryResult,
-    TestDependency,
     TestInfo,
-    TestKnownIssues,
     useOnceCall,
+    TestDependency,
+    TestKnownIssues,
+    MetadataQueryResult,
 } from './MetadataInfo';
 import { MetadataQuery } from '../queries/Metadata';
-import { getTestcaseName, getArtifactProduct } from '../utils/artifact_utils';
 
 interface GreenwaveKaiStateActionsProps {
     artifact: Artifact;
-    state: StateGreenwaveKaiType;
+    state: ChildGreenwaveAndTestMsg;
 }
 
 export const GreenwaveKaiStateActions: React.FC<

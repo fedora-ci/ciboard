@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { humanReadableTime, secondsToTimestampWithTz } from './timeUtils';
+import { secondsToTimestampWithTz } from './timeUtils';
 
 describe('secondsToTimestampWithTz() function', () => {
     test('zero time converts correctly', () => {
