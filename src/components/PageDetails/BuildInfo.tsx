@@ -86,7 +86,7 @@ import {
     mkLinkKojiWebBuildId,
     mkCommitHashFromSource,
     mkLinkPkgsDevelFromSource,
-} from '../../utils/artifact_utils';
+} from '../../utils/utils';
 import {
     secondsToTimestampWithTz,
     timestampToTimestampWithTz,

@@ -38,7 +38,7 @@ import {
     isGreenwaveState,
     isKaiState,
     getTestcaseName,
-} from '../utils/artifact_utils';
+} from '../utils/utils';
 import { StateType, Artifact, StateExtendedNameType } from '../artifact';
 import { ArtifactKaiState, ArtifactKaiStateProps } from './ArtifactKaiState';
 import {

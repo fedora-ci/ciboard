@@ -33,7 +33,7 @@ import {
     resultColor,
     GatingStatusIcon,
     isGatingArtifact,
-} from '../utils/artifact_utils';
+} from '../utils/utils';
 import { Artifact, getGwDecision } from '../types';
 
 interface PrintRequirementsSizeProps {

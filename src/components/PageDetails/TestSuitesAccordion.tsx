@@ -37,7 +37,7 @@ import update from 'immutability-helper';
 
 import './index.css';
 import { TestSuite } from '../../testsuite';
-import { TestStatusIcon } from '../../utils/artifact_utils';
+import { TestStatusIcon } from '../../utils/utils';
 import { TestSuiteDisplay } from '../TestSuites';
 import { Artifact } from '../../types';
 import { SelectedTestContext } from './contexts';
