@@ -21,35 +21,32 @@
 
 import * as _ from 'lodash';
 
+import { CiContact, CiTest, TestStatus } from './types';
 import {
     MSG_V_1,
     Artifact,
+    getMsgId,
     MSG_V_0_1,
-    StateTestMsg,
-    ArtifactState,
-    isStateTestMsg,
+    StateName,
+    getDocsUrl,
+    getRerunUrl,
+    ChildTestMsg,
+    isChildTestMsg,
     getTestMsgBody,
     MetadataContact,
-    isGreenwaveState,
-    StateExtendedName,
+    getTestcaseName,
+    isGreenwaveChild,
+    TestMsgStateName,
     MetadataDependency,
     GreenwaveWaiveType,
     isGreenwaveAndTestMsg,
-    StateExtendedTestMsgName,
+    getTestMsgExtendedStatus,
     GreenwaveRequirementOutcome,
 } from '../../types';
-import {
-    getDocsUrl,
-    getRerunUrl,
-    getMessageError,
-    getTestcaseName,
-    isResultWaivable,
-    getTestMsgExtendedStatus,
-} from '../../utils/utils';
+import { getMessageError, isResultWaivable } from '../../utils/utils';
 import { mkStagesAndStates } from '../../utils/stages_states';
-import { CiContact, CiTest, TestStatus } from './types';
 
-function transformUmbStatus(stateName: StateExtendedTestMsgName): TestStatus {
+function transformUmbStatus(stateName: TestMsgStateName): TestStatus {
     if (
         ['error', 'test-result-errored', 'test-result-errored-waived'].includes(
             stateName,
@@ -104,7 +101,7 @@ function transformGreenwaveOutcome(
     return 'failed';
 }
 
-function extractContactFromUmb(test: StateTestMsg): CiContact | undefined {
+function extractContactFromUmb(test: ChildTestMsg): CiContact | undefined {
     const testMsg = getTestMsgBody(test);
     let contact: MSG_V_0_1.MsgContactType | MSG_V_1.MsgContactType | undefined;
     if (MSG_V_0_1.isMsg(testMsg)) {
@@ -128,15 +125,15 @@ function extractContactFromUmb(test: StateTestMsg): CiContact | undefined {
     };
 }
 
-function extractContact(test: StateTestMsg): CiContact {
+function extractContact(test: ChildTestMsg): CiContact {
     let contact: CiContact = {};
     let metadataContact: MetadataContact | undefined;
 
-    if (isGreenwaveState(test)) {
+    if (isGreenwaveChild(test)) {
         // This is handled later in the UI by querying custom metadata.
         return contact;
     }
-    if (isStateTestMsg(test)) {
+    if (isChildTestMsg(test)) {
         _.merge(contact, extractContactFromUmb(test));
         metadataContact = test.customMetadata?.payload?.contact;
     }
@@ -174,10 +171,7 @@ function extractContact(test: StateTestMsg): CiContact {
     return contact;
 }
 
-function transformTest(
-    test: StateTestMsg,
-    stateName: StateExtendedName,
-): CiTest {
+function transformTest(test: ChildTestMsg, stateName: StateName): CiTest {
     const contact = extractContact(test);
     let dependencies: MetadataDependency[] | undefined;
     let description: string | undefined;
@@ -189,22 +183,22 @@ function transformTest(
     const name = getTestcaseName(test);
     const rerunUrl = getRerunUrl(test);
     const required =
-        (isGreenwaveState(test) || isGreenwaveAndTestMsg(test)) &&
+        (isGreenwaveChild(test) || isGreenwaveAndTestMsg(test)) &&
         stateName !== 'additional-tests';
     let runDetailsUrl: string | undefined;
     const waivable = isResultWaivable(test);
     let waiver: GreenwaveWaiveType | undefined;
 
-    if (isGreenwaveState(test)) {
+    if (isGreenwaveChild(test)) {
         waiver = test.waiver;
-    } else if (isStateTestMsg(test)) {
+    } else if (isChildTestMsg(test)) {
         const testMsg = getTestMsgBody(test);
         dependencies = test.customMetadata?.payload?.dependency;
         description = test.customMetadata?.payload?.description;
         error = getMessageError(testMsg);
         knownIssues = test.customMetadata?.payload?.known_issues;
         logsUrl = testMsg.run.log;
-        messageId = test.kai_state.msg_id;
+        messageId = getMsgId(test);
         runDetailsUrl = testMsg.run.url;
     } else if (isGreenwaveAndTestMsg(test)) {
         dependencies = test.ms.custom_metadata?.payload?.dependency;
@@ -218,19 +212,22 @@ function transformTest(
     }
 
     let status = transformUmbStatus(stateName);
-    if (isGreenwaveState(test) && test.result && !waiver) {
+    if (isGreenwaveChild(test) && test.result && !waiver) {
         status = transformGreenwaveOutcome(
             test.result.outcome,
             stateName !== 'additional-tests',
         );
     } else if (
-        isGreenwaveKaiState(test) &&
+        isGreenwaveAndTestMsg(test) &&
         test.gs.result &&
         stateName !== 'additional-tests' &&
         !waiver
     ) {
         status = transformGreenwaveOutcome(test.gs.result.outcome, true);
-    } else if (isGreenwaveKaiState(test) && stateName === 'additional-tests') {
+    } else if (
+        isGreenwaveAndTestMsg(test) &&
+        stateName === 'additional-tests'
+    ) {
         /*
          * TODO: For some osci and baseos-ci tests, this will return `failed`
          * even if the failure is in infrastructure. The message is sent to

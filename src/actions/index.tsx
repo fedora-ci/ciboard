@@ -28,7 +28,7 @@ import * as alertsSlice from '../slices/alertsSlice';
 import * as authSlice from '../slices/authSlice';
 import * as gatingTestsFormSlice from '../slices/gatingTestsFormSlice';
 import * as waiveSlice from '../slices/waiveSlice';
-import { Artifact, PayloadRPMBuildType } from '../artifact';
+import { Artifact } from '../types';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
 

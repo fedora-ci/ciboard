@@ -41,11 +41,11 @@ import {
     getAType,
     getThreadID,
     ArtifactType,
-    StateTestMsg,
-    ArtifactState,
-    isStateTestMsg,
-    StateGreenwave,
-    isGreenwaveState,
+    ChildTestMsg,
+    ArtifactChild,
+    isChildTestMsg,
+    ChildGreenwave,
+    isGreenwaveChild,
     getDatagrepperUrl,
     isGreenwaveAndTestMsg,
     getTestMsgExtendedStatus,
@@ -58,10 +58,10 @@ import {
 } from '../../utils/timeUtils';
 
 interface GreenwaveMetadataProps {
-    state: StateGreenwave;
+    aChild: ChildGreenwave;
 }
 
-function GreenwaveMetadata({ state }: GreenwaveMetadataProps) {
+function GreenwaveMetadata({ aChild }: GreenwaveMetadataProps) {
     /*
      * Greenwave returns a timestamp without a time zone, e.g.
      * 2023-07-19T12:14:02.630361. However, we know the timestamp
@@ -69,16 +69,16 @@ function GreenwaveMetadata({ state }: GreenwaveMetadataProps) {
      * takes it into accoutn.
      */
     const submitTimeTz =
-        state.result?.submit_time && `${state.result?.submit_time}Z`;
+        aChild.result?.submit_time && `${aChild.result?.submit_time}Z`;
     const submitTimeReadable =
         submitTimeTz && timestampToTimestampWithTz(submitTimeTz);
 
     const items = [
         {
             label: 'ResultsDB',
-            value: state.result?.href && (
-                <ExternalLink hasIcon href={state.result.href}>
-                    Result #{state.result.id}
+            value: aChild.result?.href && (
+                <ExternalLink hasIcon href={aChild.result.href}>
+                    Result #{aChild.result.id}
                 </ExternalLink>
             ),
         },
@@ -92,28 +92,28 @@ function GreenwaveMetadata({ state }: GreenwaveMetadataProps) {
         },
         {
             label: 'Req. type',
-            value: state.requirement?.type,
+            value: aChild.requirement?.type,
         },
         {
             label: 'Req. scenario',
-            value: state.requirement?.scenario,
+            value: aChild.requirement?.scenario,
         },
         {
             label: 'Req. source',
-            value: state.requirement?.source && (
-                <ExternalLink hasIcon href={state.requirement.source}>
+            value: aChild.requirement?.source && (
+                <ExternalLink hasIcon href={aChild.requirement.source}>
                     Link
                 </ExternalLink>
             ),
         },
         {
             label: 'Outcome',
-            value: state.result?.outcome,
+            value: aChild.result?.outcome,
         },
         {
             label: 'Ref. URL',
-            value: state.result?.ref_url && (
-                <ExternalLink hasIcon href={state.result.ref_url}>
+            value: aChild.result?.ref_url && (
+                <ExternalLink hasIcon href={aChild.result.ref_url}>
                     Link
                 </ExternalLink>
             ),
@@ -144,16 +144,16 @@ function GreenwaveMetadata({ state }: GreenwaveMetadataProps) {
 
 interface KaiMetadataProps {
     artifactType: ArtifactType;
-    state: StateTestMsg;
+    aChild: ChildTestMsg;
 }
 
 function KaiMetadata(props: KaiMetadataProps) {
-    const { artifactType, state } = props;
+    const { artifactType, aChild } = props;
 
-    const messageId = state.hitSource.rawData.message.brokerMsgId;
+    const messageId = aChild.hitSource.rawData.message.brokerMsgId;
     const datagrepperUrl = getDatagrepperUrl(messageId, artifactType);
     // The original time is in milliseconds since the Unix epoch.
-    const timestampMillis = state.hitSource.timestamp;
+    const timestampMillis = aChild.hitSource.timestamp;
     const timestampUnix = timestampMillis / 1000;
     const submitTime = secondsToTimestampWithTz(timestampUnix);
     // `Date()`, on the other hand, expects milliseconds.
@@ -181,15 +181,15 @@ function KaiMetadata(props: KaiMetadataProps) {
         },
         {
             label: 'Status',
-            value: getTestMsgExtendedStatus(state),
+            value: getTestMsgExtendedStatus(aChild),
         },
         {
             label: 'Thread ID',
-            value: getThreadID(state),
+            value: getThreadID(aChild),
         },
         {
             label: 'Message version',
-            value: state.kai_state.version,
+            value: aChild.kai_state.version,
         },
     ];
 
@@ -216,16 +216,16 @@ function KaiMetadata(props: KaiMetadataProps) {
 }
 
 interface SourceLabelsProps {
-    state: ArtifactState;
+    aChild: ArtifactChild;
 }
 
-function SourceLabels({ state }: SourceLabelsProps) {
+function SourceLabels({ aChild }: SourceLabelsProps) {
     return (
         <>
-            {(isGreenwaveState(state) || isGreenwaveAndTestMsg(state)) && (
+            {(isGreenwaveChild(aChild) || isGreenwaveAndTestMsg(aChild)) && (
                 <Label color="green">Greenwave</Label>
             )}
-            {(isStateTestMsg(state) || isGreenwaveAndTestMsg(state)) && (
+            {(isChildTestMsg(aChild) || isGreenwaveAndTestMsg(aChild)) && (
                 <Label color="green">UMB</Label>
             )}
         </>
@@ -239,7 +239,7 @@ interface TestResultMetadataProps {
 export function TestResultMetadata({ artifact }: TestResultMetadataProps) {
     const selectedTest = useContext(SelectedTestContext);
     if (!artifact || !selectedTest) return null;
-    const state = selectedTest.originalState;
+    const aChild = selectedTest.originalState;
     const aType = getAType(artifact);
 
     return (
@@ -252,26 +252,26 @@ export function TestResultMetadata({ artifact }: TestResultMetadataProps) {
             </TextContent>
             <Flex spaceItems={{ default: 'spaceItemsSm' }}>
                 <span>Source of data:</span>
-                <SourceLabels state={state} />
+                <SourceLabels aChild={aChild} />
             </Flex>
-            {isGreenwaveState(state) && (
+            {isGreenwaveChild(aChild) && (
                 <>
                     <Divider />
-                    <GreenwaveMetadata state={state} />
+                    <GreenwaveMetadata aChild={aChild} />
                 </>
             )}
-            {isStateTestMsg(state) && (
+            {isChildTestMsg(aChild) && (
                 <>
                     <Divider />
-                    <KaiMetadata artifactType={aType} state={state} />
+                    <KaiMetadata artifactType={aType} aChild={aChild} />
                 </>
             )}
-            {isGreenwaveAndTestMsg(state) && (
+            {isGreenwaveAndTestMsg(aChild) && (
                 <>
                     <Divider />
-                    <GreenwaveMetadata state={state.gs} />
+                    <GreenwaveMetadata aChild={aChild.gs} />
                     <Divider />
-                    <KaiMetadata artifactType={aType} state={state.ms} />
+                    <KaiMetadata artifactType={aType} aChild={aChild.ms} />
                 </>
             )}
         </Stack>

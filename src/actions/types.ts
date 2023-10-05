@@ -21,7 +21,7 @@
 import React from 'react';
 import { AlertVariant } from '@patternfly/react-core';
 
-import { Artifact } from '../artifact';
+import { Artifact } from '../types';
 
 export const SST_PAGE = 'SST_PAGE';
 export const SST_MENU = 'SUBMIT_MENU';
