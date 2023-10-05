@@ -61,9 +61,10 @@ import {
  *  * brew-build.test.complete -> complete
  */
 
+// XXX: rename
 export type StageNameStateNameStates = [
     MsgStageName,
-    TestMsgStateName,
+    StateName,
     ArtifactChild[],
 ];
 

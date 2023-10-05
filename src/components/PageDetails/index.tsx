@@ -48,8 +48,7 @@ import { TestResultsTable } from './TestResultsTable';
 import { SelectedTestContext } from './contexts';
 import { PageCommon, ToastAlertGroup } from '../PageCommon';
 import { config } from '../../config';
-import { Artifact } from '../../types';
-import { getArtifactName } from '../../utils/utils';
+import { Artifact, getArtifactName } from '../../types';
 import {
     ArtifactsCompleteQuery,
     ArtifactsCompleteQueryData,

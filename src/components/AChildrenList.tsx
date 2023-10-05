@@ -18,8 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as React from 'react';
 import _ from 'lodash';
+import React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -38,31 +38,36 @@ import {
 
 import {
     Artifact,
-    ArtifactState,
-    StageNameType,
-    StateExtendedName,
-    isKaiState,
+    StateName,
+    MsgStageName,
+    ArtifactChild,
+    isChildTestMsg,
     getTestcaseName,
-    isGreenwaveState,
+    isGreenwaveChild,
+    getAType,
+    getArtifactId,
+    getTestMsgExtendedStatus,
+    getMsgStageName,
 } from '../types';
-import { ArtifactState } from './ArtifactState';
+import { AChild } from './AChild';
 import {
-    StageNameStateNameStatesType,
     mkStagesAndStates,
+    StageNameStateNameStates,
 } from '../utils/stages_states';
 
-const artifactDashboardUrl = (artifact: Artifact) =>
-    `${window.location.origin}/#/artifact/${artifact.type}/aid/${artifact.aid}`;
+// XXX: adapt to Opensearch
+const artifactDashboardUrl = (artifact: Artifact) => {
+    const aType = getAType(artifact);
+    const aId = getArtifactId(artifact);
+    return `${window.location.origin}/#/artifact/${aType}/aid/${aId}`;
+};
 
 interface StageAndStateProps {
-    stageName: StageNameType;
-    stateName: StateExtendedNameType;
+    stageName: MsgStageName;
+    stateName: StateName;
 }
 
-function mkStageStateTitle(
-    stage: StageNameType,
-    state: StateExtendedNameType,
-): string {
+function mkStageStateTitle(stage: MsgStageName, state: StateName): string {
     if (stage === 'greenwave') {
         if (state === 'test-result-failed') return 'Failed required tests';
         /* running tests fall into 'test-result-missing' */
@@ -104,35 +109,39 @@ const StageAndState: React.FC<StageAndStateProps> = (props) => {
     );
 };
 
-const mustExpandState = (state: StateType, expandedResult: string): boolean => {
+const mustExpandState = (
+    child: ArtifactChild,
+    expandedResult: string,
+): boolean => {
     /*
      * expandedResult - is set to testcase-name by state-widget, when it handles click for expanding
      * State-widget uses call-back to set this param.
      */
-    const testcase = getTestcaseName(state);
+    const testcase = getTestcaseName(child);
     if (testcase === expandedResult) {
         return true;
     }
     return false;
 };
 
-const mkStateKey = (state: StateType): string => {
-    const testcase = getTestcaseName(state) || 'unknown';
-    if (isKaiState(state)) {
-        const { kai_state } = state;
-        return `${testcase}-${kai_state.stage}-${kai_state.state}`;
+const mkStateKey = (aChild: ArtifactChild): string => {
+    const testcase = getTestcaseName(aChild) || 'unknown';
+    if (isChildTestMsg(aChild)) {
+        const msgStage = getMsgStageName(aChild);
+        const msgState = getTestMsgExtendedStatus(aChild);
+        return `${testcase}-${msgStage}-${msgState}`;
     }
-    if (isGreenwaveState(state)) {
+    if (isGreenwaveChild(aChild)) {
         return `greenwave-${testcase}`;
     }
     return testcase;
 };
 
-interface ArtifactResultsListProps {
+interface AChildrenListProps {
     artifact: Artifact;
 }
 
-export function ArtifactStatesList(props: ArtifactResultsListProps) {
+export function AChildrenList(props: AChildrenListProps) {
     const { artifact } = props;
     const [searchParams] = useSearchParams();
     const focusedRef = useRef<HTMLDivElement>(null);
@@ -173,7 +182,7 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
         setExpandedResult(testCaseName);
         setWasExpandedForURLParam(true);
     }
-    const stagesAndStates: StageNameStateNameStatesType[] =
+    const stagesAndStates: StageNameStateNameStates[] =
         mkStagesAndStates(artifact);
     if (!_.size(stagesAndStates)) {
         return <>No test results available for this artifact.</>;
@@ -189,19 +198,22 @@ export function ArtifactStatesList(props: ArtifactResultsListProps) {
                 stateName={stateName}
             />,
         );
-        for (const state of statesList) {
+        for (const aChild of statesList) {
             /** testcase match. Can match multiple as is not unique */
-            const forceExpand: boolean = mustExpandState(state, expandedResult);
-            const key = mkStateKey(state);
+            const forceExpand: boolean = mustExpandState(
+                aChild,
+                expandedResult,
+            );
+            const key = mkStateKey(aChild);
             const ref = forceExpand ? focusedRef : undefined;
             resultRows.push(
                 <div key={key} ref={ref}>
-                    <ArtifactState
+                    <AChild
                         artifact={artifact}
                         artifactDashboardUrl={artifactDashboardUrl(artifact)}
                         forceExpand={forceExpand}
                         setExpandedResult={setExpandedResult}
-                        state={state}
+                        aChild={aChild}
                         stateName={stateName}
                     />
                 </div>,

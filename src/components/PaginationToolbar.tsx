@@ -18,8 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { Flex, FlexItem, Pagination } from '@patternfly/react-core';
 import { useApolloClient } from '@apollo/client';
+import { Flex, FlexItem, Pagination } from '@patternfly/react-core';
 
 import { useAppSelector, useAppDispatch } from '../hooks';
 import { actLoad, actPage, actPaginationSize } from './../actions';

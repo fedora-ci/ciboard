@@ -23,7 +23,7 @@ import {
     Artifact,
     KojiTaskInfo,
     MbsBuildInfo,
-    ComponentComponentMappingType,
+    ComponentMapping,
 } from '../types';
 
 const stateEntryFragment = gql`
@@ -413,7 +413,7 @@ export interface PageGatingArtifactsData {
     artifacts?: {
         has_next: boolean;
         artifacts: Artifact[] & {
-            component_mapping: ComponentComponentMappingType;
+            component_mapping: ComponentMapping;
         };
     };
 }
