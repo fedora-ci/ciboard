@@ -39,7 +39,7 @@ import './index.css';
 import { TestSuite } from '../../testsuite';
 import { TestStatusIcon } from '../../utils/utils';
 import { TestSuiteDisplay } from '../TestSuites';
-import { Artifact } from '../../types';
+import { Artifact, getAType, getArtifactId } from '../../types';
 import { SelectedTestContext } from './contexts';
 import { ArtifactsXunitQuery } from '../../queries/Artifacts';
 import { xunitParser } from '../../utils/xunitParser';
@@ -53,10 +53,11 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
         Partial<Record<number, boolean>>
     >({});
     const { artifact } = props;
-
     const selectedTest = useContext(SelectedTestContext);
     let error: string | undefined;
     let suites: TestSuite[] | undefined;
+    const artifactId = getArtifactId(artifact);
+    const aType = getAType(artifact);
 
     const {
         data,
@@ -66,7 +67,7 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
         variables: {
             atype: artifact?.hitSource.aType,
             dbFieldName1: 'aid',
-            dbFieldValues1: [artifact?.hitSource.aid],
+            dbFieldValues1: [artifactId],
             msg_id: selectedTest?.messageId,
         },
         fetchPolicy: 'cache-first',

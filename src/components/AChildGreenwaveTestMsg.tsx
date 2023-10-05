@@ -61,22 +61,24 @@ import {
     getTestcaseName,
     getArtifactProduct,
     ChildGreenwaveAndTestMsg,
+    getMsgBody,
+    getTestMsgBody,
 } from '../types';
 import { TestStatusIcon, isResultWaivable } from '../utils/utils';
-import { ArtifactStateProps, StateLink } from './ArtifactState';
+import { ArtifactStateProps, StateLink } from './AChild';
 import {
     WaiveButton,
     GreenwaveWaiver,
     GreenwaveDetails,
     GreenwaveResultInfo,
-} from './ArtifactGreenwaveState';
+} from './ArtifactGreenwaveChild';
 import {
     ResultNote,
     KaiDocsButton,
     KaiRerunButton,
     KaiStateMapping,
     KaiDetailedResults,
-} from './ArtifactKaiState';
+} from './AChildTestMsg';
 import {
     TestInfo,
     useOnceCall,
@@ -86,19 +88,20 @@ import {
 } from './MetadataInfo';
 import { MetadataQuery } from '../queries/Metadata';
 
-interface GreenwaveKaiStateActionsProps {
+interface GreenwaveTestMsgStateActionsProps {
+    aChild: ChildGreenwaveAndTestMsg;
     artifact: Artifact;
-    state: ChildGreenwaveAndTestMsg;
 }
 
-export const GreenwaveKaiStateActions: React.FC<
-    GreenwaveKaiStateActionsProps
+export const GreenwaveTestMsgStateActions: React.FC<
+    GreenwaveTestMsgStateActionsProps
 > = (props) => {
-    const { state, artifact } = props;
-    const docsUrl = getUmbDocsUrl(state.ks.broker_msg_body);
-    const rerunUrl = getRerunUrl(state);
-    const showWaiveButton = isResultWaivable(state.gs);
-    const testcase = getTestcaseName(state);
+    const { aChild, artifact } = props;
+    const msgBody = getTestMsgBody(aChild.ms);
+    const docsUrl = getUmbDocsUrl(msgBody);
+    const rerunUrl = getRerunUrl(aChild);
+    const showWaiveButton = isResultWaivable(aChild.gs);
+    const testcase = getTestcaseName(aChild);
 
     return (
         <Flex style={{ minWidth: '20em' }}>
@@ -117,19 +120,19 @@ export const GreenwaveKaiStateActions: React.FC<
     );
 };
 
-interface FaceForGreenwaveKaiStateProps {
-    state: StateGreenwaveKaiType;
+interface FaceForGreenwaveTestMsgStateProps {
+    aChild: ChildGreenwaveAndTestMsg;
     artifact: Artifact;
     artifactDashboardUrl: string;
 }
 
-export const FaceForGreenwaveKaiState: React.FC<
-    FaceForGreenwaveKaiStateProps
+export const FaceForGreenwaveTestMsgState: React.FC<
+    FaceForGreenwaveTestMsgStateProps
 > = (props) => {
-    const { artifact, artifactDashboardUrl, state } = props;
-    const { waiver } = state.gs;
+    const { artifact, artifactDashboardUrl, aChild } = props;
+    const { waiver } = aChild.gs;
     const isWaived = _.isNumber(waiver?.id);
-    const isGatingResult = _.isString(state.gs.requirement?.testcase);
+    const isGatingResult = _.isString(aChild.gs.requirement?.testcase);
     const labels: JSX.Element[] = [];
     if (isGatingResult) {
         labels.push(
@@ -150,8 +153,8 @@ export const FaceForGreenwaveKaiState: React.FC<
             </Label>,
         );
     }
-    const resultOutcome = state.gs.result?.outcome;
-    const requirementType = state.gs.requirement?.type;
+    const resultOutcome = aChild.gs.result?.outcome;
+    const requirementType = aChild.gs.requirement?.type;
     /*
      * Take requirementType as the main creterion, unless the result is missing
      * in ResultsDB. For example:
@@ -169,39 +172,42 @@ export const FaceForGreenwaveKaiState: React.FC<
                 </FlexItem>
                 <TextContent>
                     <Text className="pf-u-text-nowrap">
-                        {state.gs.testcase}
+                        {aChild.gs.testcase}
                     </Text>
                 </TextContent>
                 <Flex spaceItems={{ default: 'spaceItemsXs' }}>{labels}</Flex>
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <GreenwaveKaiStateActions artifact={artifact} state={state} />
+                <GreenwaveTestMsgStateActions
+                    artifact={artifact}
+                    aChild={aChild}
+                />
                 <StateLink
                     artifactDashboardUrl={artifactDashboardUrl}
-                    state={state}
+                    aChild={aChild}
                 />
             </Flex>
         </Flex>
     );
 };
 
-interface BodyForGreenwaveKaiStateProps {
-    state: StateGreenwaveKaiType;
+interface BodyForGreenwaveTestMsgStateProps {
+    aChild: ChildGreenwaveAndTestMsg;
     artifact: Artifact;
     isVisible: boolean;
 }
 
 export const BodyForGreenwaveKaiState: React.FC<
-    BodyForGreenwaveKaiStateProps
+    BodyForGreenwaveTestMsgStateProps
 > = (props) => {
-    const { artifact, isVisible, state } = props;
+    const { artifact, isVisible, aChild } = props;
     const [activeTabKey, setActiveTabKey] = useState<number | string>(
         'tab-test-xunit',
     );
     const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
         setActiveTabKey(tabIndex);
     };
-    const testcase_name = getTestcaseName(state);
+    const testcase_name = getTestcaseName(aChild);
     const product_version = getArtifactProduct(artifact);
     const variables: any = { testcase_name };
     if (!_.isNil(product_version)) {
@@ -265,10 +271,10 @@ export const BodyForGreenwaveKaiState: React.FC<
                     }
                     aria-label="Tab with xunit results"
                 >
-                    <GreenwaveWaiver waiver={state.gs.waiver} />
-                    <GreenwaveDetails requirement={state.gs.requirement} />
-                    <ResultNote state={state.ks} />
-                    <KaiDetailedResults artifact={artifact} state={state.ks} />
+                    <GreenwaveWaiver waiver={aChild.gs.waiver} />
+                    <GreenwaveDetails requirement={aChild.gs.requirement} />
+                    <ResultNote state={aChild.ms} />
+                    <KaiDetailedResults artifact={artifact} state={aChild.ms} />
                 </Tab>
                 <Tab
                     eventKey={'tab-test-known-issues'}
@@ -338,27 +344,27 @@ export const BodyForGreenwaveKaiState: React.FC<
                     }
                     aria-label="Tab with test details"
                 >
-                    <GreenwaveResultInfo state={state.gs} />
-                    <KaiStateMapping artifact={artifact} state={state.ks} />
+                    <GreenwaveResultInfo state={aChild.gs} />
+                    <KaiStateMapping artifact={artifact} state={aChild.ms} />
                 </Tab>
             </Tabs>
         </>
     );
 };
 
-export interface ArtifactGreenwaveKaiStateProps extends ArtifactStateProps {
-    state: StateGreenwaveKaiType;
+export interface ArtifactGreenwaveTestMsgStateProps extends ArtifactStateProps {
+    aChild: ChildGreenwaveAndTestMsg;
 }
 
-export const ArtifactGreenwaveKaiState: React.FC<
-    ArtifactGreenwaveKaiStateProps
+export const ArtifactGreenwaveTestMsgState: React.FC<
+    ArtifactGreenwaveTestMsgStateProps
 > = (props) => {
     const {
+        aChild,
         artifact,
-        artifactDashboardUrl,
         forceExpand,
         setExpandedResult,
-        state,
+        artifactDashboardUrl,
     } = props;
 
     /*
@@ -369,13 +375,13 @@ export const ArtifactGreenwaveKaiState: React.FC<
         if (forceExpand) {
             setExpandedResult('');
         } else {
-            const key = state.gs.testcase;
+            const key = aChild.gs.testcase;
             setExpandedResult(key);
         }
     };
 
     /** Note for info test results */
-    const key = state.gs.testcase;
+    const key = aChild.gs.testcase;
     const resultClasses = classNames(styles.helpSelect, {
         [styles.expandedResult]: forceExpand,
     });
@@ -400,10 +406,10 @@ export const ArtifactGreenwaveKaiState: React.FC<
                             className="pf-u-m-0 pf-u-p-0"
                             key="secondary content"
                         >
-                            <FaceForGreenwaveKaiState
+                            <FaceForGreenwaveTestMsgState
                                 artifact={artifact}
                                 artifactDashboardUrl={artifactDashboardUrl}
-                                state={state}
+                                aChild={aChild}
                             />
                         </DataListCell>,
                     ]}
@@ -414,8 +420,8 @@ export const ArtifactGreenwaveKaiState: React.FC<
                 id="ex-result-expand1"
                 isHidden={!forceExpand}
             >
-                <BodyForGreenwaveKaiState
-                    state={state}
+                <BodyForGreenwaveTestMsgState
+                    state={aChild}
                     artifact={artifact}
                     isVisible={forceExpand}
                 />
