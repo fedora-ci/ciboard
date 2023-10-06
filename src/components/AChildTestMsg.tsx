@@ -63,7 +63,6 @@ import {
     Metadata,
     Artifact,
     MSG_V_0_1,
-    getMsgBody,
     getRerunUrl,
     getThreadID,
     MsgStateName,

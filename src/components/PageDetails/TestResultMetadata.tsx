@@ -42,9 +42,12 @@ import {
     getThreadID,
     ArtifactType,
     ChildTestMsg,
+    getMsgVersion,
     ArtifactChild,
+    getTestMsgBody,
     isChildTestMsg,
     ChildGreenwave,
+    getMsgTimestamp,
     isGreenwaveChild,
     getDatagrepperUrl,
     isGreenwaveAndTestMsg,
@@ -153,11 +156,13 @@ function KaiMetadata(props: KaiMetadataProps) {
     const messageId = aChild.hitSource.rawData.message.brokerMsgId;
     const datagrepperUrl = getDatagrepperUrl(messageId, artifactType);
     // The original time is in milliseconds since the Unix epoch.
-    const timestampMillis = aChild.hitSource.timestamp;
+    const timestamp = getMsgTimestamp(aChild);
+    const timestampMillis = timestamp;
     const timestampUnix = timestampMillis / 1000;
     const submitTime = secondsToTimestampWithTz(timestampUnix);
     // `Date()`, on the other hand, expects milliseconds.
     const submitTimeIso8601 = new Date(timestampMillis).toISOString();
+    const msgBody = getTestMsgBody(aChild);
 
     const items = [
         {
@@ -185,11 +190,11 @@ function KaiMetadata(props: KaiMetadataProps) {
         },
         {
             label: 'Thread ID',
-            value: getThreadID(aChild),
+            value: getThreadID({ brokerMsgBody: msgBody }),
         },
         {
             label: 'Message version',
-            value: aChild.kai_state.version,
+            value: getMsgVersion(aChild),
         },
     ];
 
