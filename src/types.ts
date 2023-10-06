@@ -25,7 +25,7 @@ import { mappingDatagrepperUrl, config } from './config';
 /** 
  * XXXXXXXXXXX ????
 export type ChildErrataToolAutomation = {
-    broker_msg_body: EtaBrokerMessagesType;
+    broker_msg_body: EtaBrokerMessages;
     kai_state: DbErrataToolAutomationStateType;
 };
 // WAS: DbErrataToolAutomationStateType
@@ -313,7 +313,8 @@ export namespace MSG_V_0_1 {
 
 export type BrokerMsgBody = BrokerTestMsg | BrokerEtaMsg;
 export type BrokerMsgId = string;
-export type BrokerEtaMsg = unknown;
+// XXX: remove one of the:
+export type BrokerEtaMsg = EtaBrokerMessages;
 export type BrokerTestMsg = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;
 
 // CHILD!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -354,7 +355,7 @@ type ErrataAutomationBugInfo = {
  *
  *    https://issues.redhat.com/browse/OSCI-4011
  */
-export type EtaBrokerMessagesType = {
+export type EtaBrokerMessages = {
     /** https://errata.devel.redhat.com/advisory/109137 */
     advisory_url: string;
     bugs: ErrataAutomationBugInfo[];
@@ -852,11 +853,12 @@ export interface HitSourceEta {
     taskId: string;
     issuer: string;
     component: string;
-    brokerMsgId: string;
+    brokerMsgId: BrokerMsgId;
     brokerTopic: string;
     etaCiRunUrl: string;
     etaCiRunOutcome: string;
     etaCiRunExplanation: string;
+    '@timestamp': number;
     rawData: {
         message: {
             brokerExtra: any;
@@ -889,6 +891,7 @@ export interface HitSourceTest {
             brokerMsgTopic: string;
         };
     };
+    '@timestamp': number;
     artToMsgs: {
         name: 'message';
         parent: string;
@@ -1084,16 +1087,24 @@ export function isGreenwaveAndTestMsg(
  * Getters
  */
 
-export const getMsgBody = (child: ChildMsg): BrokerMsgBody => {
-    return child.hitSource.rawData.message.brokerMsgBody;
+export const getMsgBody = (aChild: ChildMsg): BrokerMsgBody => {
+    return aChild.hitSource.rawData.message.brokerMsgBody;
 };
 
-export const getTestMsgBody = (child: ChildTestMsg): BrokerTestMsg => {
-    return child.hitSource.rawData.message.brokerMsgBody;
+export const getMsgTimestamp = (aChild: ChildMsg): number => {
+    return aChild.hitSource['@timestamp'];
 };
 
-export const getMsgId = (child: ChildMsg): BrokerMsgId => {
-    return child.hitSource.rawData.message.brokerMsgId;
+export const getMsgVersion = (aChild: ChildTestMsg): string => {
+    return aChild.hitSource.rawData.message.brokerMsgBody.version;
+};
+
+export const getTestMsgBody = (aChild: ChildTestMsg): BrokerTestMsg => {
+    return aChild.hitSource.rawData.message.brokerMsgBody;
+};
+
+export const getMsgId = (aChild: ChildMsg): BrokerMsgId => {
+    return aChild.hitSource.rawData.message.brokerMsgId;
 };
 
 export const getGwDecision = (
