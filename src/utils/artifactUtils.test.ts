@@ -19,13 +19,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { StateGreenwave, StateTestMsg, getRerunUrl } from '../types';
+import { ChildGreenwave, ChildTestMsg, getRerunUrl } from '../types';
 import { ScmUrlComponents, isResultWaivable, parseScmUrl } from './utils';
 
 describe('getRerunUrl', () => {
     test('get rerun URL from pure Greenwave state', () => {
         const rerunUrl = 'https://example.com/jenkins/job/12345/rerun';
-        const greenwaveState: StateGreenwave = {
+        const greenwaveState: ChildGreenwave = {
             testcase: 'fedora-ci.koji-build.tier0.functional',
             requirement: {
                 type: 'test-result-passed',
