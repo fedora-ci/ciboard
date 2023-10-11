@@ -808,6 +808,10 @@ export interface ChildGreenwaveAndTestMsg {
 }
 
 export type ChildMsg = ChildTestMsg | ChildEtaMsg;
+export type AChildTest =
+    | ChildTestMsg
+    | ChildGreenwave
+    | ChildGreenwaveAndTestMsg;
 
 // XXX ? ArtifactChild vs ArtifactChildren !!!!!!!!!
 export type ArtifactChild =
@@ -1172,6 +1176,10 @@ export const getMsgStageName = (aChild: ChildTestMsg): MsgStageName => {
     return aChild.hitSource.msgStage;
 };
 
+export const getTestMsgStateName = (aChild: ChildTestMsg): TestMsgStateName => {
+    return aChild.hitSource.msgState;
+};
+
 export const getArtifactProduct = (artifact: Artifact): string | undefined => {
     /*
      * Gating based on Brew tags is available only in RHEL.
@@ -1216,8 +1224,8 @@ export const getArtifacIssuer = (artifact: Artifact): string | null => {
     return null;
 };
 
-export const getTestcaseName = (child: ArtifactChild): string | undefined => {
-    let testCaseName: string | undefined;
+export const getTestcaseName = (child: ArtifactChild): string => {
+    let testCaseName = 'unknonwn testcase name';
     if (isChildTestMsg(child)) {
         const { hitSource } = child;
         const { testCaseName: tcn } = hitSource;
