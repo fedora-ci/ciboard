@@ -88,9 +88,9 @@ import { isResultMissing } from '../utils/utils';
 import {
     mkLabel,
     mkPairs,
-    StateLink,
+    AChildLink,
     AChildProps,
-    StateDetailsEntry,
+    AChildDetailsEntry,
 } from './AChild';
 import { createWaiver } from '../actions';
 import { docs } from '../config';
@@ -104,7 +104,7 @@ import {
 } from './MetadataInfo';
 
 export interface PropsWithGreenwaveState {
-    state: ChildGreenwave;
+    aChild: ChildGreenwave;
 }
 
 export interface WaiveButtonProps {
@@ -140,14 +140,15 @@ export interface GreenwaveStateActionsProps extends PropsWithGreenwaveState {
     artifact: Artifact;
 }
 
-export const GreenwaveStateActions: React.FC<GreenwaveStateActionsProps> = (
+// XXX was: GreenwaveStateActions
+export const AChildGreenwaveActions: React.FC<GreenwaveStateActionsProps> = (
     props,
 ) => {
-    const { artifact, state } = props;
-    const docsUrl = getGreenwaveDocsUrl(state);
-    const rerunUrl = getRerunUrl(state);
-    const showWaiveButton = isResultWaivable(state);
-    const testcase = getTestcaseName(state);
+    const { artifact, aChild } = props;
+    const docsUrl = getGreenwaveDocsUrl(aChild);
+    const rerunUrl = getRerunUrl(aChild);
+    const showWaiveButton = isResultWaivable(aChild);
+    const testcase = getTestcaseName(aChild);
 
     return (
         <Flex style={{ minWidth: '20em' }}>
@@ -183,7 +184,7 @@ const resultMapping = [
 export const GreenwaveResultInfo: React.FC<PropsWithGreenwaveState> = (
     props,
 ) => {
-    const { result } = props.state;
+    const { result } = props.aChild;
     if (!result) return null;
     const pairs = mkPairs(resultMapping, result);
     if (_.isEmpty(pairs)) return null;
@@ -191,7 +192,7 @@ export const GreenwaveResultInfo: React.FC<PropsWithGreenwaveState> = (
         mkLabel(name, value, 'orange'),
     );
     return (
-        <StateDetailsEntry caption="Result info">
+        <AChildDetailsEntry caption="Result info">
             <Flex>
                 <FlexItem>
                     <DescriptionList
@@ -205,7 +206,7 @@ export const GreenwaveResultInfo: React.FC<PropsWithGreenwaveState> = (
                     </DescriptionList>
                 </FlexItem>
             </Flex>
-        </StateDetailsEntry>
+        </AChildDetailsEntry>
     );
 };
 
@@ -240,7 +241,7 @@ export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
 };
 
 interface GreenwaveDetailsProps {
-    requirement?: GreenwaveRequirementType;
+    requirement?: GreenwaveRequirement;
 }
 
 export const GreenwaveDetails: React.FC<GreenwaveDetailsProps> = ({
@@ -272,8 +273,8 @@ export const GreenwaveDetails: React.FC<GreenwaveDetailsProps> = ({
 export const GreenwaveResultData: React.FC<PropsWithGreenwaveState> = (
     props,
 ) => {
-    const { state } = props;
-    const { result } = state;
+    const { aChild } = props;
+    const { result } = aChild;
     if (_.isUndefined(result) || !_.isObject(result?.data)) {
         return null;
     }
@@ -312,7 +313,7 @@ export const GreenwaveResultData: React.FC<PropsWithGreenwaveState> = (
         return null;
     }
     return (
-        <StateDetailsEntry caption="Result data">
+        <AChildDetailsEntry caption="Result data">
             <Flex>
                 <DescriptionList
                     columnModifier={{
@@ -324,7 +325,7 @@ export const GreenwaveResultData: React.FC<PropsWithGreenwaveState> = (
                     {items}
                 </DescriptionList>
             </Flex>
-        </StateDetailsEntry>
+        </AChildDetailsEntry>
     );
 };
 
@@ -336,10 +337,10 @@ export interface FaceForGreenwaveStateProps extends PropsWithGreenwaveState {
 export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
     props,
 ) => {
-    const { artifact, artifactDashboardUrl, state } = props;
-    const { waiver } = state;
+    const { artifact, artifactDashboardUrl, aChild } = props;
+    const { waiver } = aChild;
     const isWaived = _.isNumber(waiver?.id);
-    const isGatingResult = _.isString(state.requirement?.testcase);
+    const isGatingResult = _.isString(aChild.requirement?.testcase);
     const labels: JSX.Element[] = [];
     if (isGatingResult) {
         labels.push(
@@ -360,8 +361,8 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
             </Label>,
         );
     }
-    const resultOutcome = state.result?.outcome;
-    const requirementType = state.requirement?.type;
+    const resultOutcome = aChild.result?.outcome;
+    const requirementType = aChild.requirement?.type;
     /*
      * Take requirementType as the main creterion, unless the result is missing
      * in ResultsDB. For example:
@@ -378,15 +379,15 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
                     <TestStatusIcon status={iconName} />
                 </FlexItem>
                 <TextContent>
-                    <Text className="pf-u-text-nowrap">{state.testcase}</Text>
+                    <Text className="pf-u-text-nowrap">{aChild.testcase}</Text>
                 </TextContent>
                 <Flex spaceItems={{ default: 'spaceItemsXs' }}>{labels}</Flex>
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <GreenwaveStateActions artifact={artifact} state={state} />
-                <StateLink
+                <AChildGreenwaveActions artifact={artifact} aChild={aChild} />
+                <AChildLink
                     artifactDashboardUrl={artifactDashboardUrl}
-                    state={state}
+                    aChild={aChild}
                 />
             </Flex>
         </Flex>
@@ -394,7 +395,7 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
 };
 
 interface BodyForGreenwaveStateProps {
-    state: ChildGreenwave;
+    aChild: ChildGreenwave;
     artifact: Artifact;
     isVisible: boolean;
 }
@@ -402,7 +403,7 @@ interface BodyForGreenwaveStateProps {
 export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
     props,
 ) => {
-    const { artifact, isVisible, state } = props;
+    const { artifact, isVisible, aChild } = props;
     const [activeTabKey, setActiveTabKey] = useState<number | string>(
         'InitialState',
     );
@@ -410,7 +411,7 @@ export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
         setActiveTabKey(tabIndex);
     };
 
-    const testcase_name = getTestcaseName(state);
+    const testcase_name = getTestcaseName(aChild);
     const product_version = getArtifactProduct(artifact);
     const variables: any = { testcase_name };
     if (!_.isNil(product_version)) {
@@ -452,11 +453,13 @@ export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
     const { contact, dependency, description, known_issues } = metadata.payload;
 
     const isTestResultsTabHidden =
-        !isResultMissing(state) && !state.waiver && !state.requirement?.details;
+        !isResultMissing(aChild) &&
+        !aChild.waiver &&
+        !aChild.requirement?.details;
     const isTestKnownIssuesTabHidden = !known_issues;
     const isTestDependencyTabHidden = !dependency;
     const isTestInfoTabHidden = !description && !contact;
-    const isTestDetailsTabHidden = !state.result;
+    const isTestDetailsTabHidden = !aChild.result;
     if (activeTabKey === 'InitialState') {
         /* find first tab with info */
         const activeTab = _.findIndex([
@@ -490,9 +493,9 @@ export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
                     }
                     aria-label="Tab with results info"
                 >
-                    <GreenwaveWaiver waiver={state.waiver} />
-                    <GreenwaveDetails requirement={state.requirement} />
-                    {isResultMissing(state) && <GreenwaveMissingHints />}
+                    <GreenwaveWaiver waiver={aChild.waiver} />
+                    <GreenwaveDetails requirement={aChild.requirement} />
+                    {isResultMissing(aChild) && <GreenwaveMissingHints />}
                 </Tab>
                 <Tab
                     eventKey={1}
@@ -563,8 +566,8 @@ export const BodyForGreenwaveState: React.FC<BodyForGreenwaveStateProps> = (
                     isHidden={isTestDetailsTabHidden}
                     aria-label="Tab with test details"
                 >
-                    <GreenwaveResultInfo state={state} />
-                    <GreenwaveResultData state={state} />
+                    <GreenwaveResultInfo aChild={aChild} />
+                    <GreenwaveResultData aChild={aChild} />
                 </Tab>
             </Tabs>
         </>
@@ -634,18 +637,18 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
     </Alert>
 );
 
-export type AChildGreenwaveProps = ArtifactStateProps & PropsWithGreenwaveState;
+export type AChildGreenwaveProps = AChildProps & PropsWithGreenwaveState;
 
 export const AChildGreenwave: React.FC<AChildGreenwaveProps> = (props) => {
     const {
-        state,
+        aChild,
         artifact,
         forceExpand,
         setExpandedResult,
         artifactDashboardUrl,
     } = props;
 
-    const { testcase } = state;
+    const { testcase } = aChild;
     /*
      * Expand a specific testcase according to query string and scroll to it
      * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
@@ -678,9 +681,9 @@ export const AChildGreenwave: React.FC<AChildGreenwaveProps> = (props) => {
                             key="secondary content"
                         >
                             <FaceForGreenwaveState
+                                aChild={aChild}
                                 artifact={artifact}
                                 artifactDashboardUrl={artifactDashboardUrl}
-                                state={state}
                             />
                         </DataListCell>,
                     ]}
@@ -692,7 +695,7 @@ export const AChildGreenwave: React.FC<AChildGreenwaveProps> = (props) => {
                 isHidden={!forceExpand}
             >
                 <BodyForGreenwaveState
-                    state={state}
+                    aChild={aChild}
                     artifact={artifact}
                     isVisible={forceExpand}
                 />
