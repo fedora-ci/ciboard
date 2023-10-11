@@ -31,7 +31,7 @@ import {
 } from '@patternfly/react-core';
 import { LinkIcon } from '@patternfly/react-icons';
 import { LinkifyNewTab } from '../utils/utils';
-import { ArtifactKaiState, ArtifactKaiStateProps } from './AChildTestMsg';
+import { AChildTestMsg, ArtifactKaiStateProps } from './AChildTestMsg';
 import { AChildGreenwave, AChildGreenwaveProps } from './AChildGreenwave';
 import {
     ArtifactGreenwaveTestMsgState,
@@ -165,7 +165,7 @@ export const AChild: React.FC<AChildProps> = (props) => {
     } else if (isGreenwaveChild(aChild)) {
         return AChildGreenwave(props as AChildGreenwaveProps);
     } else if (isChildTestMsg(aChild)) {
-        return ArtifactKaiState(props as ArtifactKaiStateProps);
+        return AChildTestMsg(props as ArtifactKaiStateProps);
     }
     return <>Cannot get test info</>;
 };
