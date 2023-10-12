@@ -22,16 +22,15 @@ import _ from 'lodash';
 import axios from 'axios';
 import { ApolloClient } from '@apollo/client';
 
+import { Artifact, getANvr, getAType } from '../types';
+import { greenwave } from '../config';
 import { GASetSearchOptionsPayload } from './types';
 import { AppDispatch, GetState } from '../reduxStore';
+import WaiverdbNewMutation from '../mutations/WaiverdbNew';
 import * as alertsSlice from '../slices/alertsSlice';
 import * as authSlice from '../slices/authSlice';
 import * as gatingTestsFormSlice from '../slices/gatingTestsFormSlice';
 import * as waiveSlice from '../slices/waiveSlice';
-import { Artifact } from '../types';
-import { greenwave } from '../config';
-import WaiverdbNewMutation from '../mutations/WaiverdbNew';
-
 export * from '../slices/artifactsSlice';
 export * from '../slices/artifactsQuerySlice';
 
@@ -130,7 +129,7 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
         // NOTE: We know that artifact.payload is not null thanks to the check at the
         // top of the function. Moreover, we know that payload has the nvr property,
         // so we assert the type of the payload here.
-        const nvr = (artifact!.payload! as PayloadRPMBuildType).nvr;
+        const nvr = getANvr(artifact!);
         if (!nvr) {
             waiveError = 'Could not get NVR, please contact support.';
             dispatch(waiveSlice.submitWaiver({ waiveError, reason: '' }));
@@ -142,21 +141,18 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
          * NOTE: We know that artifact is not null thanks to the check at the top
          * of the function.
          */
-        let artifactType = artifact!.type;
-        if (artifactType === 'brew-build' && nvr.match(/.*-container-.*/)) {
-            artifactType = 'redhat-container-image';
+        let aType = getAType(artifact!);
+        if (aType === 'brew-build' && nvr.match(/.*-container-.*/)) {
+            aType = 'redhat-container-image';
         }
-        const product_version = greenwave.decision.product_version(
-            nvr,
-            artifactType,
-        );
+        const product_version = greenwave.decision.product_version(nvr, aType);
         try {
             const response = await client.mutate({
                 mutation: WaiverdbNewMutation,
                 variables: {
                     // NOTE: We know that artifact is not null thanks to the check at
                     // the top of the function.
-                    subject_type: artifact!.type,
+                    subject_type: aType,
                     subject_identifier: nvr,
                     testcase,
                     waived: true,
