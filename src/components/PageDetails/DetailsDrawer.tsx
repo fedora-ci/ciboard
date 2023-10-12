@@ -59,7 +59,7 @@ import { TestResultMetadata } from './TestResultMetadata';
 import { TestResultQuickLinks } from './TestResultQuickLinks';
 import { Artifact, getArtifactProduct } from '../../types';
 import { ExternalLink } from '../ExternalLink';
-import { GreenwaveWaiver } from '../ArtifactGreenwaveChild';
+import { GreenwaveWaiver } from '../AChildGreenwave';
 import { LinkifyNewTab } from '../../utils/utils';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
