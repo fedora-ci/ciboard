@@ -177,8 +177,13 @@ export namespace MSG_V_1 {
 
     export interface MsgRPMBuildTestRunning extends MessageRPMBuildTestCommon {}
 
-    export function isMsg(msg: BrokerTestMsg): msg is MessagesType {
-        return msg.version.startsWith('0.2.') || msg.version.startsWith('1.');
+    export function isMsg(
+        msgBody: BrokerSchemaMsgBody,
+    ): msgBody is MessagesType {
+        return (
+            msgBody.version.startsWith('0.2.') ||
+            msgBody.version.startsWith('1.')
+        );
     }
 }
 
@@ -297,22 +302,22 @@ export namespace MSG_V_0_1 {
         architecture: string;
     };
 
-    export function isMsg(msg: BrokerTestMsg): msg is MessagesType {
-        return msg.version.startsWith('0.1.');
+    export function isMsg(
+        msgBody: BrokerSchemaMsgBody,
+    ): msgBody is MessagesType {
+        return msgBody.version.startsWith('0.1.');
     }
 
     export function resultHasDocs(
-        msg: BrokerTestMsg,
+        msg: BrokerSchemaMsgBody,
     ): msg is MsgRPMBuildTestComplete | MsgRPMBuildTestError {
         return _.has(msg, 'docs');
     }
 }
 
-export type BrokerMsgBody = BrokerTestMsg | BrokerEtaMsg;
 export type BrokerMsgId = string;
-// XXX: remove one of the:
-export type BrokerEtaMsg = EtaBrokerMessages;
-export type BrokerTestMsg = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;
+export type BrokerMsgBody = BrokerSchemaMsgBody | BrokerEtaMsgBody;
+export type BrokerSchemaMsgBody = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;
 
 // CHILD!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -352,7 +357,8 @@ type ErrataAutomationBugInfo = {
  *
  *    https://issues.redhat.com/browse/OSCI-4011
  */
-export type EtaBrokerMessages = {
+// WAS: EtaBrokerMessages
+export type BrokerEtaMsgBody = {
     /** https://errata.devel.redhat.com/advisory/109137 */
     advisory_url: string;
     bugs: ErrataAutomationBugInfo[];
@@ -810,20 +816,19 @@ export interface AChildrenMsg {
     hitsInfo: HitsInfo;
 }
 
-export type AChildMsg = AChildTestMsg | AChildEtaMsg;
+export type AChildSchemaMsg = AChildBuildMsg | AChildTestMsg;
+export type AChildMsg = AChildSchemaMsg | AChildEtaMsg;
+
 export type AChildTest =
     | AChildTestMsg
     | AChildGreenwave
     | AChildGreenwaveAndTestMsg;
 
-export type ArtifactChild =
-    | AChildMsg
-    | AChildGreenwave
-    | AChildGreenwaveAndTestMsg;
+export type AChild = AChildMsg | AChildGreenwave | AChildGreenwaveAndTestMsg;
 
-// WAS: ChildByCategoryType, StatesByCategoryType
+// XXX: WAS: ChildByCategoryType, StatesByCategoryType
 export type AChildrenByStateName = {
-    [key in StateName]?: ArtifactChild[];
+    [key in StateName]?: AChild[];
 };
 
 export interface AChildGreenwave {
@@ -841,6 +846,11 @@ export interface AChildTestMsg {
     hitInfo: HitInfo;
     hitSource: HitSourceTest;
     customMetadata?: Metadata;
+}
+
+export interface AChildBuildMsg {
+    hitInfo: HitInfo;
+    hitSource: HitSourceBuild;
 }
 
 export interface AChildEtaMsg {
@@ -863,8 +873,8 @@ export interface HitSourceEta {
     rawData: {
         message: {
             brokerExtra: any;
-            brokerMsgId: string;
-            brokerMsgBody: BrokerEtaMsg;
+            brokerMsgId: BrokerMsgId;
+            brokerMsgBody: BrokerEtaMsgBody;
             brokerMsgTopic: string;
         };
     };
@@ -881,14 +891,41 @@ export interface HitSourceTest {
     msgState: TestMsgStateName;
     msgStage: Extract<MsgStageName, 'test'>;
     brokerTopic: string;
-    brokerMsgId: string;
+    brokerMsgId: BrokerMsgId;
     testCaseName: string;
     msgFullText: string;
     rawData: {
         message: {
             brokerExtra: any;
             brokerMsgId: string;
-            brokerMsgBody: BrokerTestMsg;
+            brokerMsgBody: BrokerSchemaMsgBody;
+            brokerMsgTopic: string;
+        };
+    };
+    '@timestamp': number;
+    artToMsgs: {
+        name: 'message';
+        parent: string;
+    };
+}
+
+export interface HitSourceBuild {
+    nvr: string;
+    aType: string;
+    taskId: string;
+    issuer: string;
+    scratch: boolean;
+    component: string;
+    msgState: TestMsgStateName;
+    msgStage: Extract<MsgStageName, 'build'>;
+    brokerTopic: string;
+    brokerMsgId: string;
+    msgFullText: string;
+    rawData: {
+        message: {
+            brokerExtra: any;
+            brokerMsgId: string;
+            brokerMsgBody: BrokerSchemaMsgBody;
             brokerMsgTopic: string;
         };
     };
@@ -1054,34 +1091,55 @@ export function isArtifactScratch(artifact: Artifact): boolean {
     return false;
 }
 
-export function isAChildMsg(
-    child: ArtifactChild | undefined,
-): child is AChildMsg {
-    return _.has(child, 'hitInfo');
+export function isAChildMsg(aChild: AChild | undefined): aChild is AChildMsg {
+    return _.has(aChild, 'hitInfo');
 }
 
 export function isChildEtaMsg(
-    child: ArtifactChild | undefined,
-): child is AChildEtaMsg {
-    return _.has(child, 'hitSource.etaCiRunUrl');
+    aChild: AChild | undefined,
+): aChild is AChildEtaMsg {
+    return _.has(aChild, 'hitSource.etaCiRunUrl');
 }
 
 export function isAChildTestMsg(
-    child: ArtifactChild | undefined,
-): child is AChildTestMsg {
-    return _.has(child, 'hitSource.msgState');
+    aChild: AChild | undefined,
+): aChild is AChildTestMsg {
+    const msgStageName = _.get(aChild, 'hitSource.msgStage');
+    if (msgStageName === 'test') {
+        return true;
+    }
+    return false;
+}
+
+export function isAChildBuildMsg(
+    aChild: AChild | undefined,
+): aChild is AChildBuildMsg {
+    const msgStageName = _.get(aChild, 'hitSource.msgStage');
+    if (msgStageName === 'build') {
+        return true;
+    }
+    return false;
+}
+
+export function isAChildSchemaMsg(
+    aChild: AChild | undefined,
+): aChild is AChildSchemaMsg {
+    if (isAChildBuildMsg(aChild) || isAChildTestMsg(aChild)) {
+        return true;
+    }
+    return false;
 }
 
 export function isAChildGreenwave(
-    child: ArtifactChild | undefined,
-): child is AChildGreenwave {
-    return _.has(child, 'testcase');
+    aChild: AChild | undefined,
+): aChild is AChildGreenwave {
+    return _.has(aChild, 'testcase');
 }
 
 export function isAChildGreenwaveAndTestMsg(
-    child: ArtifactChild | undefined,
-): child is AChildGreenwaveAndTestMsg {
-    return _.has(child, 'gs') && _.has(child, 'ms');
+    aChild: AChild | undefined,
+): aChild is AChildGreenwaveAndTestMsg {
+    return _.has(aChild, 'gs') && _.has(aChild, 'ms');
 }
 
 /**
@@ -1100,11 +1158,11 @@ export const getMsgVersion = (aChild: AChildTestMsg): string => {
     return aChild.hitSource.rawData.message.brokerMsgBody.version;
 };
 
-export const getEtaMsgBody = (aChild: AChildEtaMsg): BrokerEtaMsg => {
+export const getEtaMsgBody = (aChild: AChildEtaMsg): BrokerEtaMsgBody => {
     return aChild.hitSource.rawData.message.brokerMsgBody;
 };
 
-export const getTestMsgBody = (aChild: AChildTestMsg): BrokerTestMsg => {
+export const getTestMsgBody = (aChild: AChildTestMsg): BrokerSchemaMsgBody => {
     return aChild.hitSource.rawData.message.brokerMsgBody;
 };
 
@@ -1134,8 +1192,8 @@ export const getABuildId = (artifact: Artifact): string | undefined => {
 };
 
 export const getAEtaChildren = (artifact: Artifact): AChildEtaMsg[] => {
-    const etaChildren = _.filter(artifact.children.hits, (child) =>
-        isChildEtaMsg(child),
+    const etaChildren = _.filter(artifact.children.hits, (aChild) =>
+        isChildEtaMsg(aChild),
     ) as AChildEtaMsg[];
     return etaChildren;
 };
@@ -1143,7 +1201,7 @@ export const getAEtaChildren = (artifact: Artifact): AChildEtaMsg[] => {
 // XXX: testStateMsg
 export const getThreadID = (args: {
     childTestMsg?: AChildTestMsg;
-    brokerMsgBody?: BrokerTestMsg;
+    brokerMsgBody?: BrokerSchemaMsgBody;
 }) => {
     const { childTestMsg, brokerMsgBody } = args;
     if (brokerMsgBody) {
@@ -1245,12 +1303,12 @@ export const getArtifacIssuer = (artifact: Artifact): string | null => {
     return null;
 };
 
-export const getTestcaseName = (child: ArtifactChild): string => {
+export const getTestcaseName = (aChild: AChild): string => {
     let testCaseName = 'unknonwn testcase name';
-    if (isAChildTestMsg(child)) {
-        const { hitSource } = child;
+    if (isAChildTestMsg(aChild)) {
+        const { hitSource } = aChild;
         const { testCaseName: tcn } = hitSource;
-        const brokerMsgBody = getTestMsgBody(child);
+        const brokerMsgBody = getTestMsgBody(aChild);
         if (tcn) {
             testCaseName = tcn;
         }
@@ -1267,19 +1325,19 @@ export const getTestcaseName = (child: ArtifactChild): string => {
             }
         }
     }
-    if (isAChildGreenwave(child) && child.testcase) {
-        testCaseName = child.testcase;
+    if (isAChildGreenwave(aChild) && aChild.testcase) {
+        testCaseName = aChild.testcase;
     }
-    if (isAChildGreenwaveAndTestMsg(child) && child.gs.testcase) {
-        testCaseName = child.gs.testcase;
+    if (isAChildGreenwaveAndTestMsg(aChild) && aChild.gs.testcase) {
+        testCaseName = aChild.gs.testcase;
     }
     if (_.isUndefined(testCaseName)) {
-        console.error('Could not identify testcase name in child', child);
+        console.error('Could not identify testcase name in child', aChild);
     }
     return testCaseName;
 };
 
-export const getXunit = (brokerMsgBody: BrokerTestMsg) => {
+export const getXunit = (brokerMsgBody: BrokerSchemaMsgBody) => {
     if (MSG_V_0_1.isMsg(brokerMsgBody)) {
         if ('xunit' in brokerMsgBody && brokerMsgBody.xunit)
             return brokerMsgBody.xunit;
@@ -1390,16 +1448,16 @@ export const getArtifactLocalPath = (artifact: Artifact) =>
  * @returns URL to documentation as provided by the CI system or `undefined`.
  */
 export function getUmbDocsUrl(
-    brokerMessage: BrokerTestMsg,
+    msgBody: BrokerSchemaMsgBody,
 ): string | undefined {
-    if (MSG_V_0_1.isMsg(brokerMessage)) {
-        if (MSG_V_0_1.resultHasDocs(brokerMessage)) {
-            return brokerMessage.docs;
+    if (MSG_V_0_1.isMsg(msgBody)) {
+        if (MSG_V_0_1.resultHasDocs(msgBody)) {
+            return msgBody.docs;
         }
-        return brokerMessage.ci.docs;
+        return msgBody.ci.docs;
     }
-    if (MSG_V_1.isMsg(brokerMessage)) {
-        return brokerMessage.test.docs;
+    if (MSG_V_1.isMsg(msgBody)) {
+        return msgBody.test.docs;
     }
     return;
 }
@@ -1409,27 +1467,27 @@ export function getUmbDocsUrl(
  * @param child Gating state response from Greenwave.
  * @returns URL to documentation as provided by the CI system or `undefined`.
  */
-export const getGreenwaveDocsUrl = (child: AChildGreenwave) =>
-    child.result?.testcase.ref_url;
+export const getGreenwaveDocsUrl = (aChild: AChildGreenwave) =>
+    aChild.result?.testcase.ref_url;
 
 /**
  * Extract the URL for the documentation of a CI test.
  * @param child Gating state response object from backend.
  * @returns URL of test documentation or `undefined` if none is available.
  */
-export function getDocsUrl(child: ArtifactChild): string | undefined {
+export function getDocsUrl(aChild: AChild): string | undefined {
     // Prefer URL from UMB message, if present.
-    if (isAChildTestMsg(child)) {
-        const testMsg = getTestMsgBody(child);
+    if (isAChildTestMsg(aChild)) {
+        const testMsg = getTestMsgBody(aChild);
         return getUmbDocsUrl(testMsg);
     }
-    if (isAChildGreenwave(child)) {
-        return getGreenwaveDocsUrl(child);
+    if (isAChildGreenwave(aChild)) {
+        return getGreenwaveDocsUrl(aChild);
     }
-    if (isAChildGreenwaveAndTestMsg(child)) {
-        const testMsg = getTestMsgBody(child.ms);
+    if (isAChildGreenwaveAndTestMsg(aChild)) {
+        const testMsg = getTestMsgBody(aChild.ms);
         let docsUrl = getUmbDocsUrl(testMsg);
-        if (!docsUrl) docsUrl = getGreenwaveDocsUrl(child.gs);
+        if (!docsUrl) docsUrl = getGreenwaveDocsUrl(aChild.gs);
         return docsUrl;
     }
 }
@@ -1439,20 +1497,20 @@ export function getDocsUrl(child: ArtifactChild): string | undefined {
  * @param child Gating state response object from backend.
  * @returns URL to re-run the test or `undefined` if no URL is available.
  */
-export function getRerunUrl(child: ArtifactChild): string | undefined {
+export function getRerunUrl(aChild: AChild): string | undefined {
     // Prefer URL from UMB message, if present.
-    if (isAChildTestMsg(child)) {
-        const testMsg = getTestMsgBody(child);
+    if (isAChildTestMsg(aChild)) {
+        const testMsg = getTestMsgBody(aChild);
         return testMsg.run.rebuild;
     }
-    if (isAChildGreenwave(child)) {
-        return child.result?.data.rebuild?.[0];
+    if (isAChildGreenwave(aChild)) {
+        return aChild.result?.data.rebuild?.[0];
     }
-    if (isAChildGreenwaveAndTestMsg(child)) {
-        const testMsg = getTestMsgBody(child.ms);
+    if (isAChildGreenwaveAndTestMsg(aChild)) {
+        const testMsg = getTestMsgBody(aChild.ms);
         let rerunUrl = testMsg.run.rebuild;
         // Try to fall back to URL stored in ResultsDB.
-        if (!rerunUrl) rerunUrl = child.gs.result?.data.rebuild?.[0];
+        if (!rerunUrl) rerunUrl = aChild.gs.result?.data.rebuild?.[0];
         return rerunUrl;
     }
 }
