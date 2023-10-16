@@ -66,7 +66,7 @@ import {
     getRerunUrl,
     getThreadID,
     MsgStateName,
-    ChildTestMsg,
+    AChildTestMsg,
     getUmbDocsUrl,
     getTestMsgBody,
     getMsgStageName,
@@ -83,7 +83,7 @@ import {
     AChildLink,
     AChildProps,
     AChildDetailsEntry,
-} from './AChild';
+} from './AChildComponent';
 import {
     TestInfo,
     useOnceCall,
@@ -94,7 +94,7 @@ import {
 import { MetadataQuery } from '../queries/Metadata';
 
 export interface PropsWithTestMsgAChild {
-    aChild: ChildTestMsg;
+    aChild: AChildTestMsg;
     metadata?: Metadata;
 }
 

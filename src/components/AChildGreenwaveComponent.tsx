@@ -65,7 +65,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { ExternalLink } from './ExternalLink';
-import { KaiDocsButton, KaiRerunButton } from './AChildTestMsg';
+import { TestMsgDocsButton, KaiRerunButton } from './AChildTestMsg';
 import styles from '../custom.module.css';
 import { useAppDispatch } from '../hooks';
 import {
@@ -77,7 +77,7 @@ import {
 import {
     Artifact,
     getRerunUrl,
-    ChildGreenwave,
+    AChildGreenwave,
     getTestcaseName,
     GreenwaveWaiveType,
     getArtifactProduct,
@@ -91,7 +91,7 @@ import {
     AChildLink,
     AChildProps,
     AChildDetailsEntry,
-} from './AChild';
+} from './AChildComponent';
 import { createWaiver } from '../actions';
 import { docs } from '../config';
 import { MetadataQuery } from '../queries/Metadata';
@@ -104,7 +104,7 @@ import {
 } from './MetadataInfo';
 
 export interface PropsWithGreenwaveState {
-    aChild: ChildGreenwave;
+    aChild: AChildGreenwave;
 }
 
 export interface WaiveButtonProps {
@@ -161,7 +161,7 @@ export const AChildGreenwaveActions: React.FC<GreenwaveStateActionsProps> = (
                 <KaiRerunButton rerunUrl={rerunUrl} />
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <KaiDocsButton docsUrl={docsUrl} />
+                <TestMsgDocsButton docsUrl={docsUrl} />
             </Flex>
         </Flex>
     );
@@ -395,7 +395,7 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
 };
 
 interface BodyForGreenwaveStateProps {
-    aChild: ChildGreenwave;
+    aChild: AChildGreenwave;
     artifact: Artifact;
     isVisible: boolean;
 }
@@ -637,9 +637,9 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
     </Alert>
 );
 
-export type AChildGreenwaveProps = AChildProps & PropsWithGreenwaveState;
+export type AChildGreenwaveComponentProps = AChildProps & PropsWithGreenwaveState;
 
-export const AChildGreenwave: React.FC<AChildGreenwaveProps> = (props) => {
+export const AChildGreenwaveComponent: React.FC<AChildGreenwaveComponentProps> = (props) => {
     const {
         aChild,
         artifact,
