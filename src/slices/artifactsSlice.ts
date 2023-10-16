@@ -24,7 +24,7 @@ import { Dispatch, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 // XXX: add global ApoloError redux?
 
-import { Artifact } from '../artifact';
+import { Artifact } from '../types';
 import { GetState } from '../reduxStore';
 import {
     ArtifactsGreenwaveQuery,

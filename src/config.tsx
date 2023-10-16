@@ -19,7 +19,7 @@
  */
 
 import { getOSVersionFromNvr } from './utils/utils';
-import { ArtifactType } from './artifact';
+import { ArtifactType } from './types';
 
 /**
  * CI Dashboard global configuration.

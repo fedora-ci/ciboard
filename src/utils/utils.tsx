@@ -39,23 +39,23 @@ import { IntermediateRepresentation } from 'linkifyjs';
 import { config } from '../config';
 
 import {
+    AChild,
     MSG_V_1,
     Artifact,
     MSG_V_0_1,
+    AChildTest,
     KojiInstance,
     ArtifactType,
     isArtifactMbs,
     isArtifactRpm,
-    BrokerTestMsg,
-    ArtifactChild,
     AChildGreenwave,
     DistGitInstance,
     MbsInstanceType,
     isAChildGreenwave,
+    BrokerSchemaMsgBody,
     GreenwaveRequirementTypes,
     isAChildGreenwaveAndTestMsg,
     isArtifactRedhatContainerImage,
-    AChildTest,
 } from '../types';
 
 /**
@@ -181,7 +181,7 @@ export const resultColor = (result: string) => {
     return _.findKey(resultColors, (item) => item.indexOf(result) !== -1);
 };
 
-export const getMessageError = (brokerMsgBody: BrokerTestMsg) => {
+export const getMessageError = (brokerMsgBody: BrokerSchemaMsgBody) => {
     if (MSG_V_0_1.isMsg(brokerMsgBody) && 'reason' in brokerMsgBody) {
         return {
             issue_url: brokerMsgBody.issue_url,
@@ -529,7 +529,7 @@ const isRequirementSatisfied = (aChild: AChildGreenwave): boolean => {
  * Greenwave shows all known tests from ResultsDB.
  * @param aChild The state object of the test result in question.
  */
-export const isResultWaivable = (aChild: ArtifactChild): boolean => {
+export const isResultWaivable = (aChild: AChild): boolean => {
     if (isAChildGreenwaveAndTestMsg(aChild))
         return !isRequirementSatisfied(aChild.gs);
     if (isAChildGreenwave(aChild)) return !isRequirementSatisfied(aChild);

@@ -61,16 +61,16 @@ import {
     getTestMsgBody,
     getTestcaseName,
     getArtifactProduct,
-    ChildGreenwaveAndTestMsg,
+    AChildGreenwaveAndTestMsg,
 } from '../types';
 import { TestStatusIcon, isResultWaivable } from '../utils/utils';
-import { AChildProps, AChildLink } from './AChild';
+import { AChildProps, AChildLink } from './AChildComponent';
 import {
     WaiveButton,
     GreenwaveWaiver,
     GreenwaveDetails,
     GreenwaveResultInfo,
-} from './AChildGreenwave';
+} from './AChildGreenwaveComponent';
 import {
     ResultNote,
     KaiRerunButton,
@@ -88,7 +88,7 @@ import {
 import { MetadataQuery } from '../queries/Metadata';
 
 interface GreenwaveTestMsgStateActionsProps {
-    aChild: ChildGreenwaveAndTestMsg;
+    aChild: AChildGreenwaveAndTestMsg;
     artifact: Artifact;
 }
 
@@ -120,7 +120,7 @@ export const GreenwaveTestMsgStateActions: React.FC<
 };
 
 interface FaceForGreenwaveTestMsgStateProps {
-    aChild: ChildGreenwaveAndTestMsg;
+    aChild: AChildGreenwaveAndTestMsg;
     artifact: Artifact;
     artifactDashboardUrl: string;
 }
@@ -191,7 +191,7 @@ export const FaceForGreenwaveTestMsgState: React.FC<
 };
 
 interface BodyForGreenwaveTestMsgChildProps {
-    aChild: ChildGreenwaveAndTestMsg;
+    aChild: AChildGreenwaveAndTestMsg;
     artifact: Artifact;
     isVisible: boolean;
 }
@@ -355,7 +355,7 @@ export const BodyForGreenwaveTestMsgChild: React.FC<
 };
 
 export interface ArtifactGreenwaveTestMsgStateProps extends AChildProps {
-    aChild: ChildGreenwaveAndTestMsg;
+    aChild: AChildGreenwaveAndTestMsg;
 }
 
 export const ArtifactGreenwaveTestMsgState: React.FC<
