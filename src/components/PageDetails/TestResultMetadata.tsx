@@ -37,21 +37,21 @@ import {
 
 import styles from '../../custom.module.css';
 import {
+    AChild,
     Artifact,
     getAType,
     getThreadID,
     ArtifactType,
-    ChildTestMsg,
+    AChildTestMsg,
     getMsgVersion,
-    ArtifactChild,
     getTestMsgBody,
-    isChildTestMsg,
-    ChildGreenwave,
+    isAChildTestMsg,
+    AChildGreenwave,
     getMsgTimestamp,
-    isGreenwaveChild,
+    isAChildGreenwave,
     getDatagrepperUrl,
-    isGreenwaveAndTestMsg,
     getTestMsgExtendedStatus,
+    isAChildGreenwaveAndTestMsg,
 } from '../../types';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
@@ -61,7 +61,7 @@ import {
 } from '../../utils/timeUtils';
 
 interface GreenwaveMetadataProps {
-    aChild: ChildGreenwave;
+    aChild: AChildGreenwave;
 }
 
 function GreenwaveMetadata({ aChild }: GreenwaveMetadataProps) {
@@ -145,12 +145,12 @@ function GreenwaveMetadata({ aChild }: GreenwaveMetadataProps) {
     );
 }
 
-interface KaiMetadataProps {
+interface TestMsgMetadataProps {
     artifactType: ArtifactType;
-    aChild: ChildTestMsg;
+    aChild: AChildTestMsg;
 }
 
-function KaiMetadata(props: KaiMetadataProps) {
+function TestMsgMetadata(props: TestMsgMetadataProps) {
     const { artifactType, aChild } = props;
 
     const messageId = aChild.hitSource.rawData.message.brokerMsgId;
@@ -221,16 +221,18 @@ function KaiMetadata(props: KaiMetadataProps) {
 }
 
 interface SourceLabelsProps {
-    aChild: ArtifactChild;
+    aChild: AChild;
 }
 
 function SourceLabels({ aChild }: SourceLabelsProps) {
     return (
         <>
-            {(isGreenwaveChild(aChild) || isGreenwaveAndTestMsg(aChild)) && (
+            {(isAChildGreenwave(aChild) ||
+                isAChildGreenwaveAndTestMsg(aChild)) && (
                 <Label color="green">Greenwave</Label>
             )}
-            {(isChildTestMsg(aChild) || isGreenwaveAndTestMsg(aChild)) && (
+            {(isAChildTestMsg(aChild) ||
+                isAChildGreenwaveAndTestMsg(aChild)) && (
                 <Label color="green">UMB</Label>
             )}
         </>
@@ -259,24 +261,24 @@ export function TestResultMetadata({ artifact }: TestResultMetadataProps) {
                 <span>Source of data:</span>
                 <SourceLabels aChild={aChild} />
             </Flex>
-            {isGreenwaveChild(aChild) && (
+            {isAChildGreenwave(aChild) && (
                 <>
                     <Divider />
                     <GreenwaveMetadata aChild={aChild} />
                 </>
             )}
-            {isChildTestMsg(aChild) && (
+            {isAChildTestMsg(aChild) && (
                 <>
                     <Divider />
-                    <KaiMetadata artifactType={aType} aChild={aChild} />
+                    <TestMsgMetadata artifactType={aType} aChild={aChild} />
                 </>
             )}
-            {isGreenwaveAndTestMsg(aChild) && (
+            {isAChildGreenwaveAndTestMsg(aChild) && (
                 <>
                     <Divider />
                     <GreenwaveMetadata aChild={aChild.gs} />
                     <Divider />
-                    <KaiMetadata artifactType={aType} aChild={aChild.ms} />
+                    <TestMsgMetadata artifactType={aType} aChild={aChild.ms} />
                 </>
             )}
         </Stack>

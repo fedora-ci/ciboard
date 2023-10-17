@@ -65,7 +65,10 @@ import {
 } from '@patternfly/react-icons';
 
 import { ExternalLink } from './ExternalLink';
-import { TestMsgDocsButton, KaiRerunButton } from './AChildTestMsg';
+import {
+    TestMsgDocsButton,
+    TestMsgRerunButton,
+} from './AChildTestMsgComponent';
 import styles from '../custom.module.css';
 import { useAppDispatch } from '../hooks';
 import {
@@ -158,7 +161,7 @@ export const AChildGreenwaveActions: React.FC<GreenwaveStateActionsProps> = (
                 )}
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <KaiRerunButton rerunUrl={rerunUrl} />
+                <TestMsgRerunButton rerunUrl={rerunUrl} />
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <TestMsgDocsButton docsUrl={docsUrl} />
@@ -637,9 +640,12 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
     </Alert>
 );
 
-export type AChildGreenwaveComponentProps = AChildProps & PropsWithGreenwaveState;
+export type AChildGreenwaveComponentProps = AChildProps &
+    PropsWithGreenwaveState;
 
-export const AChildGreenwaveComponent: React.FC<AChildGreenwaveComponentProps> = (props) => {
+export const AChildGreenwaveComponent: React.FC<
+    AChildGreenwaveComponentProps
+> = (props) => {
     const {
         aChild,
         artifact,

@@ -23,6 +23,7 @@ import _ from 'lodash';
 
 import { CiContact, CiTest, TestStatus } from './types';
 import {
+    AChild,
     MSG_V_1,
     Artifact,
     getMsgId,
@@ -30,17 +31,16 @@ import {
     StateName,
     getDocsUrl,
     getRerunUrl,
-    ChildTestMsg,
-    ArtifactChild,
-    isChildTestMsg,
+    AChildTestMsg,
     getTestMsgBody,
     MetadataContact,
     getTestcaseName,
-    isGreenwaveChild,
+    isAChildTestMsg,
+    isAChildGreenwave,
     MetadataDependency,
     GreenwaveWaiveType,
-    isGreenwaveAndTestMsg,
     getTestMsgExtendedStatus,
+    isAChildGreenwaveAndTestMsg,
     GreenwaveRequirementOutcome,
 } from '../../types';
 import { getMessageError, isResultWaivable } from '../../utils/utils';
@@ -101,8 +101,8 @@ function transformGreenwaveOutcome(
     return 'failed';
 }
 
-function extractContactFromUmb(test: ChildTestMsg): CiContact | undefined {
-    const testMsg = getTestMsgBody(test);
+function extractContactFromUmb(aChild: AChildTestMsg): CiContact | undefined {
+    const testMsg = getTestMsgBody(aChild);
     let contact: MSG_V_0_1.MsgContactType | MSG_V_1.MsgContactType | undefined;
     if (MSG_V_0_1.isMsg(testMsg)) {
         contact = testMsg.ci;
@@ -125,21 +125,21 @@ function extractContactFromUmb(test: ChildTestMsg): CiContact | undefined {
     };
 }
 
-function extractContact(test: ArtifactChild): CiContact {
+function extractContact(aChild: AChild): CiContact {
     let contact: CiContact = {};
     let metadataContact: MetadataContact | undefined;
 
-    if (isGreenwaveChild(test)) {
+    if (isAChildGreenwave(aChild)) {
         // This is handled later in the UI by querying custom metadata.
         return contact;
     }
-    if (isChildTestMsg(test)) {
-        _.merge(contact, extractContactFromUmb(test));
-        metadataContact = test.customMetadata?.payload?.contact;
+    if (isAChildTestMsg(aChild)) {
+        _.merge(contact, extractContactFromUmb(aChild));
+        metadataContact = aChild.customMetadata?.payload?.contact;
     }
-    if (isGreenwaveAndTestMsg(test)) {
-        _.merge(contact, extractContactFromUmb(test.ms));
-        metadataContact = test.ms.customMetadata?.payload?.contact;
+    if (isAChildGreenwaveAndTestMsg(aChild)) {
+        _.merge(contact, extractContactFromUmb(aChild.ms));
+        metadataContact = aChild.ms.customMetadata?.payload?.contact;
     }
 
     // Merge in data from the `custom_metadata` Kai state field.
@@ -171,64 +171,64 @@ function extractContact(test: ArtifactChild): CiContact {
     return contact;
 }
 
-function transformTest(test: ArtifactChild, stateName: StateName): CiTest {
-    const contact = extractContact(test);
+function transformTest(aChild: AChild, stateName: StateName): CiTest {
+    const contact = extractContact(aChild);
     let dependencies: MetadataDependency[] | undefined;
     let description: string | undefined;
-    const docsUrl = getDocsUrl(test);
+    const docsUrl = getDocsUrl(aChild);
     let error: MSG_V_1.MsgErrorType | undefined;
     let knownIssues: CiTest['knownIssues'];
     let logsUrl: string | undefined;
     let messageId: string | undefined;
-    const name = getTestcaseName(test);
-    const rerunUrl = getRerunUrl(test);
+    const name = getTestcaseName(aChild);
+    const rerunUrl = getRerunUrl(aChild);
     const required =
-        (isGreenwaveChild(test) || isGreenwaveAndTestMsg(test)) &&
+        (isAChildGreenwave(aChild) || isAChildGreenwaveAndTestMsg(aChild)) &&
         stateName !== 'additional-tests';
     let runDetailsUrl: string | undefined;
-    const waivable = isResultWaivable(test);
+    const waivable = isResultWaivable(aChild);
     let waiver: GreenwaveWaiveType | undefined;
 
-    if (isGreenwaveChild(test)) {
-        waiver = test.waiver;
-    } else if (isChildTestMsg(test)) {
-        const testMsg = getTestMsgBody(test);
-        dependencies = test.customMetadata?.payload?.dependency;
-        description = test.customMetadata?.payload?.description;
+    if (isAChildGreenwave(aChild)) {
+        waiver = aChild.waiver;
+    } else if (isAChildTestMsg(aChild)) {
+        const testMsg = getTestMsgBody(aChild);
+        dependencies = aChild.customMetadata?.payload?.dependency;
+        description = aChild.customMetadata?.payload?.description;
         error = getMessageError(testMsg);
-        knownIssues = test.customMetadata?.payload?.known_issues;
+        knownIssues = aChild.customMetadata?.payload?.known_issues;
         logsUrl = testMsg.run.log;
-        messageId = getMsgId(test);
+        messageId = getMsgId(aChild);
         runDetailsUrl = testMsg.run.url;
-    } else if (isGreenwaveAndTestMsg(test)) {
-        const msgBody = getTestMsgBody(test.ms);
-        const msgId = getMsgId(test.ms);
+    } else if (isAChildGreenwaveAndTestMsg(aChild)) {
+        const msgBody = getTestMsgBody(aChild.ms);
+        const msgId = getMsgId(aChild.ms);
         logsUrl = msgBody.run.log;
         runDetailsUrl = msgBody.run.url;
         error = getMessageError(msgBody);
-        const metadata = test.ms.customMetadata;
+        const metadata = aChild.ms.customMetadata;
         dependencies = metadata?.payload?.dependency;
         description = metadata?.payload?.description;
         knownIssues = metadata?.payload?.known_issues;
         messageId = msgId;
-        waiver = test.gs.waiver;
+        waiver = aChild.gs.waiver;
     }
 
     let status = transformUmbStatus(stateName);
-    if (isGreenwaveChild(test) && test.result && !waiver) {
+    if (isAChildGreenwave(aChild) && aChild.result && !waiver) {
         status = transformGreenwaveOutcome(
-            test.result.outcome,
+            aChild.result.outcome,
             stateName !== 'additional-tests',
         );
     } else if (
-        isGreenwaveAndTestMsg(test) &&
-        test.gs.result &&
+        isAChildGreenwaveAndTestMsg(aChild) &&
+        aChild.gs.result &&
         stateName !== 'additional-tests' &&
         !waiver
     ) {
-        status = transformGreenwaveOutcome(test.gs.result.outcome, true);
+        status = transformGreenwaveOutcome(aChild.gs.result.outcome, true);
     } else if (
-        isGreenwaveAndTestMsg(test) &&
+        isAChildGreenwaveAndTestMsg(aChild) &&
         stateName === 'additional-tests'
     ) {
         /*
@@ -238,7 +238,7 @@ function transformTest(test: ArtifactChild, stateName: StateName): CiTest {
          * `error.reason`, but `test.result === 'failed'`. For an example, see
          * https://datagrepper.engineering.redhat.com/id?id=ID:osci-jenkins-master-0-43277-1681457299489-309:1:1:1:1&is_raw=true&size=extra-large
          */
-        status = transformUmbStatus(getTestMsgExtendedStatus(test.ms));
+        status = transformUmbStatus(getTestMsgExtendedStatus(aChild.ms));
     }
 
     return {
@@ -256,7 +256,7 @@ function transformTest(test: ArtifactChild, stateName: StateName): CiTest {
         knownIssues,
         description,
         dependencies,
-        originalState: test,
+        originalState: aChild,
         runDetailsUrl,
     };
 }
@@ -264,7 +264,7 @@ function transformTest(test: ArtifactChild, stateName: StateName): CiTest {
 export function extractTests(artifact: Artifact): CiTest[] {
     const stagesStates = mkStagesAndStates(artifact);
     const tests = stagesStates.flatMap(([_stage, stateName, tests]) =>
-        tests.map((test) => transformTest(test, stateName)),
+        tests.map((aChild) => transformTest(aChild, stateName)),
     );
     return _.sortBy(tests, (test) => test.name);
 }
