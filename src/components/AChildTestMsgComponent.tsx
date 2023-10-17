@@ -118,11 +118,11 @@ export function ResultNote(props: PropsWithTestMsgAChild) {
     );
 }
 
-export interface KaiDetailedResultsProps extends PropsWithTestMsgAChild {
+export interface TestMsgDetailedResultsProps extends PropsWithTestMsgAChild {
     artifact: Artifact;
 }
 
-export const TestMsgDetailedResults: React.FC<KaiDetailedResultsProps> = (
+export const TestMsgDetailedResults: React.FC<TestMsgDetailedResultsProps> = (
     props,
 ) => {
     const { aChild, artifact } = props;
@@ -168,11 +168,13 @@ export const TestMsgDocsButton: React.FC<TestMsgDocsButtonProps> = (props) => {
     );
 };
 
-export interface KaiRerunButtonProps {
+export interface TestMsgRerunButtonProps {
     rerunUrl?: string;
 }
 
-export const KaiRerunButton: React.FC<KaiRerunButtonProps> = (props) => {
+export const TestMsgRerunButton: React.FC<TestMsgRerunButtonProps> = (
+    props,
+) => {
     const { rerunUrl } = props;
     if (_.isEmpty(rerunUrl)) return null;
     return (
@@ -284,11 +286,13 @@ const StateExplain: React.FC<PropsWithTestMsgAChild> = (props) => {
     return null;
 };
 
-export interface KaiStateMappingProps extends PropsWithTestMsgAChild {
+export interface TestMsgStateMappingProps extends PropsWithTestMsgAChild {
     artifact: Artifact;
 }
 
-export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
+export const TestMsgStateMapping: React.FC<TestMsgStateMappingProps> = (
+    props,
+) => {
     const { artifact, aChild } = props;
     const brokerMsgBody = getTestMsgBody(aChild);
     const brokerMsgId = getMsgId(aChild);
@@ -343,7 +347,7 @@ export const TestMsgStateActions: React.FC<PropsWithTestMsgAChild> = (
         <Flex style={{ minWidth: '20em' }}>
             <Flex flex={{ default: 'flex_1' }}></Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <KaiRerunButton rerunUrl={rerunUrl} />
+                <TestMsgRerunButton rerunUrl={rerunUrl} />
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <TestMsgDocsButton docsUrl={docsUrl} />
@@ -370,12 +374,12 @@ const StageName: React.FC<PropsWithTestMsgAChild> = (props) => {
     );
 };
 
-interface FaceForKaiStateProps extends PropsWithTestMsgAChild {
+interface FaceForTestMsgStateProps extends PropsWithTestMsgAChild {
     artifactDashboardUrl: string;
 }
 
 // XXX Was: FaceForKaiState
-const FaceForAChildTestMsg: React.FC<FaceForKaiStateProps> = (props) => {
+const FaceForAChildTestMsg: React.FC<FaceForTestMsgStateProps> = (props) => {
     const { artifactDashboardUrl, aChild } = props;
     let result = getTestMsgExtendedStatus(aChild);
     return (
@@ -403,13 +407,15 @@ const FaceForAChildTestMsg: React.FC<FaceForKaiStateProps> = (props) => {
     );
 };
 
-interface BodyForKaiStateProps {
-    aChild: ChildTestMsg;
+interface BodyForTestMsgStateProps {
+    aChild: AChildTestMsg;
     artifact: Artifact;
     isVisible: boolean;
 }
 
-export const BodyForKaiState: React.FC<BodyForKaiStateProps> = (props) => {
+export const BodyForTestMsgState: React.FC<BodyForTestMsgStateProps> = (
+    props,
+) => {
     const { artifact, isVisible, aChild } = props;
     const [activeTabKey, setActiveTabKey] = useState<number | string>(0);
     const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
@@ -553,18 +559,20 @@ export const BodyForKaiState: React.FC<BodyForKaiStateProps> = (props) => {
                     }
                     aria-label="Tab with test details"
                 >
-                    <KaiStateMapping aChild={aChild} artifact={artifact} />
+                    <TestMsgStateMapping aChild={aChild} artifact={artifact} />
                 </Tab>
             </Tabs>
         </>
     );
 };
 
-// XXX: was: PropsWithKaiState
-export type ArtifactKaiStateProps = AChildProps & PropsWithTestMsgAChild;
+// XXX: was: PropsWithKaiState / ArtifactKaiStateProps
+export type ArtifactTestMsgStateProps = AChildProps & PropsWithTestMsgAChild;
 
 // XXX: was: ArtifactKaiState
-export const AChildTestMsg: React.FC<ArtifactKaiStateProps> = (props) => {
+export const AChildTestMsgComponent: React.FC<ArtifactTestMsgStateProps> = (
+    props,
+) => {
     const {
         aChild,
         artifact,
@@ -625,7 +633,7 @@ export const AChildTestMsg: React.FC<ArtifactKaiStateProps> = (props) => {
                 id="ex-result-expand"
                 isHidden={!forceExpand}
             >
-                <BodyForKaiState
+                <BodyForTestMsgState
                     aChild={aChild}
                     artifact={artifact}
                     isVisible={forceExpand}
