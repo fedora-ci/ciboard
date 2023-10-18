@@ -56,12 +56,15 @@ import {
 import styles from '../../custom.module.css';
 import { config, mappingDatagrepperUrl } from '../../config';
 import {
+    getANvr,
     getMsgId,
+    getAType,
+    getATaskid,
+    getABuildId,
     getEtaMsgBody,
     getAEtaChildren,
     TabClickHandlerType,
     ErrataAutomationBugCiStatus,
-    getABuildId,
 } from '../../types';
 import {
     ArtifactsDetailedInfoKojiTask,
@@ -76,7 +79,7 @@ import {
 import {
     Artifact,
     ArtifactRpm,
-    ChildEtaMsg,
+    AChildEtaMsg,
     KojiBuildTag,
     kojiInstance,
     KojiInstance,
@@ -275,18 +278,19 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
     ArtifactDetailedInfoKojiBuildProps
 > = (props) => {
     const { artifact } = props;
-    const { hitSource } = artifact;
     const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
     const handleTabClick: TabClickHandlerType = (_event, tabIndex) => {
         setActiveTabKey(tabIndex);
     };
-    const instance = kojiInstance(hitSource.aType);
+    const aType = getAType(artifact);
+    const taskId = getATaskid(artifact);
+    const instance = kojiInstance(aType);
     const { loading: loadingCurrentState, data: dataKojiTask } =
         useQuery<ArtifactsDetailedInfoKojiTaskData>(
             ArtifactsDetailedInfoKojiTask,
             {
                 variables: {
-                    task_id: _.toNumber(hitSource.taskId),
+                    task_id: _.toNumber(taskId),
                     koji_instance: instance,
                     distgit_instance: instance,
                 },
@@ -294,7 +298,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                 notifyOnNetworkStatusChange: true,
             },
         );
-    const nvr = hitSource.nvr;
+    const nvr = getANvr(artifact);
     const { loading: loadingETState, data: dataETState } =
         useQuery<ErrataLinkedAdvisoriesReply>(LinkedErrataAdvisories, {
             variables: {
@@ -414,11 +418,12 @@ const ErrataAutomationBugCiStatusHumanReadable: {
     BUG_VERIFIED_TESTED_MISSING: 'Verified:Tested missing',
 };
 
-const getEtaMessageUrl = (artifact: Artifact, aChild: ChildEtaMsg) => {
+const getEtaMessageUrl = (artifact: Artifact, aChild: AChildEtaMsg) => {
     const msgId = getMsgId(aChild);
+    const aType = getAType(artifact);
     const brokerMsgUrl: string = new URL(
         `id?id=${msgId}&is_raw=true&size=extra-large`,
-        mappingDatagrepperUrl[artifact.hitSource.aType],
+        mappingDatagrepperUrl[aType],
     ).toString();
     return brokerMsgUrl;
 };
@@ -531,7 +536,8 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
     const handleTabClick: TabClickHandlerType = (_event, tabIndex) => {
         setActiveTabKey(tabIndex.toString());
     };
-    const instance = kojiInstance(artifact.hitSource.aType);
+    const aType = getAType(artifact);
+    const instance = kojiInstance(aType);
     const buildId = getABuildId(artifact);
 
     const { loading, data } = useQuery<ArtifactsDetailedInfoModuleBuildData>(

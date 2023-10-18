@@ -371,8 +371,9 @@ export const ArtifactsListByFiltersQuery = gql`
  * https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays-of-non-normalized-objects
  */
 /**
+ * XXX: TO REMOVE
+ * 
  * This query is used when need to fetch xunit for specific test-result.
- */
 export const ArtifactsXunitQuery = gql`
     query ArtifactsXunitQuery(
         $atype: String!
@@ -398,6 +399,7 @@ export const ArtifactsXunitQuery = gql`
         }
     }
 `;
+ */
 
 export interface PageGatingGetSSTTeamsData {
     db_sst_list?: string[];
