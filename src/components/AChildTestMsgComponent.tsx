@@ -54,7 +54,7 @@ import {
     ExclamationTriangleIcon,
 } from '@patternfly/react-icons';
 import styles from '../custom.module.css';
-import { TestSuites } from './TestSuites';
+//import { TestSuites } from './TestSuites';
 import { LinkifyNewTab, TestStatusIcon } from '../utils/utils';
 import {
     MSG_V_1,
@@ -74,7 +74,7 @@ import {
     TestMsgStateName,
     getDatagrepperUrl,
     getArtifactProduct,
-    getTestMsgStateName,
+    getMsgStateName,
     getTestMsgExtendedStatus,
 } from '../types';
 import {
@@ -117,32 +117,6 @@ export function ResultNote(props: PropsWithTestMsgAChild) {
         </Alert>
     );
 }
-
-export interface TestMsgDetailedResultsProps extends PropsWithTestMsgAChild {
-    artifact: Artifact;
-}
-
-export const TestMsgDetailedResults: React.FC<TestMsgDetailedResultsProps> = (
-    props,
-) => {
-    const { aChild, artifact } = props;
-    const testMsgStateName = getTestMsgStateName(aChild);
-    /* [OSCI-1861]: info messages also can have xunit */
-    /* https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-common.yaml#_120 */
-    const showFor: TestMsgStateName[] = [
-        'error',
-        'queued',
-        'running',
-        'complete',
-    ];
-    if (!_.includes(showFor, testMsgStateName)) return null;
-    const render = (
-        <AChildDetailsEntry caption="Test results">
-            <TestSuites aChild={aChild} artifact={artifact} />
-        </AChildDetailsEntry>
-    );
-    return render;
-};
 
 export interface TestMsgDocsButtonProps {
     docsUrl?: string;
@@ -252,8 +226,8 @@ const StateExplain: React.FC<PropsWithTestMsgAChild> = (props) => {
         ),
     };
     const columns: JSX.Element[] = [];
-    const testMsgStateName = getTestMsgStateName(aChild);
-    const stateExplanation = _.get(explain, testMsgStateName, null);
+    const mgStateName = getMsgStateName(aChild);
+    const stateExplanation = _.get(explain, mgStateName, null);
     if (stateExplanation) {
         columns.push(stateExplanation);
     }
@@ -356,291 +330,319 @@ export const TestMsgStateActions: React.FC<PropsWithTestMsgAChild> = (
     );
 };
 
-const StageName: React.FC<PropsWithTestMsgAChild> = (props) => {
-    const { aChild } = props;
-    const brokerMsgBody = getTestMsgBody(aChild);
-    const msgStageName = getMsgStageName(aChild);
-    if (msgStageName === 'dispatch') {
-        return <>{`dispatcher / ${_.get(brokerMsgBody, 'ci.name')}`}</>;
-    }
-    if (msgStageName === 'build') {
-        return <>build</>;
-    }
-    const testcaseName = getTestcaseName(aChild);
-    return (
-        <TextContent>
-            <Text>{testcaseName}</Text>
-        </TextContent>
-    );
-};
+// TO REMOVE:
 
-interface FaceForTestMsgStateProps extends PropsWithTestMsgAChild {
-    artifactDashboardUrl: string;
-}
+// export interface TestMsgDetailedResultsProps extends PropsWithTestMsgAChild {
+//     artifact: Artifact;
+// }
+//
+// export const TestMsgDetailedResults: React.FC<TestMsgDetailedResultsProps> = (
+//     props,
+// ) => {
+//     const { aChild, artifact } = props;
+//     const testMsgStateName = getTestMsgStateName(aChild);
+//     /* [OSCI-1861]: info messages also can have xunit */
+//     /* https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-common.yaml#_120 */
+//     const showFor: TestMsgStateName[] = [
+//         'error',
+//         'queued',
+//         'running',
+//         'complete',
+//     ];
+//     if (!_.includes(showFor, testMsgStateName)) return null;
+//     const render = (
+//         <AChildDetailsEntry caption="Test results">
+//             <TestSuites aChild={aChild} artifact={artifact} />
+//         </AChildDetailsEntry>
+//     );
+//     return render;
+// };
 
-// XXX Was: FaceForKaiState
-const FaceForAChildTestMsg: React.FC<FaceForTestMsgStateProps> = (props) => {
-    const { artifactDashboardUrl, aChild } = props;
-    let result = getTestMsgExtendedStatus(aChild);
-    return (
-        <Flex>
-            <Flex flex={{ default: 'flex_1' }}>
-                <Flex>
-                    <TestStatusIcon status={result} />
-                </Flex>
-                <Flex flexWrap={{ default: 'nowrap' }}>
-                    <StageName aChild={aChild} />
-                </Flex>
-            </Flex>
-            <Flex flex={{ default: 'flex_1' }}>
-                <Flex>
-                    <TestMsgStateActions aChild={aChild} />
-                </Flex>
-                <Flex>
-                    <AChildLink
-                        artifactDashboardUrl={artifactDashboardUrl}
-                        aChild={aChild}
-                    />
-                </Flex>
-            </Flex>
-        </Flex>
-    );
-};
+// interface BodyForTestMsgStateProps {
+//     aChild: AChildTestMsg;
+//     artifact: Artifact;
+//     isVisible: boolean;
+// }
+//
+// export const BodyForTestMsgState: React.FC<BodyForTestMsgStateProps> = (
+//     props,
+// ) => {
+//     const { artifact, isVisible, aChild } = props;
+//     const [activeTabKey, setActiveTabKey] = useState<number | string>(0);
+//     const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
+//         setActiveTabKey(tabIndex);
+//     };
+//     const testcaseName = getTestcaseName(aChild);
+//     const productVersion = getArtifactProduct(artifact);
+//     const variables: any = { testcaseName };
+//     if (!_.isNil(productVersion)) {
+//         variables.product_version = productVersion;
+//     }
+//     const [getMetadata, { loading: metadataLoading, error: _error, data }] =
+//         useLazyQuery<MetadataQueryResult>(MetadataQuery, {
+//             variables,
+//             errorPolicy: 'all',
+//             /* need to re-fetch each time when user press save/back button */
+//             fetchPolicy: 'cache-and-network',
+//             notifyOnNetworkStatusChange: true,
+//         });
+//     useOnceCall(() => {
+//         /* Fetch data only when ci-system is expanded. */
+//         getMetadata();
+//     }, isVisible);
+//     if (!isVisible) {
+//         return null;
+//     }
+//     if (metadataLoading) {
+//         return (
+//             <Flex className="pf-u-p-lg">
+//                 <FlexItem>
+//                     <Spinner className="pf-u-mr-md" size="md" /> Loading test
+//                     information…
+//                 </FlexItem>
+//             </Flex>
+//         );
+//     }
+//     const metadata = data?.metadata_consolidated;
+//     if (_.isNil(metadata) || _.isNil(metadata?.payload)) {
+//         return (
+//             <Flex className="pf-u-p-lg">
+//                 <FlexItem>Cannot fetch metadata info.</FlexItem>
+//             </Flex>
+//         );
+//     }
+//     const { contact, dependency, description, known_issues } = metadata.payload;
+//     const isTestKnownIssuesTabHidden = !known_issues;
+//     const isTestDependencyTabHidden = !dependency;
+//     const isTestInfoTabHidden = !description && !contact;
+//     return (
+//         <>
+//             <Tabs
+//                 activeKey={activeTabKey}
+//                 onSelect={handleTabClick}
+//                 isBox
+//                 aria-label="Tabs with ci-system info"
+//                 role="region"
+//             >
+//                 <Tab
+//                     eventKey={0}
+//                     title={
+//                         <>
+//                             <TabTitleIcon>
+//                                 <RegistryIcon />
+//                             </TabTitleIcon>{' '}
+//                             <TabTitleText>Result</TabTitleText>{' '}
+//                         </>
+//                     }
+//                     aria-label="Tab with results info"
+//                 >
+//                     <ResultNote aChild={aChild} />
+//                     <TestMsgDetailedResults
+//                         aChild={aChild}
+//                         artifact={artifact}
+//                     />
+//                 </Tab>
+//                 <Tab
+//                     eventKey={1}
+//                     isHidden={isTestKnownIssuesTabHidden}
+//                     title={
+//                         <>
+//                             <TabTitleIcon>
+//                                 <ExclamationCircleIcon />
+//                             </TabTitleIcon>
+//                             <TabTitleText>Known issues</TabTitleText>
+//                         </>
+//                     }
+//                     aria-label="Tab with known issues"
+//                 >
+//                     <>
+//                         <TestKnownIssues metadata={metadata} />
+//                     </>
+//                 </Tab>
+//                 <Tab
+//                     eventKey={2}
+//                     isHidden={isTestDependencyTabHidden}
+//                     title={
+//                         <>
+//                             <TabTitleIcon>
+//                                 <ExclamationTriangleIcon />
+//                             </TabTitleIcon>
+//                             <TabTitleText>Dependency</TabTitleText>
+//                         </>
+//                     }
+//                     aria-label="Tab with dependency information"
+//                 >
+//                     <>
+//                         <TestDependency metadata={metadata} />
+//                     </>
+//                 </Tab>
+//                 <Tab
+//                     eventKey={3}
+//                     isHidden={isTestInfoTabHidden}
+//                     title={
+//                         <>
+//                             <TabTitleIcon>
+//                                 <InfoCircleIcon />
+//                             </TabTitleIcon>
+//                             <TabTitleText>Test info</TabTitleText>
+//                         </>
+//                     }
+//                     aria-label="Tab with test info"
+//                 >
+//                     <>
+//                         <TestInfo metadata={metadata} />
+//                         <TextContent>
+//                             <Text component={TextVariants.small}>
+//                                 CI owners can update info on metadata page.
+//                             </Text>
+//                         </TextContent>
+//                     </>
+//                 </Tab>
+//                 <Tab
+//                     eventKey={4}
+//                     title={
+//                         <>
+//                             <TabTitleIcon>
+//                                 <ListIcon />
+//                             </TabTitleIcon>{' '}
+//                             <TabTitleText>Details</TabTitleText>{' '}
+//                         </>
+//                     }
+//                     aria-label="Tab with test details"
+//                 >
+//                     <TestMsgStateMapping aChild={aChild} artifact={artifact} />
+//                 </Tab>
+//             </Tabs>
+//         </>
+//     );
+// };
 
-interface BodyForTestMsgStateProps {
-    aChild: AChildTestMsg;
-    artifact: Artifact;
-    isVisible: boolean;
-}
+// // XXX: was: PropsWithKaiState / ArtifactKaiStateProps
+// export type ArtifactTestMsgStateProps = AChildProps & PropsWithTestMsgAChild;
+//
+// // XXX: was: ArtifactKaiState
+// export const AChildTestMsgComponent: React.FC<ArtifactTestMsgStateProps> = (
+//     props,
+// ) => {
+//     const {
+//         aChild,
+//         artifact,
+//         forceExpand,
+//         setExpandedResult,
+//         artifactDashboardUrl,
+//     } = props;
+//
+//     const brokerMsgBody = getTestMsgBody(aChild);
+//     const testcaseName = getTestcaseName(aChild);
+//     /*
+//      * Expand a specific testcase according to query string and scroll to it
+//      * ?focus=tc:<test-case-name>
+//      */
+//     const onToggle = () => {
+//         if (forceExpand) {
+//             setExpandedResult('');
+//         } else {
+//             const key = testcaseName;
+//             setExpandedResult(key);
+//         }
+//     };
+//     /** Note for info test results */
+//     const thread_id = getThreadID({ brokerMsgBody });
+//     const resultClasses = classNames(styles.helpSelect, {
+//         [styles.expandedResult]: forceExpand,
+//     });
+//     const toRender = (
+//         <DataListItem
+//             key={thread_id}
+//             isExpanded={forceExpand}
+//             className={resultClasses}
+//             aria-labelledby="artifact-item-result"
+//         >
+//             <DataListItemRow>
+//                 <DataListToggle
+//                     id="toggle"
+//                     onClick={onToggle}
+//                     isExpanded={forceExpand}
+//                 />
+//                 <DataListItemCells
+//                     className="pf-u-m-0 pf-u-p-0"
+//                     dataListCells={[
+//                         <DataListCell
+//                             className="pf-u-m-0 pf-u-p-0"
+//                             key="secondary content"
+//                         >
+//                             <FaceForAChildTestMsg
+//                                 aChild={aChild}
+//                                 artifactDashboardUrl={artifactDashboardUrl}
+//                             />
+//                         </DataListCell>,
+//                     ]}
+//                 />
+//             </DataListItemRow>
+//             <DataListContent
+//                 aria-label="State details"
+//                 id="ex-result-expand"
+//                 isHidden={!forceExpand}
+//             >
+//                 <BodyForTestMsgState
+//                     aChild={aChild}
+//                     artifact={artifact}
+//                     isVisible={forceExpand}
+//                 />
+//             </DataListContent>
+//         </DataListItem>
+//     );
+//
+//     return toRender;
+// };
 
-export const BodyForTestMsgState: React.FC<BodyForTestMsgStateProps> = (
-    props,
-) => {
-    const { artifact, isVisible, aChild } = props;
-    const [activeTabKey, setActiveTabKey] = useState<number | string>(0);
-    const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
-        setActiveTabKey(tabIndex);
-    };
-    const testcaseName = getTestcaseName(aChild);
-    const productVersion = getArtifactProduct(artifact);
-    const variables: any = { testcaseName };
-    if (!_.isNil(productVersion)) {
-        variables.product_version = productVersion;
-    }
-    const [getMetadata, { loading: metadataLoading, error: _error, data }] =
-        useLazyQuery<MetadataQueryResult>(MetadataQuery, {
-            variables,
-            errorPolicy: 'all',
-            /* need to re-fetch each time when user press save/back button */
-            fetchPolicy: 'cache-and-network',
-            notifyOnNetworkStatusChange: true,
-        });
-    useOnceCall(() => {
-        /* Fetch data only when ci-system is expanded. */
-        getMetadata();
-    }, isVisible);
-    if (!isVisible) {
-        return null;
-    }
-    if (metadataLoading) {
-        return (
-            <Flex className="pf-u-p-lg">
-                <FlexItem>
-                    <Spinner className="pf-u-mr-md" size="md" /> Loading test
-                    information…
-                </FlexItem>
-            </Flex>
-        );
-    }
-    const metadata = data?.metadata_consolidated;
-    if (_.isNil(metadata) || _.isNil(metadata?.payload)) {
-        return (
-            <Flex className="pf-u-p-lg">
-                <FlexItem>Cannot fetch metadata info.</FlexItem>
-            </Flex>
-        );
-    }
-    const { contact, dependency, description, known_issues } = metadata.payload;
-    const isTestKnownIssuesTabHidden = !known_issues;
-    const isTestDependencyTabHidden = !dependency;
-    const isTestInfoTabHidden = !description && !contact;
-    return (
-        <>
-            <Tabs
-                activeKey={activeTabKey}
-                onSelect={handleTabClick}
-                isBox
-                aria-label="Tabs with ci-system info"
-                role="region"
-            >
-                <Tab
-                    eventKey={0}
-                    title={
-                        <>
-                            <TabTitleIcon>
-                                <RegistryIcon />
-                            </TabTitleIcon>{' '}
-                            <TabTitleText>Result</TabTitleText>{' '}
-                        </>
-                    }
-                    aria-label="Tab with results info"
-                >
-                    <ResultNote aChild={aChild} />
-                    <TestMsgDetailedResults
-                        aChild={aChild}
-                        artifact={artifact}
-                    />
-                </Tab>
-                <Tab
-                    eventKey={1}
-                    isHidden={isTestKnownIssuesTabHidden}
-                    title={
-                        <>
-                            <TabTitleIcon>
-                                <ExclamationCircleIcon />
-                            </TabTitleIcon>
-                            <TabTitleText>Known issues</TabTitleText>
-                        </>
-                    }
-                    aria-label="Tab with known issues"
-                >
-                    <>
-                        <TestKnownIssues metadata={metadata} />
-                    </>
-                </Tab>
-                <Tab
-                    eventKey={2}
-                    isHidden={isTestDependencyTabHidden}
-                    title={
-                        <>
-                            <TabTitleIcon>
-                                <ExclamationTriangleIcon />
-                            </TabTitleIcon>
-                            <TabTitleText>Dependency</TabTitleText>
-                        </>
-                    }
-                    aria-label="Tab with dependency information"
-                >
-                    <>
-                        <TestDependency metadata={metadata} />
-                    </>
-                </Tab>
-                <Tab
-                    eventKey={3}
-                    isHidden={isTestInfoTabHidden}
-                    title={
-                        <>
-                            <TabTitleIcon>
-                                <InfoCircleIcon />
-                            </TabTitleIcon>
-                            <TabTitleText>Test info</TabTitleText>
-                        </>
-                    }
-                    aria-label="Tab with test info"
-                >
-                    <>
-                        <TestInfo metadata={metadata} />
-                        <TextContent>
-                            <Text component={TextVariants.small}>
-                                CI owners can update info on metadata page.
-                            </Text>
-                        </TextContent>
-                    </>
-                </Tab>
-                <Tab
-                    eventKey={4}
-                    title={
-                        <>
-                            <TabTitleIcon>
-                                <ListIcon />
-                            </TabTitleIcon>{' '}
-                            <TabTitleText>Details</TabTitleText>{' '}
-                        </>
-                    }
-                    aria-label="Tab with test details"
-                >
-                    <TestMsgStateMapping aChild={aChild} artifact={artifact} />
-                </Tab>
-            </Tabs>
-        </>
-    );
-};
+// // XXX Was: FaceForKaiState
+// const FaceForAChildTestMsg: React.FC<FaceForTestMsgStateProps> = (props) => {
+//     const { artifactDashboardUrl, aChild } = props;
+//     let result = getTestMsgExtendedStatus(aChild);
+//     return (
+//         <Flex>
+//             <Flex flex={{ default: 'flex_1' }}>
+//                 <Flex>
+//                     <TestStatusIcon status={result} />
+//                 </Flex>
+//                 <Flex flexWrap={{ default: 'nowrap' }}>
+//                     <StageName aChild={aChild} />
+//                 </Flex>
+//             </Flex>
+//             <Flex flex={{ default: 'flex_1' }}>
+//                 <Flex>
+//                     <TestMsgStateActions aChild={aChild} />
+//                 </Flex>
+//                 <Flex>
+//                     <AChildLink
+//                         artifactDashboardUrl={artifactDashboardUrl}
+//                         aChild={aChild}
+//                     />
+//                 </Flex>
+//             </Flex>
+//         </Flex>
+//     );
+// };
 
-// XXX: was: PropsWithKaiState / ArtifactKaiStateProps
-export type ArtifactTestMsgStateProps = AChildProps & PropsWithTestMsgAChild;
-
-// XXX: was: ArtifactKaiState
-export const AChildTestMsgComponent: React.FC<ArtifactTestMsgStateProps> = (
-    props,
-) => {
-    const {
-        aChild,
-        artifact,
-        forceExpand,
-        setExpandedResult,
-        artifactDashboardUrl,
-    } = props;
-
-    const brokerMsgBody = getTestMsgBody(aChild);
-    const testcaseName = getTestcaseName(aChild);
-    /*
-     * Expand a specific testcase according to query string and scroll to it
-     * ?focus=tc:<test-case-name>
-     */
-    const onToggle = () => {
-        if (forceExpand) {
-            setExpandedResult('');
-        } else {
-            const key = testcaseName;
-            setExpandedResult(key);
-        }
-    };
-    /** Note for info test results */
-    const thread_id = getThreadID({ brokerMsgBody });
-    const resultClasses = classNames(styles.helpSelect, {
-        [styles.expandedResult]: forceExpand,
-    });
-    const toRender = (
-        <DataListItem
-            key={thread_id}
-            isExpanded={forceExpand}
-            className={resultClasses}
-            aria-labelledby="artifact-item-result"
-        >
-            <DataListItemRow>
-                <DataListToggle
-                    id="toggle"
-                    onClick={onToggle}
-                    isExpanded={forceExpand}
-                />
-                <DataListItemCells
-                    className="pf-u-m-0 pf-u-p-0"
-                    dataListCells={[
-                        <DataListCell
-                            className="pf-u-m-0 pf-u-p-0"
-                            key="secondary content"
-                        >
-                            <FaceForAChildTestMsg
-                                aChild={aChild}
-                                artifactDashboardUrl={artifactDashboardUrl}
-                            />
-                        </DataListCell>,
-                    ]}
-                />
-            </DataListItemRow>
-            <DataListContent
-                aria-label="State details"
-                id="ex-result-expand"
-                isHidden={!forceExpand}
-            >
-                <BodyForTestMsgState
-                    aChild={aChild}
-                    artifact={artifact}
-                    isVisible={forceExpand}
-                />
-            </DataListContent>
-        </DataListItem>
-    );
-
-    return toRender;
-};
+//const StageName: React.FC<PropsWithTestMsgAChild> = (props) => {
+//    const { aChild } = props;
+//    const brokerMsgBody = getTestMsgBody(aChild);
+//    const msgStageName = getMsgStageName(aChild);
+//    if (msgStageName === 'dispatch') {
+//        return <>{`dispatcher / ${_.get(brokerMsgBody, 'ci.name')}`}</>;
+//    }
+//    if (msgStageName === 'build') {
+//        return <>build</>;
+//    }
+//    const testcaseName = getTestcaseName(aChild);
+//    return (
+//        <TextContent>
+//            <Text>{testcaseName}</Text>
+//        </TextContent>
+//    );
+//};
+//
+//interface FaceForTestMsgStateProps extends PropsWithTestMsgAChild {
+//    artifactDashboardUrl: string;
+//}

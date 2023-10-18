@@ -52,6 +52,7 @@ import {
     getDatagrepperUrl,
     getTestMsgExtendedStatus,
     isAChildGreenwaveAndTestMsg,
+    getMsgId,
 } from '../../types';
 import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
@@ -153,7 +154,7 @@ interface TestMsgMetadataProps {
 function TestMsgMetadata(props: TestMsgMetadataProps) {
     const { artifactType, aChild } = props;
 
-    const messageId = aChild.hitSource.rawData.message.brokerMsgId;
+    const messageId = getMsgId(aChild);
     const datagrepperUrl = getDatagrepperUrl(messageId, artifactType);
     // The original time is in milliseconds since the Unix epoch.
     const timestamp = getMsgTimestamp(aChild);
