@@ -157,7 +157,7 @@ const ArtifactTypeSelection: React.FC<
         const isSelected = _.includes(selectedArtTypes, key);
         tilesItems.push(
             <Tile
-                id={key}
+                key={key}
                 title=""
                 isStacked
                 isSelected={isSelected}

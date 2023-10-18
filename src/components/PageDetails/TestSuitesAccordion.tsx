@@ -23,10 +23,8 @@ import _ from 'lodash';
 import pako from 'pako';
 import { Buffer } from 'buffer';
 import { useContext, useState } from 'react';
-import { useQuery } from '@apollo/client';
 import {
     Alert,
-    Spinner,
     Accordion,
     AccordionItem,
     AccordionToggle,
@@ -35,14 +33,22 @@ import {
 } from '@patternfly/react-core';
 import update from 'immutability-helper';
 
-import './index.css';
 import { TestSuite } from '../../testsuite';
-import { TestStatusIcon } from '../../utils/utils';
-import { TestSuiteDisplay } from '../TestSuites';
-import { Artifact, getArtifactId } from '../../types';
-import { SelectedTestContext } from './contexts';
-import { ArtifactsXunitQuery } from '../../queries/Artifacts';
+
+import './index.css';
+import {
+    getMsgId,
+    getXunit,
+    Artifact,
+    getMsgBody,
+    isAChildSchemaMsg,
+    getArtifactChildren,
+    BrokerSchemaMsgBody,
+} from '../../types';
 import { xunitParser } from '../../utils/xunitParser';
+import { TestStatusIcon } from '../../utils/utils';
+import { SelectedTestContext } from './contexts';
+import { TestSuiteDisplay } from '../TestSuites';
 
 export interface TestSuitesAccordionProps {
     artifact?: Artifact;
@@ -56,38 +62,23 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
     const { artifact } = props;
     let error: string | undefined;
     let suites: TestSuite[] | undefined;
-    const artifactId = artifact ? getArtifactId(artifact) : undefined;
-    const {
-        data,
-        error: queryError,
-        loading,
-    } = useQuery(ArtifactsXunitQuery, {
-        variables: {
-            atype: artifact?.hitSource.aType,
-            dbFieldName1: 'aid',
-            dbFieldValues1: [artifactId],
-            msg_id: selectedTest?.messageId,
-        },
-        fetchPolicy: 'cache-first',
-        errorPolicy: 'all',
-        skip: !artifact || !selectedTest?.messageId,
-        notifyOnNetworkStatusChange: true,
-    });
     if (!artifact || !selectedTest) return null;
-    const haveData =
-        !loading &&
-        !_.isEmpty(data) &&
-        _.has(data, 'artifacts.artifacts[0].states');
 
-    const state = _.find(
+    const aChildren = getArtifactChildren(artifact);
+    const aChild = _.find(
         /** this is a bit strange, that received data doesn't propage to original
          * artifact object. Original artifact.states objects stays old */
-        _.get(data, 'artifacts.artifacts[0].states'),
-        (state) => state.kai_state?.msg_id === selectedTest.messageId,
+        aChildren,
+        (child) => {
+            console.log('XXXXXX', child);
+            const msgId = getMsgId(child);
+            return msgId === selectedTest.messageId;
+        },
     );
-    if (haveData && !_.isNil(state)) {
-        const xunitRaw: string = state.broker_msg_xunit;
-        if (!_.isEmpty(xunitRaw)) {
+    if (!_.isNil(aChild) && isAChildSchemaMsg(aChild)) {
+        const msgBody = getMsgBody(aChild);
+        const xunitRaw = getXunit(msgBody as BrokerSchemaMsgBody);
+        if (xunitRaw && !_.isEmpty(xunitRaw)) {
             try {
                 /** Decode base64 encoded gzipped data */
                 const compressed = Buffer.from(xunitRaw, 'base64');
@@ -99,20 +90,6 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
                 console.error(`Cannot parse detailed results:`, err);
             }
         }
-    } else {
-        error = queryError?.message;
-        console.error(
-            `GraphQL error when retrieving detailed results:`,
-            queryError,
-        );
-    }
-
-    if (loading) {
-        return (
-            <DrawerPanelBody>
-                <Spinner size="md" /> Loading detailed test results…
-            </DrawerPanelBody>
-        );
     }
 
     if (error) {
