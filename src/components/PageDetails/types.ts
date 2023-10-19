@@ -19,7 +19,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { GreenwaveWaiveType, ArtifactChild } from '../../types';
+import { GreenwaveWaiveType, AChild } from '../../types';
 import { MSG_V_1, MetadataDependency, MetadataKnownIssue } from '../../types';
 
 export type TestStatus =
@@ -61,6 +61,6 @@ export interface CiTest {
     description?: string;
     knownIssues?: MetadataKnownIssue[];
     dependencies?: MetadataDependency[];
-    originalState: ArtifactChild;
+    originalState: AChild;
     runDetailsUrl?: string;
 }
