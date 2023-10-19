@@ -29,34 +29,7 @@ import {
     DescriptionListGroup,
     DescriptionListDescription,
 } from '@patternfly/react-core';
-import { LinkIcon } from '@patternfly/react-icons';
 import { LinkifyNewTab } from '../utils/utils';
-/**
-import {
-    AChildTestMsgComponent,
-    ArtifactTestMsgStateProps,
-} from './AChildTestMsgComponent';
-import {
-    AChildGreenwaveComponent,
-    AChildGreenwaveComponentProps,
-} from './AChildGreenwaveComponent';
-import {
-    ArtifactGreenwaveTestMsgState,
-    ArtifactGreenwaveTestMsgStateProps,
-} from './AChildGreenwaveTestMsg';
- * 
- */
-import {
-    AChild,
-    Artifact,
-    StateName,
-    getThreadID,
-    getTestMsgBody,
-    isAChildTestMsg,
-    getTestcaseName,
-    isAChildGreenwave,
-    isAChildGreenwaveAndTestMsg,
-} from '../types';
 
 type AChildDetailsEntryPropsWithChildren =
     React.PropsWithChildren<React.ReactNode> & { caption: string };
@@ -83,39 +56,6 @@ export const AChildDetailsEntry = (
     );
 };
 
-interface AChildLinkProps {
-    aChild: AChild;
-    artifactDashboardUrl: string;
-}
-
-export const AChildLink: React.FC<AChildLinkProps> = (props) => {
-    const { aChild, artifactDashboardUrl } = props;
-    let href: string;
-    if (isAChildGreenwave(aChild) || isAChildGreenwaveAndTestMsg(aChild)) {
-        const testcase = getTestcaseName(aChild);
-        href = `${artifactDashboardUrl}?focus=tc:${testcase}`;
-    } else if (isAChildTestMsg(aChild)) {
-        const msgBody = getTestMsgBody(aChild);
-        const thread_id = getThreadID({ brokerMsgBody: msgBody });
-        href = `${artifactDashboardUrl}?focus=id:${thread_id}`;
-    } else {
-        return null;
-    }
-    return (
-        <a
-            href={href}
-            title="Permanent link to result"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-                e.stopPropagation();
-            }}
-        >
-            <LinkIcon style={{ height: '0.9em' }} />
-        </a>
-    );
-};
-
 export const mkLabel = (
     name: string,
     value: string,
@@ -139,52 +79,3 @@ export const mkLabel = (
         </DescriptionListGroup>
     );
 };
-
-type ResultMappingType = (string | ((a: string) => string))[][];
-
-export const mkPairs = (mapping: ResultMappingType, dict: Object) => {
-    const pairsNameValue: string[][] = [];
-    _.forEach(mapping, (map) => {
-        const [path, name, transform] = map;
-        const value = _.get(dict, path as string);
-        if (_.isNil(value) || (_.isEmpty(value) && !_.isNumber(value))) {
-            return;
-        }
-        const v = _.isFunction(transform) ? transform(value) : value;
-        pairsNameValue.push([name, v]);
-    });
-    return pairsNameValue;
-};
-
-export interface AChildProps {
-    aChild: AChild;
-    artifact: Artifact;
-    stateName: StateName;
-    forceExpand: boolean;
-    artifactDashboardUrl: string;
-    setExpandedResult: React.Dispatch<React.SetStateAction<string>>;
-}
-
-// REMOVE:
-
-// export const AChildComponent: React.FC<AChildProps> = (props) => {
-//     const { aChild } = props;
-//     if (isAChildGreenwaveAndTestMsg(aChild)) {
-//         return (
-//             <ArtifactGreenwaveTestMsgState
-//                 {...(props as ArtifactGreenwaveTestMsgStateProps)}
-//             />
-//         );
-//     } else if (isAChildGreenwave(aChild)) {
-//         return (
-//             <AChildGreenwaveComponent
-//                 {...(props as AChildGreenwaveComponentProps)}
-//             />
-//         );
-//     } else if (isAChildTestMsg(aChild)) {
-//         return (
-//             <AChildTestMsgComponent {...(props as ArtifactTestMsgStateProps)} />
-//         );
-//     }
-//     return <>Cannot get test info</>;
-// };
