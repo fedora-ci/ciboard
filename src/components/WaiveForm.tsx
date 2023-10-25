@@ -93,7 +93,7 @@ const WaiveForm: React.FC<{}> = () => {
 
     const metadataLoaded = !qLoading && !qError && metadata;
     const metadataAggrementText = metadataLoaded
-        ? metadata?.metadata_consolidated?.payload?.waive_message
+        ? metadata?.metadataConsolidated?.payload?.waive_message
         : '';
     const agreementText = `Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
     composes and unverified or failed builds can cause issues in system integration. Before waiving these tests it is good to check 

@@ -430,7 +430,7 @@ const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
         return <BuildInfoError message={error.message} />;
     }
 
-    const build = data?.mbs_build;
+    const build = data?.mbsBuild;
 
     if (!build) {
         return <BuildInfoEmpty />;
@@ -540,14 +540,13 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
         return <BuildInfoError message={error.message} />;
     }
 
-    const build = data?.koji_task?.builds?.[0];
+    const build = data?.kojiTask?.builds?.[0];
 
     if (!build) {
         return <BuildInfoEmpty />;
     }
 
-    const advisoryCount =
-        dataAdvisories?.teiid_et_linked_advisories?.length || 0;
+    const advisoryCount = dataAdvisories?.teiidEtLinkedAdvisories?.length || 0;
 
     return (
         <Tabs
@@ -606,7 +605,7 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
                     <LimitWithScroll>
                         <LinkedAdvisories
                             linkedAdvisories={
-                                dataAdvisories?.teiid_et_linked_advisories
+                                dataAdvisories?.teiidEtLinkedAdvisories
                             }
                         />
                     </LimitWithScroll>

@@ -464,7 +464,7 @@ export interface SSTResult {
 }
 
 export interface MetadataQueryResult {
-    metadata_consolidated: Metadata;
+    metadataConsolidated: Metadata;
 }
 
 export interface Metadata {
@@ -494,7 +494,7 @@ export interface MetadataContact {
 export interface MetadataDependency {
     comment: string;
     dependency: 'is_required' | 'is_related_to';
-    testcase_name: string;
+    testcaseName: string;
 }
 
 export interface MetadataKnownIssue {

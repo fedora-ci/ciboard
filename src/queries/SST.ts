@@ -23,7 +23,7 @@ import { gql } from '@apollo/client';
 
 export const SSTListQuery = gql`
     query SSTListQuery {
-        sst_list {
+        sstList {
             name
             display_name
             releases
@@ -33,6 +33,6 @@ export const SSTListQuery = gql`
 
 export const SSTResultsQuery = gql`
     query SSTResultsQuery($sst_name: String!, $release: String!) {
-        sst_results(sst_name: $sst_name, release: $release)
+        sstResults(sst_name: $sst_name, release: $release)
     }
 `;

@@ -310,8 +310,8 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
     const haveData =
         !loadingCurrentState &&
         dataKojiTask &&
-        !_.isEmpty(dataKojiTask.koji_task?.builds);
-    const build = _.first(dataKojiTask?.koji_task?.builds);
+        !_.isEmpty(dataKojiTask.kojiTask?.builds);
+    const build = _.first(dataKojiTask?.kojiTask?.builds);
     return (
         <Tabs activeKey={activeTabKey} onSelect={handleTabClick}>
             <Tab eventKey={0} title={<TabTitleText>Build Info</TabTitleText>}>
@@ -348,9 +348,7 @@ const ArtifactDetailedInfoKojiBuild: React.FC<
                 <LoadingData show={loadingETState} />
                 <LimitWithScroll>
                     <LinkedAdvisories
-                        linkedAdvisories={
-                            dataETState?.teiid_et_linked_advisories
-                        }
+                        linkedAdvisories={dataETState?.teiidEtLinkedAdvisories}
                     />
                 </LimitWithScroll>
             </Tab>
@@ -565,7 +563,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
         );
     }
 
-    const haveData = !loading && data && !_.isEmpty(data.mbs_build);
+    const haveData = !loading && data && !_.isEmpty(data.mbsBuild);
     if (!haveData) {
         return (
             <Flex className="pf-u-p-lg">
@@ -579,7 +577,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
         );
     }
 
-    const build = data.mbs_build;
+    const build = data.mbsBuild;
     if (_.isNil(build)) {
         console.error('No build found in data.');
         return null;

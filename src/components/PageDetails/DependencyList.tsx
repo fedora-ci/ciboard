@@ -38,7 +38,7 @@ function DependencyItem({ dependency }: DependencyItemProps) {
 
     return (
         <ListItem title={dependency.comment || undefined}>
-            {prefix} <b>{dependency.testcase_name}</b>
+            {prefix} <b>{dependency.testcaseName}</b>
             {dependency.comment && (
                 <QuestionCircleIcon className="pf-u-ml-xs" />
             )}
