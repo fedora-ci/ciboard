@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -147,7 +147,7 @@ const tagHistoryFragment = gql`
 `;
 
 export interface ArtifactsDetailedInfoKojiTaskData {
-    koji_task?: KojiTaskInfo;
+    kojiTask?: KojiTaskInfo;
 }
 
 export const ArtifactsDetailedInfoKojiTask = gql`
@@ -156,7 +156,7 @@ export const ArtifactsDetailedInfoKojiTask = gql`
         $koji_instance: KojiInstanceInputType
         $distgit_instance: DistGitInstanceInputType
     ) {
-        koji_task(task_id: $task_id, instance: $koji_instance) {
+        kojiTask(task_id: $task_id, instance: $koji_instance) {
             builds(task_id: $task_id, instance: $koji_instance) {
                 nvr
                 name
@@ -187,7 +187,7 @@ export const ArtifactsDetailedInfoKojiTask = gql`
 `;
 
 export interface ArtifactsDetailedInfoModuleBuildData {
-    mbs_build?: MbsBuildInfo;
+    mbsBuild?: MbsBuildInfo;
 }
 
 export const ArtifactsDetailedInfoModuleBuild = gql`
@@ -197,7 +197,7 @@ export const ArtifactsDetailedInfoModuleBuild = gql`
         $koji_instance: KojiInstanceInputType
         $distgit_instance: DistGitInstanceInputType
     ) {
-        mbs_build(build_id: $build_id, instance: $mbs_instance) {
+        mbsBuild(build_id: $build_id, instance: $mbs_instance) {
             commit(instance: $distgit_instance) {
                 ...CommitInfoFragment
             }
@@ -399,15 +399,15 @@ export const ArtifactsXunitQuery = gql`
         }
     }
 `;
- */
 
 export interface PageGatingGetSSTTeamsData {
-    db_sst_list?: string[];
+    sstList?: string[];
 }
+ */
 
 export const PageGatingGetSSTTeams = gql`
     query PageGatingGetSSTTeams($product_id: Int) {
-        db_sst_list(product_id: $product_id)
+        sstInfo(product_id: $product_id)
     }
 `;
 

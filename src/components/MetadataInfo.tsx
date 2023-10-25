@@ -96,9 +96,7 @@ const Dependency: React.FC<DependencyProps> = (props) => {
                             dataLabel={columnNames.testcase}
                             isActionCell
                         >
-                            <div className="pf-u-px-md">
-                                {dep.testcase_name}
-                            </div>
+                            <div className="pf-u-px-md">{dep.testcaseName}</div>
                         </Td>
                         <Td
                             isActionCell
@@ -360,7 +358,7 @@ export const TestDependency: React.FC<TestDependencyProps> = (props) => {
 };
 
 export interface MetadataQueryResult {
-    metadata_consolidated: Metadata;
+    metadataConsolidated: Metadata;
 }
 
 /**
