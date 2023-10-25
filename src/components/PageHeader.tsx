@@ -158,7 +158,7 @@ const HeaderToolbar = () => {
 };
 
 interface AuthzMapping {
-    authz_mapping: {
+    authzMapping: {
         can_edit_metadata: boolean;
     };
 }
