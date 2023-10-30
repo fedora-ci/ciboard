@@ -111,7 +111,7 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                 footerContent="Popover footer"
             >
                 <Button variant="plain">
-                    <HelpIcon />
+                    <HelpIcon color="red" />
                 </Button>
             </Popover>
         </>
@@ -159,6 +159,7 @@ const ArtifactTypeSelection: React.FC<
             <Tile
                 id={key}
                 key={key}
+                style={{ margin: '0 2px' }}
                 title=""
                 onClick={onSelect}
                 isStacked
@@ -168,7 +169,6 @@ const ArtifactTypeSelection: React.FC<
                 {menuName}
             </Tile>,
         );
-        tilesItems.push(<> </>);
     }
     _.map(artifactTypeToHumanName);
     return <>{tilesItems}</>;
