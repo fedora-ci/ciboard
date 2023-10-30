@@ -57,6 +57,7 @@ import {
     GreenwaveDecisionReply,
     getAType,
 } from '../types';
+import { CSSProperties } from 'react';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
@@ -66,7 +67,10 @@ interface PrintRequirementsSizeProps {
 const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
     const { reqName, allReqs } = props;
     const color = resultColor(reqName);
-    const style = { color: `var(${color})`, whiteSpace: 'nowrap' };
+    const style: CSSProperties = {
+        color: `var(${color})`,
+        whiteSpace: 'nowrap',
+    };
     return (
         <Title style={style} headingLevel="h1" size={TitleSizes['md']}>
             {allReqs[reqName]} {reqName}
@@ -237,14 +241,6 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
     );
 };
 
-/**
- * 
- * XXX ???
-                <FlexItem>{hitSource.component}</FlexItem>
-                <FlexItem>{hitSource.buildId}</FlexItem>
-                <FlexItem>{hitSource.brokerMsgIdGateTag}</FlexItem>
- */
-
 interface ArtifactCardProps {
     artifact: Artifact;
 }
@@ -260,7 +256,6 @@ const ArtifactCard = (props: ArtifactCardProps) => {
     );
 };
 
-//<ArtifactCard artifact={artifact} />
 interface ArtListProps {}
 const ArtList = (_props: ArtListProps) => {
     const { artList } = useAppSelector((state) => state.artifacts);
