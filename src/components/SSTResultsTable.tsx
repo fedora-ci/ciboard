@@ -36,7 +36,7 @@ import {
     EmptyStateIcon,
     EmptyStateVariant,
 } from '@patternfly/react-core';
-import ReactTable, {
+import {
     Table,
     sortable,
     cellWidth,
@@ -46,6 +46,10 @@ import ReactTable, {
     TableHeader,
     TableVariant,
     SortByDirection,
+    ICell,
+    IRow,
+    ISortBy,
+    OnSort,
 } from '@patternfly/react-table';
 import classNames from 'classnames';
 import { ApolloError } from '@apollo/client';
@@ -68,7 +72,7 @@ interface EmptyStateParam {
     title: string;
 }
 
-const columns: ReactTable.ICell[] = [
+const columns: ICell[] = [
     {
         /* 0 */
         title: 'NVR',
@@ -121,7 +125,7 @@ const columns: ReactTable.ICell[] = [
     },
 ];
 
-function makeRow(row: SSTResult): ReactTable.IRow[] {
+function makeRow(row: SSTResult): IRow[] {
     const cells = [];
     cells.push({
         sortKey: row.nvr,
@@ -295,7 +299,7 @@ function makeEmptyStateRow({
     icon,
     icon_color,
     title,
-}: EmptyStateParam): ReactTable.IRow {
+}: EmptyStateParam): IRow {
     return {
         heightAuto: true,
         cells: [
@@ -325,8 +329,8 @@ interface ResultsTableProps {
 
 export function ResultsTable(props: ResultsTableProps) {
     const { error, loading, results } = props;
-    const [rows, setRows] = useState<ReactTable.IRow[]>([]);
-    const [sortBy, setSortBy] = useState<ReactTable.ISortBy>({});
+    const [rows, setRows] = useState<IRow[]>([]);
+    const [sortBy, setSortBy] = useState<ISortBy>({});
 
     /** `columns` is global var, need to reset before previous render */
     /** https://issues.redhat.com/browse/OSCI-3214 */
@@ -356,7 +360,7 @@ export function ResultsTable(props: ResultsTableProps) {
         }
     }, [error, loading, results]);
 
-    const onSort: ReactTable.OnSort = (_event, index, direction) => {
+    const onSort: OnSort = (_event, index, direction) => {
         const sortedRows = rows.sort((a, b) =>
             a[index].sortKey < b[index].sortKey
                 ? -1
