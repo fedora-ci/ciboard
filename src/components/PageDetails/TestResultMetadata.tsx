@@ -50,7 +50,7 @@ import {
     getMsgTimestamp,
     isAChildGreenwave,
     getDatagrepperUrl,
-    getTestMsgExtendedStatus,
+    getMsgExtendedStatus,
     isAChildGreenwaveAndTestMsg,
     getMsgId,
 } from '../../types';
@@ -188,7 +188,7 @@ function TestMsgMetadata(props: TestMsgMetadataProps) {
         },
         {
             label: 'Status',
-            value: getTestMsgExtendedStatus(aChild),
+            value: getMsgExtendedStatus(aChild),
         },
         {
             label: 'Thread ID',
