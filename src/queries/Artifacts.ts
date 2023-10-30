@@ -63,65 +63,6 @@ const statesFragment = gql`
     ${stateEntryFragment}
 `;
 
-/**
-const etaStatesFragment = gql`
-    fragment EtaStatesFragment on ArtifactType {
-        _id
-        states_eta {
-            broker_msg_body
-            kai_state {
-                msg_id
-                version
-                timestamp
-            }
-        }
-    }
-    ${stateEntryFragment}
-`;
-
-export const ArtifactsQuery = gql`
-    query Artifacts(
-        $atype: String!
-        $limit: Int
-        $aid_offset: String
-        $regexs: [String]
-        $dbFieldName: String
-        $dbFieldValues: [String]
-        $options: ArtifactsOptionsInputType
-    ) {
-        artifacts(
-            atype: $atype
-            limit: $limit
-            regexs: $regexs
-            options: $options
-            aid_offset: $aid_offset
-            dbFieldName: $dbFieldName
-            dbFieldValues: $dbFieldValues
-        ) {
-            has_next
-            artifacts {
-                ...MainFragment
-            }
-        }
-    }
-    ${mainFragment}
-`;
-*/
-
-const greenwaveDecisionFragment = gql`
-    fragment GreenwaveDecisionFragment on ArtifactType {
-        _id
-        greenwave_decision {
-            policies_satisfied
-            unsatisfied_requirements
-            satisfied_requirements
-            results
-            waivers
-            summary
-        }
-    }
-`;
-
 const commitInfoFragment = gql`
     fragment CommitInfoFragment on CommitObject {
         committer_date_seconds
@@ -366,45 +307,6 @@ export const ArtifactsListByFiltersQuery = gql`
     ${statesFragment}
 `;
 
-/**
- *  Refetch states fragment. Need to find replaces, data, and write merge for it.
- * https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays-of-non-normalized-objects
- */
-/**
- * XXX: TO REMOVE
- * 
- * This query is used when need to fetch xunit for specific test-result.
-export const ArtifactsXunitQuery = gql`
-    query ArtifactsXunitQuery(
-        $atype: String!
-        $dbFieldName1: String
-        $dbFieldValues1: [String]
-        $msg_id: [String]
-    ) {
-        artifacts(
-            atype: $atype
-            dbFieldName1: $dbFieldName1
-            dbFieldValues1: $dbFieldValues1
-            limit: 1
-        ) {
-            artifacts {
-                _id
-                states(onlyactual: true) {
-                    kai_state {
-                        msg_id
-                    }
-                    broker_msg_xunit(msg_id: $msg_id)
-                }
-            }
-        }
-    }
-`;
-
-export interface PageGatingGetSSTTeamsData {
-    sstList?: string[];
-}
- */
-
 export const PageGatingGetSSTTeams = gql`
     query PageGatingGetSSTTeams($product_id: Int) {
         sstInfo(product_id: $product_id)
@@ -454,15 +356,15 @@ export const PageGatingArtifacts = gql`
                 ...MainFragment
                 ...StatesFragment
                 component_mapping {
-                    component_name
-                    def_assignee
-                    def_assignee_name
-                    description
+                    _updated
                     product_id
                     qa_contact
-                    qa_contact_name
+                    description
+                    def_assignee
                     sst_team_name
-                    _updated
+                    component_name
+                    qa_contact_name
+                    def_assignee_name
                 }
             }
         }

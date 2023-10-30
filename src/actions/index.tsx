@@ -152,12 +152,12 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
                 variables: {
                     // NOTE: We know that artifact is not null thanks to the check at
                     // the top of the function.
-                    subject_type: aType,
-                    subject_identifier: nvr,
-                    testcase,
                     waived: true,
-                    product_version,
                     comment: reason,
+                    testcase,
+                    subject_type: aType,
+                    product_version,
+                    subject_identifier: nvr,
                 },
             });
             console.log('Got response from WaiverDB', response);
