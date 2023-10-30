@@ -70,7 +70,7 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
             <Popover
                 position={PopoverPosition['bottomEnd']}
                 aria-label="Uncontrolled popover with button in the body that can close it"
-                headerContent={<div>Popover header</div>}
+                headerContent={<div>Query help</div>}
                 hasAutoWidth
                 headerIcon={<HelpIcon />}
                 hideOnOutsideClick={false}
@@ -108,10 +108,18 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                         </div>
                     </div>
                 )}
-                footerContent="Popover footer"
+                footerContent={
+                    <a
+                        href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        query syntax help
+                    </a>
+                }
             >
                 <Button variant="plain">
-                    <HelpIcon color="red" />
+                    <HelpIcon color="orange" />
                 </Button>
             </Popover>
         </>
