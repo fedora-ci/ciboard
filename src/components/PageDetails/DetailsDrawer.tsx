@@ -289,7 +289,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             defaultSize={drawerSize}
             isResizable
             minSize="20rem"
-            onResize={onResize}
+            onResize={(_event, newWidth: number) => onResize(newWidth)}
         >
             <DrawerHead>
                 <Title className="pf-u-pb-sm" headingLevel="h3" size="xl">

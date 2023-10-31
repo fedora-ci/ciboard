@@ -41,7 +41,7 @@ import {
     Tr,
     Tbody,
     Thead,
-    TableComposable,
+    Table /* data-codemods */,
 } from '@patternfly/react-table';
 import { useHref } from 'react-router-dom';
 
@@ -227,7 +227,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         .filter((test) => isRequiredFailed(test))
         .map((test, index) => (
             <Tr
-                isHoverable
+                isClickable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
@@ -247,7 +247,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         .filter((test) => isRequiredAwaited(test))
         .map((test, index) => (
             <Tr
-                isHoverable
+                isClickable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
@@ -267,7 +267,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         .filter((test) => isRequiredPassed(test))
         .map((test) => (
             <Tr
-                isHoverable
+                isClickable
                 isRowSelected={selectedTest?.name === test.name}
                 key={test.name}
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
@@ -282,7 +282,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         .filter(({ required }) => !required)
         .map((test, index) => (
             <Tr
-                isHoverable
+                isClickable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
@@ -298,7 +298,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         ));
 
     return (
-        <TableComposable variant="compact">
+        <Table variant="compact">
             {failedRequiredRows.length > 0 && (
                 <>
                     <Thead>
@@ -351,6 +351,6 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
                     <Tbody>{additionalRows}</Tbody>
                 </>
             )}
-        </TableComposable>
+        </Table>
     );
 };

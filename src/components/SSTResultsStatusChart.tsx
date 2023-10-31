@@ -27,7 +27,6 @@ import {
     ChartTooltip,
     getCustomTheme,
     ChartThemeColor,
-    ChartThemeVariant,
 } from '@patternfly/react-charts';
 
 /**
@@ -58,7 +57,6 @@ const colorScale: string[] = [
 
 const chartTheme = getCustomTheme(
     ChartThemeColor.default,
-    ChartThemeVariant.default,
     {
         bar: { colorScale },
         chart: { colorScale },
