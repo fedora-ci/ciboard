@@ -25,14 +25,13 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import {
     Card,
     Flex,
-    Title,
     Spinner,
     Bullseye,
     EmptyState,
     PageSection,
     EmptyStateBody,
     EmptyStateIcon,
-    PageSectionVariants,
+    PageSectionVariants, EmptyStateHeader, EmptyStateFooter,
 } from '@patternfly/react-core';
 import { useQuery, ApolloError, QueryHookOptions } from '@apollo/client';
 import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';
@@ -216,10 +215,7 @@ const NoFound = () => {
             <PageSection isFilled>
                 <Bullseye>
                     <EmptyState>
-                        <EmptyStateIcon icon={SearchIcon} />
-                        <Title headingLevel="h2" size="lg">
-                            No artifacts found
-                        </Title>
+                        <EmptyStateHeader titleText="No artifacts found" icon={<EmptyStateIcon icon={SearchIcon} />} headingLevel="h2" />
                         <EmptyStateBody>
                             No matching artifacts found in database
                         </EmptyStateBody>
@@ -242,19 +238,16 @@ const QueryError: React.FC<QueryErrorProps> = (props) => {
             <PageSection isFilled>
                 <Bullseye>
                     <EmptyState>
-                        <EmptyStateIcon
+                        <EmptyStateHeader titleText="Failed to load artifact" icon={<EmptyStateIcon
                             className="pf-u-danger-color-100"
                             icon={ExclamationCircleIcon}
-                        />
-                        <Title headingLevel="h2" size="lg">
-                            Failed to load artifact
-                        </Title>
+                        />} headingLevel="h2" /><EmptyStateFooter>
                         {error && (
                             <EmptyStateBody>
                                 Error: {error.toString()}
                             </EmptyStateBody>
                         )}
-                    </EmptyState>
+                    </EmptyStateFooter></EmptyState>
                 </Bullseye>
             </PageSection>
         </PageCommon>
@@ -272,13 +265,10 @@ const IsLoading: React.FC<IsLoadingProps> = (props) => {
             <PageSection isFilled>
                 <Bullseye>
                     <EmptyState>
-                        <EmptyStateIcon
-                            variant="container"
-                            component={Spinner}
-                        />
-                        <Title headingLevel="h2" size="lg">
-                            Loading artifact(s)…
-                        </Title>
+                        <EmptyStateHeader titleText="Loading artifact(s)…" icon={<EmptyStateIcon
+                            
+                            icon={Spinner}
+                        />} headingLevel="h2" />
                     </EmptyState>
                 </Bullseye>
             </PageSection>

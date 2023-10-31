@@ -22,25 +22,33 @@ import _ from 'lodash';
 import React from 'react';
 import { LegacyRef, useState } from 'react';
 import {
-    List,
-    Text,
-    Title,
-    Spinner,
-    Bullseye,
-    ListItem,
-    OrderType,
-    EmptyState,
-    TextContent,
-    TextVariants,
-    DropdownProps,
-    ListComponent,
-    EmptyStateBody,
-    EmptyStateIcon,
-    EmptyStateVariant,
-    ExpandableSection,
-    DropdownToggleProps,
+	List,
+	Text,
+	Title,
+	Spinner,
+	Bullseye,
+	ListItem,
+	OrderType,
+	EmptyState,
+	TextContent,
+	TextVariants,
+	ListComponent,
+	EmptyStateBody,
+	EmptyStateIcon,
+	EmptyStateVariant,
+	ExpandableSection, EmptyStateHeader
 } from '@patternfly/react-core';
-import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
+import {
+	DropdownProps,
+	DropdownToggleProps
+} from '@patternfly/react-core/deprecated';
+import {
+	RowWrapperProps,
+	IRow
+} from '@patternfly/react-table';
+import {
+	TableProps
+} from '@patternfly/react-table/deprecated';
 import { ExclamationCircleIcon, LinkIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 
@@ -192,7 +200,7 @@ export const ShowErrors = ({ error, forceExpand }: any) => {
             <Text component={TextVariants.small}>
                 <ExpandableSection
                     toggleText={toggleText}
-                    onToggle={onToggle}
+                    onToggle={(_event, isExpanded: boolean) => onToggle(isExpanded)}
                     isExpanded={isExpanded}
                 >
                     <List component={ListComponent.ol} type={OrderType.number}>
@@ -227,7 +235,7 @@ export const mkSpecialRows = (args: InputRowType): IRow[] => {
             />
         );
     } else if (type === 'loading') {
-        Icon = () => <EmptyStateIcon variant="container" component={Spinner} />;
+        Icon = () => <EmptyStateIcon  icon={Spinner} />;
     }
     return [
         {
@@ -238,11 +246,9 @@ export const mkSpecialRows = (args: InputRowType): IRow[] => {
                     title: (
                         <div>
                             <Bullseye>
-                                <EmptyState variant={EmptyStateVariant.small}>
+                                <EmptyState variant={EmptyStateVariant.sm}>
                                     <Icon />
-                                    <Title headingLevel="h2" size="lg">
-                                        {title}
-                                    </Title>
+                                    <EmptyStateHeader titleText={<>{title}</>} headingLevel="h2" />
                                     <EmptyStateBody>{body}</EmptyStateBody>
                                 </EmptyState>
                             </Bullseye>
