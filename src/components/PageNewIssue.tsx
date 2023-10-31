@@ -34,13 +34,15 @@ import {
     TextContent,
 } from '@patternfly/react-core';
 import {
-    IRow,
-    ICell,
-    Table,
-    TableBody,
-    TableHeader,
-    TableVariant,
+	IRow,
+	ICell,
+	TableVariant
 } from '@patternfly/react-table';
+import {
+	Table,
+	TableBody,
+	TableHeader
+} from '@patternfly/react-table/deprecated';
 import { useQuery } from '@apollo/client';
 
 import { config } from '../config';

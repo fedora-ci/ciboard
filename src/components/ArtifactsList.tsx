@@ -34,8 +34,7 @@ import {
     TitleSizes,
     EmptyState,
     TextContent,
-    CardActions,
-    EmptyStateIcon,
+    EmptyStateIcon, EmptyStateHeader,
 } from '@patternfly/react-core';
 import { Link } from 'react-router-dom';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
@@ -155,10 +154,7 @@ function ShowLoading(props: ShowLoadingProps) {
         <>
             <Bullseye>
                 <EmptyState>
-                    <EmptyStateIcon variant="container" component={Spinner} />
-                    <Title headingLevel="h2" size="lg">
-                        Loading search results…
-                    </Title>
+                    <EmptyStateHeader titleText="Loading search results…" icon={<EmptyStateIcon  icon={Spinner} />} headingLevel="h2" />
                 </EmptyState>
             </Bullseye>
         </>
@@ -178,12 +174,10 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
     const href = getArtifactLocalPath(artifact);
     return (
         <Card id={hit_info._id} isCompact>
-            <CardHeader>
-                <CardActions hasNoOffset={true}>
-                    <Link to={href}>
+            <CardHeader actions={{ actions: <><Link to={href}>
                         <Button variant="secondary">details</Button>
-                    </Link>
-                </CardActions>
+                    </Link></>, hasNoOffset: true, className: undefined}} >
+                
                 <Flex
                     style={{ flexGrow: 1 }}
                     flexWrap={{ default: 'nowrap' }}
@@ -292,13 +286,10 @@ const NothingFound = (_props: NothingFoundProps) => {
     return (
         <Bullseye>
             <EmptyState>
-                <EmptyStateIcon
+                <EmptyStateHeader titleText="Nothing found" icon={<EmptyStateIcon
                     className="pf-u-danger-color-100"
                     icon={ExclamationCircleIcon}
-                />
-                <Title headingLevel="h2" size="lg">
-                    Nothing found
-                </Title>
+                />} headingLevel="h2" />
             </EmptyState>
         </Bullseye>
     );

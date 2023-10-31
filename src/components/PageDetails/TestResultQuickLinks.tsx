@@ -43,7 +43,7 @@ export function TestResultQuickLinks(_props: {}) {
                         component={ExternalLink}
                         href={runDetailsUrl}
                         icon={<ExternalLinkAltIcon />}
-                        isSmall
+                        size="sm"
                     >
                         Run details
                     </Button>
@@ -53,7 +53,7 @@ export function TestResultQuickLinks(_props: {}) {
                         component={ExternalLink}
                         href={logsUrl}
                         icon={<FileAltIcon />}
-                        isSmall
+                        size="sm"
                         variant="secondary"
                     >
                         Logs

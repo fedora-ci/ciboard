@@ -33,7 +33,7 @@ import { useAppDispatch, useAppSelector, useTitle } from '../hooks';
 import { popAlert } from '../actions';
 import { DashboardPageHeader } from './PageHeader';
 
-type PageCommonProps = React.PropsWithChildren<React.ReactNode> & {
+type PageCommonProps = React.PropsWithChildren & {
     title?: string;
 };
 

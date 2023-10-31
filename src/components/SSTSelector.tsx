@@ -23,12 +23,14 @@ import _ from 'lodash';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    Text,
-    Dropdown,
-    TextContent,
-    DropdownItem,
-    DropdownToggle,
+	Text,
+	TextContent
 } from '@patternfly/react-core';
+import {
+	Dropdown,
+	DropdownItem,
+	DropdownToggle
+} from '@patternfly/react-core/deprecated';
 import { CaretDownIcon } from '@patternfly/react-icons';
 
 import { SSTItem } from '../types';
@@ -85,7 +87,7 @@ export function DropdownSelector(props: DropdownSelectorProps) {
             onSelect={onSelect}
             toggle={
                 <DropdownToggle
-                    onToggle={onToggle}
+                    onToggle={(_event, isOpen: boolean) => onToggle(isOpen)}
                     toggleIndicator={CaretDownIcon}
                 >
                     {dropdownLabel}

@@ -57,6 +57,7 @@ import {
     isAChildGreenwaveAndTestMsg,
     isArtifactRedhatContainerImage,
 } from '../types';
+import { Icon } from '@patternfly/react-core';
 
 /**
  * Typescript guards
@@ -326,16 +327,17 @@ export function TestStatusIcon(props: TestStatusIconProps) {
         );
     }
 
-    let Icon = iconProps.icon;
+    let SelectedIcon = iconProps.icon;
 
     return (
-        <Icon
-            aria-label={iconProps.label}
-            className={iconProps.className}
-            size="sm"
-            style={props.style}
-            title={iconProps.label}
-        />
+        <Icon size="sm">
+            <SelectedIcon
+                style={props.style}
+                title={iconProps.label}
+                aria-label={iconProps.label}
+                className={iconProps.className}
+            />
+        </Icon>
     );
 }
 
@@ -356,13 +358,14 @@ export function GatingStatusIcon(props: GatingStatusIconProps) {
     }
 
     return (
-        <TrafficLightIcon
-            aria-label={label}
-            className={className}
-            size="sm"
-            style={props.style}
-            title={label}
-        />
+        <Icon size="sm">
+            <TrafficLightIcon
+                style={props.style}
+                title={label}
+                aria-label={label}
+                className={className}
+            />
+        </Icon>
     );
 }
 

@@ -37,13 +37,15 @@ import {
     DataListItemCells,
 } from '@patternfly/react-core';
 import {
-    IRow,
-    Table,
-    cellWidth,
-    TableBody,
-    TableHeader,
-    TableVariant,
+	IRow,
+	cellWidth,
+	TableVariant
 } from '@patternfly/react-table';
+import {
+	Table,
+	TableBody,
+	TableHeader
+} from '@patternfly/react-table/deprecated';
 import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
 
 import { mkSeparatedList } from '../utils/artifactsTable';
