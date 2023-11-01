@@ -49,7 +49,8 @@ import {
     ToolbarContent,
     ActionListItem,
     ActionListGroup,
-    EmptyStateVariant, EmptyStateHeader,
+    EmptyStateVariant,
+    EmptyStateHeader,
 } from '@patternfly/react-core';
 import {
     Tr,
@@ -255,9 +256,7 @@ export const IsLoading: FunctionComponent<IsLoadingProps> = (props) => {
     if (!isLoading) {
         return null;
     }
-    return (
-        <Spinner  size="sm" aria-label="Contents of the small example" />
-    );
+    return <Spinner size="sm" aria-label="Contents of the small example" />;
 };
 
 interface APIErrorProps {
@@ -275,7 +274,6 @@ export const APIError: FunctionComponent<APIErrorProps> = (props) => {
             </Alert>
         </AlertGroup>
     );
-    //return <div className="pf-u-danger-color-100">{error.message}</div>;
 };
 
 interface NothingFoundTRProps {
@@ -294,7 +292,11 @@ export const NothingFoundTR: FunctionComponent<NothingFoundTRProps> = (
             <Td colSpan={colSpan}>
                 <Bullseye>
                     <EmptyState variant={EmptyStateVariant.sm}>
-                        <EmptyStateHeader titleText="No entries found" icon={<EmptyStateIcon icon={SearchIcon} />} headingLevel="h2" />
+                        <EmptyStateHeader
+                            titleText="No entries found"
+                            icon={<EmptyStateIcon icon={SearchIcon} />}
+                            headingLevel="h2"
+                        />
                         <EmptyStateBody>Try again</EmptyStateBody>
                     </EmptyState>
                 </Bullseye>
@@ -345,10 +347,10 @@ const MetadataList: FunctionComponent<{}> = () => {
     const haveData = !loading && metadata && !_.isEmpty(metadata.metadataRaw);
 
     const customStyle1 = {
-        borderLeft: '3px solid var(--pf-global--primary-color--100)',
+        borderLeft: '3px solid var(--pf-v5-global--primary-color--100)',
     };
     const customStyle2 = {
-        borderLeft: '3px solid var(--pf-global--default-color--200)',
+        borderLeft: '3px solid var(--pf-v5-global--default-color--200)',
     };
 
     /**
@@ -405,11 +407,7 @@ const MetadataList: FunctionComponent<{}> = () => {
                 </ToolbarContent>
             </Toolbar>
 
-            <Table
-                aria-label="Metadata table"
-                variant="compact"
-                isStriped
-            >
+            <Table aria-label="Metadata table" variant="compact" isStriped>
                 <Thead noWrap>
                     <Tr>
                         <Th width={40}>{columnNames.name}</Th>

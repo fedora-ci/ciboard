@@ -69,7 +69,7 @@ export function ContactWidget({ contact }: ContactWidgetProps) {
     if (contact.slackChannelUrl) {
         contactLinks.push(
             <ExternalLink
-                className="pf-u-font-weight-bold"
+                className="pf-v5-u-font-weight-bold"
                 href={contact.slackChannelUrl}
             >
                 via Slack
@@ -79,7 +79,7 @@ export function ContactWidget({ contact }: ContactWidgetProps) {
     if (contact.gchatRoomUrl) {
         contactLinks.push(
             <ExternalLink
-                className="pf-u-font-weight-bold"
+                className="pf-v5-u-font-weight-bold"
                 href={contact.gchatRoomUrl}
             >
                 via Chat
@@ -91,7 +91,7 @@ export function ContactWidget({ contact }: ContactWidgetProps) {
             <>
                 via email at{' '}
                 <ExternalLink
-                    className="pf-u-font-weight-bold"
+                    className="pf-v5-u-font-weight-bold"
                     href={`mailto:${contact.email}`}
                 >
                     {contact.email}

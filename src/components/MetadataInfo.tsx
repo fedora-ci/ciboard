@@ -104,14 +104,16 @@ const Dependency: React.FC<DependencyProps> = (props) => {
                             dataLabel={columnNames.testcase}
                             isActionCell
                         >
-                            <div className="pf-u-px-md">{dep.testcaseName}</div>
+                            <div className="pf-v5-u-px-md">
+                                {dep.testcaseName}
+                            </div>
                         </Td>
                         <Td
                             isActionCell
                             width={25}
                             dataLabel={columnNames.dependency}
                         >
-                            <div className="pf-u-px-md">
+                            <div className="pf-v5-u-px-md">
                                 {depReadable[dep.dependency]}
                             </div>
                         </Td>
@@ -121,7 +123,7 @@ const Dependency: React.FC<DependencyProps> = (props) => {
                             dataLabel={columnNames.comment}
                             isActionCell
                         >
-                            <div className="pf-u-px-md">{dep.comment}</div>
+                            <div className="pf-v5-u-px-md">{dep.comment}</div>
                         </Td>
                     </Tr>
                 ))}
@@ -172,7 +174,7 @@ export const KnownIssues: React.FC<KnownIssuesProps> = (props) => {
                             dataLabel={columnNames.info}
                             isActionCell
                         >
-                            <div className="pf-u-px-md">
+                            <div className="pf-v5-u-px-md">
                                 <LinkifyNewTab>{issue.info}</LinkifyNewTab>
                             </div>
                         </Td>
@@ -181,14 +183,16 @@ export const KnownIssues: React.FC<KnownIssuesProps> = (props) => {
                             width={20}
                             dataLabel={columnNames.status}
                         >
-                            <div className="pf-u-px-md">{issue.status}</div>
+                            <div className="pf-v5-u-px-md">{issue.status}</div>
                         </Td>
                         <Td
                             width={20}
                             isActionCell
                             dataLabel={columnNames.severity}
                         >
-                            <div className="pf-u-px-md">{issue.severity}</div>
+                            <div className="pf-v5-u-px-md">
+                                {issue.severity}
+                            </div>
                         </Td>
                     </Tr>
                 ))}
@@ -208,7 +212,7 @@ const Description: React.FC<DescriptionProps> = (props) => {
 
     return (
         <TextContent>
-            <Text className="pf-u-py-md" component={TextVariants.h3}>
+            <Text className="pf-v5-u-py-md" component={TextVariants.h3}>
                 Test description
             </Text>
             <Text component={TextVariants.pre}>

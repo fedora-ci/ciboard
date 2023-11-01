@@ -39,20 +39,23 @@ function KnownIssueIcon({ severity }: KnownIssueIconProps) {
     if (severity === 'blocker' || severity === 'critical')
         return (
             <ExclamationCircleIcon
-                className="pf-u-danger-color-100"
+                className="pf-v5-u-danger-color-100"
                 title={`${severity} issue`}
             />
         );
     if (severity === 'major' || severity === 'normal')
         return (
             <ExclamationTriangleIcon
-                className="pf-u-warning-color-100"
+                className="pf-v5-u-warning-color-100"
                 title={`${severity} issue`}
             />
         );
 
     return (
-        <InfoCircleIcon className="pf-u-info-color-100" title="minor issue" />
+        <InfoCircleIcon
+            className="pf-v5-u-info-color-100"
+            title="minor issue"
+        />
     );
 }
 

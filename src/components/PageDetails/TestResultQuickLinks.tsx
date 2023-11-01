@@ -36,7 +36,7 @@ export function TestResultQuickLinks(_props: {}) {
     if (_.isEmpty(logsUrl) && _.isEmpty(runDetailsUrl)) return null;
 
     return (
-        <DrawerPanelBody className="pf-u-py-md">
+        <DrawerPanelBody className="pf-v5-u-py-md">
             <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
                 {runDetailsUrl && (
                     <Button

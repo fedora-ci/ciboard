@@ -172,7 +172,7 @@ const WaiveForm: React.FC<{}> = () => {
                         icon={<ExternalLinkSquareAltIcon />}
                         target="_blank"
                         variant="link"
-                        className="pf-u-ml-auto"
+                        className="pf-v5-u-ml-auto"
                         component="a"
                         iconPosition="right"
                     >
