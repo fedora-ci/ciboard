@@ -199,7 +199,7 @@ function PageSSTInternal() {
                                     <Text>
                                         <Spinner
                                             size="md"
-                                            className="pf-u-mr-sm"
+                                            className="pf-v5-u-mr-sm"
                                         />
                                         Loading SST list…
                                     </Text>

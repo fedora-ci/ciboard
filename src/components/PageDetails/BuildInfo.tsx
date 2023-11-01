@@ -42,7 +42,8 @@ import {
     DescriptionList,
     DescriptionListTerm,
     DescriptionListGroup,
-    DescriptionListDescription, EmptyStateHeader,
+    DescriptionListDescription,
+    EmptyStateHeader,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
@@ -190,8 +191,8 @@ function BuildMetadataMbs(props: BuildMetadataMbsProps) {
     ];
 
     const descListClassName = classNames(
-        'pf-u-px-lg',
-        'pf-u-py-md',
+        'pf-v5-u-px-lg',
+        'pf-v5-u-py-md',
         styles['buildInfo'],
     );
 
@@ -293,8 +294,8 @@ function BuildMetadataRpm(props: BuildMetadataRpmProps) {
     ];
 
     const descListClassName = classNames(
-        'pf-u-px-lg',
-        'pf-u-py-md',
+        'pf-v5-u-px-lg',
+        'pf-v5-u-py-md',
         styles['buildInfo'],
     );
 
@@ -335,10 +336,16 @@ function BuildInfoError(props: { message: string }) {
     return (
         <Bullseye>
             <EmptyState variant="sm">
-                <EmptyStateHeader titleText="Could not load build information" icon={<EmptyStateIcon
-                    className="pf-u-danger-color-100"
-                    icon={ExclamationCircleIcon}
-                />} headingLevel="h3" />
+                <EmptyStateHeader
+                    titleText="Could not load build information"
+                    icon={
+                        <EmptyStateIcon
+                            className="pf-v5-u-danger-color-100"
+                            icon={ExclamationCircleIcon}
+                        />
+                    }
+                    headingLevel="h3"
+                />
                 <EmptyStateBody>{props.message}</EmptyStateBody>
             </EmptyState>
         </Bullseye>
@@ -349,7 +356,11 @@ function BuildInfoLoading(_props: {}) {
     return (
         <Bullseye>
             <EmptyState variant="sm">
-                <EmptyStateHeader titleText="Loading build information…" icon={<EmptyStateIcon icon={Spinner}  />} headingLevel="h3" />
+                <EmptyStateHeader
+                    titleText="Loading build information…"
+                    icon={<EmptyStateIcon icon={Spinner} />}
+                    headingLevel="h3"
+                />
             </EmptyState>
         </Bullseye>
     );
@@ -367,7 +378,7 @@ function ModuleBuildComponents(props: ModuleBuildComponentsProps) {
 
     return (
         <List
-            className="pf-u-font-size-sm"
+            className="pf-v5-u-font-size-sm"
             component={ListComponent.ol}
             type={OrderType.number}
         >
@@ -432,7 +443,7 @@ const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
     // Show different tab set for module builds (Components instead of 2× errata)
     return (
         <Tabs
-            className="pf-u-pt-sm"
+            className="pf-v5-u-pt-sm"
             activeKey={activeTabKey}
             inset={{ default: 'insetLg' }}
             onSelect={(_event, tabIndex) => {
@@ -543,7 +554,7 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
 
     return (
         <Tabs
-            className="pf-u-pt-sm"
+            className="pf-v5-u-pt-sm"
             activeKey={activeTabKey}
             inset={{ default: 'insetLg' }}
             onSelect={(_event, tabIndex) => {
