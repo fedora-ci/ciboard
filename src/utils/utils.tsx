@@ -147,7 +147,7 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
 };
 
 export const resultColors = {
-    '--pf-global--success-color--100': [
+    '--pf-v5-global--success-color--100': [
         'complete',
         'passed',
         'pass',
@@ -159,7 +159,7 @@ export const resultColors = {
         'Ok',
         'satisfied',
     ],
-    '--pf-global--danger-color--100': [
+    '--pf-v5-global--danger-color--100': [
         'failed',
         'fail',
         'Fail',
@@ -172,10 +172,10 @@ export const resultColors = {
         'Error',
         'unsatisfied',
     ],
-    '--pf-global--warning-color--100': ['error', 'waived'],
-    '--pf-global--link--Color': ['running'],
-    '--pf-global--warning-color--200': ['queued', 'skip'],
-    '--pf-global--info-color--100': ['info'],
+    '--pf-v5-global--warning-color--100': ['error', 'waived'],
+    '--pf-v5-global--link--Color': ['running'],
+    '--pf-v5-global--warning-color--200': ['queued', 'skip'],
+    '--pf-v5-global--info-color--100': ['info'],
 };
 
 export const resultColor = (result: string) => {
@@ -204,7 +204,7 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
     const icons = {
         missing: {
             pick: type === 'missing' || type === 'test-result-missing',
-            className: 'pf-u-disabled-color-100',
+            className: 'pf-v5-u-disabled-color-100',
             icon: GhostIcon,
             label: 'Result is missing.',
         },
@@ -216,7 +216,7 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
                 type === 'test-result-passed' ||
                 type === 'fetched-gating-yaml' ||
                 type === 'true',
-            className: 'pf-u-success-color-100',
+            className: 'pf-v5-u-success-color-100',
             icon: CheckCircleIcon,
             label: 'Result is OK.',
         },
@@ -229,7 +229,7 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
                 type === 'invalid-gating-yaml' ||
                 type === 'missing-gating-yaml' ||
                 type === 'false',
-            className: 'pf-u-danger-color-100',
+            className: 'pf-v5-u-danger-color-100',
             icon: TimesCircleIcon,
             label: 'Test has failed.',
         },
@@ -244,19 +244,19 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
                 type === 'test-result-missing-waived' ||
                 type === 'test-result-errored-waived' ||
                 type === 'failed-fetch-gating-yaml-waived',
-            className: 'pf-u-warning-color-100',
+            className: 'pf-v5-u-warning-color-100',
             icon: ExclamationTriangleIcon,
             label: 'Test run resulted in an error.',
         },
         progress: {
             pick: type === 'running',
-            className: 'pf-u-link-color',
+            className: 'pf-v5-u-link-color',
             icon: InProgressIcon,
             label: 'Test is in progress.',
         },
         history: {
             pick: type === 'queued',
-            className: 'pf-u-warning-color-100',
+            className: 'pf-v5-u-warning-color-100',
             icon: HistoryIcon,
             label: 'Test is queued.',
         },
@@ -265,19 +265,19 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
                 type === 'info' ||
                 type === 'excluded' ||
                 type === 'blacklisted',
-            className: 'pf-u-info-color-100',
+            className: 'pf-v5-u-info-color-100',
             icon: InfoIcon,
             label: 'Result has additinal info.',
         },
         skip: {
             pick: type === 'skip',
-            className: 'pf-u-warning-color-100',
+            className: 'pf-v5-u-warning-color-100',
             icon: UnlinkIcon,
             label: 'Test was skipped.',
         },
         not_applicable: {
             pick: type === 'not_applicable',
-            className: 'pf-u-info-color-100',
+            className: 'pf-v5-u-info-color-100',
             icon: InfoIcon,
             label: 'Test was skipped.',
         },
@@ -349,11 +349,11 @@ export interface GatingStatusIconProps {
 }
 
 export function GatingStatusIcon(props: GatingStatusIconProps) {
-    let className = 'pf-u-danger-color-100';
+    let className = 'pf-v5-u-danger-color-100';
     let label = 'Gating is blocked';
 
     if (props.status) {
-        className = 'pf-u-success-color-100';
+        className = 'pf-v5-u-success-color-100';
         label = 'Gating has passed';
     }
 

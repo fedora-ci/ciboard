@@ -33,15 +33,11 @@ import {
     PageSection,
     TextContent,
 } from '@patternfly/react-core';
+import { IRow, ICell, TableVariant } from '@patternfly/react-table';
 import {
-	IRow,
-	ICell,
-	TableVariant
-} from '@patternfly/react-table';
-import {
-	Table,
-	TableBody,
-	TableHeader
+    Table,
+    TableBody,
+    TableHeader,
 } from '@patternfly/react-table/deprecated';
 import { useQuery } from '@apollo/client';
 
@@ -89,7 +85,7 @@ function WaiverDbPermissions() {
         return <Spinner size="md" />;
     }
     if (_.isError(error)) {
-        return <div className="pf-u-danger-color-100">{error.message}</div>;
+        return <div className="pf-v5-u-danger-color-100">{error.message}</div>;
     }
     const perms = data!.waiver_db_permissions as WaiverDbPermission[];
     const rows: IRow[] = _.map(perms, (permission) => mkRow(permission));
@@ -119,7 +115,7 @@ function WaiverDbInfoSummary() {
         return <Spinner size="md" />;
     }
     if (_.isError(error)) {
-        return <div className="pf-u-danger-color-100">{error.message}</div>;
+        return <div className="pf-v5-u-danger-color-100">{error.message}</div>;
     }
     const info = data!.waiver_db_info;
     return (
@@ -176,7 +172,7 @@ const BaseOsCard: React.FC<{}> = () => (
 );
 
 const OsciCard: React.FC<{}> = () => (
-    <Card className="pf-u-h-100">
+    <Card className="pf-v5-u-h-100">
         <CardHeader>
             <Title headingLevel="h3" size="2xl">
                 OSCI

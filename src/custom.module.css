@@ -1,10 +1,10 @@
 .helpSelect {
-    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth) solid #f5f5f5 !important;
+    border-bottom: var(--pf-v5-c-data-list__item--BorderBottomWidth) solid #f5f5f5 !important;
 }
 
 .helpSelect:hover {
-    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth) solid
-        var(--pf-global--active-color--100) !important;
+    border-bottom: var(--pf-v5-c-data-list__item--BorderBottomWidth) solid
+        var(--pf-v5-global--active-color--100) !important;
 }
 
 .isHidden {
@@ -12,18 +12,18 @@
 }
 
 .isRedBG {
-    background-color: var(--pf-global--danger-color--100);
+    background-color: var(--pf-v5-global--danger-color--100);
 }
 
 .isInformation {
-    background: var(--pf-global--info-color--100);
+    background: var(--pf-v5-global--info-color--100);
 }
 
-:global(.pf-c-data-list__item.pf-m-expanded).expandedResult {
+:global(.pf-v5-c-data-list__item.pf-m-expanded).expandedResult {
     background-color: floralwhite;
 }
 
-:global(.pf-c-data-list__item.pf-m-expanded).expandedTestsuite {
+:global(.pf-v5-c-data-list__item.pf-m-expanded).expandedTestsuite {
     background-color: oldlace;
 }
 
@@ -35,36 +35,36 @@
 }
 
 .statusPassed {
-    color: var(--pf-global--palette--white);
-    background: var(--pf-global--success-color--100);
+    color: var(--pf-v5-global--palette--white);
+    background: var(--pf-v5-global--success-color--100);
     width: auto;
     padding-left: 0.5em;
 }
 .statusInfo {
-    color: var(--pf-global--warning-color--100);
-    background: var(--pf-global--warning-color--200);
+    color: var(--pf-v5-global--warning-color--100);
+    background: var(--pf-v5-global--warning-color--200);
     width: auto;
     padding-left: 0.5em;
 }
 .statusFailed {
-    color: var(--pf-global--palette--white);
-    background: var(--pf-global--danger-color--100);
+    color: var(--pf-v5-global--palette--white);
+    background: var(--pf-v5-global--danger-color--100);
     width: auto;
     padding-left: 0.5em;
 }
 .statusOther {
-    color: var(--pf-global--info-color--200);
-    background: var(--pf-global--info-color--100);
+    color: var(--pf-v5-global--info-color--200);
+    background: var(--pf-v5-global--info-color--100);
     width: auto;
     padding-left: 0.5em;
 }
 
 .ciSystemsList {
-    border-bottom: var(--pf-c-data-list__item--BorderBottomWidth) solid #f5f5f5 !important;
+    border-bottom: var(--pf-v5-c-data-list__item--BorderBottomWidth) solid #f5f5f5 !important;
 }
 
 .allCISystems {
-    border-top: var(--pf-c-data-list__item--BorderTopWidth) solid #f5f5f5 !important;
+    border-top: var(--pf-v5-c-data-list__item--BorderTopWidth) solid #f5f5f5 !important;
 }
 
 .wDBConfig {
@@ -83,7 +83,7 @@
 }
 
 /* https://www.w3schools.com/cssref/css_selectors.asp */
-.actionButton:global(.pf-c-button) {
+.actionButton:global(.pf-v5-c-button) {
     padding-top: 0;
     padding-bottom: 0;
 }
@@ -97,21 +97,21 @@
  * https://github.com/patternfly/patternfly/issues/2177
  */
 :global(
-        .pf-c-data-list__item.pf-m-expanded
+        .pf-v5-c-data-list__item.pf-m-expanded
             .issue_2177
-            .pf-c-data-list__toggle-icon
+            .pf-v5-c-data-list__toggle-icon
     ) {
     transform: none;
 }
 
 dl.buildInfo {
-    column-gap: var(--pf-global--spacer--xl);
-    row-gap: var(--pf-global--spacer--sm);
+    column-gap: var(--pf-v5-global--spacer--xl);
+    row-gap: var(--pf-v5-global--spacer--sm);
 }
 
 .commitHash,
 .timestamp {
-    --pf-c-description-list__description--FontSize: 0.85em;
+    --pf-v5-c-description-list__description--FontSize: 0.85em;
     font-size: 0.85em;
     font-family: monospace;
 }
@@ -127,51 +127,51 @@ dl.buildInfo {
  * Some element must be svg
  */
 .withHint {
-    --pf-c-table--BorderColor: var(--pf-global--BackgroundColor--200);
+    --pf-v5-c-table--BorderColor: var(--pf-v5-global--BackgroundColor--200);
 }
 
 .withHint:hover {
-    --pf-c-table--BorderColor: var(--pf-global--disabled-color--200);
+    --pf-v5-c-table--BorderColor: var(--pf-v5-global--disabled-color--200);
 }
 
 .withHint:hover
-    :global(.pf-c-table__toggle > .pf-c-button:not(.pf-m-expanded))
+    :global(.pf-v5-c-table__toggle > .pf-v5-c-button:not(.pf-m-expanded))
     svg {
-    color: var(--pf-global--link--Color);
-    box-shadow: var(--pf-global--BoxShadow--lg);
+    color: var(--pf-v5-global--link--Color);
+    box-shadow: var(--pf-v5-global--BoxShadow--lg);
 }
 
 .artifactsTable {
-    --pf-c-table--BackgroundColor: transparent !important;
+    --pf-v5-c-table--BackgroundColor: transparent !important;
 }
 
 .metadataTable {
-    --pf-c-table--BackgroundColor: transparent !important;
+    --pf-v5-c-table--BackgroundColor: transparent !important;
 }
 
 .artifactsTable :global(.pf-m-expanded) {
-    background: var(--pf-global--BackgroundColor--100);
+    background: var(--pf-v5-global--BackgroundColor--100);
 }
 
 .helpSelect:hover
-    :global(.pf-c-data-list__toggle > .pf-c-button:not(.pf-m-expanded))
+    :global(.pf-v5-c-data-list__toggle > .pf-v5-c-button:not(.pf-m-expanded))
     svg {
-    color: var(--pf-global--link--Color);
-    box-shadow: var(--pf-global--BoxShadow--lg);
+    color: var(--pf-v5-global--link--Color);
+    box-shadow: var(--pf-v5-global--BoxShadow--lg);
 }
 
-:global(.example-border .pf-l-flex) {
+:global(.example-border .pf-v5-l-flex) {
     border-style: dashed;
     border-width: 2px;
     padding: 1rem;
 }
 
-:global(.pc-c-page__header-nav .pf-c-nav) {
+:global(.pf-v5-c-page__header-nav .pf-v5-c-nav) {
     /* Stretch the horizontal navbar in page header over the available space. */
     flex: 1 1 auto;
 }
 
 :global(abbr[title]),
 :global(time[title]) {
-    text-decoration: underline dotted var(--pf-global--Color--200) 2px;
+    text-decoration: underline dotted var(--pf-v5-global--Color--200) 2px;
 }

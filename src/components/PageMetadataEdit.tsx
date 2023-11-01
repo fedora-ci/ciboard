@@ -510,7 +510,7 @@ const FormGroupTestcase: FunctionComponent<FormGroupTestcaseProps> = (
                         type="button"
                         aria-label="More info for field testcase name"
                         onClick={(e) => e.preventDefault()}
-                        className="pf-c-form__group-label-help"
+                        className="pf-v5-c-form__group-label-help"
                     >
                         <HelpIcon />
                     </button>

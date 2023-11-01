@@ -80,7 +80,7 @@ const SingleTestRow: React.FC<SingleTestRowProps> = (props) => {
             alignItems={{
                 default: 'alignItemsFlexStart',
             }}
-            className="pf-u-mx-lg"
+            className="pf-v5-u-mx-lg"
         >
             {statusIcon}{' '}
             <Flex
@@ -98,7 +98,7 @@ const SingleTestRow: React.FC<SingleTestRowProps> = (props) => {
                         default: 'spaceItemsSm',
                     }}
                 >
-                    <Title className="pf-u-mb-0" headingLevel="h2" size="md">
+                    <Title className="pf-v5-u-mb-0" headingLevel="h2" size="md">
                         {test.name}
                     </Title>
                     {props.showDependencies && (
@@ -128,7 +128,7 @@ const SingleTestRow: React.FC<SingleTestRowProps> = (props) => {
                 </Flex>
                 <Flex
                     alignSelf={{ default: 'alignSelfCenter' }}
-                    className="pf-u-ml-auto"
+                    className="pf-v5-u-ml-auto"
                     flexWrap={{ default: 'nowrap' }}
                     spaceItems={{
                         default: 'spaceItemsNone',
@@ -303,7 +303,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
                 <>
                     <Thead>
                         <Tr>
-                            <Th className="pf-u-py-sm pf-u-color-200">
+                            <Th className="pf-v5-u-py-sm pf-v5-u-color-200">
                                 Failed required tests (
                                 {failedRequiredRows.length})
                             </Th>
@@ -316,7 +316,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
                 <>
                     <Thead>
                         <Tr>
-                            <Th className="pf-u-py-sm pf-u-color-200">
+                            <Th className="pf-v5-u-py-sm pf-v5-u-color-200">
                                 Awaited required tests (
                                 {awaitedRequiredRows.length})
                             </Th>
@@ -329,7 +329,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
                 <>
                     <Thead>
                         <Tr>
-                            <Th className="pf-u-py-sm pf-u-color-200">
+                            <Th className="pf-v5-u-py-sm pf-v5-u-color-200">
                                 Passed required tests (
                                 {passedRequiredRows.length})
                             </Th>
@@ -342,7 +342,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
                 <>
                     <Thead>
                         <Tr>
-                            <Th className="pf-u-py-sm pf-u-color-200">
+                            <Th className="pf-v5-u-py-sm pf-v5-u-color-200">
                                 Additional tests (not required for gating,{' '}
                                 {additionalRows.length})
                             </Th>
