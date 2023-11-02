@@ -27,6 +27,8 @@ import {
     FlexItem,
     StackItem,
     TextContent,
+    Toolbar,
+    ToolbarContent,
 } from '@patternfly/react-core';
 import { CodeBranchIcon, CubeIcon, UserIcon } from '@patternfly/react-icons';
 
@@ -54,7 +56,6 @@ function ArtifactTitle(props: ArtifactTitleProps) {
     const hasGatingDecision = !_.isNil(artifact.greenwaveDecision);
     const isScratch = isArtifactScratch(artifact);
     const issuer = getArtifacIssuer(artifact);
-
     return (
         <Flex spaceItems={{ default: 'spaceItemsLg' }}>
             <TextContent className="pf-v5-u-mr-auto">
