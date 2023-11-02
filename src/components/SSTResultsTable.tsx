@@ -33,24 +33,25 @@ import {
     LabelProps,
     EmptyStateBody,
     EmptyStateIcon,
-    EmptyStateVariant, EmptyStateHeader,
+    EmptyStateVariant,
+    EmptyStateHeader,
 } from '@patternfly/react-core';
 import {
-	sortable,
-	cellWidth,
-	Visibility,
-	classNames as rtClassNames,
-	TableVariant,
-	SortByDirection,
-	ICell,
-	IRow,
-	ISortBy,
-	OnSort
+    sortable,
+    cellWidth,
+    Visibility,
+    classNames as rtClassNames,
+    TableVariant,
+    SortByDirection,
+    ICell,
+    IRow,
+    ISortBy,
+    OnSort,
 } from '@patternfly/react-table';
 import {
-	Table,
-	TableBody,
-	TableHeader
+    Table,
+    TableBody,
+    TableHeader,
 } from '@patternfly/react-table/deprecated';
 import classNames from 'classnames';
 import { ApolloError } from '@apollo/client';
@@ -309,7 +310,16 @@ function makeEmptyStateRow({
                 title: (
                     <Bullseye>
                         <EmptyState variant={EmptyStateVariant.sm}>
-                            <EmptyStateHeader titleText={<>{title}</>} icon={<EmptyStateIcon icon={icon} color={icon_color} />} headingLevel="h2" />
+                            <EmptyStateHeader
+                                titleText={<>{title}</>}
+                                icon={
+                                    <EmptyStateIcon
+                                        icon={icon}
+                                        color={icon_color}
+                                    />
+                                }
+                                headingLevel="h2"
+                            />
                             <EmptyStateBody>{body}</EmptyStateBody>
                         </EmptyState>
                     </Bullseye>
