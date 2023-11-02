@@ -1454,7 +1454,6 @@ export const MetadataForm: React.FunctionComponent = () => {
 
     useEffect(() => {
         if (_.isString(id)) {
-            console.log('XXX do META query', id);
             getMetadata({ variables: { _id: id } });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
