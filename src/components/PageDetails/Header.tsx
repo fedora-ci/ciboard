@@ -20,17 +20,23 @@
  */
 
 import _ from 'lodash';
+import React from 'react';
 import {
     Flex,
     Stack,
     Title,
+    Button,
     FlexItem,
     StackItem,
     TextContent,
-    Toolbar,
-    ToolbarContent,
 } from '@patternfly/react-core';
-import { CodeBranchIcon, CubeIcon, UserIcon } from '@patternfly/react-icons';
+import {
+    UserIcon,
+    CubeIcon,
+    CodeBranchIcon,
+    AngleDoubleLeftIcon,
+} from '@patternfly/react-icons';
+import { useNavigate } from 'react-router-dom';
 
 import {
     Artifact,
@@ -82,6 +88,38 @@ function ArtifactTitle(props: ArtifactTitleProps) {
         </Flex>
     );
 }
+export interface BackButtonProps {}
+
+const BackButton: React.FC<BackButtonProps> = (props) => {
+    const navigate = useNavigate();
+    if (!(window.history.state && window.history.state.idx > 0)) {
+        return null;
+    }
+
+    return (
+        <div
+            style={{
+                position: 'relative',
+            }}
+        >
+            <Button
+                variant="secondary"
+                ouiaId="Primary"
+                style={{
+                    position: 'absolute',
+                }}
+                onClick={() => navigate(-1)}
+            >
+                <Flex>
+                    <FlexItem>
+                        <AngleDoubleLeftIcon />
+                    </FlexItem>
+                    <FlexItem>back to results</FlexItem>
+                </Flex>
+            </Button>
+        </div>
+    );
+};
 
 export interface ArtifactHeaderProps {
     artifact: Artifact;
@@ -104,11 +142,14 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
     );
 
     return (
-        <Stack className="resultsNarrower">
-            <StackItem>{externalLink}</StackItem>
-            <StackItem>
-                <ArtifactTitle artifact={artifact} />
-            </StackItem>
-        </Stack>
+        <>
+            <BackButton />
+            <Stack className="resultsNarrower">
+                <StackItem>{externalLink}</StackItem>
+                <StackItem>
+                    <ArtifactTitle artifact={artifact} />
+                </StackItem>
+            </Stack>
+        </>
     );
 }
