@@ -587,11 +587,24 @@ export type HitSourceArtifactMbs = {
     buildId: string;
 };
 
+// Ref on kaijs: searchableContainerImageTestParentHandlers
+// https://pagure.io/fedora-ci/messages/blob/master/f/schemas/redhat-container-image.yaml
+
 export type HitSourceArtifactContainerImage = {
+    contId: string;
     nvr: string;
+    contTag: string;
     aType: ATypesContainerImage;
+    contName: string;
+    source: string;
+    issuer: string;
     taskId: string;
+    buildId: string;
     scratch: boolean;
+    component: string;
+    contNamespace: string;
+    contFullNames: string[];
+    contRegistryUrl: string;
 };
 
 export type HitSourceArtifactCompose = {
