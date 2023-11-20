@@ -41,7 +41,8 @@ import { Link } from 'react-router-dom';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import rhLogo from './../img/rhfavicon.svg';
-import rhContLogo from './../img/rhcont.svg';
+import rhContLogo from './../img/rhcont.png';
+import rhMbs from './../img/rhmbs.png';
 
 import { useAppSelector } from '../hooks';
 import { PaginationToolbar } from './PaginationToolbar';
@@ -59,6 +60,8 @@ import {
     getAType,
     isArtifactRedhatContainerImage,
     ArtifactContainerImage,
+    isArtifactMbs,
+    ArtifactMbs,
 } from '../types';
 import { CSSProperties } from 'react';
 
@@ -82,7 +85,7 @@ const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
 };
 
 interface ArtifactGreenwaveStatesSummaryProps {
-    artifact: ArtifactRpm | ArtifactContainerImage;
+    artifact: ArtifactRpm | ArtifactContainerImage | ArtifactMbs;
     isLoading?: boolean;
 }
 export const ArtifactGreenwaveStatesSummary: React.FC<
@@ -290,7 +293,7 @@ const ArtifactRedhatContainerImageCard = (
                     <FlexItem>
                         <Brand
                             alt="Red hat container image"
-                            widths={{ default: '40px' }}
+                            widths={{ default: '30px' }}
                         >
                             <source srcSet={rhContLogo} />
                         </Brand>
@@ -344,6 +347,94 @@ const ArtifactRedhatContainerImageCard = (
     );
 };
 
+interface ArtifactMbsCardProps {
+    artifact: ArtifactMbs;
+}
+const ArtifactMbsCard = (props: ArtifactMbsCardProps) => {
+    const { isLoadingExtended: isLoading } = useAppSelector(
+        (state) => state.artifacts,
+    );
+    const { artifact } = props;
+    const { hit_info, hit_source } = artifact;
+    const aType = getAType(artifact);
+    const href = getArtifactLocalPath(artifact);
+    return (
+        <Card id={hit_info._id} isCompact>
+            <CardHeader
+                actions={{
+                    actions: (
+                        <>
+                            <Link to={href}>
+                                <Button variant="secondary">details</Button>
+                            </Link>
+                        </>
+                    ),
+                    hasNoOffset: true,
+                    className: undefined,
+                }}
+            >
+                <Flex
+                    style={{ flexGrow: 1 }}
+                    flexWrap={{ default: 'nowrap' }}
+                    justifyContent={{ default: 'justifyContentSpaceBetween' }}
+                >
+                    <FlexItem>
+                        <Brand
+                            alt="Red hat container image"
+                            widths={{ default: '30px' }}
+                        >
+                            <source srcSet={rhMbs} />
+                        </Brand>
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {aType}
+                    </FlexItem>
+                    <FlexItem
+                        style={{
+                            whiteSpace: 'nowrap',
+                            fontFamily:
+                                'var(--pf-v5-global--FontFamily--monospace)',
+                            fontSize: '80%',
+                        }}
+                    >
+                        <Link to="">{hit_source.mbsId}</Link>
+                    </FlexItem>
+                    <FlexItem
+                        style={{
+                            fontWeight:
+                                'var(--pf-v5-c-card__title--FontWeight)',
+                            fontSize: 'var(--pf-v5-c-card__title--FontSize)',
+                            fontFamily:
+                                'var(--pf-v5-c-card__title--FontFamily)',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {hit_source.nsvc}
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {hit_source.issuer}
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {hit_source.scratch}
+                    </FlexItem>
+                    <FlexItem
+                        align={{ default: 'alignRight' }}
+                        style={{ whiteSpace: 'nowrap' }}
+                    >
+                        {hit_source.gateTag}
+                    </FlexItem>
+                    <FlexItem style={{ flex: '0 0 10%', whiteSpace: 'nowrap' }}>
+                        <ArtifactGreenwaveStatesSummary
+                            artifact={artifact}
+                            isLoading={isLoading}
+                        />
+                    </FlexItem>
+                </Flex>
+            </CardHeader>
+        </Card>
+    );
+};
+
 interface ArtifactCardProps {
     artifact: Artifact;
 }
@@ -354,6 +445,9 @@ const ArtifactCard = (props: ArtifactCardProps) => {
     }
     if (isArtifactRedhatContainerImage(artifact)) {
         return <ArtifactRedhatContainerImageCard artifact={artifact} />;
+    }
+    if (isArtifactMbs(artifact)) {
+        return <ArtifactMbsCard artifact={artifact} />;
     }
     return (
         <Flex>
