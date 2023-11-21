@@ -29,7 +29,7 @@ export const InitialState: IStateArtifactsQuery = {
     sortBy: undefined,
     artTypes: [''],
     newerThen: '3',
-    queryString: undefined,
+    queryString: '',
     paginationSize: 20,
 };
 
