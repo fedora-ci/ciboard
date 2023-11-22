@@ -92,13 +92,8 @@ export interface BackButtonProps {}
 
 const BackButton: React.FC<BackButtonProps> = (props) => {
     const navigate = useNavigate();
-    let location = useLocation();
     // -1 - means go back to prev history
-    const [navigationDepth, setNavigationDepth] = useState(-1);
-    useEffect(() => {
-        // this will track side-bar changes and url
-        setNavigationDepth(navigationDepth - 1);
-    }, [location]);
+    // this button will only work if no additional history entry is created
     if (!(window.history.state && window.history.state.idx > 0)) {
         return null;
     }
@@ -114,7 +109,7 @@ const BackButton: React.FC<BackButtonProps> = (props) => {
                 style={{
                     position: 'absolute',
                 }}
-                onClick={() => navigate(navigationDepth)}
+                onClick={() => navigate(-1)}
             >
                 <Flex>
                     <FlexItem>
