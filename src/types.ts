@@ -1372,9 +1372,9 @@ export const getArtifactTypeLabel = (type: ArtifactType) => {
         'copr-build': 'Copr',
         'koji-build': 'Koji',
         'koji-build-cs': 'CS Koji',
-        'redhat-module': 'MBS',
-        'productmd-compose': 'Compose',
-        'redhat-container-image': 'Container',
+        'redhat-module': 'RH Module',
+        'productmd-compose': 'RH Compose',
+        'redhat-container-image': 'RH Container',
     };
     if (_.has(artifactTypeLabels, type)) {
         return artifactTypeLabels[type];
