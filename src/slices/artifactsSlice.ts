@@ -27,8 +27,8 @@ import { Dispatch, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Artifact } from '../types';
 import { GetState } from '../reduxStore';
 import {
-    ArtifactsGreenwaveQuery,
-    ArtifactsShallowQuery,
+    ArtifactsSearchFastQuery1,
+    ArtifactsSearchSlowQuery2,
 } from '../queries/Artifacts';
 
 interface IStateArtifacts {
@@ -139,7 +139,7 @@ export const actLoad =
                 paginationFrom,
             };
             const query: QueryOptions = {
-                query: ArtifactsShallowQuery,
+                query: ArtifactsSearchFastQuery1,
                 variables: queryVars,
                 errorPolicy: 'all',
                 fetchPolicy: 'cache-first',
@@ -153,7 +153,7 @@ export const actLoad =
                 // No results, skip second query
                 return;
             }
-            query.query = ArtifactsGreenwaveQuery;
+            query.query = ArtifactsSearchSlowQuery2;
             dispatch(actIsLoadingExtended(true));
             response = await client.query(query);
             artList = responseToState(response);

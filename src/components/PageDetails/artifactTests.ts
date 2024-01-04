@@ -136,11 +136,11 @@ function extractContact(aChild: AChild): CiContact {
     }
     if (isAChildTestMsg(aChild)) {
         _.merge(contact, extractContactFromUmb(aChild));
-        metadataContact = aChild.customMetadata?.payload?.contact;
+        metadataContact = aChild.metadata?.payload?.contact;
     }
     if (isAChildGreenwaveAndTestMsg(aChild)) {
         _.merge(contact, extractContactFromUmb(aChild.ms));
-        metadataContact = aChild.ms.customMetadata?.payload?.contact;
+        metadataContact = aChild.ms.metadata?.payload?.contact;
     }
 
     // Merge in data from the `custom_metadata` Kai state field.
@@ -191,13 +191,14 @@ function transformTest(aChild: AChild, stateName: StateName): CiTest {
     let waiver: GreenwaveWaiveType | undefined;
 
     if (isAChildGreenwave(aChild)) {
+        // XXX: fix me: no metadata for tests that come only from Greenwave :-(
         waiver = aChild.waiver;
     } else if (isAChildTestMsg(aChild)) {
         const testMsg = getTestMsgBody(aChild);
-        dependencies = aChild.customMetadata?.payload?.dependency;
-        description = aChild.customMetadata?.payload?.description;
+        dependencies = aChild.metadata?.payload?.dependency;
+        description = aChild.metadata?.payload?.description;
         error = getMessageError(testMsg);
-        knownIssues = aChild.customMetadata?.payload?.known_issues;
+        knownIssues = aChild.metadata?.payload?.known_issues;
         logsUrl = testMsg.run.log;
         messageId = getMsgId(aChild);
         runDetailsUrl = testMsg.run.url;
@@ -207,7 +208,7 @@ function transformTest(aChild: AChild, stateName: StateName): CiTest {
         logsUrl = msgBody.run.log;
         runDetailsUrl = msgBody.run.url;
         error = getMessageError(msgBody);
-        const metadata = aChild.ms.customMetadata;
+        const metadata = aChild.ms.metadata;
         dependencies = metadata?.payload?.dependency;
         description = metadata?.payload?.description;
         knownIssues = metadata?.payload?.known_issues;
