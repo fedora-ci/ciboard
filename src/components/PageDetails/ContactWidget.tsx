@@ -21,20 +21,11 @@
 
 import _ from 'lodash';
 import React from 'react';
-import { useQuery } from '@apollo/client';
-import {
-    Text,
-    Alert,
-    Spinner,
-    Bullseye,
-    TextContent,
-} from '@patternfly/react-core';
+import { Text, Alert, TextContent } from '@patternfly/react-core';
 import { UsersIcon } from '@patternfly/react-icons';
 
-import { CiContact } from './types';
+import { CiContact, CiTest } from './types';
 import { ExternalLink } from '../ExternalLink';
-import { MetadataQuery } from '../../queries/Metadata';
-import { MetadataQueryResult } from '../MetadataInfo';
 
 function mkSeparatedListNatural(
     elements: React.ReactNode[],
@@ -125,68 +116,5 @@ export function ContactWidget({ contact }: ContactWidgetProps) {
 }
 
 export interface MissingTestContactWidgetProps {
-    productVersion?: string;
-    testcaseName?: string;
-}
-
-export function MissingTestContactWidget(props: MissingTestContactWidgetProps) {
-    const variables: any = { testcaseName: props.testcaseName };
-    if (!_.isNil(props.productVersion)) {
-        variables.productVersion = props.productVersion;
-    }
-
-    const { data, loading } = useQuery<MetadataQueryResult>(MetadataQuery, {
-        variables,
-        errorPolicy: 'all',
-        /* need to re-fetch each time when user press save/back button */
-        fetchPolicy: 'cache-and-network',
-        notifyOnNetworkStatusChange: true,
-        skip: _.isEmpty(props.testcaseName),
-    });
-
-    const metadataContact = data?.metadataConsolidated.payload?.contact;
-    const haveData = !loading && !_.isEmpty(metadataContact);
-
-    if (loading) {
-        return (
-            <Alert
-                customIcon={<UsersIcon />}
-                isInline
-                title="Loading contact info…"
-                variant="info"
-            >
-                <Bullseye>
-                    <Spinner size="lg" />
-                </Bullseye>
-            </Alert>
-        );
-    }
-
-    if (!haveData) {
-        return (
-            <Alert
-                customIcon={<UsersIcon />}
-                isInline
-                title="No contact information available"
-                variant="warning"
-            >
-                Unfortunately, we were unable to obtain any ownership or contact
-                information for this test. Who owns or maintains it remains a
-                mystery.
-            </Alert>
-        );
-    }
-
-    let contact: CiContact = {
-        docsUrl: metadataContact.docs,
-        email: metadataContact.email,
-        gchatRoomUrl: metadataContact.gchat_room_url,
-        name: metadataContact.name,
-        reportIssueUrl: metadataContact.report_issue_url,
-        slackChannelUrl: metadataContact.slack_channel_url,
-        team: metadataContact.team,
-        url: metadataContact.url,
-    };
-
-    return <ContactWidget contact={contact} />;
+    ciTest: CiTest;
 }
