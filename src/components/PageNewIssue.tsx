@@ -121,8 +121,8 @@ function WaiverDbInfoSummary() {
     return (
         <TextContent>
             <Text>
-                WaiverDB version: {info.version}. Auth method:{' '}
-                {info.auth_method}.
+                WaiverDB version: {info?.version}. Auth method:{' '}
+                {info?.auth_method}.
             </Text>
         </TextContent>
     );

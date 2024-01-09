@@ -468,6 +468,17 @@ export interface MetadataPayload {
     waive_message?: string;
 }
 
+export interface MetadataRaw {
+    _id?: string;
+    payload?: MetadataPayload;
+    priority: number;
+    productVersion?: string;
+    testcaseName?: string;
+    testcaseNameIsRegex?: boolean;
+}
+
+export type TestMetadata = Omit<MetadataRaw, 'priority'>;
+
 export interface MetadataContact {
     name?: string;
     url?: string;
@@ -520,9 +531,7 @@ export interface ArtifactBase {
     hit_info: HitInfo;
     children: AChildrenMsg;
     hit_source: HitSourceArtifact;
-    component_mapping?: ComponentMapping;
     greenwaveDecision?: GreenwaveDecisionReply;
-    resultsdb_testscase: number[];
 }
 
 export type HitSourceArtifact =

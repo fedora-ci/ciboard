@@ -19,7 +19,7 @@
  */
 
 import { gql } from '@apollo/client';
-import { Artifact, KojiTaskInfo, MbsBuildInfo } from '../types';
+import { Artifact, MetadataRaw, KojiTaskInfo, MbsBuildInfo } from '../types';
 
 const commitInfoFragment = gql`
     fragment CommitInfoFragment on CommitObject {
@@ -201,6 +201,7 @@ export interface ArtifactsCompleteQueryData {
         hits_info: any;
         hits: Artifact[];
     };
+    metadataRaw: MetadataRaw[];
 }
 
 /**
@@ -228,14 +229,11 @@ export const ArtifactsCompleteQuery = gql`
             hits {
                 hit_info
                 hit_source
-                children {
+                children(onlyActual: true) {
                     hits_info
                     hits {
                         hit_info
                         hit_source
-                        metadata {
-                            payload
-                        }
                     }
                 }
                 greenwaveDecision {
@@ -247,6 +245,14 @@ export const ArtifactsCompleteQuery = gql`
                     unsatisfied_requirements
                 }
             }
+        }
+        metadataRaw {
+            _id
+            payload
+            priority
+            testcaseName
+            productVersion
+            testcaseNameIsRegex
         }
     }
 `;

@@ -63,4 +63,5 @@ export interface CiTest {
     dependencies?: MetadataDependency[];
     originalState: AChild;
     runDetailsUrl?: string;
+    waiveMessage?: string;
 }
