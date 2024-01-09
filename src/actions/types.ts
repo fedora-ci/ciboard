@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2024 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ import React from 'react';
 import { AlertVariant } from '@patternfly/react-core';
 
 import { Artifact } from '../types';
+import { CiTest } from '../components/PageDetails/types';
 
 export const SST_PAGE = 'SST_PAGE';
 export const SST_MENU = 'SUBMIT_MENU';
@@ -59,7 +60,7 @@ export interface IStateAlerts {
 export interface IStateWaiver {
     reason: string;
     artifact?: Artifact;
-    testcase?: string;
+    ciTest?: CiTest;
     timestamp?: number;
     waiveError: string;
 }
@@ -95,7 +96,7 @@ export interface GASetSearchOptionsPayload {
 
 export interface CreateWaiverPayload {
     artifact: Artifact | undefined;
-    testcase: string | undefined;
+    ciTest: CiTest | undefined;
 }
 
 export interface SubmitWaiverPayload {

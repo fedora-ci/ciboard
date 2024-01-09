@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022, 2023, 2024 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,12 +38,10 @@ import {
     HelperTextItem,
 } from '@patternfly/react-core';
 import { ExternalLinkSquareAltIcon } from '@patternfly/react-icons';
-import { useApolloClient, useQuery } from '@apollo/client';
+import { useApolloClient } from '@apollo/client';
 
 import { docs } from '../config';
 import { createWaiver, submitWaiver, resetWaiverReply } from '../actions';
-import { MetadataQuery } from '../queries/Metadata';
-import { MetadataQueryResult } from '../types';
 import { useAppDispatch, useAppSelector } from '../hooks';
 
 type Validate = 'success' | 'warning' | 'error' | 'default';
@@ -67,16 +65,7 @@ const WaiveForm: React.FC<{}> = () => {
         setValidated(validated);
     };
 
-    const waiverFor = waiver.testcase;
-    const {
-        loading: qLoading,
-        error: qError,
-        data: metadata,
-    } = useQuery<MetadataQueryResult>(MetadataQuery, {
-        variables: { testcase_name: waiverFor },
-        errorPolicy: 'all',
-        notifyOnNetworkStatusChange: true,
-    });
+    const waiverFor = waiver.ciTest?.name;
 
     const onClickCancel = () => {
         dispatch(createWaiver(undefined, undefined));
@@ -93,16 +82,14 @@ const WaiveForm: React.FC<{}> = () => {
         'Reason must have detailed explanation. Provide links to issues, bugs, etc';
     const agreementLabel = 'I agree and acknowledge the above information';
 
-    const metadataLoaded = !qLoading && !qError && metadata;
-    const metadataAggrementText = metadataLoaded
-        ? metadata?.metadataConsolidated?.payload?.waive_message
-        : '';
+    const metadataAggrementText = waiver.ciTest?.waiveMessage;
     const agreementText = `Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
     composes and unverified or failed builds can cause issues in system integration. Before waiving these tests it is good to check 
     other possible options, in particular some CI-systems can fail due to outages and different circumstances. It is good to restart 
     the test or to contact CI-owners for assistance. Proceed waiving test-result only when other efforts have not succeeded.`;
-    const { testcase, waiveError, timestamp } = waiver;
-    if (_.isNil(testcase)) {
+    const { ciTest, waiveError, timestamp } = waiver;
+    const testcaseName = ciTest?.name;
+    if (_.isNil(testcaseName)) {
         return null;
     }
     return (
@@ -197,8 +184,9 @@ const WaiveForm: React.FC<{}> = () => {
 export const WaiveModal: React.FC<{}> = () => {
     const dispatch = useAppDispatch();
     const waiver = useAppSelector((store) => store.waive);
-    const { artifact, testcase, timestamp } = waiver;
-    const showWaiveForm = artifact && !_.isEmpty(testcase) && !timestamp;
+    const { artifact, ciTest, timestamp } = waiver;
+    const testcaseName = ciTest;
+    const showWaiveForm = artifact && !_.isEmpty(testcaseName) && !timestamp;
     const onClose = () => {
         dispatch(createWaiver(undefined, undefined));
     };

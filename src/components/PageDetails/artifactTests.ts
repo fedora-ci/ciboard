@@ -2,7 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023, 2024 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,17 +31,19 @@ import {
     StateName,
     getDocsUrl,
     getRerunUrl,
+    MetadataRaw,
+    TestMetadata,
     AChildTestMsg,
     getTestMsgBody,
     MetadataContact,
     getTestcaseName,
     isAChildTestMsg,
     isAChildGreenwave,
-    MetadataDependency,
     GreenwaveWaiveType,
     getMsgExtendedStatus,
     isAChildGreenwaveAndTestMsg,
     GreenwaveRequirementOutcome,
+    getArtifactProduct,
 } from '../../types';
 import { getMessageError, isResultWaivable } from '../../utils/utils';
 import { mkStagesAndStates } from '../../utils/stages_states';
@@ -126,21 +128,16 @@ function extractContactFromUmb(aChild: AChildTestMsg): CiContact | undefined {
     };
 }
 
-function extractContact(aChild: AChild): CiContact {
+function extractContact(aChild: AChild, testMetadata: TestMetadata): CiContact {
     let contact: CiContact = {};
     let metadataContact: MetadataContact | undefined;
+    metadataContact = testMetadata?.payload?.contact;
 
-    if (isAChildGreenwave(aChild)) {
-        // This is handled later in the UI by querying custom metadata.
-        return contact;
-    }
     if (isAChildTestMsg(aChild)) {
         _.merge(contact, extractContactFromUmb(aChild));
-        metadataContact = aChild.metadata?.payload?.contact;
     }
     if (isAChildGreenwaveAndTestMsg(aChild)) {
         _.merge(contact, extractContactFromUmb(aChild.ms));
-        metadataContact = aChild.ms.metadata?.payload?.contact;
     }
 
     // Merge in data from the `custom_metadata` Kai state field.
@@ -172,13 +169,77 @@ function extractContact(aChild: AChild): CiContact {
     return contact;
 }
 
-function transformTest(aChild: AChild, stateName: StateName): CiTest {
-    const contact = extractContact(aChild);
-    let dependencies: MetadataDependency[] | undefined;
-    let description: string | undefined;
+const metadataFilter = (
+    testcaseName: string,
+    productVersion: string | undefined,
+    metadataEntry: MetadataRaw,
+) => {
+    const entryProductVersion = metadataEntry.productVersion;
+    const entryTestcaseName = metadataEntry.testcaseName;
+    const entryTestcaseNameIsRegex = metadataEntry.testcaseNameIsRegex;
+    if (!entryTestcaseName) {
+        return false;
+    }
+    if (entryProductVersion && productVersion !== entryProductVersion) {
+        return false;
+    }
+    if (entryTestcaseNameIsRegex) {
+        const regex = new RegExp(entryTestcaseName);
+        if (regex.test(testcaseName)) {
+            return true;
+        }
+    } else if (entryTestcaseName === testcaseName) {
+        return true;
+    }
+    return false;
+};
+
+function customMerge(presentVaule: any, newValue: any) {
+    if (
+        ((_.isArray(presentVaule) && _.isArray(newValue)) ||
+            (_.isString(presentVaule) && _.isString(newValue))) &&
+        _.isEmpty(newValue)
+    ) {
+        return presentVaule;
+    }
+    /**
+     * Return: undefined
+     * If customizer returns undefined, merging is handled by the method instead:
+     * Source properties that resolve to undefined are skipped if a destination value exists.
+     * Array and plain object properties are merged recursively.
+     * Other objects and value types are overridden by assignment.
+     */
+}
+
+const mergedMetadata = (
+    artifact: Artifact,
+    aChild: AChild,
+    metadata: MetadataRaw[],
+): TestMetadata => {
+    const testcaseName = getTestcaseName(aChild);
+    const productVersion = getArtifactProduct(artifact);
+    const relatedEntries = _.filter(
+        metadata,
+        _.partial(metadataFilter, testcaseName, productVersion),
+    );
+    const sortedByPrio = _.sortBy(relatedEntries, [
+        function (o: any) {
+            return o?.priority;
+        },
+    ]);
+    const payloads = _.map(sortedByPrio, _.partial(_.get, _, 'payload'));
+    const mergedMetadata = _.mergeWith({}, ...payloads, customMerge);
+    return { payload: mergedMetadata };
+};
+
+function transformTest(
+    artifact: Artifact,
+    aChild: AChild,
+    stateName: StateName,
+    metadata: MetadataRaw[],
+): CiTest {
     const docsUrl = getDocsUrl(aChild);
     let error: MSG_V_1.MsgErrorType | undefined;
-    let knownIssues: CiTest['knownIssues'];
     let logsUrl: string | undefined;
     let messageId: string | undefined;
     const name = getTestcaseName(aChild);
@@ -189,16 +250,18 @@ function transformTest(aChild: AChild, stateName: StateName): CiTest {
     let runDetailsUrl: string | undefined;
     const waivable = isResultWaivable(aChild);
     let waiver: GreenwaveWaiveType | undefined;
+    const testMetadata = mergedMetadata(artifact, aChild, metadata);
+    const contact = extractContact(aChild, testMetadata);
+    const dependencies = testMetadata?.payload?.dependency;
+    const description = testMetadata?.payload?.description;
+    const waiveMessage = testMetadata.payload?.waive_message;
+    const knownIssues = testMetadata?.payload?.known_issues;
 
     if (isAChildGreenwave(aChild)) {
-        // XXX: fix me: no metadata for tests that come only from Greenwave :-(
         waiver = aChild.waiver;
     } else if (isAChildTestMsg(aChild)) {
         const testMsg = getTestMsgBody(aChild);
-        dependencies = aChild.metadata?.payload?.dependency;
-        description = aChild.metadata?.payload?.description;
         error = getMessageError(testMsg);
-        knownIssues = aChild.metadata?.payload?.known_issues;
         logsUrl = testMsg.run.log;
         messageId = getMsgId(aChild);
         runDetailsUrl = testMsg.run.url;
@@ -208,10 +271,6 @@ function transformTest(aChild: AChild, stateName: StateName): CiTest {
         logsUrl = msgBody.run.log;
         runDetailsUrl = msgBody.run.url;
         error = getMessageError(msgBody);
-        const metadata = aChild.ms.metadata;
-        dependencies = metadata?.payload?.dependency;
-        description = metadata?.payload?.description;
-        knownIssues = metadata?.payload?.known_issues;
         messageId = msgId;
         waiver = aChild.gs.waiver;
     }
@@ -260,13 +319,19 @@ function transformTest(aChild: AChild, stateName: StateName): CiTest {
         dependencies,
         originalState: aChild,
         runDetailsUrl,
+        waiveMessage,
     };
 }
 
-export function extractTests(artifact: Artifact): CiTest[] {
+export function extractTests(
+    artifact: Artifact,
+    metadata: MetadataRaw[],
+): CiTest[] {
     const stagesStates = mkStagesAndStates(artifact);
     const tests = stagesStates.flatMap(([_stage, stateName, tests]) =>
-        tests.map((aChild) => transformTest(aChild, stateName)),
+        tests.map((aChild) =>
+            transformTest(artifact, aChild, stateName, metadata),
+        ),
     );
     return _.sortBy(tests, (test) => test.name);
 }

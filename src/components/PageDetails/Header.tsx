@@ -20,23 +20,15 @@
  */
 
 import _ from 'lodash';
-import React from 'react';
 import {
     Flex,
     Stack,
     Title,
-    Button,
     FlexItem,
     StackItem,
     TextContent,
 } from '@patternfly/react-core';
-import {
-    UserIcon,
-    CubeIcon,
-    CodeBranchIcon,
-    AngleDoubleLeftIcon,
-} from '@patternfly/react-icons';
-import { useNavigate } from 'react-router-dom';
+import { UserIcon, CubeIcon, CodeBranchIcon } from '@patternfly/react-icons';
 
 import {
     Artifact,
@@ -88,39 +80,6 @@ function ArtifactTitle(props: ArtifactTitleProps) {
         </Flex>
     );
 }
-export interface BackButtonProps {}
-
-const BackButton: React.FC<BackButtonProps> = (props) => {
-    const navigate = useNavigate();
-    // -1 - means go back to prev history
-    // this button will only work if no additional history entry is created
-    if (!(window.history.state && window.history.state.idx > 0)) {
-        return null;
-    }
-    return (
-        <div
-            style={{
-                position: 'relative',
-            }}
-        >
-            <Button
-                variant="secondary"
-                ouiaId="Primary"
-                style={{
-                    position: 'absolute',
-                }}
-                onClick={() => navigate(-1)}
-            >
-                <Flex>
-                    <FlexItem>
-                        <AngleDoubleLeftIcon />
-                    </FlexItem>
-                    <FlexItem>back to results</FlexItem>
-                </Flex>
-            </Button>
-        </div>
-    );
-};
 
 export interface ArtifactHeaderProps {
     artifact: Artifact;
@@ -144,7 +103,6 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
 
     return (
         <>
-            <BackButton />
             <Stack className="resultsNarrower">
                 <StackItem>{externalLink}</StackItem>
                 <StackItem>
