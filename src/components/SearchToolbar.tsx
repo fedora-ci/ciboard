@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023, 2024 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,6 @@ import {
     FlexItem,
     HelperText,
     ToolbarItem,
-    TextVariants,
     ToolbarContent,
     HelperTextItem,
     TextInputGroup,
@@ -40,10 +39,11 @@ import {
     ExpandableSection,
     TextInputGroupMain,
     TextInputGroupUtilities,
+    Checkbox,
 } from '@patternfly/react-core';
 import { HelpIcon, SearchIcon } from '@patternfly/react-icons';
 
-import { actLoad, actPage } from './../actions';
+import { actDoDeepSearch, actLoad, actPage } from './../actions';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { actArtTypes, actNewerThen, actQueryString } from './../actions';
 import { useSearchParams } from 'react-router-dom';
@@ -76,51 +76,70 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                 headerIcon={<HelpIcon />}
                 hideOnOutsideClick={false}
                 bodyContent={(hide) => (
-                    <div>
-                        <>
-                            <HelperText>
-                                <HelperText>
-                                    <HelperTextItem variant="success">
-                                        Examples:
-                                    </HelperTextItem>
-                                </HelperText>
-                                <HelperTextItem
-                                    style={{ whiteSpace: 'nowrap' }}
-                                >
-                                    component: kernel AND scratch: true AND
-                                    issuer: sb* <br />
-                                    component: kernel AND gateTag: (rhel-8.8* OR
-                                    rhel-9.2*)
-                                </HelperTextItem>
-                            </HelperText>
-                            <HelperText>
-                                <HelperTextItem variant="success">
-                                    Known fields:
-                                </HelperTextItem>
-                            </HelperText>
-                            <HelperText>
-                                <HelperTextItem variant="indeterminate">
-                                    component
-                                    <br />
-                                    scratch
-                                    <br />
-                                </HelperTextItem>
-                            </HelperText>
-                        </>
-                        <div>
+                    <>
+                        <HelperText>
+                            <HelperTextItem
+                                style={{ fontFamily: 'RedHatDisplay' }}
+                            >
+                                Known fields
+                            </HelperTextItem>
+                            <HelperTextItem
+                                style={{ fontFamily: 'RedHatMono' }}
+                            >
+                                nvr
+                                <br />
+                                source
+                                <br />
+                                issuer
+                                <br />
+                                taskId
+                                <br />
+                                contId
+                                <br />
+                                scratch
+                                <br />
+                                gateTag
+                                <br />
+                                buildId
+                                <br />
+                                component
+                                <br />
+                                brokerMsgIdGateTag
+                            </HelperTextItem>
+                        </HelperText>
+                        <br />
+                        <HelperText>
+                            <HelperTextItem
+                                style={{ fontFamily: 'RedHatDisplay' }}
+                            >
+                                Examples
+                            </HelperTextItem>
+                            <HelperTextItem
+                                style={{
+                                    whiteSpace: 'nowrap',
+                                    fontFamily: 'RedHatMono',
+                                }}
+                            >
+                                component: kernel AND scratch: true AND issuer:
+                                sb* <br />
+                                component: kernel AND gateTag: (rhel-8.8* OR
+                                rhel-9.2*)
+                            </HelperTextItem>
+                        </HelperText>
+                        <br />
+                        <a
+                            href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            query syntax help
+                        </a>
+
+                        <div style={{ textAlign: 'right' }}>
                             <button onClick={hide}>close</button>
                         </div>
-                    </div>
+                    </>
                 )}
-                footerContent={
-                    <a
-                        href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        query syntax help
-                    </a>
-                }
             >
                 <Button variant="plain">
                     <HelpIcon color="orange" />
@@ -191,10 +210,10 @@ const TimelineSelection: React.FC<TimelineSelectionProps> = (_props: {}) => {
     const dispatch = useAppDispatch();
     const newerThen = useAppSelector((state) => state.artifactsQuery.newerThen);
     const steps = [
-        { value: 1, label: '1 month' },
-        { value: 3, label: '3 months' },
-        { value: 6, label: '6 months' },
-        { value: 8, label: 'All time' },
+        { value: 1, label: '1mo' },
+        { value: 3, label: '3mos' },
+        { value: 6, label: '6mos' },
+        { value: 8, label: 'anytime' },
     ];
     const onChange = (value: number) => {
         const newValue = _.toString(value);
@@ -202,17 +221,62 @@ const TimelineSelection: React.FC<TimelineSelectionProps> = (_props: {}) => {
             dispatch(actNewerThen(newValue));
         }
     };
+    let label = '';
+    switch (newerThen) {
+        case '1':
+            label = '1 month';
+            break;
+        case '8':
+            label = 'all time';
+            break;
+        default:
+            label = `${newerThen} months`;
+    }
+    return (
+        <Flex direction={{ default: 'column' }}>
+            <FlexItem>
+                <Text style={{ fontFamily: 'RedhatText' }}>
+                    Lookup for: {label}
+                </Text>
+            </FlexItem>
+            <FlexItem>
+                <Slider
+                    value={_.toNumber(newerThen)}
+                    min={steps[0].value}
+                    max={steps[3].value}
+                    onChange={(_event, value: number) => onChange(value)}
+                    customSteps={steps}
+                />
+            </FlexItem>
+        </Flex>
+    );
+};
+
+interface DoDeepSearchProps {}
+const DoDeepSearch: React.FC<DoDeepSearchProps> = (_props: {}) => {
+    const dispatch = useAppDispatch();
+    const doDeepSearch = useAppSelector(
+        (state) => state.artifactsQuery.doDeepSearch,
+    );
+    const onChange = (
+        _event: React.FormEvent<HTMLInputElement>,
+        checked: boolean,
+    ) => {
+        // event.currentTarget.name === 'deepsearch'
+        if (doDeepSearch !== checked) {
+            dispatch(actDoDeepSearch(checked));
+        }
+    };
+
     return (
         <>
-            <Text component={TextVariants.h3}>Find for:</Text>
-            <Slider
-                value={_.toNumber(newerThen)}
-                min={steps[0].value}
-                max={steps[3].value}
-                onChange={(_event, value: number) => onChange(value)}
-                customSteps={steps}
+            <Checkbox
+                label="Do Deep Search"
+                isChecked={doDeepSearch}
+                onChange={onChange}
+                id="deep-search"
+                name="deepsearch"
             />
-            <br />
         </>
     );
 };
@@ -292,9 +356,16 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
                     style={{ flexBasis: '100%' }}
                     toggleText="more"
                 >
-                    <div style={{ maxWidth: '400px' }}>
-                        <TimelineSelection />
-                    </div>
+                    <Flex direction={{ default: 'column' }}>
+                        <FlexItem>
+                            <DoDeepSearch />
+                        </FlexItem>
+                        <FlexItem grow={{ default: 'grow' }}>
+                            <div style={{ maxWidth: '400px' }}>
+                                <TimelineSelection />
+                            </div>
+                        </FlexItem>
+                    </Flex>
                 </ExpandableSection>
             </ToolbarItem>
             <ToolbarItem

@@ -45,6 +45,7 @@ export interface IStateArtifactsQuery {
     sortBy: string | undefined;
     artTypes: string[] | undefined;
     newerThen: string | undefined;
+    doDeepSearch: boolean;
     queryString: string | undefined;
     paginationSize: number;
 }
