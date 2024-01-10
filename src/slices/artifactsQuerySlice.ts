@@ -30,6 +30,7 @@ export const InitialState: IStateArtifactsQuery = {
     artTypes: [''],
     newerThen: '3',
     queryString: '',
+    doDeepSearch: false,
     paginationSize: 20,
 };
 
@@ -59,6 +60,14 @@ export const artifactsQuerySlice = createSlice({
         ) => {
             const newerThen = action.payload;
             state.newerThen = newerThen;
+            state.page = 1;
+        },
+        doDeepSearch: (
+            state,
+            action: PayloadAction<IStateArtifactsQuery['doDeepSearch']>,
+        ) => {
+            const doDeepSearch = action.payload;
+            state.doDeepSearch = doDeepSearch;
             state.page = 1;
         },
         queryString: (
@@ -93,5 +102,6 @@ export const {
     artTypes: actArtTypes,
     newerThen: actNewerThen,
     queryString: actQueryString,
+    doDeepSearch: actDoDeepSearch,
     paginationSize: actPaginationSize,
 } = artifactsQuerySlice.actions;
