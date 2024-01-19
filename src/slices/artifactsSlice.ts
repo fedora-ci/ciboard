@@ -124,8 +124,9 @@ export const actLoad =
             artTypes,
             newerThen,
             queryString,
+            doDeepSearch,
             paginationSize,
-        } = getState().artifactsQuery;
+        } = getState().artifactsCurrentQuery;
         const paginationFrom = (page - 1) * paginationSize;
         let errorText: string;
         try {
@@ -135,6 +136,7 @@ export const actLoad =
                 artTypes,
                 newerThen,
                 queryString,
+                doDeepSearch,
                 paginationSize,
                 paginationFrom,
             };
