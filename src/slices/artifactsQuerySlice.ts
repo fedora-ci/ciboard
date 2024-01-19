@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2024 Andrei Stepanov <astepano@redhat.com>
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
@@ -22,16 +22,24 @@
 import _ from 'lodash';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { IStateArtifactsQuery } from '../actions/types';
+import {
+    IStateArtifactsCurrentQuery,
+    IStateArtifactsQuery,
+} from '../actions/types';
 
-export const InitialState: IStateArtifactsQuery = {
-    page: 1,
+// next query params
+const InitialState: IStateArtifactsQuery = {
     sortBy: undefined,
     artTypes: [''],
     newerThen: '3',
     queryString: '',
-    doDeepSearch: false,
+    doDeepSearch: true,
     paginationSize: 20,
+};
+
+export const InitialCurrentState: IStateArtifactsCurrentQuery = {
+    page: 1,
+    ...InitialState,
 };
 
 export const artifactsQuerySlice = createSlice({
@@ -44,7 +52,6 @@ export const artifactsQuerySlice = createSlice({
         ) => {
             const sortBy = action.payload;
             state.sortBy = sortBy;
-            state.page = 1;
         },
         artTypes: (
             state,
@@ -52,7 +59,6 @@ export const artifactsQuerySlice = createSlice({
         ) => {
             const artTypes = action.payload;
             state.artTypes = _.clone(artTypes);
-            state.page = 1;
         },
         newerThen: (
             state,
@@ -60,7 +66,6 @@ export const artifactsQuerySlice = createSlice({
         ) => {
             const newerThen = action.payload;
             state.newerThen = newerThen;
-            state.page = 1;
         },
         doDeepSearch: (
             state,
@@ -68,7 +73,6 @@ export const artifactsQuerySlice = createSlice({
         ) => {
             const doDeepSearch = action.payload;
             state.doDeepSearch = doDeepSearch;
-            state.page = 1;
         },
         queryString: (
             state,
@@ -83,9 +87,28 @@ export const artifactsQuerySlice = createSlice({
         ) => {
             const paginationSize = action.payload;
             state.paginationSize = paginationSize;
-            state.page = 1;
         },
-        page: (state, action: PayloadAction<IStateArtifactsQuery['page']>) => {
+    },
+});
+
+export const artifactsQueryCurrentSlice = createSlice({
+    name: 'filtersCurrent',
+    initialState: InitialCurrentState,
+    reducers: {
+        newQuery: (state, action: PayloadAction<IStateArtifactsQuery>) => {
+            const n = action.payload;
+            state.page = 1;
+            state.sortBy = n.sortBy;
+            state.artTypes = n.artTypes;
+            state.newerThen = n.newerThen;
+            state.queryString = n.queryString;
+            state.doDeepSearch = n.doDeepSearch;
+            state.paginationSize = n.paginationSize;
+        },
+        page: (
+            state,
+            action: PayloadAction<IStateArtifactsCurrentQuery['page']>,
+        ) => {
             const page = action.payload;
             if (page > 0) {
                 state.page = page;
@@ -95,9 +118,9 @@ export const artifactsQuerySlice = createSlice({
 });
 
 export const artifactsQueryReducer = artifactsQuerySlice.reducer;
+export const artifactsQueryCurrentReducer = artifactsQueryCurrentSlice.reducer;
 
 export const {
-    page: actPage,
     sortBy: actSortBy,
     artTypes: actArtTypes,
     newerThen: actNewerThen,
@@ -105,3 +128,6 @@ export const {
     doDeepSearch: actDoDeepSearch,
     paginationSize: actPaginationSize,
 } = artifactsQuerySlice.actions;
+
+export const { page: actPage, newQuery: actNewQuery } =
+    artifactsQueryCurrentSlice.actions;
