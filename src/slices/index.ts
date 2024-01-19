@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2024 Andrei Stepanov <astepano@redhat.com>
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
@@ -25,7 +25,10 @@ import { authReducer } from './authSlice';
 import { waiveReducer } from './waiveSlice';
 import { alertsReducer } from './alertsSlice';
 import { artifactsReducer } from './artifactsSlice';
-import { artifactsQueryReducer } from './artifactsQuerySlice';
+import {
+    artifactsQueryReducer,
+    artifactsQueryCurrentReducer,
+} from './artifactsQuerySlice';
 import { gatingTestsFormReducer } from './gatingTestsFormSlice';
 
 export const rootReducer = combineReducers({
@@ -35,6 +38,7 @@ export const rootReducer = combineReducers({
     artifacts: artifactsReducer,
     artifactsQuery: artifactsQueryReducer,
     gatingTestsForm: gatingTestsFormReducer,
+    artifactsCurrentQuery: artifactsQueryCurrentReducer,
 });
 
 export type RootStateType = ReturnType<typeof rootReducer>;

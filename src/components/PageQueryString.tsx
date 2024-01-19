@@ -38,15 +38,18 @@ import {
     actDoDeepSearch,
 } from './../actions';
 import {
+    actNewQuery,
     actPage,
     actPaginationSize,
-    InitialState as queryInitialState,
+    InitialCurrentState as queryInitialState,
 } from '../slices/artifactsQuerySlice';
+import { useStore } from 'react-redux';
+import { RootStateType } from '../slices';
 
 interface SetQueryStringProps {}
 const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
-    const artifacts = useAppSelector((state) => state.artifacts);
-    const queryState = useAppSelector((state) => state.artifactsQuery);
+    const store = useStore<RootStateType>();
+    const queryState = useAppSelector((state) => state.artifactsCurrentQuery);
     const [searchParams, setSearchParams] = useSearchParams();
     const dispatch = useAppDispatch();
     const client = useApolloClient();
@@ -83,19 +86,24 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
         if (initQs) {
             dispatch(actQueryString(initQs));
         }
+        // Always load some data on open
+        dispatch(actNewQuery(store.getState().artifactsQuery));
+        // Set page
         if (initPage) {
             /** Order of the above `if` is important */
             const page = _.toNumber(initPage);
             dispatch(actPage(page));
         }
-        // Always load some data on open
+        console.log('Do initial load based on query string');
         dispatch(actLoad(client));
         /**
          * Ensure the useEffect only runs once.
          * That will not invoke re-renders because dispatch value will not change
          */
     }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
-
+    const searchParamsBeforeModification = _.fromPairs(
+        Array.from(searchParams.entries()),
+    );
     const { page, paginationSize } = queryState;
     useEffect(() => {
         if (queryInitialState.page === page) {
@@ -110,39 +118,50 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
         }
         setSearchParams(searchParams.toString(), { replace: true });
     }, [page, paginationSize]); // eslint-disable-line react-hooks/exhaustive-deps
-
     const { artTypes, newerThen, queryString, doDeepSearch } = queryState;
-    useEffect(() => {
-        if (_.isEqual(queryInitialState.artTypes, artTypes)) {
-            searchParams.delete('atypes');
-        } else {
-            if (artTypes) {
-                searchParams.set('atypes', artTypes.join(','));
-            }
+    if (_.isEqual(queryInitialState.artTypes, artTypes)) {
+        searchParams.delete('atypes');
+    } else {
+        if (artTypes) {
+            searchParams.set('atypes', artTypes.join(','));
         }
-        if (_.isEqual(queryInitialState.doDeepSearch, doDeepSearch)) {
-            searchParams.delete('deepsearch');
+    }
+    if (_.isEqual(queryInitialState.doDeepSearch, doDeepSearch)) {
+        searchParams.delete('deepsearch');
+    } else {
+        // value is different from default, therefore set qs
+        if (doDeepSearch) {
+            searchParams.set('deepsearch', 'yes');
         } else {
-            if (artTypes) {
-                searchParams.set('deepsearch', 'yes');
-            }
+            searchParams.set('deepsearch', 'no');
         }
-        if (_.isEqual(queryInitialState.newerThen, newerThen)) {
-            searchParams.delete('newer');
-        } else {
-            if (newerThen) {
-                searchParams.set('newer', newerThen.toString());
-            }
+    }
+    if (_.isEqual(queryInitialState.newerThen, newerThen)) {
+        searchParams.delete('newer');
+    } else {
+        if (newerThen) {
+            searchParams.set('newer', newerThen.toString());
         }
-        if (_.isEqual(queryInitialState.queryString, queryString)) {
-            searchParams.delete('qs');
-        } else {
-            if (queryString) {
-                searchParams.set('qs', queryString);
-            }
+    }
+    if (_.isEqual(queryInitialState.queryString, queryString)) {
+        searchParams.delete('qs');
+    } else {
+        if (queryString) {
+            searchParams.set('qs', queryString);
         }
+    }
+    const searchParamsAfterModification = _.fromPairs(
+        Array.from(searchParams.entries()),
+    );
+    if (
+        !_.isEqual(
+            searchParamsBeforeModification,
+            searchParamsAfterModification,
+        )
+    ) {
+        console.log('Update query string');
         setSearchParams(searchParams.toString(), { replace: true });
-    }, [artifacts, queryString]); // eslint-disable-line react-hooks/exhaustive-deps
+    }
     return null;
 };
 
