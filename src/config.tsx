@@ -60,7 +60,7 @@ export const config = {
             webUrl: 'https://release-engineering.github.io/mbs-ui/',
         },
         rh: {
-            webUrl: 'https://mbsweb.engineering.redhat.com/',
+            webUrl: 'https://mbsweb.engineering.redhat.com/mbs-ui/',
         },
     },
     waiverdb: {
