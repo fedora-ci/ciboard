@@ -417,7 +417,7 @@ const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
             ArtifactsDetailedInfoModuleBuild,
             {
                 variables: {
-                    build_id: Number(artifact.hit_source.buildId),
+                    build_id: Number(artifact.hit_source.mbsId),
                     distgit_instance: instance,
                     koji_instance: instance,
                     mbs_instance: instance,
