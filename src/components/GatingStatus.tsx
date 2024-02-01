@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022, 2024 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,20 +21,39 @@ import _ from 'lodash';
 import React from 'react';
 import {
     Flex,
-    Text,
-    Title,
+    Label,
     Spinner,
     FlexItem,
-    TitleSizes,
-    TextContent,
+    LabelProps,
 } from '@patternfly/react-core';
 
+import { GatingStatusIcon, isGatingArtifact } from '../utils/utils';
 import {
-    resultColor,
-    GatingStatusIcon,
-    isGatingArtifact,
-} from '../utils/utils';
-import { Artifact, getGwDecision, isArtifactScratch } from '../types';
+    Artifact,
+    getGwDecision,
+    AChildGreenwave,
+    isArtifactScratch,
+    GreenwaveRequirementTypes,
+} from '../types';
+import { mkReqStatesGreenwave } from '../utils/stages_states';
+
+type ColorPropType = Exclude<LabelProps['color'], undefined>;
+
+export const resultColors: Record<ColorPropType, string[]> = {
+    green: ['passed'],
+    red: ['errored', 'failed'],
+    orange: ['missing', 'needs inspection'],
+
+    cyan: ['waived'],
+    blue: ['running'],
+    purple: ['queued', 'skip'],
+    gold: ['info'],
+    grey: [],
+};
+
+export const resultColor = (result: string) => {
+    return _.findKey(resultColors, (item) => item.indexOf(result) !== -1);
+};
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
@@ -43,20 +62,52 @@ interface PrintRequirementsSizeProps {
 
 const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
     const { reqName, allReqs } = props;
-    const color = resultColor(reqName);
-    const style = { color: `var(${color})` };
+    const color: ColorPropType =
+        (resultColor(reqName) as ColorPropType | undefined) || 'grey';
     return (
-        <Title style={style} headingLevel="h1" size={TitleSizes['md']}>
+        <Label variant="outline" color={color}>
             {allReqs[reqName]} {reqName}
-        </Title>
+        </Label>
     );
 };
 
-interface PrintRequirementsSizeProps {
-    allReqs: { [key: string]: number };
-    reqName: string;
-}
+// https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-complete.yaml#_14
 
+const gwStateMappings: Record<GreenwaveRequirementTypes, any> = {
+    excluded: { default: 'excluded' },
+    blacklisted: { default: 'blacklisted' },
+    'test-result-failed': {
+        needs_inspection: 'needs inspection',
+        default: 'failed',
+    },
+    'test-result-passed': {
+        default: 'passed',
+        passed: 'passed',
+        info: 'info',
+        not_applicable: 'not applicable',
+    },
+    'test-result-missing': {
+        running: 'running',
+        queued: 'queued',
+        default: 'missing',
+    },
+    'test-result-errored': { default: 'errored' },
+    'invalid-gating-yaml': { default: 'invalid gating.yaml' },
+    // Do not display
+    'fetched-gating-yaml': { default: 'fetched gating.yaml' },
+    'missing-gating-yaml': { default: 'missing  gating.yaml' },
+    'failed-fetch-gating-yaml': { default: 'fail fetch gating.yaml' },
+    'invalid-gating-yaml-waived': { default: 'invalid gating.yaml waived' },
+    'missing-gating-yaml-waived': { default: 'missing gating.yaml waived' },
+    'test-result-failed-waived': { default: 'failed waived' },
+    'test-result-missing-waived': { default: 'missing waived' },
+    'test-result-errored-waived': { default: 'erroredd waived' },
+    'failed-fetch-gating-yaml-waived': {
+        default: 'fail fetch gating.yaml waived',
+    },
+};
+
+// artifact: ArtifactRpm | ArtifactContainerImage | ArtifactMbs;
 interface ArtifactGreenwaveStatesSummaryProps {
     artifact: Artifact;
     isLoading?: boolean;
@@ -66,58 +117,75 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     ArtifactGreenwaveStatesSummaryProps
 > = (props) => {
     const { artifact, isLoading } = props;
-    if (!isGatingArtifact(artifact)) {
-        return null;
-    }
-    const decision = getGwDecision(artifact);
     const isScratch = isArtifactScratch(artifact);
     if (isScratch) {
         return null;
     }
-    if (_.isNil(decision) && !isLoading) {
+    if (!isGatingArtifact(artifact)) {
+        return null;
+    }
+    if (isLoading) {
+        return <Spinner size="sm" />;
+    }
+    const decision = getGwDecision(artifact);
+    if (!decision) {
         return null;
     }
     const reqSummary: { [name: string]: number } = {};
-    /*
-     * Ignore the 'fetched-gating-yaml' virtual test as we dont display it in the UI.
-     * It is prevented from displaying in `ArtifactStatesList()`:
-     *     `if (stateName === 'fetched-gating-yaml') continue;`
-     */
-    const unsatisfiedCount = decision?.unsatisfied_requirements?.length;
-    const satisfiedCount = decision?.satisfied_requirements?.filter(
-        ({ type }) => type !== 'fetched-gating-yaml',
-    ).length;
-    if (unsatisfiedCount) {
-        reqSummary['err'] = unsatisfiedCount;
+    const reqStatesGreenwave = mkReqStatesGreenwave(decision);
+    let totalWaivers = 0;
+    for (const stateName of _.keys(
+        reqStatesGreenwave,
+    ) as GreenwaveRequirementTypes[]) {
+        if (reqStatesGreenwave.hasOwnProperty(stateName)) {
+            if (stateName === 'fetched-gating-yaml') {
+                /*
+                 * Ignore the 'fetched-gating-yaml' virtual test as we dont display it in the UI.
+                 * It is prevented from displaying in `ArtifactStatesList()`:
+                 */
+                continue;
+            }
+            const gwStates = reqStatesGreenwave[stateName] as AChildGreenwave[];
+            // stateName === requirement.type
+            const namingRules = gwStateMappings[stateName];
+            for (const state of gwStates) {
+                const resultOutcome = state.result?.outcome;
+                const reqName = resultOutcome
+                    ? _.get(
+                          namingRules,
+                          _.toLower(resultOutcome),
+                          resultOutcome,
+                      )
+                    : namingRules['default'];
+                reqSummary[reqName] = reqSummary[reqName]
+                    ? reqSummary[reqName] + 1
+                    : 1;
+                const waived = !!state.waiver;
+                if (waived) {
+                    totalWaivers++;
+                }
+            }
+        }
     }
-    if (satisfiedCount) {
-        reqSummary['ok'] = satisfiedCount;
+    if (totalWaivers) {
+        reqSummary['waived'] = totalWaivers;
     }
     const gatingPassed = decision?.policies_satisfied;
     const iconStyle = { height: '1.2em' };
-    const statusIcon = isLoading ? null : (
+    const statusIcon = (
         <GatingStatusIcon status={gatingPassed} style={iconStyle} />
     );
     return (
         <Flex flexWrap={{ default: 'nowrap' }}>
-            <FlexItem>
-                <TextContent>
-                    <Text>{statusIcon}</Text>
-                </TextContent>
-            </FlexItem>
+            <FlexItem>{statusIcon}</FlexItem>
             {_.map(reqSummary, (_len, reqName) => (
-                <FlexItem key={reqName} spacer={{ default: 'spacerMd' }}>
+                <FlexItem key={reqName} spacer={{ default: 'spacerNone' }}>
                     <PrintRequirementsSize
                         reqName={reqName}
                         allReqs={reqSummary}
                     />
                 </FlexItem>
             ))}
-            {isLoading && (
-                <FlexItem spacer={{ default: 'spacerMd' }}>
-                    <Spinner size="sm" />
-                </FlexItem>
-            )}
         </Flex>
     );
 };
