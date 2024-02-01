@@ -328,6 +328,9 @@ export function extractTests(
     metadata: MetadataRaw[],
 ): CiTest[] {
     const stagesStates = mkStagesAndStates(artifact);
+    console.log(
+        'FIX ME!!!!!! For GW artifacts it does not have DB tests, and otherwise applies too',
+    );
     const tests = stagesStates.flatMap(([_stage, stateName, tests]) =>
         tests.map((aChild) =>
             transformTest(artifact, aChild, stateName, metadata),
