@@ -2,7 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023, 2024 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,23 +21,16 @@
 
 import _ from 'lodash';
 import {
-    Flex,
-    Text,
-    Title,
     Brand,
     Button,
     Spinner,
-    FlexItem,
     Bullseye,
-    TitleSizes,
     EmptyState,
-    TextContent,
     EmptyStateIcon,
     EmptyStateHeader,
 } from '@patternfly/react-core';
 import { Td, Th, Tr, Table, Tbody, Thead } from '@patternfly/react-table';
 import { Link } from 'react-router-dom';
-import { CSSProperties } from 'react';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import rhMbs from './../img/rhmbs.png';
@@ -46,115 +39,22 @@ import rhContLogo from './../img/rhcont.png';
 import { useAppSelector } from '../hooks';
 import { PaginationToolbar } from './PaginationToolbar';
 import {
-    resultColor,
-    isGatingArtifact,
-    GatingStatusIcon,
-} from '../utils/utils';
-import {
     Artifact,
     getAType,
     ArtifactRpm,
     ArtifactMbs,
     isArtifactMbs,
     isArtifactRpm,
-    getArtifactLocalPath,
-    ArtifactContainerImage,
-    GreenwaveDecisionReply,
-    isArtifactRedhatContainerImage,
-    getArtifactTypeLabel,
     getArtifactId,
     getArtifactRemoteUrl,
+    getArtifactLocalPath,
+    getArtifactTypeLabel,
+    ArtifactContainerImage,
+    isArtifactRedhatContainerImage,
 } from '../types';
 import { ExternalLink } from './ExternalLink';
-
-interface PrintRequirementsSizeProps {
-    allReqs: { [key: string]: number };
-    reqName: string;
-}
-
-const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
-    const { reqName, allReqs } = props;
-    const color = resultColor(reqName);
-    const style: CSSProperties = {
-        color: `var(${color})`,
-        whiteSpace: 'nowrap',
-    };
-    return (
-        <Title style={style} headingLevel="h1" size={TitleSizes['md']}>
-            {allReqs[reqName]} {reqName}
-        </Title>
-    );
-};
-
-interface ArtifactGreenwaveStatesSummaryProps {
-    artifact: ArtifactRpm | ArtifactContainerImage | ArtifactMbs;
-}
-export const ArtifactGreenwaveStatesSummary: React.FC<
-    ArtifactGreenwaveStatesSummaryProps
-> = (props) => {
-    const { artifact } = props;
-    const { isLoadingExtended: isLoading } = useAppSelector(
-        (state) => state.artifacts,
-    );
-    const isScratch = _.get(artifact, 'hit_source.scratch', false);
-    if (isScratch) {
-        return <>scratch</>;
-    }
-    if (!isGatingArtifact(artifact)) {
-        return null;
-    }
-    const decision: GreenwaveDecisionReply | undefined =
-        artifact.greenwaveDecision;
-    if (_.isNil(decision) && !isLoading) {
-        return null;
-    }
-
-    const reqSummary: { [name: string]: number } = {};
-    /*
-     * Ignore the 'fetched-gating-yaml' virtual test as we dont display it in the UI.
-     * It is prevented from displaying in `ArtifactStatesList()`:
-     *     `if (stateName === 'fetched-gating-yaml') continue;`
-     */
-    const unsatisfiedCount = decision?.unsatisfied_requirements?.length;
-    const satisfiedCount = decision?.satisfied_requirements?.filter(
-        ({ type }) => type !== 'fetched-gating-yaml',
-    ).length;
-    if (unsatisfiedCount) {
-        reqSummary['err'] = unsatisfiedCount;
-    }
-    if (satisfiedCount) {
-        reqSummary['ok'] = satisfiedCount;
-    }
-
-    const gatingPassed = decision?.policies_satisfied;
-    const iconStyle = { height: '1.2em' };
-    const statusIcon = isLoading ? null : (
-        <GatingStatusIcon status={gatingPassed} style={iconStyle} />
-    );
-
-    return (
-        <Flex flexWrap={{ default: 'nowrap' }}>
-            <FlexItem>
-                <TextContent>
-                    <Text>{statusIcon}</Text>
-                </TextContent>
-            </FlexItem>
-            {_.map(reqSummary, (_len, reqName) => (
-                <FlexItem key={reqName} spacer={{ default: 'spacerMd' }}>
-                    <PrintRequirementsSize
-                        reqName={reqName}
-                        allReqs={reqSummary}
-                    />
-                </FlexItem>
-            ))}
-            {isLoading && (
-                <FlexItem spacer={{ default: 'spacerMd' }}>
-                    <Spinner size="sm" />
-                </FlexItem>
-            )}
-        </Flex>
-    );
-};
+import { store } from '../reduxStore';
+import { ArtifactGreenwaveStatesSummary } from './GatingStatus';
 
 interface ShowLoadingProps {}
 function ShowLoading(props: ShowLoadingProps) {
@@ -176,6 +76,7 @@ function ShowLoading(props: ShowLoadingProps) {
 }
 
 const makeArtifactRowRpm = (artifact: ArtifactRpm): ArtifactRow => {
+    const { isLoadingExtended: isLoading } = store.getState().artifacts;
     const { hit_source } = artifact;
     const aType = getAType(artifact);
     const href = getArtifactLocalPath(artifact);
@@ -195,7 +96,10 @@ const makeArtifactRowRpm = (artifact: ArtifactRpm): ArtifactRow => {
     const cell3: JSX.Element = <>{hit_source.nvr}</>;
     const cell4: JSX.Element = (
         <>
-            <ArtifactGreenwaveStatesSummary artifact={artifact} />
+            <ArtifactGreenwaveStatesSummary
+                isLoading={isLoading}
+                artifact={artifact}
+            />
         </>
     );
     const cell5: JSX.Element = <>{hit_source.gateTag}</>;
@@ -223,6 +127,7 @@ const makeArtifactRowRpm = (artifact: ArtifactRpm): ArtifactRow => {
 const makeArtifactRowRedhatContainerImage = (
     artifact: ArtifactContainerImage,
 ): ArtifactRow => {
+    const { isLoadingExtended: isLoading } = store.getState().artifacts;
     const { hit_source } = artifact;
     const aType = getAType(artifact);
     const href = getArtifactLocalPath(artifact);
@@ -242,7 +147,10 @@ const makeArtifactRowRedhatContainerImage = (
     const cell3: JSX.Element = <>{hit_source.nvr}</>;
     const cell4: JSX.Element = (
         <>
-            <ArtifactGreenwaveStatesSummary artifact={artifact} />
+            <ArtifactGreenwaveStatesSummary
+                isLoading={isLoading}
+                artifact={artifact}
+            />
         </>
     );
     const cell5: JSX.Element = <>{hit_source.contTag}</>;
@@ -268,6 +176,7 @@ const makeArtifactRowRedhatContainerImage = (
 };
 
 const makeArtifactRowMbs = (artifact: ArtifactMbs): ArtifactRow => {
+    const { isLoadingExtended: isLoading } = store.getState().artifacts;
     const { hit_source } = artifact;
     const aType = getAType(artifact);
     const href = getArtifactLocalPath(artifact);
@@ -287,7 +196,10 @@ const makeArtifactRowMbs = (artifact: ArtifactMbs): ArtifactRow => {
     const cell3: JSX.Element = <>{hit_source.nsvc}</>;
     const cell4: JSX.Element = (
         <>
-            <ArtifactGreenwaveStatesSummary artifact={artifact} />
+            <ArtifactGreenwaveStatesSummary
+                isLoading={isLoading}
+                artifact={artifact}
+            />
         </>
     );
     const cell5: JSX.Element = <>{hit_source.gateTag}</>;

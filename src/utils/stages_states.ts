@@ -84,7 +84,6 @@ export const mkStagesAndStates = (
     const stagesStates: Array<AChildrenByStageName> = [];
     // Preprocess broker-messages into a list sorted by stage and state.
     const testMsgStagesStates = aChildrenByStageName(artifact);
-    console.log('test stage_states', testMsgStagesStates);
     stagesStates.push(...testMsgStagesStates);
     /*
      * Greenwave always produces structured-reply, check if this reply makes any sense.
@@ -279,7 +278,7 @@ const mkGreenwaveStageStates = (
     return { msgStageName: 'greenwave', aChildrenByStateName };
 };
 
-const mkReqStatesGreenwave = (
+export const mkReqStatesGreenwave = (
     decision: GreenwaveDecisionReply,
 ): AChildrenByStateName => {
     const { satisfied_requirements, unsatisfied_requirements } = decision;
