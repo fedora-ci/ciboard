@@ -1194,6 +1194,12 @@ export const getTestMsgBody = (aChild: AChildTestMsg): BrokerSchemaMsgBody => {
     return _.get(aChild, 'hit_source.rawData.message.brokerMsgBody')!;
 };
 
+export const getBrokerSchemaMsgBody = (
+    aChild: AChildSchemaMsg,
+): BrokerSchemaMsgBody => {
+    return _.get(aChild, 'hit_source.rawData.message.brokerMsgBody')!;
+};
+
 export const getMsgId = (aChild: AChildMsg): BrokerMsgId => {
     return _.get(aChild, 'hit_source.rawData.message.brokerMsgId', '');
 };
@@ -1358,6 +1364,11 @@ export const getTestcaseName = (aChild: AChild): string => {
     if (isAChildGreenwaveAndTestMsg(aChild) && aChild.gs.testcase) {
         testCaseName = aChild.gs.testcase;
     }
+    if (isAChildBuildMsg(aChild)) {
+        const brokerMsgBody = getBrokerSchemaMsgBody(aChild);
+        testCaseName =
+            'build ' + new Date(_.get(brokerMsgBody, 'generated_at'));
+    }
     if (_.isUndefined(testCaseName)) {
         console.error('Could not identify testcase name in child', aChild);
     }
@@ -1493,7 +1504,8 @@ export function getUmbDocsUrl(
         return msgBody.ci.docs;
     }
     if (MSG_V_1.isMsg(msgBody)) {
-        return msgBody.test.docs;
+        const docsUrl = msgBody.test ? msgBody.test.docs : msgBody.contact.docs;
+        return docsUrl;
     }
     return;
 }
@@ -1514,8 +1526,12 @@ export const getGreenwaveDocsUrl = (aChild: AChildGreenwave) =>
 export function getDocsUrl(aChild: AChild): string | undefined {
     // Prefer URL from UMB message, if present.
     if (isAChildTestMsg(aChild)) {
-        const testMsg = getTestMsgBody(aChild);
-        return getUmbDocsUrl(testMsg);
+        const brokerMsg = getTestMsgBody(aChild);
+        return getUmbDocsUrl(brokerMsg);
+    }
+    if (isAChildBuildMsg(aChild)) {
+        const brokerMsg = getBrokerSchemaMsgBody(aChild);
+        return getUmbDocsUrl(brokerMsg);
     }
     if (isAChildGreenwave(aChild)) {
         return getGreenwaveDocsUrl(aChild);
@@ -1538,6 +1554,10 @@ export function getRerunUrl(aChild: AChild): string | undefined {
     if (isAChildTestMsg(aChild)) {
         const testMsg = getTestMsgBody(aChild);
         return testMsg.run.rebuild;
+    }
+    if (isAChildBuildMsg(aChild)) {
+        const brokerMsg = getBrokerSchemaMsgBody(aChild);
+        return brokerMsg.run.rebuild;
     }
     if (isAChildGreenwave(aChild)) {
         return aChild.result?.data.rebuild?.[0];

@@ -46,10 +46,10 @@ import {
 
 import './index.css';
 import { config } from '../../config';
-import { CiTest } from './types';
+import { CiBuild, CiTest } from './types';
 import { BuildInfo } from './BuildInfo';
 import { WaiveModal } from '../WaiveForm';
-import { extractTests } from './artifactTests';
+import { extractTests, extractBuilds } from './artifactTests';
 import { DetailsDrawer } from './DetailsDrawer';
 import { ArtifactHeader } from './Header';
 import { TestResultsTable } from './TestResultsTable';
@@ -125,6 +125,7 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
     // Docs: https://reactrouter.com/en/main/hooks/use-search-params
     const [searchParams, setSearchParams] = useSearchParams();
     let tests: CiTest[] = [];
+    let builds: CiBuild[] = [];
 
     /*
      * Change currently selected test whenever the `?focus` URL parameter
@@ -149,7 +150,9 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
         else pageTitle = `❌ ${pageTitle}`;
     }
     tests = extractTests(artifact, metadata);
-    const selectedTest = findTestByName(tests, selectedTestName);
+    builds = extractBuilds(artifact, metadata);
+    const testsAndBuilds = [...tests, ...builds];
+    const selectedTest = findTestByName(testsAndBuilds, selectedTestName);
     const onTestSelect = (name: string | undefined) => {
         if (name && name !== selectedTestName) {
             setSelectedTestName(name);
@@ -180,7 +183,7 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
                             </Card>
                             <Card>
                                 <TestResultsTable
-                                    tests={tests}
+                                    tests={testsAndBuilds}
                                     artifact={artifact}
                                     onSelect={onTestSelect}
                                 />
