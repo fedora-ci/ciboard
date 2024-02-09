@@ -51,6 +51,8 @@ import {
     getArtifactTypeLabel,
     ArtifactContainerImage,
     isArtifactRedhatContainerImage,
+    isArtifactCompose,
+    ArtifactCompose,
 } from '../types';
 import { ExternalLink } from './ExternalLink';
 import { store } from '../reduxStore';
@@ -224,6 +226,55 @@ const makeArtifactRowMbs = (artifact: ArtifactMbs): ArtifactRow => {
     return artifactRow;
 };
 
+const makeArtifactRowCompose = (artifact: ArtifactCompose): ArtifactRow => {
+    const { isLoadingExtended: isLoading } = store.getState().artifacts;
+    const { hit_source } = artifact;
+    const aType = getAType(artifact);
+    const href = getArtifactLocalPath(artifact);
+    const cell0: JSX.Element = (
+        <>
+            <Brand alt="Red hat compose" widths={{ default: '30px' }}>
+                <source srcSet={rhMbs} />
+            </Brand>
+        </>
+    );
+    const cell1: JSX.Element = <>{getArtifactTypeLabel(aType)}</>;
+    const artId = getArtifactId(artifact);
+    const artifactUrl = getArtifactRemoteUrl(artifact);
+    const cell2: JSX.Element = (
+        <ExternalLink href={artifactUrl}>{artId}</ExternalLink>
+    );
+    const cell3: JSX.Element = <>{hit_source.composeId}</>;
+    const cell4: JSX.Element = (
+        <>
+            <ArtifactGreenwaveStatesSummary
+                isLoading={isLoading}
+                artifact={artifact}
+            />
+        </>
+    );
+    const cell5 = null;
+    const cell6 = null;
+    const cell7: JSX.Element = (
+        <>
+            <Link to={href}>
+                <Button variant="secondary">details</Button>
+            </Link>
+        </>
+    );
+    const artifactRow: ArtifactRow = [
+        cell0,
+        cell1,
+        cell2,
+        cell3,
+        cell4,
+        cell5,
+        cell6,
+        cell7,
+    ];
+    return artifactRow;
+};
+
 type ArtifactRow =
     | [
           JSX.Element,
@@ -231,8 +282,8 @@ type ArtifactRow =
           JSX.Element,
           JSX.Element,
           JSX.Element,
-          JSX.Element,
-          JSX.Element,
+          JSX.Element | null,
+          JSX.Element | null,
           JSX.Element,
       ]
     | undefined;
@@ -258,7 +309,9 @@ const makeArtifactRow = (artifact: Artifact): ArtifactRow | undefined => {
     if (isArtifactMbs(artifact)) {
         return makeArtifactRowMbs(artifact);
     }
-    //<FlexItem>{artifact.hit_info._id}</FlexItem>
+    if (isArtifactCompose(artifact)) {
+        return makeArtifactRowCompose(artifact);
+    }
 };
 
 interface ArtListProps {}
