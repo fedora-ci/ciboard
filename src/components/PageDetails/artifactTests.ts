@@ -382,7 +382,8 @@ export function extractTests(
     );
     const testStagesStates = _.filter(
         stagesStates,
-        ([stage, _stateName, _tests]) => stage === 'test',
+        ([stage, _stateName, _tests]) =>
+            stage === 'test' || stage === 'greenwave',
     );
     const tests = testStagesStates.flatMap(([_stage, stateName, tests]) => {
         return tests.map((aChild) =>
