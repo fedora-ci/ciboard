@@ -19,7 +19,8 @@
  */
 
 import _ from 'lodash';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { useApolloClient } from '@apollo/client';
 import {
     Text,
@@ -325,6 +326,12 @@ const SearchInput: React.FC<SearchInputProps> = (props) => {
     const dispatch = useAppDispatch();
     const client = useApolloClient();
     const store = useStore<RootStateType>();
+    const ref: React.MutableRefObject<HTMLInputElement | null> = useRef(null);
+
+    useEffect(() => {
+        ref.current && ref.current.focus();
+    }, [dispatch]);
+
     const onKeyPress = (keyEvent: React.KeyboardEvent) => {
         if (keyEvent.key === 'Enter' && qsValue && !_.isEmpty(qsValue)) {
             dispatch(actPage(1));
@@ -345,6 +352,7 @@ const SearchInput: React.FC<SearchInputProps> = (props) => {
         <>
             <TextInputGroup>
                 <TextInputGroupMain
+                    ref={ref}
                     icon={<SearchIcon />}
                     value={qsValue}
                     onChange={handleInputChange}
@@ -366,11 +374,15 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
     const [searchParams, _setSearchParams] = useSearchParams();
     const [qsValue, setQsValue] = useState<string>('');
 
-    const initQs = searchParams.get('qs');
     useEffect(() => {
-        if (initQs) {
+        const initQs = searchParams.get('qs');
+        // cover race conditions in scenarious qs from address bar and from redux storage
+        const reduxStorageQs =
+            store.getState().artifactsCurrentQuery.queryString;
+        const initVal = initQs ? initQs : reduxStorageQs;
+        if (initVal) {
             // Put into search field initial value from URL
-            setQsValue(initQs);
+            setQsValue(initVal);
         }
         /**
          * Ensure the useEffect only runs once.
