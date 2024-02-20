@@ -34,6 +34,7 @@ const InitialState: IStateArtifactsQuery = {
     newerThen: '3',
     queryString: '',
     doDeepSearch: true,
+    isExtendedQs: false,
     paginationSize: 20,
 };
 
@@ -74,6 +75,13 @@ export const artifactsQuerySlice = createSlice({
             const doDeepSearch = action.payload;
             state.doDeepSearch = doDeepSearch;
         },
+        isExtendedQs: (
+            state,
+            action: PayloadAction<IStateArtifactsQuery['isExtendedQs']>,
+        ) => {
+            const isExtendedQs = action.payload;
+            state.isExtendedQs = isExtendedQs;
+        },
         queryString: (
             state,
             action: PayloadAction<IStateArtifactsQuery['queryString']>,
@@ -103,6 +111,7 @@ export const artifactsQueryCurrentSlice = createSlice({
             state.newerThen = n.newerThen;
             state.queryString = n.queryString;
             state.doDeepSearch = n.doDeepSearch;
+            state.isExtendedQs = n.isExtendedQs;
             state.paginationSize = n.paginationSize;
         },
         page: (
@@ -126,6 +135,7 @@ export const {
     newerThen: actNewerThen,
     queryString: actQueryString,
     doDeepSearch: actDoDeepSearch,
+    isExtendedQs: actIsExtendedQs,
     paginationSize: actPaginationSize,
 } = artifactsQuerySlice.actions;
 

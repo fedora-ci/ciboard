@@ -36,6 +36,7 @@ import {
     actNewerThen,
     actQueryString,
     actDoDeepSearch,
+    actIsExtendedQs,
 } from './../actions';
 import {
     actNewQuery,
@@ -60,6 +61,7 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
     const initPageSize = searchParams.get('pagesize');
     const initArtTypesString = searchParams.get('atypes');
     const initDoDeepSearch = searchParams.get('deepsearch');
+    const initIsExtendedQs = searchParams.get('extendedqsextendedqs');
     useEffect(() => {
         if (initNewer) {
             /** this will reset page to 1 */
@@ -82,6 +84,14 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
                 initDoDeepSearch.toLocaleLowerCase(),
             );
             dispatch(actDoDeepSearch(doDeepSearch));
+        }
+        if (initIsExtendedQs) {
+            /** this will reset page to 1 */
+            const isExtendedQs = _.includes(
+                ['yes', 'y', 'true', '1'],
+                initIsExtendedQs.toLocaleLowerCase(),
+            );
+            dispatch(actIsExtendedQs(isExtendedQs));
         }
         if (initQs) {
             dispatch(actQueryString(initQs));
@@ -118,7 +128,8 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
         }
         setSearchParams(searchParams.toString(), { replace: true });
     }, [page, paginationSize]); // eslint-disable-line react-hooks/exhaustive-deps
-    const { artTypes, newerThen, queryString, doDeepSearch } = queryState;
+    const { artTypes, newerThen, queryString, doDeepSearch, isExtendedQs } =
+        queryState;
     if (_.isEqual(queryInitialState.artTypes, artTypes)) {
         searchParams.delete('atypes');
     } else {
@@ -134,6 +145,16 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
             searchParams.set('deepsearch', 'yes');
         } else {
             searchParams.set('deepsearch', 'no');
+        }
+    }
+    if (_.isEqual(queryInitialState.isExtendedQs, isExtendedQs)) {
+        searchParams.delete('extendedqs');
+    } else {
+        // value is different from default, therefore set qs
+        if (isExtendedQs) {
+            searchParams.set('extendedqs', 'yes');
+        } else {
+            searchParams.set('extendedqs', 'no');
         }
     }
     if (_.isEqual(queryInitialState.newerThen, newerThen)) {
