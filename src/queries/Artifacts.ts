@@ -222,6 +222,7 @@ export const ArtifactsCompleteQuery = gql`
         $artTypes: [String]
         $newerThen: String
         $queryString: String
+        $isExtendedQs: Boolean
         $paginationSize: Int
         $paginationFrom: Int
     ) {
@@ -230,6 +231,7 @@ export const ArtifactsCompleteQuery = gql`
             artTypes: $artTypes
             newerThen: $newerThen
             queryString: $queryString
+            isExtendedQs: $isExtendedQs
             paginationSize: $paginationSize
             paginationFrom: $paginationFrom
         ) {
