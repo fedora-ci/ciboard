@@ -81,6 +81,7 @@ export const ArtifactsDetailedInfoKojiTask = gql`
                 commit_obj(instance: $distgit_instance) {
                     ...CommitInfoFragment
                 }
+                gitlabCommitMr
             }
         }
     }
