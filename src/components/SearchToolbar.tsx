@@ -444,24 +444,22 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
                 <SearchInput setQsValue={setQsValue} qsValue={qsValue} />
             </ToolbarItem>
             <ToolbarItem style={{ flexBasis: '100%' }}>
-                <ExpandableSection
+                <Flex
+                    direction={{ default: 'column' }}
                     style={{ flexBasis: '100%' }}
-                    toggleText="more"
                 >
-                    <Flex direction={{ default: 'column' }}>
-                        <FlexItem>
-                            <DoDeepSearch />
-                        </FlexItem>
-                        <FlexItem>
-                            <IsExtendedQs />
-                        </FlexItem>
-                        <FlexItem grow={{ default: 'grow' }}>
-                            <div style={{ maxWidth: '400px' }}>
-                                <TimelineSelection />
-                            </div>
-                        </FlexItem>
-                    </Flex>
-                </ExpandableSection>
+                    <FlexItem>
+                        <DoDeepSearch />
+                    </FlexItem>
+                    <FlexItem>
+                        <IsExtendedQs />
+                    </FlexItem>
+                    <FlexItem grow={{ default: 'grow' }}>
+                        <div style={{ maxWidth: '400px' }}>
+                            <TimelineSelection />
+                        </div>
+                    </FlexItem>
+                </Flex>
             </ToolbarItem>
             <ToolbarItem
                 visibility={{ default: 'visible' }}
