@@ -132,13 +132,17 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
         let waiveError: string;
         const { artifact, ciTest } = getState().waive;
         const testcaseName = ciTest?.name;
-        if (_.isNil(_.get(artifact, 'payload.nvr')) || _.isNil(testcaseName)) {
-            return;
-        }
         // NOTE: We know that artifact.payload is not null thanks to the check at the
         // top of the function. Moreover, we know that payload has the nvr property,
         // so we assert the type of the payload here.
         const nvr = getANvr(artifact!);
+        if (_.isNil(nvr) || _.isNil(testcaseName)) {
+            const waiveError = `Cannot submit waiver for: ${nvr}, ${testcaseName}`;
+            dispatch(
+                waiveSlice.submitWaiver({ waiveError, reason: 'bad call' }),
+            );
+            return;
+        }
         if (!nvr) {
             waiveError = 'Could not get NVR, please contact support.';
             dispatch(waiveSlice.submitWaiver({ waiveError, reason: '' }));

@@ -1267,6 +1267,9 @@ export const getANvr = (artifact: Artifact): string | undefined => {
     if (isArtifactRpm(artifact)) {
         return _.get(artifact, 'hit_source.nvr');
     }
+    if (isArtifactMbs(artifact)) {
+        return _.get(artifact, 'hit_source.nvr');
+    }
 };
 
 export const getATaskid = (artifact: Artifact): string | undefined => {
