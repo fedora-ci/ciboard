@@ -47,7 +47,11 @@ import {
     isAChildBuildMsg,
     getBrokerSchemaMsgBody,
 } from '../../types';
-import { getMessageError, isResultWaivable } from '../../utils/utils';
+import {
+    getMessageError,
+    getMsgTestNote,
+    isResultWaivable,
+} from '../../utils/utils';
 import { mkStagesAndStates } from '../../utils/stages_states';
 
 function transformUmbStatus(stateName: StateName): TestStatus {
@@ -242,6 +246,7 @@ function transformTest(
 ): CiTest {
     const docsUrl = getDocsUrl(aChild);
     let error: MSG_V_1.MsgErrorType | undefined;
+    let note: string | undefined;
     let logsUrl: string | undefined;
     let messageId: string | undefined;
     const name = getTestcaseName(aChild);
@@ -263,6 +268,7 @@ function transformTest(
         waiver = aChild.waiver;
     } else if (isAChildTestMsg(aChild)) {
         const testMsg = getTestMsgBody(aChild);
+        note = getMsgTestNote(testMsg);
         error = getMessageError(testMsg);
         logsUrl = testMsg.run.log;
         messageId = getMsgId(aChild);
@@ -270,6 +276,8 @@ function transformTest(
     } else if (isAChildGreenwaveAndTestMsg(aChild)) {
         const msgBody = getTestMsgBody(aChild.ms);
         const msgId = getMsgId(aChild.ms);
+        const testMsg = getTestMsgBody(aChild.ms);
+        note = getMsgTestNote(testMsg);
         logsUrl = msgBody.run.log;
         runDetailsUrl = msgBody.run.url;
         error = getMessageError(msgBody);
@@ -306,6 +314,7 @@ function transformTest(
 
     return {
         name: name || 'unknown',
+        note,
         error,
         status,
         waiver,
