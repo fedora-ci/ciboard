@@ -47,6 +47,8 @@ export interface CiContact {
 
 export interface CiTest {
     name: string;
+    /* https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-common.yaml#_71 */
+    note?: string;
     error?: MSG_V_1.MsgErrorType;
     status: TestStatus;
     waiver?: GreenwaveWaiveType;
