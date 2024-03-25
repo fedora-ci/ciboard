@@ -212,6 +212,11 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             </Text>
         </TextContent>
     );
+    const noteWidget = !_.isEmpty(selectedTest?.note) && (
+        <Alert isInline title="Note from CI system" variant="info">
+            {selectedTest?.note}
+        </Alert>
+    );
     const shouldShowError =
         selectedTest?.status === 'error' ||
         (!_.isNil(selectedTest?.waiver) && selectedTest?.error);
@@ -304,6 +309,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             </DrawerHead>
             <DrawerPanelBody className="pf-v5-u-pb-sm">
                 {descriptionWidget}
+                {noteWidget}
                 {contactWidget}
                 {errorAlert}
                 {failedAlert}
