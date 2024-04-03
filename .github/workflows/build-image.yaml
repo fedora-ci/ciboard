@@ -43,6 +43,8 @@ jobs:
       id: build-image
       uses: redhat-actions/buildah-build@v2
       with:
+        extra-args: |
+            --ulimit nofile=4096:4096
         tags: |
             ${{ env.IMAGE_REGISTRY_GITHUB }}:${{ steps.vars.outputs.sha_short }}
             ${{ ( github.ref == 'refs/heads/main' && format('{0}:latest', env.IMAGE_REGISTRY_GITHUB) ) || '' }}
