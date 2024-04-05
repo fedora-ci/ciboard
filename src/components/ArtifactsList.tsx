@@ -56,7 +56,10 @@ import {
 } from '../types';
 import { ExternalLink } from './ExternalLink';
 import { store } from '../reduxStore';
-import { ArtifactGreenwaveStatesSummary } from './GatingStatus';
+import {
+    ArtifactStatesSummary,
+    ArtifactGreenwaveStatesSummary,
+} from './GatingStatus';
 
 interface ShowLoadingProps {}
 function ShowLoading(props: ShowLoadingProps) {
@@ -98,6 +101,8 @@ const makeArtifactRowRpm = (artifact: ArtifactRpm): ArtifactRow => {
     const cell3: JSX.Element = <>{hit_source.nvr}</>;
     const cell4: JSX.Element = (
         <>
+            {isLoading && <Spinner size="sm" />}
+            <ArtifactStatesSummary isLoading={isLoading} artifact={artifact} />
             <ArtifactGreenwaveStatesSummary
                 isLoading={isLoading}
                 artifact={artifact}
