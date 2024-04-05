@@ -21,6 +21,7 @@
 import _ from 'lodash';
 import { TabsProps } from '@patternfly/react-core';
 import { mappingDatagrepperUrl, config } from './config';
+import { StageStateNumAChildren } from './utils/stages_states';
 
 /**
  * Valid for: Version: 1.y.z
@@ -839,6 +840,7 @@ export interface AChildGreenwaveAndTestMsg {
 export interface AChildrenMsg {
     hits: AChildMsg[];
     hitsInfo: HitsInfo;
+    stagesSummary: StageStateNumAChildren[];
 }
 
 export type AChildSchemaMsg = AChildBuildMsg | AChildTestMsg;

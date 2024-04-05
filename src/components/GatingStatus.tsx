@@ -19,13 +19,7 @@
  */
 import _ from 'lodash';
 import React from 'react';
-import {
-    Flex,
-    Label,
-    Spinner,
-    FlexItem,
-    LabelProps,
-} from '@patternfly/react-core';
+import { Flex, Label, FlexItem, LabelProps } from '@patternfly/react-core';
 
 import { GatingStatusIcon, isGatingArtifact } from '../utils/utils';
 import {
@@ -42,7 +36,7 @@ type ColorPropType = Exclude<LabelProps['color'], undefined>;
 export const resultColors: Record<ColorPropType, string[]> = {
     green: ['passed'],
     red: ['errored', 'failed'],
-    orange: ['missing', 'needs inspection'],
+    orange: ['missing', 'needs inspection', 'needs_inspection'],
 
     cyan: [
         'waived',
@@ -73,6 +67,21 @@ const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
     return (
         <Label variant="outline" color={color}>
             {allReqs[reqName]} {reqName}
+        </Label>
+    );
+};
+
+interface PrintTestStateSizeProps {
+    state: string;
+    size: number;
+}
+const PrintTestStateSize = (props: PrintTestStateSizeProps) => {
+    const { state, size } = props;
+    const color: ColorPropType =
+        (resultColor(state) as ColorPropType | undefined) || 'grey';
+    return (
+        <Label variant="outline" color={color}>
+            {size} {state}
         </Label>
     );
 };
@@ -143,6 +152,41 @@ gwStatesUiPriority.forEach((key, index) => {
 });
 
 // artifact: ArtifactRpm | ArtifactContainerImage | ArtifactMbs;
+interface ArtifactStatesSummaryProps {
+    artifact: Artifact;
+    isLoading?: boolean;
+}
+export const ArtifactStatesSummary: React.FC<ArtifactStatesSummaryProps> = (
+    props,
+) => {
+    const { artifact, isLoading } = props;
+    if (isGatingArtifact(artifact)) {
+        // Gating Artifacts are rendered by other component
+        return null;
+    }
+    if (isLoading) {
+        return null;
+    }
+    const stagesSummary = artifact.children?.stagesSummary;
+    // Conside only 'test' stage
+    const testStages = _.filter(stagesSummary, (element) =>
+        _.isEqual(_.get(element, '[0]'), 'test'),
+    );
+    const testStates = _.map(testStages, (element) => {
+        return [_.get(element, '[1]', 'unknown'), _.get(element, '[2]', 0)];
+    });
+    return (
+        <Flex flexWrap={{ default: 'nowrap' }}>
+            {_.map(testStates, ([state, size]: [string, number]) => (
+                <FlexItem key={state} spacer={{ default: 'spacerNone' }}>
+                    <PrintTestStateSize state={state} size={size} />
+                </FlexItem>
+            ))}
+        </Flex>
+    );
+};
+
+// artifact: ArtifactRpm | ArtifactContainerImage | ArtifactMbs;
 interface ArtifactGreenwaveStatesSummaryProps {
     artifact: Artifact;
     isLoading?: boolean;
@@ -156,11 +200,11 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     if (isScratch) {
         return null;
     }
-    if (!isGatingArtifact(artifact)) {
+    if (isLoading) {
         return null;
     }
-    if (isLoading) {
-        return <Spinner size="sm" />;
+    if (!isGatingArtifact(artifact)) {
+        return null;
     }
     const decision = getGwDecision(artifact);
     if (!decision) {

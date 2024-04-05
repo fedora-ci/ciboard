@@ -106,10 +106,11 @@ const responseToState = (response: any) => {
     const { hits: hits_, hits_info } = response.data.artifacts;
     const hits = _.map(
         hits_,
-        ({ hit_info, hit_source, greenwaveDecision }) => ({
+        ({ hit_info, hit_source, greenwaveDecision, children }) => ({
             hit_info: hit_info,
             hit_source: hit_source,
             greenwaveDecision: greenwaveDecision,
+            children,
         }),
     );
     return { hits: hits as Artifact[], hits_info };

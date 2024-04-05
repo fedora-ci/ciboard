@@ -192,6 +192,9 @@ export const ArtifactsSearchSlowQuery2 = gql`
             hits {
                 hit_info
                 hit_source
+                children(onlyActual: true) {
+                    stagesSummary
+                }
                 greenwaveDecision {
                     results
                     waivers
