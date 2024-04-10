@@ -55,7 +55,7 @@ import { AuthzMappingQuery } from '../queries/Authz';
 import { useAppDispatch, useAppSelector } from '../hooks';
 
 const logoProps = {
-    to: '/',
+    href: '/',
     style: {
         color: 'var(--pf-v5-global--secondary-color--100)',
         textDecoration: 'inherit',
@@ -229,7 +229,7 @@ export const DashboardPageHeader = () => {
                     CI Dashboard
                 </>
             }
-            logoComponent="Link"
+            logoComponent="a"
             logoProps={logoProps}
             topNav={PageNav}
         />
