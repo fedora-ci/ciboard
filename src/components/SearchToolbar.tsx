@@ -42,7 +42,6 @@ import {
     HelperTextItem,
     TextInputGroup,
     PopoverPosition,
-    ExpandableSection,
     TextInputGroupMain,
     TextInputGroupUtilities,
 } from '@patternfly/react-core';
