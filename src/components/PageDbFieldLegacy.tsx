@@ -58,6 +58,6 @@ export function PageDbFieldLegacy(_props: {}) {
         dispatch(actIsExtendedQs(true));
         dispatch(actArtTypes(artTypes));
         navigate(to);
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
     return null;
 }
