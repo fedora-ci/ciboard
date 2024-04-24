@@ -29,17 +29,16 @@ import {
     Bullseye,
     EmptyState,
     PageSection,
-    PageBreadcrumb,
     EmptyStateBody,
     EmptyStateIcon,
+    PageSectionVariants,
     EmptyStateHeader,
     EmptyStateFooter,
 } from '@patternfly/react-core';
 import { useQuery, ApolloError, QueryHookOptions } from '@apollo/client';
-import { SearchIcon, ExclamationCircleIcon } from '@patternfly/react-icons';
+import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';
 
 import './index.css';
-import { config } from '../../config';
 import { CiTest } from './types';
 import { BuildInfo } from './BuildInfo';
 import { WaiveModal } from '../WaiveForm';
@@ -49,6 +48,7 @@ import { ArtifactHeader } from './Header';
 import { TestResultsTable } from './TestResultsTable';
 import { SelectedTestContext } from './contexts';
 import { PageCommon, ToastAlertGroup } from '../PageCommon';
+import { config } from '../../config';
 import { Artifact, getArtifactName } from '../../types';
 import {
     ArtifactsCompleteQuery,
@@ -119,21 +119,7 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
             setSearchParams({});
         }
     };
-    /*
-                            <FlexItem>
-                                <Button variant="secondary" ouiaId="Primary">
-                                    <Flex>
-                                        <FlexItem>
-                                            <AngleDoubleLeftIcon />
-                                        </FlexItem>
-                                        <FlexItem>
-                                            back <br />
-                                            to results
-                                        </FlexItem>
-                                    </Flex>
-                                </Button>
-                            </FlexItem>
-                            */
+
     return (
         <PageCommon title={pageTitle}>
             <SelectedTestContext.Provider value={selectedTest}>
@@ -141,9 +127,9 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
                     artifact={artifact}
                     onClose={() => onTestSelect(undefined)}
                 >
-                    <PageBreadcrumb stickyOnBreakpoint={{ default: 'top' }}>
+                    <PageSection variant={PageSectionVariants.light}>
                         <ArtifactHeader artifact={artifact} />
-                    </PageBreadcrumb>
+                    </PageSection>
                     <PageSection isFilled>
                         <Flex
                             className="resultsNarrower"
@@ -304,3 +290,10 @@ const IsLoading: React.FC<IsLoadingProps> = (props) => {
         </PageCommon>
     );
 };
+
+// XXX
+//   const navigate = useNavigate();
+//   const handleNavigation = () => {
+// Programmatically navigate to another route within your app
+//   navigate('/another-route');
+// };
