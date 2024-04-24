@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,78 +38,57 @@ import Linkify from 'linkify-react';
 import { IntermediateRepresentation } from 'linkifyjs';
 import {
     Artifact,
-    StateMsg,
-    KojiInstance,
+    StateType,
     ArtifactType,
-    StateTestMsg,
+    StateKaiType,
+    KaiStateType,
+    HitSourceRpm,
+    HitSourceMBS,
     isArtifactMBS,
     isArtifactRPM,
-    ArtifactState,
-    StateGreenwave,
     MbsInstanceType,
-    DistGitInstance,
+    KojiInstanceType,
     isArtifactCompose,
-    HitSourceArtifactRpm,
-    HitSourceArtifactMbs,
-    HitSourceChildTestMsg,
-    StateGreenwaveAndTestMsg,
-    StateExtendedTestMsgName,
-    GreenwaveRequirementTypes,
+    StateGreenwaveType,
+    DistGitInstanceType,
+    StateGreenwaveKaiType,
+    HitSourceContainerImage,
+    StateExtendedKaiNameType,
+    GreenwaveRequirementTypesType,
     isArtifactRedhatContainerImage,
-    HitSourceArtifactContainerImage,
-} from '../types';
+} from '../artifact';
 import { config, mappingDatagrepperUrl } from '../config';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
 
 /**
- * Typescript guards
+ *Typescript guards
  */
-
-// XXX
-// ETA + Test -> are all children
-// states_eta: StateErrataToolAutomationType[];
-export function isStateArtifactChild(state: ArtifactState): state is StateMsg {
-    return _.has(state, 'hitInfo');
-}
-
-export function isStateMsg(
-    state: ArtifactState | undefined,
-): state is StateMsg {
-    return _.has(state, 'hitInfo');
+export function isKaiState(
+    state: StateType | undefined,
+): state is StateKaiType {
+    return _.has(state, 'kai_state');
 }
 
 export function isGreenwaveState(
-    state: ArtifactState | undefined,
-): state is StateGreenwave {
+    state: StateType | undefined,
+): state is StateGreenwaveType {
     return _.has(state, 'testcase');
 }
 
-export function isGreenwaveAndTestMsg(
-    state: ArtifactState | undefined,
-): state is StateGreenwaveAndTestMsg {
-    return _.has(state, 'gs') && _.has(state, 'ms');
+export function isGreenwaveKaiState(
+    state: StateType | undefined,
+): state is StateGreenwaveKaiType {
+    return _.has(state, 'gs') && _.has(state, 'ks');
 }
 
-/**
- * Return a human-readable label for a given artifact type,
- * for example 'Brew' for 'brew-build'.
- */
-export const getArtifactTypeLabel = (type: ArtifactType) => {
-    const artifactTypeLabels: Record<ArtifactType, string> = {
-        'brew-build': 'Brew',
-        'copr-build': 'Copr',
-        'koji-build': 'Koji',
-        'koji-build-cs': 'CS Koji',
-        'redhat-module': 'MBS',
-        'productmd-compose': 'Compose',
-        'redhat-container-image': 'Container',
-    };
-    if (_.has(artifactTypeLabels, type)) {
-        return artifactTypeLabels[type];
-    }
-
-    console.error(`Unknown artifact type '${type}'`);
-    return 'Unknown';
+const artifact_type_labels: Record<ArtifactType, string> = {
+    'brew-build': 'Brew',
+    'copr-build': 'Copr',
+    'koji-build': 'Koji',
+    'koji-build-cs': 'CS Koji',
+    'redhat-module': 'MBS',
+    'productmd-compose': 'Compose',
+    'redhat-container-image': 'Container',
 };
 
 export function getArtifactName(artifact: Artifact): string | undefined {
@@ -141,11 +120,11 @@ export function getArtifactId(artifact: Artifact): string | undefined {
 const knownAidMeaning: Record<ArtifactType, string> = {
     'brew-build': 'Task ID',
     'copr-build': 'ID',
-    'koji-build': 'Task ID',
     'koji-build-cs': 'Task ID',
-    'redhat-module': 'MBS ID',
+    'koji-build': 'Task ID',
     'productmd-compose': 'Compose',
     'redhat-container-image': 'Task ID',
+    'redhat-module': 'MBS ID',
 };
 
 export const aidMeaningForType = (type: ArtifactType) => {
@@ -154,6 +133,19 @@ export const aidMeaningForType = (type: ArtifactType) => {
         return 'id';
     }
     return knownAidMeaning[type];
+};
+
+/**
+ * Return a human-readable label for a given artifact type,
+ * for example 'Brew' for 'brew-build'.
+ */
+export const getArtifactTypeLabel = (type: ArtifactType) => {
+    if (_.has(artifact_type_labels, type)) {
+        return artifact_type_labels[type];
+    }
+
+    console.error(`Unknown artifact type '${type}'`);
+    return 'Unknown';
 };
 
 export const convertNsvcToNvr = (nsvc: string) => {
@@ -227,16 +219,16 @@ export const getArtifactRemoteUrl = (artifact: Artifact): string => {
     const { hitSource } = artifact;
     const urlMap: Record<ArtifactType, string> = {
         'brew-build': `${config.koji.rh.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceArtifactRpm).taskId
+            (hitSource as HitSourceRpm).taskId
         }`,
         'koji-build': `${config.koji.fp.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceArtifactRpm).taskId
+            (hitSource as HitSourceRpm).taskId
         }`,
         'koji-build-cs': `${config.koji.cs.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceArtifactRpm).taskId
+            (hitSource as HitSourceRpm).taskId
         }`,
         'redhat-container-image': `${config.koji.rh.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceArtifactContainerImage).taskId
+            (hitSource as HitSourceContainerImage).taskId
         }`,
         'copr-build': (() => {
             // XXX: fixme
@@ -247,7 +239,7 @@ export const getArtifactRemoteUrl = (artifact: Artifact): string => {
             return 'fixme';
         })(),
         'redhat-module': `${config.mbs.rh.webUrl}/mbs-ui/module/${
-            (hitSource as HitSourceArtifactMbs).mbsId
+            (hitSource as HitSourceMBS).mbsId
         }`,
         'productmd-compose': '',
     };
@@ -287,7 +279,7 @@ export function getUmbDocsUrl(
  * @param state Gating state response from Greenwave.
  * @returns URL to documentation as provided by the CI system or `undefined`.
  */
-export const getGreenwaveDocsUrl = (state: StateGreenwave) =>
+export const getGreenwaveDocsUrl = (state: StateGreenwaveType) =>
     state.result?.testcase.ref_url;
 
 /**
@@ -295,7 +287,7 @@ export const getGreenwaveDocsUrl = (state: StateGreenwave) =>
  * @param state Gating state response object from backend.
  * @returns URL of test documentation or `undefined` if none is available.
  */
-export function getDocsUrl(state: ArtifactState): string | undefined {
+export function getDocsUrl(state: StateType): string | undefined {
     // Prefer URL from UMB message, if present.
     if (isKaiState(state)) return getUmbDocsUrl(state.broker_msg_body);
     if (isGreenwaveState(state)) return getGreenwaveDocsUrl(state);

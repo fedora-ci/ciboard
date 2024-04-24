@@ -25,11 +25,10 @@ import {
     isGreenwaveState,
     isGreenwaveKaiState,
 } from './artifactUtils';
-
 import {
     Artifact,
-    StateMsg,
     StateType,
+    StateKaiType,
     StateNameType,
     StageNameType,
     KnownKaiStates,
@@ -41,7 +40,7 @@ import {
     GreenwaveRequirementType,
     GreenwaveDecisionReplyType,
     GreenwaveRequirementTypesType,
-} from '../types';
+} from '../artifact';
 import { MSG_V_0_1, MSG_V_1 } from '../types';
 
 export type StageNameStateNameStatesType = [
