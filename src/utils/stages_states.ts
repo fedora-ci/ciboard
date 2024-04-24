@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,26 +20,26 @@
 import _ from 'lodash';
 
 import {
-    isKaiState,
     getTestcaseName,
-    isGreenwaveState,
     isGreenwaveKaiState,
+    isGreenwaveState,
+    isKaiState,
 } from './artifactUtils';
 import {
     Artifact,
-    StateType,
-    StateKaiType,
-    StateNameType,
-    StageNameType,
-    KnownKaiStates,
-    StateGreenwaveType,
+    GreenwaveDecisionReplyType,
+    GreenwaveRequirementType,
+    GreenwaveRequirementTypesType,
     GreenwaveResultType,
-    StatesByCategoryType,
+    KnownKaiStates,
+    StageNameType,
     StateExtendedNameType,
     StateGreenwaveKaiType,
-    GreenwaveRequirementType,
-    GreenwaveDecisionReplyType,
-    GreenwaveRequirementTypesType,
+    StateGreenwaveType,
+    StateKaiType,
+    StateNameType,
+    StatesByCategoryType,
+    StateType,
 } from '../artifact';
 import { MSG_V_0_1, MSG_V_1 } from '../types';
 

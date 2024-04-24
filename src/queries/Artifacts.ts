@@ -293,6 +293,16 @@ export const ArtifactsGreenwaveQuery = gql`
     }
 `;
 
+/*                
+children {
+                    hits_info
+                    hits {
+                        hit_info
+                        hit_source
+                    }
+                }
+*/
+
 export const ArtifactsCompleteQuery = gql`
     query ArtifactsComplete(
         $sortBy: String
@@ -314,13 +324,6 @@ export const ArtifactsCompleteQuery = gql`
             hits {
                 hit_info
                 hit_source
-                children {
-                    hits_info
-                    hits {
-                        hit_info
-                        hit_source
-                    }
-                }
                 greenwaveDecision {
                     results
                     waivers

@@ -240,22 +240,22 @@ function transformTest(
     }
 
     return {
-        name: name || 'unknown',
-        error,
-        status,
-        waiver,
-        docsUrl,
         contact,
+        dependencies,
+        description,
+        docsUrl,
+        error,
+        knownIssues,
         logsUrl,
-        waivable,
+        messageId,
+        name: name || 'unknown',
+        originalState: test,
         required,
         rerunUrl,
-        messageId,
-        knownIssues,
-        description,
-        dependencies,
-        originalState: test,
         runDetailsUrl,
+        status,
+        waivable,
+        waiver,
     };
 }
 

@@ -42,17 +42,13 @@ import {
     ArtifactType,
     StateKaiType,
     KaiStateType,
-    HitSourceRpm,
-    HitSourceMBS,
     isArtifactMBS,
     isArtifactRPM,
     MbsInstanceType,
     KojiInstanceType,
-    isArtifactCompose,
     StateGreenwaveType,
     DistGitInstanceType,
     StateGreenwaveKaiType,
-    HitSourceContainerImage,
     StateExtendedKaiNameType,
     GreenwaveRequirementTypesType,
     isArtifactRedhatContainerImage,
@@ -81,43 +77,28 @@ export function isGreenwaveKaiState(
     return _.has(state, 'gs') && _.has(state, 'ks');
 }
 
-const artifact_type_labels: Record<ArtifactType, string> = {
-    'brew-build': 'Brew',
-    'copr-build': 'Copr',
-    'koji-build': 'Koji',
-    'koji-build-cs': 'CS Koji',
-    'redhat-module': 'MBS',
-    'productmd-compose': 'Compose',
-    'redhat-container-image': 'Container',
+/** Maps artifact type to DB field to use in next query */
+export const db_field_from_atype: Record<ArtifactType, string> = {
+    'brew-build': 'NVR',
+    'copr-build': 'Component',
+    'koji-build-cs': 'NVR',
+    'koji-build': 'NVR',
+    'redhat-container-image': 'NVR',
+    'productmd-compose': 'Compose ID',
+    'redhat-module': 'NSVC',
 };
 
-export function getArtifactName(artifact: Artifact): string | undefined {
-    if (isArtifactRPM(artifact)) {
-        return artifact.hitSource.nvr;
-    } else if (isArtifactRedhatContainerImage(artifact)) {
-        return artifact.hitSource.nvr;
-    } else if (isArtifactMBS(artifact)) {
-        return artifact.hitSource.nsvc;
-    } else if (isArtifactCompose(artifact)) {
-        return artifact.hitSource.composeId;
-    }
-    return;
-}
+const known_types: Record<ArtifactType, string> = {
+    'brew-build': 'NVR',
+    'copr-build': 'Component',
+    'koji-build-cs': 'NVR',
+    'koji-build': 'NVR',
+    'redhat-container-image': 'NVR',
+    'productmd-compose': 'Compose ID',
+    'redhat-module': 'NSVC',
+};
 
-export function getArtifactId(artifact: Artifact): string | undefined {
-    if (isArtifactRPM(artifact)) {
-        return artifact.hitSource.taskId;
-    } else if (isArtifactRedhatContainerImage(artifact)) {
-        return artifact.hitSource.taskId;
-    } else if (isArtifactMBS(artifact)) {
-        return artifact.hitSource.mbsId;
-    } else if (isArtifactCompose(artifact)) {
-        return artifact.hitSource.composeId;
-    }
-    return;
-}
-
-const knownAidMeaning: Record<ArtifactType, string> = {
+const known_aid_meaning: Record<ArtifactType, string> = {
     'brew-build': 'Task ID',
     'copr-build': 'ID',
     'koji-build-cs': 'Task ID',
@@ -127,12 +108,46 @@ const knownAidMeaning: Record<ArtifactType, string> = {
     'redhat-module': 'MBS ID',
 };
 
+const artifact_type_labels: Record<ArtifactType, string> = {
+    'brew-build': 'Brew',
+    'copr-build': 'Copr',
+    'koji-build': 'Koji',
+    'koji-build-cs': 'CS Koji',
+    'productmd-compose': 'Compose',
+    'redhat-container-image': 'Container',
+    'redhat-module': 'MBS',
+};
+
+export function getArtifactName(artifact: Artifact): string | undefined {
+    switch (artifact.hitSource.aType) {
+        case 'brew-build':
+        case 'copr-build':
+        case 'koji-build':
+        case 'redhat-container-image':
+            return artifact.hitSource.nvr;
+        case 'redhat-module':
+            return artifact.hitSource.nsvc;
+        case 'productmd-compose':
+            return artifact.hitSource.aid;
+        default:
+            return;
+    }
+}
+
+export const nameFieldForType = (type: ArtifactType) => {
+    const includes = _.includes(_.keys(known_types), type);
+    if (!includes) {
+        return 'unknown type';
+    }
+    return known_types[type];
+};
+
 export const aidMeaningForType = (type: ArtifactType) => {
-    const includes = _.includes(_.keys(knownAidMeaning), type);
+    const includes = _.includes(_.keys(known_aid_meaning), type);
     if (!includes) {
         return 'id';
     }
-    return knownAidMeaning[type];
+    return known_aid_meaning[type];
 };
 
 /**
@@ -215,21 +230,12 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
  * @returns URL to the remote resource associated with the artifact or empty string
  * if no URL could be reliably constructed.
  */
-export const getArtifactRemoteUrl = (artifact: Artifact): string => {
-    const { hitSource } = artifact;
-    const urlMap: Record<ArtifactType, string> = {
-        'brew-build': `${config.koji.rh.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceRpm).taskId
-        }`,
-        'koji-build': `${config.koji.fp.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceRpm).taskId
-        }`,
-        'koji-build-cs': `${config.koji.cs.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceRpm).taskId
-        }`,
-        'redhat-container-image': `${config.koji.rh.webUrl}/taskinfo?taskID=${
-            (hitSource as HitSourceContainerImage).taskId
-        }`,
+export const getArtifactRemoteUrl = (artifact: Artifact) => {
+    const urlMap = {
+        'brew-build': `${config.koji.rh.webUrl}/taskinfo?taskID=${artifact.aid}`,
+        'koji-build': `${config.koji.fp.webUrl}/taskinfo?taskID=${artifact.aid}`,
+        'koji-build-cs': `${config.koji.cs.webUrl}/taskinfo?taskID=${artifact.aid}`,
+        'redhat-container-image': `${config.koji.rh.webUrl}/taskinfo?taskID=${artifact.aid}`,
         'copr-build': (() => {
             // XXX: fixme
             // const component = artifact.payload.component;
@@ -238,12 +244,10 @@ export const getArtifactRemoteUrl = (artifact: Artifact): string => {
             // return `https://copr.fedorainfracloud.org/coprs/${coprRepo}build/${bid}`;
             return 'fixme';
         })(),
-        'redhat-module': `${config.mbs.rh.webUrl}/mbs-ui/module/${
-            (hitSource as HitSourceMBS).mbsId
-        }`,
+        'redhat-module': `${config.mbs.rh.webUrl}/mbs-ui/module/${artifact.aid}`,
         'productmd-compose': '',
     };
-    return urlMap[hitSource.aType];
+    return urlMap[artifact.type];
 };
 
 /**
@@ -377,11 +381,11 @@ export const getArtifactProduct = (artifact: Artifact): string | undefined => {
      * Cenots/Fedora doesn't have gating workflow.
      */
     if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
-        const { gateTag } = artifact.hitSource;
-        if (_.isEmpty(gateTag)) {
+        const { gate_tag_name } = artifact.payload;
+        if (_.isEmpty(gate_tag_name)) {
             return;
         }
-        const product = gateTag.match(/^.*(rhel-\d\d?)\.$/);
+        const product = gate_tag_name.match(/^.*(rhel-\d\d?)\.$/);
         if (_.isNil(product)) {
             return;
         }
@@ -888,25 +892,3 @@ export function getDatagrepperUrl(
     );
     return url.toString();
 }
-
-// REMOVED
-
-/**
-export const nameFieldForType = (type: ArtifactType) => {
-    const includes = _.includes(_.keys(knownTypes), type);
-    if (!includes) {
-        return 'unknown type';
-    }
-    return knownTypes[type];
-};
-
-const knownTypes: Record<ArtifactType, string> = {
-    'brew-build': 'NVR',
-    'copr-build': 'Component',
-    'koji-build-cs': 'NVR',
-    'koji-build': 'NVR',
-    'redhat-module': 'NSVC',
-    'productmd-compose': 'Compose ID',
-    'redhat-container-image': 'NVR',
-};
- */

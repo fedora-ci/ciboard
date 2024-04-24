@@ -51,17 +51,17 @@ import {
     Artifact,
     ArtifactMBS,
     ArtifactRPM,
-    MbsBuildInfo,
-    kojiInstance,
     KojiBuildInfo,
+    MbsBuildInfo,
     isArtifactMBS,
     isArtifactRPM,
+    koji_instance,
     KojiInstanceType,
 } from '../../artifact';
 import {
     ArtifactsDetailedInfoKojiTask,
-    ArtifactsDetailedInfoModuleBuild,
     ArtifactsDetailedInfoKojiTaskData,
+    ArtifactsDetailedInfoModuleBuild,
     ArtifactsDetailedInfoModuleBuildData,
 } from '../../queries/Artifacts';
 import {
@@ -88,7 +88,7 @@ import {
     LimitWithScroll,
     ErrataAutomation,
     LinkedAdvisories,
-} from './ArtifactDetailedInfo';
+} from '../ArtifactDetailedInfo';
 import { ExternalLink } from '../ExternalLink';
 
 interface BuildMetadataMbsProps {
@@ -396,11 +396,11 @@ function ModuleBuildComponents(props: ModuleBuildComponentsProps) {
 interface BuildInfoMbsProps {
     artifact: ArtifactMBS;
 }
-const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
-    const { artifact } = props;
-    const { hitSource } = artifact;
+
+function BuildInfoMbs({ artifact }: BuildInfoMbsProps) {
     const [activeTabKey, setActiveTabKey] = useState('summary');
-    const instance = kojiInstance(hitSource.aType);
+
+    const instance = koji_instance(artifact.type);
 
     /*
      * Fetch available information about the build -- NVR, commit and build time,
@@ -492,17 +492,16 @@ const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
             </Tab>
         </Tabs>
     );
-};
+}
 
 interface BuildInfoRpmProps {
     artifact: ArtifactRPM;
 }
-const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
-    const { artifact } = props;
-    const { hitSource } = artifact;
+
+function BuildInfoRpm({ artifact }: BuildInfoRpmProps) {
     const [activeTabKey, setActiveTabKey] = useState('summary');
 
-    const kojiInst = kojiInstance(artifact.hitSource.aType);
+    const kojiInstance = koji_instance(artifact.type);
 
     /*
      * Fetch available information about the build -- NVR, commit and build time,
@@ -514,9 +513,9 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
             ArtifactsDetailedInfoKojiTask,
             {
                 variables: {
-                    distgit_instance: kojiInst,
-                    koji_instance: kojiInst,
-                    task_id: _.toNumber(hitSource.taskId),
+                    distgit_instance: kojiInstance,
+                    koji_instance: kojiInstance,
+                    task_id: Number(artifact.aid),
                 },
                 errorPolicy: 'all',
             },
@@ -526,7 +525,7 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
     const { data: dataAdvisories, loading: loadingAdvisories } =
         useQuery<ErrataLinkedAdvisoriesReply>(LinkedErrataAdvisories, {
             variables: {
-                nvrs: [artifact.hitSource.nvr],
+                nvrs: [artifact.payload.nvr],
             },
             errorPolicy: 'all',
         });
@@ -561,7 +560,7 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
                 eventKey="summary"
                 title={<TabTitleText>Build summary</TabTitleText>}
             >
-                <BuildMetadataRpm build={build} instance={kojiInst} />
+                <BuildMetadataRpm build={build} instance={kojiInstance} />
             </Tab>
             <Tab
                 eventKey="tags"
@@ -572,7 +571,7 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
                 }
             >
                 <LimitWithScroll>
-                    <TagsList instance={kojiInst} tags={build.tags} />
+                    <TagsList instance={kojiInstance} tags={build.tags} />
                 </LimitWithScroll>
             </Tab>
             <Tab
@@ -613,7 +612,7 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
             )}
         </Tabs>
     );
-};
+}
 
 export interface BuildInfoProps {
     artifact: Artifact;
