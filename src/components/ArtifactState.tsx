@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,44 +19,42 @@
  */
 
 import _ from 'lodash';
-import React from 'react';
+import * as React from 'react';
 import {
+    DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
     Flex,
     Label,
-    Title,
     LabelProps,
-    DescriptionListTerm,
-    DescriptionListGroup,
-    DescriptionListDescription,
+    Title,
 } from '@patternfly/react-core';
 import { LinkIcon } from '@patternfly/react-icons';
-import { LinkifyNewTab } from '../utils/utils';
-import { ArtifactKaiState, ArtifactKaiStateProps } from './AChildTestMsg';
+
+import {
+    LinkifyNewTab,
+    getThreadID,
+    isGreenwaveKaiState,
+    isGreenwaveState,
+    isKaiState,
+    getTestcaseName,
+} from '../utils/utils';
+import { StateType, Artifact, StateExtendedNameType } from '../artifact';
+import { ArtifactKaiState, ArtifactKaiStateProps } from './ArtifactKaiState';
 import {
     ArtifactGreenwaveState,
     ArtifactGreenwaveStateProps,
-} from './AChildGreenwave';
+} from './ArtifactGreenwaveState';
 import {
-    ArtifactGreenwaveTestMsgState,
-    ArtifactGreenwaveTestMsgStateProps,
-} from './AChildGreenwaveTestMsg';
-import {
-    Artifact,
-    StateName,
-    getThreadID,
-    ArtifactChild,
-    isChildTestMsg,
-    getTestMsgBody,
-    getTestcaseName,
-    isGreenwaveChild,
-    isGreenwaveAndTestMsg,
-} from '../types';
+    ArtifactGreenwaveKaiState,
+    ArtifactGreenwaveKaiStateProps,
+} from './ArtifactGreenwaveKaiState';
 
-type AChildDetailsEntryPropsWithChildren =
+type StateDetailsEntryPropsWithChildren =
     React.PropsWithChildren<React.ReactNode> & { caption: string };
 
-export const AChildDetailsEntry = (
-    props: AChildDetailsEntryPropsWithChildren,
+export const StateDetailsEntry = (
+    props: StateDetailsEntryPropsWithChildren,
 ) => {
     const { children, caption } = props;
     if (_.isNil(children)) return null;
@@ -77,20 +75,20 @@ export const AChildDetailsEntry = (
     );
 };
 
-interface AChildLinkProps {
-    aChild: ArtifactChild;
+interface StateLinkProps {
+    state: StateType;
     artifactDashboardUrl: string;
 }
 
-export const AChildLink: React.FC<AChildLinkProps> = (props) => {
-    const { aChild, artifactDashboardUrl } = props;
+export const StateLink: React.FC<StateLinkProps> = (props) => {
+    const { state, artifactDashboardUrl } = props;
     let href: string;
-    if (isGreenwaveChild(aChild) || isGreenwaveAndTestMsg(aChild)) {
-        const testcase = getTestcaseName(aChild);
+    if (isGreenwaveState(state) || isGreenwaveKaiState(state)) {
+        const testcase = getTestcaseName(state);
         href = `${artifactDashboardUrl}?focus=tc:${testcase}`;
-    } else if (isChildTestMsg(aChild)) {
-        const msgBody = getTestMsgBody(aChild);
-        const thread_id = getThreadID({ brokerMsgBody: msgBody });
+    } else if (isKaiState(state)) {
+        const { broker_msg_body } = state;
+        const thread_id = getThreadID({ broker_msg_body });
         href = `${artifactDashboardUrl}?focus=id:${thread_id}`;
     } else {
         return null;
@@ -150,24 +148,24 @@ export const mkPairs = (mapping: ResultMappingType, dict: Object) => {
     return pairsNameValue;
 };
 
-export interface AChildProps {
-    aChild: ArtifactChild;
+export interface ArtifactStateProps {
     artifact: Artifact;
-    stateName: StateName;
-    forceExpand: boolean;
     artifactDashboardUrl: string;
+    forceExpand: boolean;
     setExpandedResult: React.Dispatch<React.SetStateAction<string>>;
+    state: StateType;
+    stateName: StateExtendedNameType;
 }
 
-export const AChild: React.FC<AChildProps> = (props) => {
-    const { aChild } = props;
-    if (isGreenwaveAndTestMsg(aChild)) {
-        return ArtifactGreenwaveTestMsgState(
-            props as ArtifactGreenwaveTestMsgStateProps,
+export const ArtifactState: React.FC<ArtifactStateProps> = (props) => {
+    const { state } = props;
+    if (isGreenwaveKaiState(state)) {
+        return ArtifactGreenwaveKaiState(
+            props as ArtifactGreenwaveKaiStateProps,
         );
-    } else if (isGreenwaveChild(aChild)) {
+    } else if (isGreenwaveState(state)) {
         return ArtifactGreenwaveState(props as ArtifactGreenwaveStateProps);
-    } else if (isChildTestMsg(aChild)) {
+    } else if (isKaiState(state)) {
         return ArtifactKaiState(props as ArtifactKaiStateProps);
     }
     return <>Cannot get test info</>;

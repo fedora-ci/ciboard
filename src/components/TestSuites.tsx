@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,61 +19,56 @@
  */
 
 import _ from 'lodash';
+import * as React from 'react';
 import pako from 'pako';
-import React, { memo, useEffect, useState } from 'react';
 import { Buffer } from 'buffer';
-import classNames from 'classnames';
-import { useQuery } from '@apollo/client';
 import 'moment-duration-format';
+import { useQuery } from '@apollo/client';
+import { memo, useEffect, useState } from 'react';
 import {
     Alert,
-    Flex,
-    Label,
-    Title,
-    Spinner,
     Checkbox,
-    FlexItem,
     DataList,
     DataListCell,
-    DataListItem,
-    DataListToggle,
-    DataListItemRow,
     DataListContent,
+    DataListItem,
     DataListItemCells,
+    DataListItemRow,
+    DataListToggle,
+    Flex,
+    FlexItem,
+    Label,
+    Spinner,
+    Title,
 } from '@patternfly/react-core';
 import {
     IRow,
     Table,
-    cellWidth,
     TableBody,
     TableHeader,
     TableVariant,
+    cellWidth,
 } from '@patternfly/react-table';
 import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
+import classNames from 'classnames';
 
-import {
-    Artifact,
-    ChildTestMsg,
-    getAType,
-    getArtifactId,
-    getMsgId,
-} from '../types';
-import { xunitParser } from '../utils/xunitParser';
-import { mkSeparatedList } from '../utils/artifactsTable';
-import { ArtifactsXunitQuery } from '../queries/Artifacts';
+import { Artifact, StateKaiType } from '../artifact';
 import { mapTypeToIconsProps, TestStatusIcon } from '../utils/utils';
+import { ArtifactsXunitQuery } from '../queries/Artifacts';
+import { mkSeparatedList } from '../utils/artifactsTable';
+import { xunitParser } from '../utils/xunitParser';
 import {
     TestCase,
-    TestSuite,
-    getProperty,
     TestCaseLogs,
-    TestCasePhases,
-    TestSuiteStatus,
     TestCaseLogsEntry,
-    hasTestCaseContent,
+    TestCasePhases,
     TestCasePhasesEntry,
     TestCaseTestOutputs,
     TestCaseTestOutputsEntry,
+    TestSuite,
+    TestSuiteStatus,
+    getProperty,
+    hasTestCaseContent,
 } from '../testsuite';
 import styles from '../custom.module.css';
 import { ExternalLink } from './ExternalLink';
@@ -417,25 +412,24 @@ export const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
 };
 
 interface TestSuitesProps {
-    aChild: ChildTestMsg;
+    state: StateKaiType;
     artifact: Artifact;
 }
 
 const TestSuites_: React.FC<TestSuitesProps> = (props) => {
-    const { aChild, artifact } = props;
-    const msgId = getMsgId(aChild);
+    const { state, artifact } = props;
+    const { kai_state } = state;
+    const { msg_id } = kai_state;
     const [xunit, setXunit] = useState<string>('');
     const [xunitProcessed, setXunitProcessed] = useState(false);
     /** why do we need msgError? */
     const [msgError, setError] = useState<JSX.Element>();
-    const aType = getAType(artifact);
-    const aId = getArtifactId(artifact);
     const { loading, data } = useQuery(ArtifactsXunitQuery, {
         variables: {
-            atype: aType,
+            atype: artifact.type,
             dbFieldName1: 'aid',
-            dbFieldValues1: [aId],
-            msg_id: msgId,
+            dbFieldValues1: [artifact.aid],
+            msg_id,
         },
         fetchPolicy: 'cache-first',
         errorPolicy: 'all',
@@ -452,10 +446,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
             /** this is a bit strange, that received data doesn't propage to original
              * artifact object. Original artifact.states objects stays old */
             _.get(data, 'artifacts.artifacts[0].states'),
-            (aChild) => {
-                const msgId_ = getMsgId(aChild);
-                return msgId_ === msgId;
-            },
+            (state) => state.kai_state?.msg_id === msg_id,
         );
         if (_.isNil(state)) return;
         const xunitRaw: string = state.broker_msg_xunit;
@@ -478,7 +469,7 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
             setError(error);
         }
         setXunitProcessed(true);
-    }, [data, msgId, haveData, artifact.children]);
+    }, [data, msg_id, haveData, artifact.states]);
     const inflating = data && !xunitProcessed;
     if (loading || inflating) {
         const text = loading ? 'Fetching test results…' : 'Inflating…';
@@ -526,6 +517,6 @@ const TestSuites_: React.FC<TestSuitesProps> = (props) => {
 
 export const TestSuites = memo(
     TestSuites_,
-    ({ aChild: state_prev }, { aChild: state_next }) =>
+    ({ state: state_prev }, { state: state_next }) =>
         _.isEqual(state_prev, state_next),
 );

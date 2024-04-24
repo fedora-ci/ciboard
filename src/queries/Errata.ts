@@ -19,7 +19,7 @@
  */
 
 import { gql } from '@apollo/client';
-import { ErrataLinkedAdvisory } from '../types';
+import { ErrataLinkedAdvisory } from '../artifact';
 
 export interface ErrataLinkedAdvisoriesReply {
     teiid_et_linked_advisories: ErrataLinkedAdvisory[];

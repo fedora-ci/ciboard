@@ -311,8 +311,7 @@ export namespace MSG_V_0_1 {
     }
 }
 
-export type BrokerMsgBody = BrokerTestMsg | BrokerEtaMsg;
-export type BrokerMsgId = string;
+export type BrokerMsg = BrokerTestMsg | BrokerEtaMsg;
 export type BrokerEtaMsg = unknown;
 export type BrokerTestMsg = MSG_V_0_1.MessagesType | MSG_V_1.MessagesType;
 
@@ -808,7 +807,6 @@ export interface ChildGreenwaveAndTestMsg {
 
 export type ChildMsg = ChildTestMsg | ChildEtaMsg;
 
-// XXX ? ArtifactChild vs ArtifactChildren !!!!!!!!!
 export type ArtifactChild =
     | ChildMsg
     | ChildGreenwave
@@ -876,7 +874,7 @@ export interface HitSourceTest {
     threadId: string;
     component: string;
     msgState: TestMsgStateName;
-    msgStage: Extract<MsgStageName, 'test'>;
+    msgStage: string;
     brokerTopic: string;
     brokerMsgId: string;
     testCaseName: string;
@@ -1084,16 +1082,8 @@ export function isGreenwaveAndTestMsg(
  * Getters
  */
 
-export const getMsgBody = (child: ChildMsg): BrokerMsgBody => {
+export const getMsgBody = (child: ChildMsg): BrokerMsg => {
     return child.hitSource.rawData.message.brokerMsgBody;
-};
-
-export const getTestMsgBody = (child: ChildTestMsg): BrokerTestMsg => {
-    return child.hitSource.rawData.message.brokerMsgBody;
-};
-
-export const getMsgId = (child: ChildMsg): BrokerMsgId => {
-    return child.hitSource.rawData.message.brokerMsgId;
 };
 
 export const getGwDecision = (
@@ -1104,6 +1094,10 @@ export const getGwDecision = (
 
 export const getAType = (artifact: Artifact): ArtifactType => {
     return artifact.hitSource.aType;
+};
+
+export const getTestMsgBody = (child: ChildTestMsg): BrokerTestMsg => {
+    return child.hitSource.rawData.message.brokerMsgBody;
 };
 
 // XXX: testStateMsg
@@ -1139,11 +1133,10 @@ export function getDatagrepperUrl(
 }
 
 // was: getKaiExtendedStatus
-// XXX: rename to getMsgExtendedState
 export function getTestMsgExtendedStatus(
-    aChild: ChildTestMsg,
+    child: ChildTestMsg,
 ): TestMsgStateName {
-    const testMsg = getTestMsgBody(aChild);
+    const testMsg = getTestMsgBody(child);
     if (MSG_V_0_1.isMsg(testMsg) && 'status' in testMsg) {
         return testMsg.status;
     }
@@ -1154,12 +1147,8 @@ export function getTestMsgExtendedStatus(
     ) {
         return testMsg.test.result;
     }
-    return aChild.hitSource.msgState;
+    return child.hitSource.msgState;
 }
-
-export const getMsgStageName = (aChild: ChildTestMsg): MsgStageName => {
-    return aChild.hitSource.msgStage;
-};
 
 export const getArtifactProduct = (artifact: Artifact): string | undefined => {
     /*

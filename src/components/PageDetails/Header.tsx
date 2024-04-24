@@ -2,7 +2,6 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 import {
     Flex,
     Stack,
@@ -31,16 +30,15 @@ import {
 import { CodeBranchIcon, CubeIcon, UserIcon } from '@patternfly/react-icons';
 
 import {
-    Artifact,
-    getArtifactId,
     getArtifactName,
     getArtifacIssuer,
-    isArtifactScratch,
     getArtifactGatingTag,
     getArtifactRemoteUrl,
     getArtifactTypeLabel,
-} from '../../types';
+    getArtifactId,
+} from '../../utils/utils';
 import { ExternalLink } from '../ExternalLink';
+import { Artifact, isArtifactScratch } from '../../types';
 import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';
 
 interface ArtifactTitleProps {

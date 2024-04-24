@@ -31,11 +31,11 @@ import {
     FlexItem,
     Bullseye,
     CardHeader,
-    TitleSizes,
     EmptyState,
     TextContent,
     CardActions,
     EmptyStateIcon,
+    TitleSizes,
 } from '@patternfly/react-core';
 import { Link } from 'react-router-dom';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
@@ -48,14 +48,14 @@ import {
     resultColor,
     isGatingArtifact,
     GatingStatusIcon,
+    getArtifactLocalPath,
 } from '../utils/utils';
 import {
     Artifact,
-    ArtifactRpm,
-    isArtifactRpm,
-    getArtifactLocalPath,
-    GreenwaveDecisionReply,
-} from '../types';
+    ArtifactRPM,
+    isArtifactRPM,
+    GreenwaveDecisionReplyType,
+} from '../artifact';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
@@ -74,7 +74,7 @@ const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
 };
 
 interface ArtifactGreenwaveStatesSummaryProps {
-    artifact: ArtifactRpm;
+    artifact: ArtifactRPM;
     isLoading?: boolean;
 }
 export const ArtifactGreenwaveStatesSummary: React.FC<
@@ -84,7 +84,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     if (!isGatingArtifact(artifact)) {
         return null;
     }
-    const decision: GreenwaveDecisionReply | undefined =
+    const decision: GreenwaveDecisionReplyType | undefined =
         artifact.greenwaveDecision;
     console.log(artifact);
     const isScratch = _.get(artifact, 'hitSource.scratch', false);
@@ -161,7 +161,7 @@ function ShowLoading(props: ShowLoadingProps) {
 }
 
 interface ArtifactRPMCardProps {
-    artifact: ArtifactRpm;
+    artifact: ArtifactRPM;
 }
 const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
     const { isLoadingExtended: isLoading } = useAppSelector(
@@ -246,7 +246,7 @@ interface ArtifactCardProps {
 }
 const ArtifactCard = (props: ArtifactCardProps) => {
     const { artifact } = props;
-    if (isArtifactRpm(artifact)) {
+    if (isArtifactRPM(artifact)) {
         return <ArtifactRPMCard artifact={artifact} />;
     }
     return (
@@ -316,7 +316,7 @@ export function ShowArtifacts() {
     );
 }
 
-/* XXX
+/*
 
                         {error && (
                             <EmptyStateBody>

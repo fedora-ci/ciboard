@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,94 +19,88 @@
  */
 
 import _ from 'lodash';
-import React, { useState } from 'react';
 import classNames from 'classnames';
+import * as React from 'react';
+import { useState } from 'react';
 import { useLazyQuery } from '@apollo/client';
 import {
-    Tab,
-    Tabs,
-    Text,
-    Flex,
     Alert,
     Button,
-    Spinner,
-    FlexItem,
-    TabsProps,
-    TextContent,
-    TextVariants,
-    TabTitleIcon,
-    TabTitleText,
     DataListCell,
+    DataListContent,
     DataListItem,
+    DataListItemCells,
+    DataListItemRow,
     DataListToggle,
     DescriptionList,
-    DataListContent,
-    DataListItemRow,
-    DataListItemCells,
+    Flex,
+    FlexItem,
+    Spinner,
+    Tab,
+    Tabs,
+    TabsProps,
+    TabTitleIcon,
+    TabTitleText,
+    Text,
+    TextContent,
+    TextVariants,
 } from '@patternfly/react-core';
 import {
-    ListIcon,
-    RedoIcon,
     BookIcon,
-    RegistryIcon,
-    InfoCircleIcon,
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
+    InfoCircleIcon,
+    ListIcon,
+    RedoIcon,
+    RegistryIcon,
 } from '@patternfly/react-icons';
+
 import styles from '../custom.module.css';
 import { TestSuites } from './TestSuites';
-import { LinkifyNewTab, TestStatusIcon } from '../utils/utils';
 import {
-    MSG_V_1,
-    getAType,
-    ChildMsg,
-    Metadata,
-    Artifact,
-    MSG_V_0_1,
-    getMsgBody,
-    getRerunUrl,
-    getThreadID,
-    MsgStateName,
-    ChildTestMsg,
-    getUmbDocsUrl,
-    getTestcaseName,
-    getDatagrepperUrl,
     getArtifactProduct,
-    getTestMsgExtendedStatus,
-    getTestMsgBody,
-} from '../types';
+    getDatagrepperUrl,
+    getKaiExtendedStatus,
+    getRerunUrl,
+    getTestcaseName,
+    getThreadID,
+    getUmbDocsUrl,
+    LinkifyNewTab,
+    TestStatusIcon,
+} from '../utils/utils';
+import { MSG_V_1, MSG_V_0_1, Metadata } from '../types';
+import { Artifact, StateKaiType, StateNameType } from '../artifact';
 import {
+    StateDetailsEntry,
+    StateLink,
     mkLabel,
     mkPairs,
-    AChildLink,
-    AChildProps,
-    AChildDetailsEntry,
-} from './AChild';
+} from './ArtifactState';
+import { ArtifactStateProps } from './ArtifactState';
 import {
-    TestInfo,
-    useOnceCall,
-    TestDependency,
-    TestKnownIssues,
     MetadataQueryResult,
+    TestDependency,
+    TestInfo,
+    TestKnownIssues,
+    useOnceCall,
 } from './MetadataInfo';
 import { MetadataQuery } from '../queries/Metadata';
 
-export interface PropsWithTestMsgState {
-    state: ChildTestMsg;
+export interface PropsWithKaiState {
+    state: StateKaiType;
     metadata?: Metadata;
 }
 
 /**
  * Display the note associated with a result as provided by the CI system if available.
  */
-export function ResultNote(props: PropsWithTestMsgState) {
-    const { state } = props;
-    const brokerMsgBody = getTestMsgBody(state);
+export function ResultNote(props: PropsWithKaiState) {
+    const { broker_msg_body } = props.state;
     let note: string | undefined;
-    if (MSG_V_0_1.isMsg(brokerMsgBody)) {
-        note = brokerMsgBody.note;
-    } else if (MSG_V_1.isMsg(brokerMsgBody)) {
-        note = brokerMsgBody.test.note;
+    if (MSG_V_0_1.isMsg(broker_msg_body)) {
+        note = broker_msg_body.note;
+    } else if (MSG_V_1.isMsg(broker_msg_body)) {
+        note = broker_msg_body.test.note;
     }
     if (_.isEmpty(note)) return null;
     return (
@@ -116,7 +110,7 @@ export function ResultNote(props: PropsWithTestMsgState) {
     );
 }
 
-export interface KaiDetailedResultsProps extends PropsWithTestMsgState {
+export interface KaiDetailedResultsProps extends PropsWithKaiState {
     artifact: Artifact;
 }
 
@@ -220,10 +214,10 @@ const schemaMappingV01 = [
     ['reason', 'error reason'],
 ];
 
-const StateExplain: React.FC<PropsWithTestMsgState> = (props) => {
+const StateExplain: React.FC<PropsWithKaiState> = (props) => {
     const { state } = props;
     const { broker_msg_body, kai_state } = state;
-    const explain: { [key in MsgStateName]?: JSX.Element } = {
+    const explain: { [key in StateNameType]?: JSX.Element } = {
         running: (
             <Alert isInline isPlain title="Test running" variant="info">
                 Testing has been started and is in progress.
@@ -277,23 +271,22 @@ const StateExplain: React.FC<PropsWithTestMsgState> = (props) => {
     return null;
 };
 
-export interface KaiStateMappingProps extends PropsWithTestMsgState {
+export interface KaiStateMappingProps extends PropsWithKaiState {
     artifact: Artifact;
 }
 
 export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
     const { artifact, state } = props;
-    const { brokerMsgBody, kai_state } = state;
+    const { broker_msg_body, kai_state } = state;
     let pairs: string[][] = [];
-    if (MSG_V_1.isMsg(brokerMsgBody)) {
-        pairs = mkPairs(schemaMappingV1, state.brokerMsgBody);
-    } else if (MSG_V_0_1.isMsg(brokerMsgBody)) {
-        pairs = mkPairs(schemaMappingV01, state.brokerMsgBody);
+    if (MSG_V_1.isMsg(broker_msg_body)) {
+        pairs = mkPairs(schemaMappingV1, state.broker_msg_body);
+    } else if (MSG_V_0_1.isMsg(broker_msg_body)) {
+        pairs = mkPairs(schemaMappingV01, state.broker_msg_body);
     } else {
         return null;
     }
-    const aType = getAType(artifact);
-    const brokerMsgUrl = getDatagrepperUrl(kai_state.msg_id, aType);
+    const brokerMsgUrl = getDatagrepperUrl(kai_state.msg_id, artifact.type);
     pairs.push(['broker msg', brokerMsgUrl]);
     const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'green'),
@@ -324,7 +317,7 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
     );
 };
 
-export const KaiStateActions: React.FC<PropsWithTestMsgState> = (props) => {
+export const KaiStateActions: React.FC<PropsWithKaiState> = (props) => {
     const { broker_msg_body } = props.state;
     const docsUrl = getUmbDocsUrl(broker_msg_body);
     const rerunUrl = getRerunUrl(props.state);
@@ -341,7 +334,7 @@ export const KaiStateActions: React.FC<PropsWithTestMsgState> = (props) => {
     );
 };
 
-const StageName: React.FC<PropsWithTestMsgState> = (props) => {
+const StageName: React.FC<PropsWithKaiState> = (props) => {
     const { state } = props;
     const { kai_state } = state;
     if (kai_state.stage === 'dispatch') {
@@ -358,13 +351,13 @@ const StageName: React.FC<PropsWithTestMsgState> = (props) => {
     );
 };
 
-interface FaceForKaiStateProps extends PropsWithTestMsgState {
+interface FaceForKaiStateProps extends PropsWithKaiState {
     artifactDashboardUrl: string;
 }
 
 const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
     const { artifactDashboardUrl, state } = props;
-    let result = getTestMsgExtendedStatus(state);
+    let result = getKaiExtendedStatus(state);
     return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>
@@ -391,7 +384,7 @@ const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
 };
 
 interface BodyForKaiStateProps {
-    state: ChildMsg;
+    state: StateKaiType;
     artifact: Artifact;
     isVisible: boolean;
 }
@@ -544,7 +537,7 @@ export const BodyForKaiState: React.FC<BodyForKaiStateProps> = (props) => {
     );
 };
 
-export type ArtifactKaiStateProps = AChildProps & PropsWithKaiState;
+export type ArtifactKaiStateProps = ArtifactStateProps & PropsWithKaiState;
 
 export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
     const {
@@ -555,7 +548,7 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
         state,
     } = props;
 
-    const { brokerMsgBody, kai_state } = state;
+    const { broker_msg_body, kai_state } = state;
     /*
      * Expand a specific testcase according to query string and scroll to it
      * ?focus=tc:<test-case-name>
@@ -569,7 +562,7 @@ export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
         }
     };
     /** Note for info test results */
-    const thread_id = getThreadID({ brokerMsgBody });
+    const thread_id = getThreadID({ broker_msg_body });
     const resultClasses = classNames(styles.helpSelect, {
         [styles.expandedResult]: forceExpand,
     });

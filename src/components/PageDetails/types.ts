@@ -19,7 +19,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { GreenwaveWaiveType, ArtifactChild } from '../../types';
+import { GreenwaveWaiveType, ArtifactState } from '../../types';
 import { MSG_V_1, MetadataDependency, MetadataKnownIssue } from '../../types';
 
 export type TestStatus =
@@ -35,32 +35,32 @@ export type TestStatus =
 export type TestCaseStatus = 'fail' | 'pass' | 'skip';
 
 export interface CiContact {
-    url?: string;
-    name?: string;
-    team?: string;
-    email?: string;
     docsUrl?: string;
+    email?: string;
     gchatRoomUrl?: string;
+    name?: string;
     reportIssueUrl?: string;
     slackChannelUrl?: string;
+    team?: string;
+    url?: string;
 }
 
 export interface CiTest {
-    name: string;
+    contact?: CiContact;
+    dependencies?: MetadataDependency[];
+    description?: string;
+    docsUrl?: string;
     error?: MSG_V_1.MsgErrorType;
-    status: TestStatus;
-    waiver?: GreenwaveWaiveType;
+    knownIssues?: MetadataKnownIssue[];
     labels?: string[];
     logsUrl?: string;
-    docsUrl?: string;
-    contact?: CiContact;
-    waivable?: boolean;
+    messageId?: string;
+    name: string;
+    originalState: ArtifactState;
     required?: boolean;
     rerunUrl?: string;
-    messageId?: string;
-    description?: string;
-    knownIssues?: MetadataKnownIssue[];
-    dependencies?: MetadataDependency[];
-    originalState: ArtifactChild;
     runDetailsUrl?: string;
+    status: TestStatus;
+    waivable?: boolean;
+    waiver?: GreenwaveWaiveType;
 }

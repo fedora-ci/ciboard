@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,92 +19,92 @@
  */
 
 import _ from 'lodash';
-import React from 'react';
 import classNames from 'classnames';
+import * as React from 'react';
 import { useState } from 'react';
 import { useLazyQuery } from '@apollo/client';
 import {
+    Alert,
+    AlertProps,
+    Button,
+    DataListCell,
+    DataListContent,
+    DataListItem,
+    DataListItemCells,
+    DataListItemRow,
+    DataListToggle,
+    DescriptionList,
+    DescriptionListDescription,
+    DescriptionListGroup,
+    DescriptionListTerm,
+    Flex,
+    FlexItem,
+    Label,
+    List,
+    ListItem,
+    Spinner,
     Tab,
     Tabs,
-    Text,
-    List,
-    Flex,
-    Label,
-    Alert,
-    Button,
-    Spinner,
-    ListItem,
-    FlexItem,
     TabsProps,
-    AlertProps,
-    TextContent,
-    TextVariants,
     TabTitleIcon,
     TabTitleText,
-    DataListCell,
-    DataListItem,
-    DataListToggle,
-    DataListContent,
-    DataListItemRow,
-    DescriptionList,
-    DataListItemCells,
-    DescriptionListTerm,
-    DescriptionListGroup,
-    DescriptionListDescription,
+    Text,
+    TextContent,
+    TextVariants,
 } from '@patternfly/react-core';
 import {
-    ListIcon,
-    WeeblyIcon,
-    RegistryIcon,
-    HandPaperIcon,
-    RegisteredIcon,
-    InfoCircleIcon,
-    OutlinedThumbsUpIcon,
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
+    HandPaperIcon,
+    InfoCircleIcon,
+    ListIcon,
+    OutlinedThumbsUpIcon,
+    RegisteredIcon,
+    RegistryIcon,
+    WeeblyIcon,
 } from '@patternfly/react-icons';
 
-import { ExternalLink } from './ExternalLink';
-import { KaiDocsButton, KaiRerunButton } from './AChildTestMsg';
 import styles from '../custom.module.css';
 import { useAppDispatch } from '../hooks';
 import {
     LinkifyNewTab,
-    TestStatusIcon,
-    timestampForUser,
     isResultWaivable,
+    timestampForUser,
+    getGreenwaveDocsUrl,
+    getRerunUrl,
+    getTestcaseName,
+    getArtifactProduct,
+    TestStatusIcon,
 } from '../utils/utils';
 import {
     Artifact,
-    getRerunUrl,
-    ChildGreenwave,
-    getTestcaseName,
+    GreenwaveRequirementType,
     GreenwaveWaiveType,
-    getArtifactProduct,
-    getGreenwaveDocsUrl,
-    GreenwaveRequirement,
-} from '../types';
+    StateGreenwaveType,
+} from '../artifact';
 import { isResultMissing } from '../utils/utils';
+import { ArtifactStateProps } from './ArtifactState';
 import {
+    StateDetailsEntry,
+    StateLink,
     mkLabel,
     mkPairs,
-    StateLink,
-    AChildProps,
-    StateDetailsEntry,
-} from './AChild';
+} from './ArtifactState';
 import { createWaiver } from '../actions';
+import { KaiDocsButton, KaiRerunButton } from './ArtifactKaiState';
 import { docs } from '../config';
+import { ExternalLink } from './ExternalLink';
 import { MetadataQuery } from '../queries/Metadata';
 import {
-    TestInfo,
-    useOnceCall,
-    TestDependency,
-    TestKnownIssues,
     MetadataQueryResult,
+    TestDependency,
+    TestInfo,
+    TestKnownIssues,
+    useOnceCall,
 } from './MetadataInfo';
 
 export interface PropsWithGreenwaveState {
-    state: ChildGreenwave;
+    state: StateGreenwaveType;
 }
 
 export interface WaiveButtonProps {
@@ -394,7 +394,7 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
 };
 
 interface BodyForGreenwaveStateProps {
-    state: ChildGreenwave;
+    state: StateGreenwaveType;
     artifact: Artifact;
     isVisible: boolean;
 }
@@ -634,9 +634,12 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
     </Alert>
 );
 
-export type AChildGreenwaveProps = ArtifactStateProps & PropsWithGreenwaveState;
+export type ArtifactGreenwaveStateProps = ArtifactStateProps &
+    PropsWithGreenwaveState;
 
-export const AChildGreenwave: React.FC<AChildGreenwaveProps> = (props) => {
+export const ArtifactGreenwaveState: React.FC<ArtifactGreenwaveStateProps> = (
+    props,
+) => {
     const {
         state,
         artifact,

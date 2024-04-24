@@ -40,7 +40,7 @@ import {
 
 import styles from '../custom.module.css';
 import { LinkifyNewTab } from '../utils/utils';
-import { mkLabel, AChildDetailsEntry } from './AChild';
+import { mkLabel, StateDetailsEntry } from './ArtifactState';
 import {
     Metadata,
     MetadataContact,
@@ -282,14 +282,14 @@ export const TestInfo: React.FC<TestInfoProps> = (props) => {
     const toRender = (
         <Flex>
             <FlexItem>
-                <AChildDetailsEntry caption="Test info">
+                <StateDetailsEntry caption="Test info">
                     <Flex direction={{ default: 'column' }}>
                         <FlexItem key="1">
                             <Contacts contact={contact} />
                             <Description description={description} />
                         </FlexItem>
                     </Flex>
-                </AChildDetailsEntry>
+                </StateDetailsEntry>
             </FlexItem>
         </Flex>
     );
@@ -314,13 +314,13 @@ export const TestKnownIssues: React.FC<TestKnownIssuesProps> = (props) => {
     const toRender = (
         <Flex>
             <FlexItem>
-                <AChildDetailsEntry caption="Test info">
+                <StateDetailsEntry caption="Test info">
                     <Flex direction={{ default: 'column' }}>
                         <FlexItem key="1">
                             <KnownIssues issues={known_issues} />
                         </FlexItem>
                     </Flex>
-                </AChildDetailsEntry>
+                </StateDetailsEntry>
             </FlexItem>
         </Flex>
     );
@@ -345,13 +345,13 @@ export const TestDependency: React.FC<TestDependencyProps> = (props) => {
     const toRender = (
         <Flex>
             <FlexItem>
-                <AChildDetailsEntry caption="Test dependency">
+                <StateDetailsEntry caption="Test dependency">
                     <Flex direction={{ default: 'column' }}>
                         <FlexItem key="1">
                             <Dependency dependency={dependency} />
                         </FlexItem>
                     </Flex>
-                </AChildDetailsEntry>
+                </StateDetailsEntry>
             </FlexItem>
         </Flex>
     );
