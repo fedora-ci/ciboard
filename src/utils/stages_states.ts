@@ -84,7 +84,6 @@ export const mkStagesAndStates = (
     const stagesStates: Array<AChildrenByStageName> = [];
     // Preprocess broker-messages into a list sorted by stage and state.
     const testMsgStagesStates = aChildrenByStageName(artifact);
-    console.log('test stage_states', testMsgStagesStates);
     stagesStates.push(...testMsgStagesStates);
     /*
      * Greenwave always produces structured-reply, check if this reply makes any sense.
@@ -109,14 +108,12 @@ export const mkStagesAndStates = (
      * Merge all the results into a list of triples with the structure
      *   [stage, state, [result1, ..., resultN]]
      */
-    console.log('XXX stage_states', stagesStates);
     const stageStatesArray = mkStageStatesArray(stagesStates);
-    console.log('XXX stage_states_array', stageStatesArray);
     /*
-     * Merge testMsgAChild and Greenwave results corresponding to the same test into a single
+     * Merge Kai and Greenwave results corresponding to the same test into a single
      * consolidated structure.
      */
-    mergeTestMsgAndGreenwaveAChild(stageStatesArray);
+    mergeKaiAndGreenwaveState(stageStatesArray);
     /*
      * Remove superfluous items left over after the merge.
      */
@@ -139,7 +136,7 @@ const filterByStageName = (
         ([stageName, _stateName, _state]) => stageName === stage,
     );
 
-const getTestMsgAChild = (
+const getKaiState = (
     states: StageStateAChildren[],
     stateNameReq: TestMsgStateName,
     runUrl: string,
@@ -152,24 +149,21 @@ const getTestMsgAChild = (
     );
     if (_.isNil(s)) return;
     const [_stageName, _stateName, aChildrenTestMsg] = s;
-    const testMsgAChild = _.find(
-        aChildrenTestMsg as AChildTestMsg[],
-        (aChild) => {
-            /* this is broken and should be removed */
-            const testMsg = getTestMsgBody(aChild);
-            const theSameRefUrl = runUrl === testMsg.run.url;
-            /*
-             * Next test should stay. It must be the only 1 way to test Greenwave-to-testMsgAChild correspondance.
-             * It must be done by using by msg_id
-             * When https://issues.redhat.com/browse/OSCI-3605 is closed remove `theSameRefUrl` test.
-             */
-            const msgId_ = getMsgId(aChild);
-            const theSameMsgId =
-                _.isString(msgId) && !_.isEmpty(msgId) && msgId === msgId_;
-            return theSameMsgId || theSameRefUrl;
-        },
-    );
-    return testMsgAChild;
+    const kaiState = _.find(aChildrenTestMsg as AChildTestMsg[], (aChild) => {
+        /* this is broken and should be removed */
+        const testMsg = getTestMsgBody(aChild);
+        const theSameRefUrl = runUrl === testMsg.run.url;
+        /*
+         * Next test should stay. It must be the only 1 way to test Greenwave-to-Kai correspondance.
+         * It must be done by using by msg_id
+         * When https://issues.redhat.com/browse/OSCI-3605 is closed remove `theSameRefUrl` test.
+         */
+        const msgId_ = getMsgId(aChild);
+        const theSameMsgId =
+            _.isString(msgId) && !_.isEmpty(msgId) && msgId === msgId_;
+        return theSameMsgId || theSameRefUrl;
+    });
+    return kaiState;
 };
 
 /**
@@ -185,7 +179,7 @@ const getTestMsgAChild = (
  * This function collects all the artifact's results that we know about as
  * well as those that only Greenwave knows (or does not know) about and
  * packs them into a unified structure. In this process, at the moment the
- * results we have (from testMsgAChild) have precendence over Greenwave's info.
+ * results we have (from Kai) have precendence over Greenwave's info.
  *
  * As an example, assume that the test `x.y.z` is required for gating.
  * Until the test finishes (or the requirement is waived), it's missing
@@ -242,7 +236,6 @@ const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
         aChildren,
         'test',
     );
-    console.log('XXX aChildrenByStageName, aChildren', testStage);
     testStage = _.omitBy(testStage, (x) => _.isEmpty(x));
     if (_.some(_.values(testStage), 'length')) {
         const msgStageName: MsgStageName = 'test';
@@ -360,21 +353,19 @@ const mkStageStatesArray = (
     return stageStatesArray;
 };
 
-const mergeTestMsgAndGreenwaveAChild = (
+const mergeKaiAndGreenwaveState = (
     stageStatesArray: StageStateAChildren[],
 ): void => {
     /**
-     * Add testMsgAChild state to Greenwave state if both apply:
-     * 1) greenwaveState.result.outcome == testMsgAChild extended state
-     * 2) greenwaveState.result.ref_url == testMsgAChild message run.url
+     * Add Kai state to Greenwave state if both apply:
+     * 1) greenwaveState.result.outcome == Kai extended state
+     * 2) greenwaveState.result.ref_url == Kai message run.url
      */
     const greenwaveStageStates = filterByStageName(
         'greenwave',
         stageStatesArray,
     );
-    console.log('XXXXX greenwave', greenwaveStageStates);
-    const testMsgStageStates = filterByStageName('test', stageStatesArray);
-    console.log('XXXXX2 greenwave', stageStatesArray);
+    const kaiStageStates = filterByStageName('test', stageStatesArray);
     _.forEach(greenwaveStageStates, ([_stageName, _stateName, children]) => {
         _.forEach(children as AChildGreenwave[], (greenwaveState, index) => {
             const outcome = greenwaveState.result?.outcome;
@@ -383,18 +374,18 @@ const mergeTestMsgAndGreenwaveAChild = (
             if (_.isNil(outcome) || _.isNil(refUrl)) {
                 return;
             }
-            const testMsgAChild = getTestMsgAChild(
-                testMsgStageStates,
+            const kaiState = getKaiState(
+                kaiStageStates,
                 _.toLower(outcome) as TestMsgStateName,
                 refUrl,
                 msgId,
             );
-            if (_.isNil(testMsgAChild)) {
+            if (_.isNil(kaiState)) {
                 return;
             }
             const newState: AChildGreenwaveAndTestMsg = {
                 gs: greenwaveState,
-                ms: testMsgAChild,
+                ms: kaiState,
             };
             children[index] = newState;
         });
@@ -408,7 +399,7 @@ const minimizeStagesStates = (
     stageStatesArray: StageStateAChildren[],
 ): void => {
     const greenwave = filterByStageName('greenwave', stageStatesArray);
-    // Consolidate all Greenwave and Greenwave+testMsgAChild results into a single array.
+    // Consolidate all Greenwave and Greenwave+Kai results into a single array.
     const greenwaveTestNames: string[] = [];
     _.forEach(greenwave, ([_stageName, _stateName, states]) =>
         _.forEach(states, (state) => {
@@ -420,7 +411,7 @@ const minimizeStagesStates = (
             }
         }),
     );
-    // Remove testMsgAChild results that appear in the above array.
+    // Remove Kai results that appear in the above array.
     const test = filterByStageName('test', stageStatesArray);
     _.forEach(test, ([_stageName, _stateName, children]) => {
         _.remove(children, (child) => {
@@ -454,17 +445,10 @@ export const aChildrenByStateName = (
 ): AChildrenByStateName => {
     const aChildrenByState: AChildrenByStateName = {};
     /** statesNames: ['running', 'complete', .... ] */
-    const presentStates = _.map(aChildren, (aChild) => {
-        if (!isAChildSchemaMsg(aChild)) {
-            return;
-        }
-        return getMsgStateName(aChild);
-    });
     const statesNames: StateName[] = _.intersection<StateName>(
-        _.compact(presentStates),
+        _.map(aChildren, _.flow(_.identity, _.partialRight(_.get, 'msgState'))),
         KnownMsgStates,
     );
-    console.log('XXXX statesNames', presentStates, statesNames, aChildren);
     _.forEach(statesNames, (msgStateName) => {
         /**
          * For complete test states, count failed, passed and other events

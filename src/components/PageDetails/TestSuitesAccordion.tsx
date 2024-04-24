@@ -64,20 +64,18 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
     let suites: TestSuite[] | undefined;
     if (!artifact || !selectedTest) return null;
 
-    console.log('selected', selectedTest);
     const aChildren = getArtifactChildren(artifact);
     const aChild = _.find(
         /** this is a bit strange, that received data doesn't propage to original
          * artifact object. Original artifact.states objects stays old */
         aChildren,
         (child) => {
+            console.log('XXXXXX', child);
             const msgId = getMsgId(child);
             return msgId === selectedTest.messageId;
         },
     );
-    console.log('IS TESTIN', aChild);
     if (!_.isNil(aChild) && isAChildSchemaMsg(aChild)) {
-        console.log('IS SCHEMA MS');
         const msgBody = getMsgBody(aChild);
         const xunitRaw = getXunit(msgBody as BrokerSchemaMsgBody);
         if (xunitRaw && !_.isEmpty(xunitRaw)) {

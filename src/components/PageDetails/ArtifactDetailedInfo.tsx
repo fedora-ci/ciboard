@@ -100,8 +100,8 @@ import {
     mkCommitHashFromSource,
     mkLinkPkgsDevelFromSource,
 } from '../../utils/utils';
-import { ExternalLink } from '../ExternalLink';
 import { secondsToTimestampWithTz } from '../../utils/timeUtils';
+import { ExternalLink } from '../ExternalLink';
 
 interface NoDataProps {
     show: boolean;
