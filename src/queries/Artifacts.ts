@@ -230,39 +230,40 @@ export interface ArtifactsCompleteQueryData {
     };
 }
 
-/*
-                    sortBy,
-                    artTypes,
-                    newerThen,
-                    queryString,
-                    paginationSize,
-                    paginationFrom,
-*/
-
 export const ArtifactsCompleteQuery = gql`
     query ArtifactsComplete(
-        $sortBy: String
-        $artTypes: [String]
-        $newerThen: String
-        $queryString: String
-        $paginationSize: Int
-        $paginationFrom: Int
+        $limit: Int
+        $atype: String!
+        $aid_offset: String
+        $dbFieldName1: String
+        $dbFieldValues1: [String]
+        $dbFieldName2: String
+        $dbFieldValues2: [String]
+        $options: ArtifactsOptionsInputType
     ) {
         artifacts(
-            sortBy: $sortBy
-            artTypes: $artTypes
-            newerThen: $newerThen
-            queryString: $queryString
-            paginationSize: $paginationSize
-            paginationFrom: $paginationFrom
+            atype: $atype
+            limit: $limit
+            options: $options
+            aid_offset: $aid_offset
+            dbFieldName1: $dbFieldName1
+            dbFieldValues1: $dbFieldValues1
+            dbFieldName2: $dbFieldName2
+            dbFieldValues2: $dbFieldValues2
         ) {
-            hits {
-                hit_info
-                hit_source
+            has_next
+            artifacts {
+                ...MainFragment
+                ...StatesFragment
+                ...EtaStatesFragment
+                ...GreenwaveDecisionFragment
             }
-            hits_info
         }
     }
+    ${mainFragment}
+    ${statesFragment}
+    ${etaStatesFragment}
+    ${greenwaveDecisionFragment}
 `;
 
 export const ArtifactsListByFiltersQuery = gql`

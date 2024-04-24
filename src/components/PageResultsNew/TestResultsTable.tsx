@@ -2,7 +2,6 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -189,7 +188,9 @@ const isRequiredAwaited = ({ required, status, waiver }: CiTest) =>
  * considered failing, `false` or `undefined` otherwise.
  */
 const isRequiredFailed = ({ required, status, waiver }: CiTest) =>
-    required && (status === 'error' || status === 'failed') && !waiver;
+    required &&
+    (status === 'error' || status === 'failed') &&
+    !waiver;
 
 /**
  * Passed tests are those that have either 'passed' or 'info' status OR

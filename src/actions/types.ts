@@ -18,10 +18,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import React from 'react';
 import { AlertVariant } from '@patternfly/react-core';
-
-import { Artifact } from '../artifact';
+import { Artifact, StateType } from '../artifact';
+import React from 'react';
 
 export const SST_PAGE = 'SST_PAGE';
 export const SST_MENU = 'SUBMIT_MENU';
@@ -39,13 +38,12 @@ export const ARTIFACTS_LOADING = 'ARTIFACTS_LOADING';
  * States
  */
 
-export interface IStateArtifactsQuery {
-    page: number;
-    sortBy: string | undefined;
-    artTypes: string[] | undefined;
-    newerThen: string | undefined;
-    queryString: string | undefined;
-    paginationSize: number;
+export interface IStateFilters {
+    type: string;
+    active: string[];
+    options: {
+        skipScratch: boolean;
+    };
 }
 
 export interface IStateAlerts {
@@ -57,16 +55,16 @@ export interface IStateAlerts {
 }
 
 export interface IStateWaiver {
-    reason: string;
     artifact?: Artifact;
+    reason: string;
     testcase?: string;
     timestamp?: number;
     waiveError: string;
 }
 
 export interface IStateAuth {
-    nameID: string;
     displayName: string;
+    nameID: string;
 }
 
 /*
@@ -81,6 +79,19 @@ export interface PushAlertPayload {
 
 export interface PopAlertPayload {
     key: number;
+}
+
+export interface AddFilterPayload {
+    newval: string;
+    type: string;
+}
+
+export interface DeleteFilterPayload {
+    delval: string;
+}
+
+export interface SetOptionsForFiltersPayload {
+    skipScratch: boolean;
 }
 
 export interface GASetSearchOptionsPayload {
@@ -99,12 +110,12 @@ export interface CreateWaiverPayload {
 }
 
 export interface SubmitWaiverPayload {
-    reason: string;
     /* Cannot send waiver */
     waiveError: string;
+    reason: string;
 }
 
 export interface FetchUserPayload {
-    nameID: string;
     displayName: string;
+    nameID: string;
 }

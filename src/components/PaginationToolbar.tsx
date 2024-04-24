@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,37 +18,37 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import React, { useEffect } from 'react';
-import { Pagination } from '@patternfly/react-core';
-import { useApolloClient } from '@apollo/client';
-import { useSearchParams } from 'react-router-dom';
+import React, { MouseEventHandler } from 'react';
+import {
+    Text,
+    Button,
+    Toolbar,
+    Spinner,
+    TextContent,
+    ToolbarItem,
+    ToolbarGroup,
+    ToolbarContent,
+} from '@patternfly/react-core';
+import { AngleLeftIcon, AngleRightIcon } from '@patternfly/react-icons';
 
-import { useAppSelector, useAppDispatch } from '../hooks';
-import { actLoad, actPage, actPaginationSize } from './../actions';
-import { InitialState } from '../slices/artifactsQuerySlice';
+export interface PaginationToolbarProps {
+    isLoading?: boolean;
+    currentPage: number;
+    onClickLoadPrev: MouseEventHandler;
+    onClickLoadNext: MouseEventHandler;
+    loadPrevIsDisabled: boolean;
+    loadNextIsDisabled: boolean;
+}
 
-/***  CAN BE REMOVED
-
-export function PaginationToolbar2(props: PaginationToolbarProps) {
-    const dispatch = useAppDispatch();
-    const client = useApolloClient();
-    const artifacts = useAppSelector((state) => state.artifacts);
-    const artifactsQuery = useAppSelector((state) => state.artifactsQuery);
-    const isLoading = artifacts.isLoading;
-    const currentPage = artifactsQuery.page;
-    const totalPages = artifacts.totalHits / artifactsQuery.paginationSize;
-    const loadNextIsEnabled = totalPages > artifactsQuery.page;
-    const loadPrevIsEnabled = totalPages && artifactsQuery.page > 1;
-
-    const onClickLoadNext = () => {
-        dispatch(actPageNext());
-        dispatch(actLoad(client));
-    };
-    const onClickLoadPrev = () => {
-        dispatch(actPagePrev());
-        dispatch(actLoad(client));
-    };
-
+export function PaginationToolbar(props: PaginationToolbarProps) {
+    const {
+        isLoading,
+        currentPage,
+        onClickLoadPrev,
+        onClickLoadNext,
+        loadPrevIsDisabled,
+        loadNextIsDisabled,
+    } = props;
     return (
         <Toolbar style={{ background: 'inherit' }} id="toolbar-top">
             <ToolbarContent>
@@ -64,7 +64,7 @@ export function PaginationToolbar2(props: PaginationToolbarProps) {
                         <Button
                             variant="tertiary"
                             onClick={onClickLoadPrev}
-                            isDisabled={!loadPrevIsEnabled}
+                            isDisabled={loadPrevIsDisabled}
                         >
                             <AngleLeftIcon />
                         </Button>
@@ -78,7 +78,7 @@ export function PaginationToolbar2(props: PaginationToolbarProps) {
                         <Button
                             variant="tertiary"
                             onClick={onClickLoadNext}
-                            isDisabled={!loadNextIsEnabled}
+                            isDisabled={loadNextIsDisabled}
                         >
                             <AngleRightIcon />
                         </Button>
@@ -86,64 +86,5 @@ export function PaginationToolbar2(props: PaginationToolbarProps) {
                 </ToolbarGroup>
             </ToolbarContent>
         </Toolbar>
-    );
-}
-
-*/
-
-export interface PaginationToolbarProps {}
-export function PaginationToolbar(props: PaginationToolbarProps) {
-    const dispatch = useAppDispatch();
-    const client = useApolloClient();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const artifacts = useAppSelector((state) => state.artifacts);
-    const { totalHits } = artifacts;
-    const artifactsQuery = useAppSelector((state) => state.artifactsQuery);
-    const { page, paginationSize } = artifactsQuery;
-    const currentPage = artifactsQuery.page;
-
-    useEffect(() => {
-        if (InitialState.page === page) {
-            searchParams.delete('page');
-        } else {
-            searchParams.set('page', `${page}`);
-        }
-        if (InitialState.paginationSize === paginationSize) {
-            searchParams.delete('perpage');
-        } else {
-            searchParams.set('perpage', `${paginationSize}`);
-        }
-        setSearchParams(searchParams.toString());
-    }, [page, paginationSize, searchParams, setSearchParams]);
-
-    const onSetPage = (
-        _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
-        newPage: number,
-    ) => {
-        dispatch(actPage(newPage));
-        dispatch(actLoad(client));
-    };
-
-    const onPerPageSelect = (
-        _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
-        newPerPage: number,
-        newPage: number,
-    ) => {
-        dispatch(actPaginationSize(newPerPage));
-        dispatch(actPage(newPage));
-        dispatch(actLoad(client));
-    };
-
-    return (
-        <Pagination
-            isSticky
-            itemCount={totalHits}
-            perPage={paginationSize}
-            page={currentPage}
-            onSetPage={onSetPage}
-            widgetId="pagination menu bar"
-            onPerPageSelect={onPerPageSelect}
-            ouiaId="PaginationTop"
-        />
     );
 }

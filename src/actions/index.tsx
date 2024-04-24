@@ -26,14 +26,13 @@ import { GASetSearchOptionsPayload } from './types';
 import { AppDispatch, GetState } from '../reduxStore';
 import * as alertsSlice from '../slices/alertsSlice';
 import * as authSlice from '../slices/authSlice';
+import * as filtersSlice from '../slices/filtersSlice';
 import * as gatingTestsFormSlice from '../slices/gatingTestsFormSlice';
 import * as waiveSlice from '../slices/waiveSlice';
 import { Artifact, PayloadRPMBuildType } from '../artifact';
 import { greenwave } from '../config';
 import WaiverdbNewMutation from '../mutations/WaiverdbNew';
-
-export * from '../slices/artifactsSlice';
-export * from '../slices/artifactsQuerySlice';
+import { db_field_from_atype } from '../utils/artifactUtils';
 
 export const cleanseGatingFormState = () => gatingTestsFormSlice.cleanse();
 
@@ -74,6 +73,52 @@ export const pushAlert = (
             }, 3000);
         }
         dispatch(alertsSlice.pushAlert({ key, variant, title }));
+    };
+};
+
+export const addFilter = (newval = '', type = '') => {
+    return async (dispatch: AppDispatch, getState: GetState) => {
+        const { filters } = getState();
+        const currentType = filters.type;
+        const activeFilters = filters.active;
+        const foreignRegex = /[^\u0000-\u007f]/;
+        if (foreignRegex.test(newval)) {
+            console.log('Ignoring filter with no-latin character: %s', newval);
+            return null;
+        }
+        console.log('%O', { newval, type });
+        if (!_.has(db_field_from_atype, type)) {
+            console.log('Ignoring filter with unsupported type: %s', type);
+            return null;
+        }
+        console.log('Add new filter', type, newval);
+        if (type !== currentType) {
+            /** new epoch */
+        } else if (_.includes(activeFilters, newval)) {
+            console.log('Do not add existing filter', newval);
+            return null;
+        }
+        dispatch(filtersSlice.addFilter({ newval, type }));
+    };
+};
+
+export const deleteFilter = (delval = '') =>
+    filtersSlice.deleteFilter({ delval });
+
+export const setOptionsForFilters = (newOptions: any) => {
+    return async (dispatch: AppDispatch, getState: GetState) => {
+        const { filters } = getState();
+        const currentOptions = filters.options;
+        const optionsSame = _.isMatch(currentOptions, newOptions);
+        if (optionsSame) {
+            return null;
+        }
+        const type = filters.type;
+        const activeFilters = filters.active;
+        dispatch(filtersSlice.setOptions(newOptions));
+        for (const filter of activeFilters) {
+            dispatch(addFilter(filter, type));
+        }
     };
 };
 
