@@ -42,11 +42,11 @@ import {
     StateName,
     getThreadID,
     ArtifactChild,
-    isAChildTestMsg,
+    isChildTestMsg,
     getTestMsgBody,
     getTestcaseName,
-    isAChildGreenwave,
-    isAChildGreenwaveAndTestMsg,
+    isGreenwaveChild,
+    isGreenwaveAndTestMsg,
 } from '../types';
 
 type AChildDetailsEntryPropsWithChildren =
@@ -82,10 +82,10 @@ interface AChildLinkProps {
 export const AChildLink: React.FC<AChildLinkProps> = (props) => {
     const { aChild, artifactDashboardUrl } = props;
     let href: string;
-    if (isAChildGreenwave(aChild) || isAChildGreenwaveAndTestMsg(aChild)) {
+    if (isGreenwaveChild(aChild) || isGreenwaveAndTestMsg(aChild)) {
         const testcase = getTestcaseName(aChild);
         href = `${artifactDashboardUrl}?focus=tc:${testcase}`;
-    } else if (isAChildTestMsg(aChild)) {
+    } else if (isChildTestMsg(aChild)) {
         const msgBody = getTestMsgBody(aChild);
         const thread_id = getThreadID({ brokerMsgBody: msgBody });
         href = `${artifactDashboardUrl}?focus=id:${thread_id}`;
@@ -158,13 +158,13 @@ export interface AChildProps {
 
 export const AChild: React.FC<AChildProps> = (props) => {
     const { aChild } = props;
-    if (isAChildGreenwaveAndTestMsg(aChild)) {
+    if (isGreenwaveAndTestMsg(aChild)) {
         return ArtifactGreenwaveTestMsgState(
             props as ArtifactGreenwaveTestMsgStateProps,
         );
-    } else if (isAChildGreenwave(aChild)) {
+    } else if (isGreenwaveChild(aChild)) {
         return AChildGreenwave(props as AChildGreenwaveProps);
-    } else if (isAChildTestMsg(aChild)) {
+    } else if (isChildTestMsg(aChild)) {
         return AChildTestMsg(props as ArtifactKaiStateProps);
     }
     return <>Cannot get test info</>;

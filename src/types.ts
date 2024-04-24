@@ -24,7 +24,10 @@ import { mappingDatagrepperUrl, config } from './config';
 
 /** 
  * XXXXXXXXXXX ????
-
+export type ChildErrataToolAutomation = {
+    broker_msg_body: EtaBrokerMessages;
+    kai_state: DbErrataToolAutomationStateType;
+};
 // WAS: DbErrataToolAutomationStateType
 export interface EtaStateType {
     msg_id: string;
@@ -523,14 +526,13 @@ export type ComposeType = 'gate' | 'production' | 'testing';
 
 export interface ArtifactBase {
     hitInfo: HitInfo;
-    children: AChildrenMsg;
+    children: ArtifactChildren;
     hitSource: HitSourceArtifact;
     component_mapping?: ComponentMapping;
     greenwaveDecision?: GreenwaveDecisionReply;
     resultsdb_testscase: number[];
 }
 
-// XXX Artifact -> begin
 export type HitSourceArtifact =
     | HitSourceArtifactRpm
     | HitSourceArtifactMbs
@@ -798,52 +800,53 @@ export type StateName =
     /* greenwave result */
     'additional-tests' | TestMsgStateName | GreenwaveRequirementTypes;
 
-export interface AChildGreenwaveAndTestMsg {
+export interface ChildGreenwaveAndTestMsg {
     /* greenwave child */
-    gs: AChildGreenwave;
+    gs: ChildGreenwave;
     /* message child */
-    ms: AChildTestMsg;
+    ms: ChildTestMsg;
 }
 
-export interface AChildrenMsg {
-    hits: AChildMsg[];
-    hitsInfo: HitsInfo;
-}
-
-export type AChildMsg = AChildTestMsg | AChildEtaMsg;
+export type ChildMsg = ChildTestMsg | ChildEtaMsg;
 export type AChildTest =
-    | AChildTestMsg
-    | AChildGreenwave
-    | AChildGreenwaveAndTestMsg;
+    | ChildTestMsg
+    | ChildGreenwave
+    | ChildGreenwaveAndTestMsg;
 
+// XXX ? ArtifactChild vs ArtifactChildren !!!!!!!!!
 export type ArtifactChild =
-    | AChildMsg
-    | AChildGreenwave
-    | AChildGreenwaveAndTestMsg;
+    | ChildMsg
+    | ChildGreenwave
+    | ChildGreenwaveAndTestMsg;
 
 // WAS: ChildByCategoryType, StatesByCategoryType
-export type AChildrenByStateName = {
+export type ChildrenByStateName = {
     [key in StateName]?: ArtifactChild[];
 };
 
-export interface AChildGreenwave {
+export interface ChildGreenwave {
     waiver?: GreenwaveWaiveType;
     result?: GreenwaveResult;
     testcase: string;
     requirement?: GreenwaveRequirement;
 }
 
+export interface ArtifactChildren {
+    hits: ChildMsg[];
+    hitsInfo: HitsInfo;
+}
+
 export interface HitsInfo {
     total: { value: number };
 }
 
-export interface AChildTestMsg {
+export interface ChildTestMsg {
     hitInfo: HitInfo;
     hitSource: HitSourceTest;
     customMetadata?: Metadata;
 }
 
-export interface AChildEtaMsg {
+export interface ChildEtaMsg {
     hitInfo: HitInfo;
     hitSource: HitSourceEta;
 }
@@ -1054,33 +1057,33 @@ export function isArtifactScratch(artifact: Artifact): boolean {
     return false;
 }
 
-export function isAChildMsg(
+export function isChildMsg(
     child: ArtifactChild | undefined,
-): child is AChildMsg {
+): child is ChildMsg {
     return _.has(child, 'hitInfo');
 }
 
 export function isChildEtaMsg(
     child: ArtifactChild | undefined,
-): child is AChildEtaMsg {
+): child is ChildEtaMsg {
     return _.has(child, 'hitSource.etaCiRunUrl');
 }
 
-export function isAChildTestMsg(
+export function isChildTestMsg(
     child: ArtifactChild | undefined,
-): child is AChildTestMsg {
+): child is ChildTestMsg {
     return _.has(child, 'hitSource.msgState');
 }
 
-export function isAChildGreenwave(
+export function isGreenwaveChild(
     child: ArtifactChild | undefined,
-): child is AChildGreenwave {
+): child is ChildGreenwave {
     return _.has(child, 'testcase');
 }
 
-export function isAChildGreenwaveAndTestMsg(
+export function isGreenwaveAndTestMsg(
     child: ArtifactChild | undefined,
-): child is AChildGreenwaveAndTestMsg {
+): child is ChildGreenwaveAndTestMsg {
     return _.has(child, 'gs') && _.has(child, 'ms');
 }
 
@@ -1088,27 +1091,23 @@ export function isAChildGreenwaveAndTestMsg(
  * Getters
  */
 
-export const getMsgBody = (aChild: AChildMsg): BrokerMsgBody => {
+export const getMsgBody = (aChild: ChildMsg): BrokerMsgBody => {
     return aChild.hitSource.rawData.message.brokerMsgBody;
 };
 
-export const getMsgTimestamp = (aChild: AChildMsg): number => {
+export const getMsgTimestamp = (aChild: ChildMsg): number => {
     return aChild.hitSource['@timestamp'];
 };
 
-export const getMsgVersion = (aChild: AChildTestMsg): string => {
+export const getMsgVersion = (aChild: ChildTestMsg): string => {
     return aChild.hitSource.rawData.message.brokerMsgBody.version;
 };
 
-export const getEtaMsgBody = (aChild: AChildEtaMsg): BrokerEtaMsg => {
+export const getTestMsgBody = (aChild: ChildTestMsg): BrokerTestMsg => {
     return aChild.hitSource.rawData.message.brokerMsgBody;
 };
 
-export const getTestMsgBody = (aChild: AChildTestMsg): BrokerTestMsg => {
-    return aChild.hitSource.rawData.message.brokerMsgBody;
-};
-
-export const getMsgId = (aChild: AChildMsg): BrokerMsgId => {
+export const getMsgId = (aChild: ChildMsg): BrokerMsgId => {
     return aChild.hitSource.rawData.message.brokerMsgId;
 };
 
@@ -1122,27 +1121,9 @@ export const getAType = (artifact: Artifact): ArtifactType => {
     return artifact.hitSource.aType;
 };
 
-export const getANvr = (artifact: Artifact): string | undefined => {
-    if (isArtifactRpm(artifact)) {
-        return _.get(artifact, 'hitSource.nvr');
-    }
-};
-
-export const getABuildId = (artifact: Artifact): string | undefined => {
-    if (isArtifactMbs(artifact) || isArtifactRpm(artifact))
-        return artifact.hitSource.buildId;
-};
-
-export const getAEtaChildren = (artifact: Artifact): AChildEtaMsg[] => {
-    const etaChildren = _.filter(artifact.children.hits, (child) =>
-        isChildEtaMsg(child),
-    ) as AChildEtaMsg[];
-    return etaChildren;
-};
-
 // XXX: testStateMsg
 export const getThreadID = (args: {
-    childTestMsg?: AChildTestMsg;
+    childTestMsg?: ChildTestMsg;
     brokerMsgBody?: BrokerTestMsg;
 }) => {
     const { childTestMsg, brokerMsgBody } = args;
@@ -1175,7 +1156,7 @@ export function getDatagrepperUrl(
 // was: getKaiExtendedStatus
 // XXX: rename to getMsgExtendedState
 export function getTestMsgExtendedStatus(
-    aChild: AChildTestMsg,
+    aChild: ChildTestMsg,
 ): TestMsgStateName {
     const testMsg = getTestMsgBody(aChild);
     if (MSG_V_0_1.isMsg(testMsg) && 'status' in testMsg) {
@@ -1191,13 +1172,11 @@ export function getTestMsgExtendedStatus(
     return aChild.hitSource.msgState;
 }
 
-export const getMsgStageName = (aChild: AChildTestMsg): MsgStageName => {
+export const getMsgStageName = (aChild: ChildTestMsg): MsgStageName => {
     return aChild.hitSource.msgStage;
 };
 
-export const getTestMsgStateName = (
-    aChild: AChildTestMsg,
-): TestMsgStateName => {
+export const getTestMsgStateName = (aChild: ChildTestMsg): TestMsgStateName => {
     return aChild.hitSource.msgState;
 };
 
@@ -1247,7 +1226,7 @@ export const getArtifacIssuer = (artifact: Artifact): string | null => {
 
 export const getTestcaseName = (child: ArtifactChild): string => {
     let testCaseName = 'unknonwn testcase name';
-    if (isAChildTestMsg(child)) {
+    if (isChildTestMsg(child)) {
         const { hitSource } = child;
         const { testCaseName: tcn } = hitSource;
         const brokerMsgBody = getTestMsgBody(child);
@@ -1267,10 +1246,10 @@ export const getTestcaseName = (child: ArtifactChild): string => {
             }
         }
     }
-    if (isAChildGreenwave(child) && child.testcase) {
+    if (isGreenwaveChild(child) && child.testcase) {
         testCaseName = child.testcase;
     }
-    if (isAChildGreenwaveAndTestMsg(child) && child.gs.testcase) {
+    if (isGreenwaveAndTestMsg(child) && child.gs.testcase) {
         testCaseName = child.gs.testcase;
     }
     if (_.isUndefined(testCaseName)) {
@@ -1409,7 +1388,7 @@ export function getUmbDocsUrl(
  * @param child Gating state response from Greenwave.
  * @returns URL to documentation as provided by the CI system or `undefined`.
  */
-export const getGreenwaveDocsUrl = (child: AChildGreenwave) =>
+export const getGreenwaveDocsUrl = (child: ChildGreenwave) =>
     child.result?.testcase.ref_url;
 
 /**
@@ -1419,14 +1398,14 @@ export const getGreenwaveDocsUrl = (child: AChildGreenwave) =>
  */
 export function getDocsUrl(child: ArtifactChild): string | undefined {
     // Prefer URL from UMB message, if present.
-    if (isAChildTestMsg(child)) {
+    if (isChildTestMsg(child)) {
         const testMsg = getTestMsgBody(child);
         return getUmbDocsUrl(testMsg);
     }
-    if (isAChildGreenwave(child)) {
+    if (isGreenwaveChild(child)) {
         return getGreenwaveDocsUrl(child);
     }
-    if (isAChildGreenwaveAndTestMsg(child)) {
+    if (isGreenwaveAndTestMsg(child)) {
         const testMsg = getTestMsgBody(child.ms);
         let docsUrl = getUmbDocsUrl(testMsg);
         if (!docsUrl) docsUrl = getGreenwaveDocsUrl(child.gs);
@@ -1441,14 +1420,14 @@ export function getDocsUrl(child: ArtifactChild): string | undefined {
  */
 export function getRerunUrl(child: ArtifactChild): string | undefined {
     // Prefer URL from UMB message, if present.
-    if (isAChildTestMsg(child)) {
+    if (isChildTestMsg(child)) {
         const testMsg = getTestMsgBody(child);
         return testMsg.run.rebuild;
     }
-    if (isAChildGreenwave(child)) {
+    if (isGreenwaveChild(child)) {
         return child.result?.data.rebuild?.[0];
     }
-    if (isAChildGreenwaveAndTestMsg(child)) {
+    if (isGreenwaveAndTestMsg(child)) {
         const testMsg = getTestMsgBody(child.ms);
         let rerunUrl = testMsg.run.rebuild;
         // Try to fall back to URL stored in ResultsDB.

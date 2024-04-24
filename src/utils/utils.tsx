@@ -48,12 +48,12 @@ import {
     isArtifactRpm,
     BrokerTestMsg,
     ArtifactChild,
-    AChildGreenwave,
+    ChildGreenwave,
     DistGitInstance,
     MbsInstanceType,
-    isAChildGreenwave,
+    isGreenwaveChild,
+    isGreenwaveAndTestMsg,
     GreenwaveRequirementTypes,
-    isAChildGreenwaveAndTestMsg,
     isArtifactRedhatContainerImage,
     AChildTest,
 } from '../types';
@@ -516,23 +516,22 @@ const SATISFIED_REQUIREMENT_TYPES: GreenwaveRequirementTypes[] = [
     'test-result-passed',
 ];
 
-const isRequirementSatisfied = (aChild: AChildGreenwave): boolean => {
-    if (!aChild.requirement) {
+const isRequirementSatisfied = (child: ChildGreenwave): boolean => {
+    if (!child.requirement) {
         return true;
     }
-    return _.includes(SATISFIED_REQUIREMENT_TYPES, aChild.requirement?.type);
+    return _.includes(SATISFIED_REQUIREMENT_TYPES, child.requirement?.type);
 };
 
 /**
  * Should we display a waive button for this result in the dashboard?
  * Show the button only if the test is blocking gating.
  * Greenwave shows all known tests from ResultsDB.
- * @param aChild The state object of the test result in question.
+ * @param child The state object of the test result in question.
  */
-export const isResultWaivable = (aChild: ArtifactChild): boolean => {
-    if (isAChildGreenwaveAndTestMsg(aChild))
-        return !isRequirementSatisfied(aChild.gs);
-    if (isAChildGreenwave(aChild)) return !isRequirementSatisfied(aChild);
+export const isResultWaivable = (child: ArtifactChild): boolean => {
+    if (isGreenwaveAndTestMsg(child)) return !isRequirementSatisfied(child.gs);
+    if (isGreenwaveChild(child)) return !isRequirementSatisfied(child);
     return false;
 };
 
@@ -546,18 +545,17 @@ const MISSING_REQUIREMENT_TYPES: GreenwaveRequirementTypes[] = [
     'test-result-missing-waived',
 ];
 
-const isRequirementMissing = (aChild: AChildGreenwave): boolean =>
-    _.includes(MISSING_REQUIREMENT_TYPES, aChild.requirement?.type);
+const isRequirementMissing = (child: ChildGreenwave): boolean =>
+    _.includes(MISSING_REQUIREMENT_TYPES, child.requirement?.type);
 
 /**
  * Check if the Greenwave state is missing the required test result.
  * @param child The Greenwave state to check.
  * @returns `true` if the required result is missing in Greenwave, `false` otherwise.
  */
-export const isResultMissing = (aChild: AChildTest): boolean => {
-    if (isAChildGreenwaveAndTestMsg(aChild))
-        return isRequirementMissing(aChild.gs);
-    if (isAChildGreenwave(aChild)) return isRequirementMissing(aChild);
+export const isResultMissing = (child: AChildTest): boolean => {
+    if (isGreenwaveAndTestMsg(child)) return isRequirementMissing(child.gs);
+    if (isGreenwaveChild(child)) return isRequirementMissing(child);
     return false;
 };
 
@@ -589,7 +587,7 @@ export const LinkifyNewTab = (props: LinkifyNewTabProps) => (
     <Linkify options={{ render: renderNewTabLink }}>{props.children}</Linkify>
 );
 
-// XXX REMOVED
+// REMOVED
 
 /**
 export const nameFieldForType = (type: ArtifactType) => {

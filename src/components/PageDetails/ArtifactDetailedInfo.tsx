@@ -55,14 +55,7 @@ import {
 
 import styles from '../../custom.module.css';
 import { config, mappingDatagrepperUrl } from '../../config';
-import {
-    getMsgId,
-    getEtaMsgBody,
-    getAEtaChildren,
-    TabClickHandlerType,
-    ErrataAutomationBugCiStatus,
-    getABuildId,
-} from '../../types';
+import { ErrataAutomationBugCiStatus, TabClickHandlerType } from '../../types';
 import {
     ArtifactsDetailedInfoKojiTask,
     ArtifactsDetailedInfoModuleBuild,
@@ -76,25 +69,25 @@ import {
 import {
     Artifact,
     ArtifactRpm,
-    ChildEtaMsg,
     KojiBuildTag,
     kojiInstance,
-    KojiInstance,
     isArtifactMbs,
     isArtifactRpm,
     KojiBuildInfo,
     KojiBuildTagging,
+    KojiInstance,
     ErrataLinkedAdvisory,
+    StateErrataToolAutomationType,
 } from '../../types';
 import {
     LinkifyNewTab,
-    mkLinkMbsBuild,
-    mkLinkFileInGit,
-    mkLinkKojiWebTask,
-    mkLinkKojiWebTagId,
-    mkLinkKojiWebUserId,
-    mkLinkKojiWebBuildId,
     mkCommitHashFromSource,
+    mkLinkFileInGit,
+    mkLinkKojiWebBuildId,
+    mkLinkKojiWebTagId,
+    mkLinkKojiWebTask,
+    mkLinkKojiWebUserId,
+    mkLinkMbsBuild,
     mkLinkPkgsDevelFromSource,
 } from '../../utils/utils';
 import { secondsToTimestampWithTz } from '../../utils/timeUtils';
@@ -414,10 +407,12 @@ const ErrataAutomationBugCiStatusHumanReadable: {
     BUG_VERIFIED_TESTED_MISSING: 'Verified:Tested missing',
 };
 
-const getEtaMessageUrl = (artifact: Artifact, aChild: ChildEtaMsg) => {
-    const msgId = getMsgId(aChild);
+const getEtaMessageUrl = (
+    artifact: Artifact,
+    state: StateErrataToolAutomationType,
+) => {
     const brokerMsgUrl: string = new URL(
-        `id?id=${msgId}&is_raw=true&size=extra-large`,
+        `id?id=${state.kai_state.msg_id}&is_raw=true&size=extra-large`,
         mappingDatagrepperUrl[artifact.hitSource.aType],
     ).toString();
     return brokerMsgUrl;
@@ -429,8 +424,8 @@ export interface ErrataAutomationProps {
 
 export const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
     const { artifact } = props;
-    const latestAChildEta = getAEtaChildren(artifact)?.at(-1);
-    if (_.isNil(latestAChildEta)) {
+    const latestState = artifact.states_eta?.at(-1);
+    if (_.isNil(latestState)) {
         return (
             <Flex className="pf-u-p-lg">
                 <Alert
@@ -443,7 +438,7 @@ export const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
         );
     }
     const advs: JSX.Element[] = [];
-    const brokerMessage = getEtaMsgBody(latestAChildEta);
+    const brokerMessage = latestState.broker_msg_body;
     const bugs = brokerMessage.bugs;
     /*
      * FIXME: Temporary workaround until the changes from the following patch propagate:
@@ -470,7 +465,7 @@ export const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
             );
         }
     }
-    const brokerMsgUrl = getEtaMessageUrl(artifact, latestAChildEta);
+    const brokerMsgUrl = getEtaMessageUrl(artifact, latestState);
     const etaState: HelperTextItemProps['variant'] =
         brokerMessage.ci_run_outcome === 'CREATED' ? 'success' : 'warning';
     return (
@@ -532,13 +527,12 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
         setActiveTabKey(tabIndex.toString());
     };
     const instance = kojiInstance(artifact.hitSource.aType);
-    const buildId = getABuildId(artifact);
 
     const { loading, data } = useQuery<ArtifactsDetailedInfoModuleBuildData>(
         ArtifactsDetailedInfoModuleBuild,
         {
             variables: {
-                build_id: _.toNumber(buildId),
+                build_id: _.toNumber(artifact.hitSource.buildId),
                 mbs_instance: instance,
                 koji_instance: instance,
                 distgit_instance: instance,
