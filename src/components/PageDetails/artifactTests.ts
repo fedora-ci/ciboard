@@ -39,7 +39,7 @@ import {
     isAChildGreenwave,
     MetadataDependency,
     GreenwaveWaiveType,
-    getMsgExtendedStatus,
+    getTestMsgExtendedStatus,
     isAChildGreenwaveAndTestMsg,
     GreenwaveRequirementOutcome,
 } from '../../types';
@@ -238,7 +238,7 @@ function transformTest(aChild: AChild, stateName: StateName): CiTest {
          * `error.reason`, but `test.result === 'failed'`. For an example, see
          * https://datagrepper.engineering.redhat.com/id?id=ID:osci-jenkins-master-0-43277-1681457299489-309:1:1:1:1&is_raw=true&size=extra-large
          */
-        status = transformUmbStatus(getMsgExtendedStatus(aChild.ms));
+        status = transformUmbStatus(getTestMsgExtendedStatus(aChild.ms));
     }
 
     return {

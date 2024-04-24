@@ -22,6 +22,17 @@ import _ from 'lodash';
 import { TabsProps } from '@patternfly/react-core';
 import { mappingDatagrepperUrl, config } from './config';
 
+/** 
+ * XXXXXXXXXXX ????
+
+// WAS: DbErrataToolAutomationStateType
+export interface EtaStateType {
+    msg_id: string;
+    version: string;
+    timestamp: number;
+}
+*/
+
 /**
  * Valid for: Version: 1.y.z
  * https://pagure.io/fedora-ci/messages/blob/master/f/schemas/brew-build.test.complete.yaml
@@ -525,11 +536,11 @@ export interface ArtifactBase {
     resultsdb_testscase: number[];
 }
 
+// XXX Artifact -> begin
 export type HitSourceArtifact =
     | HitSourceArtifactRpm
     | HitSourceArtifactMbs
     | HitSourceArtifactCompose
-    | HitSourceArtifactCoprBuild
     | HitSourceArtifactContainerImage;
 
 export type Artifact =
@@ -540,10 +551,6 @@ export type Artifact =
 
 export type ArtifactRpm = ArtifactBase & {
     hit_source: HitSourceArtifactRpm;
-};
-
-export type ArtifactCoprBuild = ArtifactBase & {
-    hit_source: HitSourceArtifactCoprBuild;
 };
 
 export type ArtifactMbs = ArtifactBase & {
@@ -569,12 +576,6 @@ export type HitSourceArtifactRpm = {
     gateTag: string;
     component: string;
     brokerMsgIdGateTag: string;
-};
-
-export type HitSourceArtifactCoprBuild = {
-    nvr: string;
-    component: string;
-    coprBuildId: string;
 };
 
 export type HitSourceArtifactMbs = {
@@ -789,6 +790,7 @@ export const KnownMsgStates: MsgStateName[] = [
  * - needs_inspection
  * - not_applicable
  */
+// XXX WAS: StateExtendedTestMsgName =
 export type TestMsgStateName =
     | 'info'
     | 'passed'
@@ -797,6 +799,7 @@ export type TestMsgStateName =
     | 'needs_inspection'
     | MsgStateName;
 
+// XXX WAS: StateExtendedName
 export type StateName =
     /* greenwave result */
     'additional-tests' | TestMsgStateName | GreenwaveRequirementTypes;
@@ -823,6 +826,7 @@ export type AChildTest =
 
 export type AChild = AChildMsg | AChildGreenwave | AChildGreenwaveAndTestMsg;
 
+// XXX: WAS: ChildByCategoryType, StatesByCategoryType
 export type AChildrenByStateName = {
     [key in StateName]?: AChild[];
 };
@@ -1204,6 +1208,7 @@ export const getAEtaChildren = (artifact: Artifact): AChildEtaMsg[] => {
     return etaChildren;
 };
 
+// XXX: testStateMsg
 export const getThreadID = (args: {
     childTestMsg?: AChildTestMsg;
     brokerMsgBody?: BrokerSchemaMsgBody;
@@ -1235,7 +1240,11 @@ export function getDatagrepperUrl(
     return url.toString();
 }
 
-export function getMsgExtendedStatus(aChild: AChildTestMsg): TestMsgStateName {
+// was: getKaiExtendedStatus
+// XXX: rename to getMsgExtendedState
+export function getTestMsgExtendedStatus(
+    aChild: AChildTestMsg,
+): TestMsgStateName {
     const testMsg = getTestMsgBody(aChild);
     if (MSG_V_0_1.isMsg(testMsg) && 'status' in testMsg) {
         return testMsg.status;
@@ -1422,17 +1431,12 @@ export const getArtifactRemoteUrl = (artifact: Artifact): string => {
             (hit_source as HitSourceArtifactContainerImage).taskId
         }`,
         'copr-build': (() => {
-            const { component, coprBuildId } =
-                hit_source as HitSourceArtifactCoprBuild;
-            if (_.isNil(component)) {
-                return '';
-            }
-            const coprRepo = component.match('.*/')?.[0]?.replace('@', 'g/');
-            if (_.isNil(coprRepo)) {
-                return '';
-            }
-            const bid = coprBuildId.match('[^:]*')?.[0];
-            return `https://copr.fedorainfracloud.org/coprs/${coprRepo}build/${bid}`;
+            // XXX: fixme
+            // const component = artifact.payload.component;
+            // const coprRepo = component.match('.*/')[0].replace('@', 'g/');
+            // const bid = artifact.aid.match('[^:]*')[0];
+            // return `https://copr.fedorainfracloud.org/coprs/${coprRepo}build/${bid}`;
+            return 'fixme';
         })(),
         'redhat-module': `${config.mbs.rh.webUrl}/mbs-ui/module/${
             (hit_source as HitSourceArtifactMbs).mbsId

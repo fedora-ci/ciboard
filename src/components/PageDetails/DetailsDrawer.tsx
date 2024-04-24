@@ -44,7 +44,6 @@ import {
 import {
     BookIcon,
     RedoIcon,
-    HandPaperIcon,
     ExclamationCircleIcon,
 } from '@patternfly/react-icons';
 
@@ -52,15 +51,16 @@ import './index.css';
 import { CiTest } from './types';
 import { KnownIssues } from './KnownIssues';
 import { WaiveButton } from './WaiveButton';
-import { TestStatusIcon } from './TestStatusIcon';
-import { ExternalLink } from '../ExternalLink';
-import { TestResultMetadata } from './TestResultMetadata';
 import { SelectedTestContext } from './contexts';
-import { TestSuitesAccordion } from './TestSuitesAccordion';
-import { TestResultQuickLinks } from './TestResultQuickLinks';
-import { LinkifyNewTab, timestampForUser } from '../../utils/utils';
 import { ContactWidget, MissingTestContactWidget } from './ContactWidget';
-import { Artifact, GreenwaveWaiveType, getArtifactProduct } from '../../types';
+import { TestSuitesAccordion } from './TestSuitesAccordion';
+import { TestStatusIcon } from './TestStatusIcon';
+import { TestResultMetadata } from './TestResultMetadata';
+import { TestResultQuickLinks } from './TestResultQuickLinks';
+import { Artifact, getArtifactProduct } from '../../types';
+import { ExternalLink } from '../ExternalLink';
+import { GreenwaveWaiver } from '../AChildGreenwaveComponent';
+import { LinkifyNewTab } from '../../utils/utils';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -337,33 +337,3 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         </Drawer>
     );
 }
-
-export interface GreenwaveWaiverProps {
-    waiver?: GreenwaveWaiveType;
-}
-
-export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
-    const { waiver } = props;
-    if (!waiver) return null;
-    const humanTime = timestampForUser(waiver.timestamp);
-    return (
-        <Alert
-            className="pf-u-mt-md"
-            customIcon={<HandPaperIcon />}
-            isExpandable
-            isInline
-            title="Test result waived"
-            variant="warning"
-        >
-            <TextContent className="pf-u-font-size-sm">
-                <Text component="p">
-                    This test result was waived by <b>{waiver.username}</b> on{' '}
-                    {humanTime} with the following comment:
-                </Text>
-                <Text className="pf-u-py-xs" component="blockquote">
-                    <LinkifyNewTab>{waiver.comment}</LinkifyNewTab>
-                </Text>
-            </TextContent>
-        </Alert>
-    );
-};

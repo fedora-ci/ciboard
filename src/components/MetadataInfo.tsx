@@ -38,17 +38,9 @@ import {
     TableComposable,
 } from '@patternfly/react-table';
 
-import {
-    Label,
-    Title,
-    LabelProps,
-    DescriptionListTerm,
-    DescriptionListGroup,
-    DescriptionListDescription,
-} from '@patternfly/react-core';
-
 import styles from '../custom.module.css';
 import { LinkifyNewTab } from '../utils/utils';
+import { mkLabel, AChildDetailsEntry } from './AChildComponent';
 import {
     Metadata,
     MetadataContact,
@@ -382,50 +374,3 @@ export function useOnceCall(cb: Function, condition = true) {
         }
     }, [cb, condition]);
 }
-
-type AChildDetailsEntryPropsWithChildren =
-    React.PropsWithChildren<React.ReactNode> & { caption: string };
-
-const AChildDetailsEntry = (props: AChildDetailsEntryPropsWithChildren) => {
-    const { children, caption } = props;
-    if (_.isNil(children)) return null;
-    return (
-        <Flex direction={{ default: 'column' }}>
-            <Title headingLevel="h1" size="lg">
-                {caption}
-            </Title>
-            <Flex
-                direction={{ default: 'column' }}
-                grow={{ default: 'grow' }}
-                spaceItems={{ default: 'spaceItemsLg' }}
-            >
-                {children}
-            </Flex>
-            <Flex />
-        </Flex>
-    );
-};
-
-const mkLabel = (
-    name: string,
-    value: string,
-    color: LabelProps['color'] = 'orange',
-    icon: JSX.Element | null = null,
-): JSX.Element => {
-    return (
-        <DescriptionListGroup key={name}>
-            <DescriptionListTerm>{name}</DescriptionListTerm>
-            <DescriptionListDescription>
-                <Label
-                    isCompact
-                    color={color}
-                    icon={icon}
-                    variant="filled"
-                    isTruncated
-                >
-                    <LinkifyNewTab>{value.toString()}</LinkifyNewTab>
-                </Label>
-            </DescriptionListDescription>
-        </DescriptionListGroup>
-    );
-};
