@@ -44,13 +44,7 @@ export const resultColors: Record<ColorPropType, string[]> = {
     red: ['errored', 'failed'],
     orange: ['missing', 'needs inspection'],
 
-    cyan: [
-        'waived',
-        'errored waived',
-        'failed waived',
-        'missing waived',
-        'needs inspection waived',
-    ],
+    cyan: ['waived'],
     blue: ['running'],
     purple: ['queued', 'skip'],
     gold: ['info'],
@@ -84,16 +78,18 @@ const gwStateMappings: Record<GreenwaveRequirementTypes, any> = {
     blacklisted: { default: 'blacklisted' },
     'test-result-failed': {
         needs_inspection: 'needs inspection',
+        failed: 'failed',
         default: 'failed',
     },
     'test-result-passed': {
+        default: 'passed',
+        passed: 'passed',
         info: 'info',
         not_applicable: 'not applicable',
-        default: 'passed',
     },
     'test-result-missing': {
-        queued: 'queued',
         running: 'running',
+        queued: 'queued',
         default: 'missing',
     },
     'test-result-errored': { default: 'errored' },
@@ -105,42 +101,18 @@ const gwStateMappings: Record<GreenwaveRequirementTypes, any> = {
     'invalid-gating-yaml-waived': { default: 'invalid gating.yaml waived' },
     'missing-gating-yaml-waived': { default: 'missing gating.yaml waived' },
     'test-result-failed-waived': {
-        needs_inspection: 'needs inspection waived',
+        needs_inspection: 'needs inspection',
         default: 'failed waived',
     },
     'test-result-missing-waived': { default: 'missing waived' },
     'test-result-errored-waived': {
+        error: 'errored',
         default: 'errored waived',
     },
     'failed-fetch-gating-yaml-waived': {
         default: 'fail fetch gating.yaml waived',
     },
 };
-
-const gwStatesUiPriority: Array<keyof typeof gwStateMappings> = [
-    'test-result-passed',
-    'test-result-missing',
-    'test-result-failed',
-    'test-result-errored',
-    'blacklisted',
-    'excluded',
-    'invalid-gating-yaml',
-    'fetched-gating-yaml',
-    'missing-gating-yaml',
-    'failed-fetch-gating-yaml',
-    'test-result-errored-waived',
-    'test-result-failed-waived',
-    'invalid-gating-yaml-waived',
-    'missing-gating-yaml-waived',
-    'test-result-missing-waived',
-    'failed-fetch-gating-yaml-waived',
-];
-
-// Create a mapping of each string to its priority index
-const uiPriorityMap: { [key: string]: number } = {};
-gwStatesUiPriority.forEach((key, index) => {
-    uiPriorityMap[key] = index;
-});
 
 // artifact: ArtifactRpm | ArtifactContainerImage | ArtifactMbs;
 interface ArtifactGreenwaveStatesSummaryProps {
@@ -168,11 +140,10 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     }
     const reqSummary: { [name: string]: number } = {};
     const reqStatesGreenwave = mkReqStatesGreenwave(decision);
-    const sortedStates = _.sortBy(
-        _.keys(reqStatesGreenwave) as GreenwaveRequirementTypes[],
-        (item) => uiPriorityMap[item],
-    );
-    for (const stateName of sortedStates) {
+    let totalWaivers = 0;
+    for (const stateName of _.keys(
+        reqStatesGreenwave,
+    ) as GreenwaveRequirementTypes[]) {
         if (reqStatesGreenwave.hasOwnProperty(stateName)) {
             if (stateName === 'fetched-gating-yaml') {
                 /*
@@ -190,14 +161,21 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
                     ? _.get(
                           namingRules,
                           _.toLower(resultOutcome),
-                          namingRules['default'],
+                          resultOutcome,
                       )
                     : namingRules['default'];
                 reqSummary[reqName] = reqSummary[reqName]
                     ? reqSummary[reqName] + 1
                     : 1;
+                const waived = !!state.waiver;
+                if (waived) {
+                    totalWaivers++;
+                }
             }
         }
+    }
+    if (totalWaivers) {
+        reqSummary['waived'] = totalWaivers;
     }
     const gatingPassed = decision?.policies_satisfied;
     const iconStyle = { height: '1.2em' };
