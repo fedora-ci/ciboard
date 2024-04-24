@@ -17,7 +17,7 @@ fedmsg-listener[fedmsg listener] --> queue
 Loader --> queue
 end
 
-Loader --> db[Opensearch]
+Loader --> db[MongoDB]
 server["ciboard-server<br>(backend)"] --> db
 ciboard["ciboard<br>(frontend)"]:::focus --> server
 
