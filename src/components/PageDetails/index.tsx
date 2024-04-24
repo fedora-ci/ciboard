@@ -196,7 +196,7 @@ export function PageDetails(_props: {}) {
 
     if (loading) {
         // Show spinner while the query is loading.
-        return <IsLoading />;
+        <IsLoading />;
     }
     if (!haveData) {
         return <QueryError error={error} />;

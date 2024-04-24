@@ -158,6 +158,7 @@ function TestMsgMetadata(props: TestMsgMetadataProps) {
     const datagrepperUrl = getDatagrepperUrl(messageId, artifactType);
     // The original time is in milliseconds since the Unix epoch.
     const timestamp = getMsgTimestamp(aChild);
+    console.log('XXX getting timestamp', timestamp);
     const timestampMillis = timestamp;
     const timestampUnix = timestampMillis / 1000;
     const submitTime = secondsToTimestampWithTz(timestampUnix);

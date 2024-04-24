@@ -34,7 +34,7 @@ import {
     GatingStatusIcon,
     isGatingArtifact,
 } from '../utils/utils';
-import { Artifact, getGwDecision, isArtifactScratch } from '../types';
+import { Artifact, getGwDecision } from '../types';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
@@ -70,7 +70,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
         return null;
     }
     const decision = getGwDecision(artifact);
-    const isScratch = isArtifactScratch(artifact);
+    const isScratch = _.get(artifact, 'payload.scratch', true);
     if (isScratch) {
         return null;
     }

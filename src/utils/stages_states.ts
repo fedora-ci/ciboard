@@ -109,7 +109,9 @@ export const mkStagesAndStates = (
      * Merge all the results into a list of triples with the structure
      *   [stage, state, [result1, ..., resultN]]
      */
+    console.log('XXX stage_states', stagesStates);
     const stageStatesArray = mkStageStatesArray(stagesStates);
+    console.log('XXX stage_states_array', stageStatesArray);
     /*
      * Merge testMsgAChild and Greenwave results corresponding to the same test into a single
      * consolidated structure.
@@ -240,6 +242,7 @@ const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
         aChildren,
         'test',
     );
+    console.log('XXX aChildrenByStageName, aChildren', testStage);
     testStage = _.omitBy(testStage, (x) => _.isEmpty(x));
     if (_.some(_.values(testStage), 'length')) {
         const msgStageName: MsgStageName = 'test';
@@ -369,7 +372,9 @@ const mergeTestMsgAndGreenwaveAChild = (
         'greenwave',
         stageStatesArray,
     );
+    console.log('XXXXX greenwave', greenwaveStageStates);
     const testMsgStageStates = filterByStageName('test', stageStatesArray);
+    console.log('XXXXX2 greenwave', stageStatesArray);
     _.forEach(greenwaveStageStates, ([_stageName, _stateName, children]) => {
         _.forEach(children as AChildGreenwave[], (greenwaveState, index) => {
             const outcome = greenwaveState.result?.outcome;
@@ -459,6 +464,7 @@ export const aChildrenByStateName = (
         _.compact(presentStates),
         KnownMsgStates,
     );
+    console.log('XXXX statesNames', presentStates, statesNames, aChildren);
     _.forEach(statesNames, (msgStateName) => {
         /**
          * For complete test states, count failed, passed and other events

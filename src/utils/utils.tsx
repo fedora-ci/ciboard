@@ -591,3 +591,25 @@ export type LinkifyNewTabProps = React.PropsWithChildren<{}>;
 export const LinkifyNewTab = (props: LinkifyNewTabProps) => (
     <Linkify options={{ render: renderNewTabLink }}>{props.children}</Linkify>
 );
+
+// XXX REMOVED
+
+/**
+export const nameFieldForType = (type: ArtifactType) => {
+    const includes = _.includes(_.keys(knownTypes), type);
+    if (!includes) {
+        return 'unknown type';
+    }
+    return knownTypes[type];
+};
+
+const knownTypes: Record<ArtifactType, string> = {
+    'brew-build': 'NVR',
+    'copr-build': 'Component',
+    'koji-build-cs': 'NVR',
+    'koji-build': 'NVR',
+    'redhat-module': 'NSVC',
+    'productmd-compose': 'Compose ID',
+    'redhat-container-image': 'NVR',
+};
+ */

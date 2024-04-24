@@ -224,9 +224,9 @@ export const DashboardPageHeader = () => {
             logo={
                 <>
                     <Icon size="lg">
-                        <AutomationIcon className="pf-v5-u-mr-sm" />
+                        <AutomationIcon className="pf-v5-u-mr-sm" /> CI
                     </Icon>
-                    CI Dashboard
+                    Dashboard
                 </>
             }
             logoComponent="Link"
