@@ -855,7 +855,7 @@ export interface HitsInfo {
 export interface AChildTestMsg {
     hit_info: HitInfo;
     hit_source: HitSourceTest;
-    metadata?: Metadata;
+    customMetadata?: Metadata;
 }
 
 export interface AChildBuildMsg {

@@ -463,7 +463,6 @@ const ArtifactsTable = (_props: ArtListProps) => {
                                     style={{
                                         verticalAlign: 'middle',
                                         whiteSpace: 'nowrap',
-                                        fontFamily: 'RedHatDisplay',
                                     }}
                                     dataLabel={columnNames.artifactName}
                                 >

@@ -49,11 +49,8 @@ export interface ArtifactsDetailedInfoKojiTaskData {
     kojiTask?: KojiTaskInfo;
 }
 
-/**
- * Fetch koji-tags, koji-histroy for Koji task
- */
 export const ArtifactsDetailedInfoKojiTask = gql`
-    query ArtifactsDetailedInfoKojiTask(
+    query ArtifactsDetailedInfoKojiBuild(
         $task_id: Int!
         $koji_instance: KojiInstanceInputType
         $distgit_instance: DistGitInstanceInputType
@@ -92,9 +89,6 @@ export interface ArtifactsDetailedInfoModuleBuildData {
     mbsBuild?: MbsBuildInfo;
 }
 
-/**
- * Fetch koji-tags, koji-histroy for Module build
- */
 export const ArtifactsDetailedInfoModuleBuild = gql`
     query ArtifactsDetailedInfoModuleBuild(
         $build_id: Int!
@@ -128,11 +122,7 @@ export const ArtifactsDetailedInfoModuleBuild = gql`
     ${tagHistoryFragment}
 `;
 
-/**
- * Used for generic artifact search on main page, without gating status
- * Next: ArtifactsSearchSlowQuery2
- */
-export const ArtifactsSearchFastQuery1 = gql`
+export const ArtifactsShallowQuery = gql`
     query ArtifactsComplete(
         $sortBy: String
         $artTypes: [String]
@@ -158,11 +148,7 @@ export const ArtifactsSearchFastQuery1 = gql`
     }
 `;
 
-/**
- * Used for generic artifact search on main page, with gating status
- * Prev: ArtifactsSearchFastQuery1
- */
-export const ArtifactsSearchSlowQuery2 = gql`
+export const ArtifactsGreenwaveQuery = gql`
     query ArtifactsComplete(
         $sortBy: String
         $artTypes: [String]
@@ -203,10 +189,6 @@ export interface ArtifactsCompleteQueryData {
     };
 }
 
-/**
- * Specific artifact need to show
- * Metadata is required for all tests. This will help to show dependency between tests.
- */
 export const ArtifactsCompleteQuery = gql`
     query ArtifactsComplete(
         $sortBy: String
@@ -233,9 +215,6 @@ export const ArtifactsCompleteQuery = gql`
                     hits {
                         hit_info
                         hit_source
-                        metadata {
-                            payload
-                        }
                     }
                 }
                 greenwaveDecision {
@@ -250,3 +229,5 @@ export const ArtifactsCompleteQuery = gql`
         }
     }
 `;
+
+// We need metadata for all test for specific artifact. This will help to show dependency between tests.
