@@ -146,6 +146,42 @@ export const getOSVersionFromNvr = (nvr: string, artifactType: string) => {
     return osVersion;
 };
 
+export const resultColors = {
+    '--pf-v5-global--success-color--100': [
+        'complete',
+        'passed',
+        'pass',
+        'Pass',
+        'PASS',
+        true,
+        'ok',
+        'OK',
+        'Ok',
+        'satisfied',
+    ],
+    '--pf-v5-global--danger-color--100': [
+        'failed',
+        'fail',
+        'Fail',
+        'FAIL',
+        'missing',
+        false,
+        'Err',
+        'err',
+        'error',
+        'Error',
+        'unsatisfied',
+    ],
+    '--pf-v5-global--warning-color--100': ['error', 'waived'],
+    '--pf-v5-global--link--Color': ['running'],
+    '--pf-v5-global--warning-color--200': ['queued', 'skip'],
+    '--pf-v5-global--info-color--100': ['info'],
+};
+
+export const resultColor = (result: string) => {
+    return _.findKey(resultColors, (item) => item.indexOf(result) !== -1);
+};
+
 export const getMessageError = (brokerMsgBody: BrokerSchemaMsgBody) => {
     if (MSG_V_0_1.isMsg(brokerMsgBody) && 'reason' in brokerMsgBody) {
         return {

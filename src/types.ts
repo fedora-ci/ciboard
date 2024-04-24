@@ -625,28 +625,23 @@ export type HitSourceArtifactCompose = {
  * Decision requirements types
  * https://gating-greenwave.readthedocs.io/en/latest/decision_requirements.html
  */
-
-const greenwaveRequirementTypesArray = [
-    'excluded',
-    'blacklisted',
-    'test-result-failed', // NEEDS_INSPECTION
-    'test-result-passed',
-    'test-result-missing',
-    'test-result-errored',
-    'invalid-gating-yaml',
-    'fetched-gating-yaml',
-    'missing-gating-yaml',
-    'failed-fetch-gating-yaml',
-    'invalid-gating-yaml-waived',
-    'missing-gating-yaml-waived',
-    'test-result-failed-waived',
-    'test-result-missing-waived',
-    'test-result-errored-waived',
-    'failed-fetch-gating-yaml-waived',
-] as const;
-
 export type GreenwaveRequirementTypes =
-    (typeof greenwaveRequirementTypesArray)[number];
+    | 'excluded'
+    | 'blacklisted'
+    | 'test-result-failed'
+    | 'test-result-passed'
+    | 'test-result-missing'
+    | 'test-result-errored'
+    | 'invalid-gating-yaml'
+    | 'fetched-gating-yaml'
+    | 'missing-gating-yaml'
+    | 'failed-fetch-gating-yaml'
+    | 'invalid-gating-yaml-waived'
+    | 'missing-gating-yaml-waived'
+    | 'test-result-failed-waived'
+    | 'test-result-missing-waived'
+    | 'test-result-errored-waived'
+    | 'failed-fetch-gating-yaml-waived';
 
 /**
  * Opposite to test-messages child, greenwave/resultsdb state
