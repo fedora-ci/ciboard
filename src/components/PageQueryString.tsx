@@ -180,7 +180,7 @@ export function PageQueryString(_props: {}) {
 
     return (
         <PageCommon title={pageTitle}>
-            <PageSection hasOverflowScroll isFilled={false}>
+            <PageSection isFilled={false}>
                 <SearchToolbar />
                 <ShowArtifacts />
             </PageSection>
