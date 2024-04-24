@@ -103,11 +103,14 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
         </Card>
     );
 };
-
 /**
+            <CardBody isFilled={false}></CardBody>
+            <CardBody>
                 <FlexItem>{hitSource.component}</FlexItem>
                 <FlexItem>{hitSource.buildId}</FlexItem>
                 <FlexItem>{hitSource.brokerMsgIdGateTag}</FlexItem>
+            </CardBody>
+ * 
  */
 
 interface ArtifactCardProps {
