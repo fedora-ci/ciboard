@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2023, 2024 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../hooks';
-import { actArtTypes, actIsExtendedQs, actQueryString } from './../actions';
+import { actArtTypes, actQueryString } from './../actions';
 
 type RouterParams = 'search' | 'type' | 'value';
 
@@ -55,7 +55,6 @@ export function PageDbFieldLegacy(_props: {}) {
     const navigate = useNavigate();
     useEffect(() => {
         dispatch(actQueryString(queryString));
-        dispatch(actIsExtendedQs(true));
         dispatch(actArtTypes(artTypes));
         navigate(to);
     }, []);
