@@ -59,23 +59,20 @@ import { LinkifyNewTab, TestStatusIcon } from '../utils/utils';
 import {
     MSG_V_1,
     getAType,
+    ChildMsg,
     Metadata,
     Artifact,
-    getMsgId,
     MSG_V_0_1,
     getRerunUrl,
     getThreadID,
     MsgStateName,
     ChildTestMsg,
     getUmbDocsUrl,
-    getTestMsgBody,
-    getMsgStageName,
     getTestcaseName,
-    TestMsgStateName,
     getDatagrepperUrl,
     getArtifactProduct,
-    getTestMsgStateName,
     getTestMsgExtendedStatus,
+    getTestMsgBody,
 } from '../types';
 import {
     mkLabel,
@@ -93,17 +90,17 @@ import {
 } from './MetadataInfo';
 import { MetadataQuery } from '../queries/Metadata';
 
-export interface PropsWithTestMsgAChild {
-    aChild: ChildTestMsg;
+export interface PropsWithTestMsgState {
+    state: ChildTestMsg;
     metadata?: Metadata;
 }
 
 /**
  * Display the note associated with a result as provided by the CI system if available.
  */
-export function ResultNote(props: PropsWithTestMsgAChild) {
-    const { aChild } = props;
-    const brokerMsgBody = getTestMsgBody(aChild);
+export function ResultNote(props: PropsWithTestMsgState) {
+    const { state } = props;
+    const brokerMsgBody = getTestMsgBody(state);
     let note: string | undefined;
     if (MSG_V_0_1.isMsg(brokerMsgBody)) {
         note = brokerMsgBody.note;
@@ -118,50 +115,46 @@ export function ResultNote(props: PropsWithTestMsgAChild) {
     );
 }
 
-export interface KaiDetailedResultsProps extends PropsWithTestMsgAChild {
+export interface KaiDetailedResultsProps extends PropsWithTestMsgState {
     artifact: Artifact;
 }
 
-export const TestMsgDetailedResults: React.FC<KaiDetailedResultsProps> = (
+export const KaiDetailedResults: React.FC<KaiDetailedResultsProps> = (
     props,
 ) => {
-    const { aChild, artifact } = props;
-    const testMsgStateName = getTestMsgStateName(aChild);
+    const { state, artifact } = props;
+    const { kai_state } = state;
     /* [OSCI-1861]: info messages also can have xunit */
+    const stateName = kai_state.state;
     /* https://pagure.io/fedora-ci/messages/blob/master/f/schemas/test-common.yaml#_120 */
-    const showFor: TestMsgStateName[] = [
-        'error',
-        'queued',
-        'running',
-        'complete',
-    ];
-    if (!_.includes(showFor, testMsgStateName)) return null;
+    const showFor: StateNameType[] = ['error', 'queued', 'running', 'complete'];
+    if (!_.includes(showFor, stateName)) return null;
     const render = (
-        <AChildDetailsEntry caption="Test results">
-            <TestSuites aChild={aChild} artifact={artifact} />
-        </AChildDetailsEntry>
+        <StateDetailsEntry caption="Test results">
+            <TestSuites state={state} artifact={artifact} />
+        </StateDetailsEntry>
     );
     return render;
 };
 
-export interface TestMsgDocsButtonProps {
+export interface KaiDocsButtonProps {
     docsUrl?: string;
 }
 
-export const TestMsgDocsButton: React.FC<TestMsgDocsButtonProps> = (props) => {
+export const KaiDocsButton: React.FC<KaiDocsButtonProps> = (props) => {
     const { docsUrl } = props;
     if (_.isEmpty(docsUrl)) return null;
     return (
         <Button
-            rel="noopener noreferrer"
-            icon={<BookIcon />}
-            href={docsUrl}
-            title="Documentation for this test provided by the CI system."
-            target="_blank"
-            isSmall
-            variant="secondary"
-            component="a"
             className={styles.actionButton}
+            component="a"
+            href={docsUrl}
+            icon={<BookIcon />}
+            isSmall
+            rel="noopener noreferrer"
+            target="_blank"
+            title="Documentation for this test provided by the CI system."
+            variant="secondary"
         >
             docs
         </Button>
@@ -226,9 +219,9 @@ const schemaMappingV01 = [
     ['reason', 'error reason'],
 ];
 
-const StateExplain: React.FC<PropsWithTestMsgAChild> = (props) => {
-    const { aChild } = props;
-    const brokerMsgBody = getTestMsgBody(aChild);
+const StateExplain: React.FC<PropsWithTestMsgState> = (props) => {
+    const { state } = props;
+    const { broker_msg_body, kai_state } = state;
     const explain: { [key in MsgStateName]?: JSX.Element } = {
         running: (
             <Alert isInline isPlain title="Test running" variant="info">
@@ -250,19 +243,18 @@ const StateExplain: React.FC<PropsWithTestMsgAChild> = (props) => {
         ),
     };
     const columns: JSX.Element[] = [];
-    const testMsgStateName = getTestMsgStateName(aChild);
-    const stateExplanation = _.get(explain, testMsgStateName, null);
+    const stateExplanation = _.get(explain, kai_state.state, null);
     if (stateExplanation) {
         columns.push(stateExplanation);
     }
     let errorReason: string | undefined;
     let errorIssueUrl: string | undefined;
-    if (MSG_V_1.isMsg(brokerMsgBody)) {
-        errorReason = _.get(brokerMsgBody, 'error.reason');
-        errorIssueUrl = _.get(brokerMsgBody, 'error.issue_url');
-    } else if (MSG_V_0_1.isMsg(brokerMsgBody)) {
-        errorReason = _.get(brokerMsgBody, 'reason');
-        errorIssueUrl = _.get(brokerMsgBody, 'issue_url');
+    if (MSG_V_1.isMsg(broker_msg_body)) {
+        errorReason = _.get(broker_msg_body, 'error.reason');
+        errorIssueUrl = _.get(broker_msg_body, 'error.issue_url');
+    } else if (MSG_V_0_1.isMsg(broker_msg_body)) {
+        errorReason = _.get(broker_msg_body, 'reason');
+        errorIssueUrl = _.get(broker_msg_body, 'issue_url');
     }
     if (!_.isNil(errorReason)) {
         const jsxElement = (
@@ -284,24 +276,23 @@ const StateExplain: React.FC<PropsWithTestMsgAChild> = (props) => {
     return null;
 };
 
-export interface KaiStateMappingProps extends PropsWithTestMsgAChild {
+export interface KaiStateMappingProps extends PropsWithTestMsgState {
     artifact: Artifact;
 }
 
 export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
-    const { artifact, aChild } = props;
-    const brokerMsgBody = getTestMsgBody(aChild);
-    const brokerMsgId = getMsgId(aChild);
+    const { artifact, state } = props;
+    const { brokerMsgBody, kai_state } = state;
     let pairs: string[][] = [];
     if (MSG_V_1.isMsg(brokerMsgBody)) {
-        pairs = mkPairs(schemaMappingV1, brokerMsgBody);
+        pairs = mkPairs(schemaMappingV1, state.brokerMsgBody);
     } else if (MSG_V_0_1.isMsg(brokerMsgBody)) {
-        pairs = mkPairs(schemaMappingV01, brokerMsgBody);
+        pairs = mkPairs(schemaMappingV01, state.brokerMsgBody);
     } else {
         return null;
     }
     const aType = getAType(artifact);
-    const brokerMsgUrl = getDatagrepperUrl(brokerMsgId, aType);
+    const brokerMsgUrl = getDatagrepperUrl(kai_state.msg_id, aType);
     pairs.push(['broker msg', brokerMsgUrl]);
     const elements: JSX.Element[] = _.map(pairs, ([name, value]) =>
         mkLabel(name, value, 'green'),
@@ -309,10 +300,10 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
     return (
         <Flex>
             <FlexItem>
-                <AChildDetailsEntry caption="Result details">
+                <StateDetailsEntry caption="Result details">
                     <Flex direction={{ default: 'column' }}>
                         <FlexItem key="1">
-                            <StateExplain aChild={aChild} />
+                            <StateExplain state={state} />
                         </FlexItem>
                         <FlexItem key="2">
                             <DescriptionList
@@ -326,19 +317,16 @@ export const KaiStateMapping: React.FC<KaiStateMappingProps> = (props) => {
                             </DescriptionList>
                         </FlexItem>
                     </Flex>
-                </AChildDetailsEntry>
+                </StateDetailsEntry>
             </FlexItem>
         </Flex>
     );
 };
 
-export const TestMsgStateActions: React.FC<PropsWithTestMsgAChild> = (
-    props,
-) => {
-    const { aChild } = props;
-    const brokerMsgBody = getTestMsgBody(aChild);
-    const docsUrl = getUmbDocsUrl(brokerMsgBody);
-    const rerunUrl = getRerunUrl(aChild);
+export const KaiStateActions: React.FC<PropsWithTestMsgState> = (props) => {
+    const { broker_msg_body } = props.state;
+    const docsUrl = getUmbDocsUrl(broker_msg_body);
+    const rerunUrl = getRerunUrl(props.state);
     return (
         <Flex style={{ minWidth: '20em' }}>
             <Flex flex={{ default: 'flex_1' }}></Flex>
@@ -346,38 +334,36 @@ export const TestMsgStateActions: React.FC<PropsWithTestMsgAChild> = (
                 <KaiRerunButton rerunUrl={rerunUrl} />
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <TestMsgDocsButton docsUrl={docsUrl} />
+                <KaiDocsButton docsUrl={docsUrl} />
             </Flex>
         </Flex>
     );
 };
 
-const StageName: React.FC<PropsWithTestMsgAChild> = (props) => {
-    const { aChild } = props;
-    const brokerMsgBody = getTestMsgBody(aChild);
-    const msgStageName = getMsgStageName(aChild);
-    if (msgStageName === 'dispatch') {
-        return <>{`dispatcher / ${_.get(brokerMsgBody, 'ci.name')}`}</>;
+const StageName: React.FC<PropsWithTestMsgState> = (props) => {
+    const { state } = props;
+    const { kai_state } = state;
+    if (kai_state.stage === 'dispatch') {
+        return <>{`dispatcher / ${_.get(state.broker_msg_body, 'ci.name')}`}</>;
     }
-    if (msgStageName === 'build') {
+    if (kai_state.stage === 'build') {
         return <>build</>;
     }
-    const testcaseName = getTestcaseName(aChild);
+    const name = getTestcaseName(state);
     return (
         <TextContent>
-            <Text>{testcaseName}</Text>
+            <Text>{name}</Text>
         </TextContent>
     );
 };
 
-interface FaceForKaiStateProps extends PropsWithTestMsgAChild {
+interface FaceForKaiStateProps extends PropsWithTestMsgState {
     artifactDashboardUrl: string;
 }
 
-// XXX Was: FaceForKaiState
-const FaceForAChildTestMsg: React.FC<FaceForKaiStateProps> = (props) => {
-    const { artifactDashboardUrl, aChild } = props;
-    let result = getTestMsgExtendedStatus(aChild);
+const FaceForKaiState: React.FC<FaceForKaiStateProps> = (props) => {
+    const { artifactDashboardUrl, state } = props;
+    let result = getTestMsgExtendedStatus(state);
     return (
         <Flex>
             <Flex flex={{ default: 'flex_1' }}>
@@ -385,17 +371,17 @@ const FaceForAChildTestMsg: React.FC<FaceForKaiStateProps> = (props) => {
                     <TestStatusIcon status={result} />
                 </Flex>
                 <Flex flexWrap={{ default: 'nowrap' }}>
-                    <StageName aChild={aChild} />
+                    <StageName state={state} />
                 </Flex>
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <Flex>
-                    <TestMsgStateActions aChild={aChild} />
+                    <KaiStateActions state={state} />
                 </Flex>
                 <Flex>
-                    <AChildLink
+                    <StateLink
                         artifactDashboardUrl={artifactDashboardUrl}
-                        aChild={aChild}
+                        state={state}
                     />
                 </Flex>
             </Flex>
@@ -404,22 +390,22 @@ const FaceForAChildTestMsg: React.FC<FaceForKaiStateProps> = (props) => {
 };
 
 interface BodyForKaiStateProps {
-    aChild: ChildTestMsg;
+    state: ChildMsg;
     artifact: Artifact;
     isVisible: boolean;
 }
 
 export const BodyForKaiState: React.FC<BodyForKaiStateProps> = (props) => {
-    const { artifact, isVisible, aChild } = props;
+    const { artifact, isVisible, state } = props;
     const [activeTabKey, setActiveTabKey] = useState<number | string>(0);
     const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
         setActiveTabKey(tabIndex);
     };
-    const testcaseName = getTestcaseName(aChild);
-    const productVersion = getArtifactProduct(artifact);
-    const variables: any = { testcaseName };
-    if (!_.isNil(productVersion)) {
-        variables.product_version = productVersion;
+    const testcase_name = getTestcaseName(state);
+    const product_version = getArtifactProduct(artifact);
+    const variables: any = { testcase_name };
+    if (!_.isNil(product_version)) {
+        variables.product_version = product_version;
     }
     const [getMetadata, { loading: metadataLoading, error: _error, data }] =
         useLazyQuery<MetadataQueryResult>(MetadataQuery, {
@@ -479,11 +465,8 @@ export const BodyForKaiState: React.FC<BodyForKaiStateProps> = (props) => {
                     }
                     aria-label="Tab with results info"
                 >
-                    <ResultNote aChild={aChild} />
-                    <TestMsgDetailedResults
-                        aChild={aChild}
-                        artifact={artifact}
-                    />
+                    <ResultNote state={state} />
+                    <KaiDetailedResults state={state} artifact={artifact} />
                 </Tab>
                 <Tab
                     eventKey={1}
@@ -553,28 +536,25 @@ export const BodyForKaiState: React.FC<BodyForKaiStateProps> = (props) => {
                     }
                     aria-label="Tab with test details"
                 >
-                    <KaiStateMapping aChild={aChild} artifact={artifact} />
+                    <KaiStateMapping state={state} artifact={artifact} />
                 </Tab>
             </Tabs>
         </>
     );
 };
 
-// XXX: was: PropsWithKaiState
-export type ArtifactKaiStateProps = AChildProps & PropsWithTestMsgAChild;
+export type ArtifactKaiStateProps = AChildProps & PropsWithKaiState;
 
-// XXX: was: ArtifactKaiState
-export const AChildTestMsg: React.FC<ArtifactKaiStateProps> = (props) => {
+export const ArtifactKaiState: React.FC<ArtifactKaiStateProps> = (props) => {
     const {
-        aChild,
         artifact,
+        artifactDashboardUrl,
         forceExpand,
         setExpandedResult,
-        artifactDashboardUrl,
+        state,
     } = props;
 
-    const brokerMsgBody = getTestMsgBody(aChild);
-    const testcaseName = getTestcaseName(aChild);
+    const { brokerMsgBody, kai_state } = state;
     /*
      * Expand a specific testcase according to query string and scroll to it
      * ?focus=tc:<test-case-name>
@@ -583,7 +563,7 @@ export const AChildTestMsg: React.FC<ArtifactKaiStateProps> = (props) => {
         if (forceExpand) {
             setExpandedResult('');
         } else {
-            const key = testcaseName;
+            const key = kai_state.test_case_name;
             setExpandedResult(key);
         }
     };
@@ -612,9 +592,9 @@ export const AChildTestMsg: React.FC<ArtifactKaiStateProps> = (props) => {
                             className="pf-u-m-0 pf-u-p-0"
                             key="secondary content"
                         >
-                            <FaceForAChildTestMsg
-                                aChild={aChild}
+                            <FaceForKaiState
                                 artifactDashboardUrl={artifactDashboardUrl}
+                                state={state}
                             />
                         </DataListCell>,
                     ]}
@@ -626,7 +606,7 @@ export const AChildTestMsg: React.FC<ArtifactKaiStateProps> = (props) => {
                 isHidden={!forceExpand}
             >
                 <BodyForKaiState
-                    aChild={aChild}
+                    state={state}
                     artifact={artifact}
                     isVisible={forceExpand}
                 />

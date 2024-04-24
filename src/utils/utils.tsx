@@ -44,6 +44,7 @@ import {
     MSG_V_0_1,
     KojiInstance,
     ArtifactType,
+    ChildTestMsg,
     isArtifactMbs,
     isArtifactRpm,
     BrokerTestMsg,
@@ -55,7 +56,6 @@ import {
     isGreenwaveAndTestMsg,
     GreenwaveRequirementTypes,
     isArtifactRedhatContainerImage,
-    AChildTest,
 } from '../types';
 
 /**
@@ -553,7 +553,7 @@ const isRequirementMissing = (child: ChildGreenwave): boolean =>
  * @param child The Greenwave state to check.
  * @returns `true` if the required result is missing in Greenwave, `false` otherwise.
  */
-export const isResultMissing = (child: AChildTest): boolean => {
+export const isResultMissing = (child: ChildTestMsg): boolean => {
     if (isGreenwaveAndTestMsg(child)) return isRequirementMissing(child.gs);
     if (isGreenwaveChild(child)) return isRequirementMissing(child);
     return false;
