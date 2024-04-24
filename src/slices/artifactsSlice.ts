@@ -34,7 +34,7 @@ import {
 interface IStateArtifacts {
     error?: string;
     artList: Artifact[];
-    hits_info?: any;
+    hitsInfo?: any;
     isLoading: boolean;
     totalHits: number;
     isLoadingExtended: boolean;
@@ -43,7 +43,7 @@ interface IStateArtifacts {
 const INITIAL_STATE: IStateArtifacts = {
     error: undefined,
     artList: [],
-    hits_info: {},
+    hitsInfo: {},
     isLoading: false,
     totalHits: 0,
     isLoadingExtended: false,
@@ -52,7 +52,7 @@ const INITIAL_STATE: IStateArtifacts = {
 interface artListPayload {
     hits: Artifact[];
     error?: string;
-    hits_info: { total: { value: number } };
+    hitsInfo: { total: { value: number } };
 }
 
 export const artifactsSlice = createSlice({
@@ -62,10 +62,10 @@ export const artifactsSlice = createSlice({
         artList: (state, action: PayloadAction<artListPayload>) => {
             state.error = action.payload.error;
             state.artList = action.payload.hits;
-            state.hits_info = action.payload.hits_info;
+            state.hitsInfo = action.payload.hitsInfo;
             state.isLoading = false;
             state.isLoadingExtended = false;
-            state.totalHits = _.get(action.payload, 'hits_info.total.value', 0);
+            state.totalHits = _.get(action.payload, 'hitsInfo.total.value', 0);
         },
         isLoading: (
             state,
@@ -74,7 +74,7 @@ export const artifactsSlice = createSlice({
             const isLoading = action.payload;
             state.isLoading = isLoading;
             if (isLoading) {
-                state.hits_info = {};
+                state.hitsInfo = {};
                 state.artList = [];
                 state.error = undefined;
             }
@@ -103,16 +103,16 @@ export const {
 } = artifactsSlice.actions;
 
 const responseToState = (response: any) => {
-    const { hits: hits_, hits_info } = response.data.artifacts;
+    const { hits: hits_, hits_info: hitsInfo } = response.data.artifacts;
     const hits = _.map(
         hits_,
         ({ hit_info, hit_source, greenwaveDecision }) => ({
-            hit_info: hit_info,
-            hit_source: hit_source,
+            hitInfo: hit_info,
+            hitSource: hit_source,
             greenwaveDecision: greenwaveDecision,
         }),
     );
-    return { hits: hits as Artifact[], hits_info };
+    return { hits: hits as Artifact[], hitsInfo };
 };
 
 export const actLoad =
@@ -167,7 +167,7 @@ export const actLoad =
             dispatch(
                 actArtList({
                     hits: [],
-                    hits_info: { total: { value: 0 } },
+                    hitsInfo: { total: { value: 0 } },
                     error: errorText,
                 }),
             );

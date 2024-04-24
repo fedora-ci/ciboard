@@ -32,7 +32,6 @@ import { CodeBranchIcon, CubeIcon, UserIcon } from '@patternfly/react-icons';
 
 import {
     Artifact,
-    getAType,
     getArtifactId,
     getArtifactName,
     getArtifacIssuer,
@@ -85,7 +84,8 @@ export interface ArtifactHeaderProps {
 
 export function ArtifactHeader(props: ArtifactHeaderProps) {
     const { artifact } = props;
-    const aType = getAType(artifact);
+    const { hitSource } = artifact;
+    const { aType } = hitSource;
     const artId = getArtifactId(artifact);
     const artifactTypeLabel = getArtifactTypeLabel(aType);
     const artifactUrl = getArtifactRemoteUrl(artifact);

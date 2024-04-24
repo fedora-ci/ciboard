@@ -528,9 +528,9 @@ export type ArtifactType =
 export type ComposeType = 'gate' | 'production' | 'testing';
 
 export interface ArtifactBase {
-    hit_info: HitInfo;
+    hitInfo: HitInfo;
     children: AChildrenMsg;
-    hit_source: HitSourceArtifact;
+    hitSource: HitSourceArtifact;
     component_mapping?: ComponentMapping;
     greenwaveDecision?: GreenwaveDecisionReply;
     resultsdb_testscase: number[];
@@ -550,19 +550,19 @@ export type Artifact =
     | ArtifactContainerImage;
 
 export type ArtifactRpm = ArtifactBase & {
-    hit_source: HitSourceArtifactRpm;
+    hitSource: HitSourceArtifactRpm;
 };
 
 export type ArtifactMbs = ArtifactBase & {
-    hit_source: HitSourceArtifactMbs;
+    hitSource: HitSourceArtifactMbs;
 };
 
 export type ArtifactCompose = ArtifactBase & {
-    hit_source: HitSourceArtifactCompose;
+    hitSource: HitSourceArtifactCompose;
 };
 
 export type ArtifactContainerImage = ArtifactBase & {
-    hit_source: HitSourceArtifactContainerImage;
+    hitSource: HitSourceArtifactContainerImage;
 };
 
 export type HitSourceArtifactRpm = {
@@ -843,19 +843,19 @@ export interface HitsInfo {
 }
 
 export interface AChildTestMsg {
-    hit_info: HitInfo;
-    hit_source: HitSourceTest;
+    hitInfo: HitInfo;
+    hitSource: HitSourceTest;
     customMetadata?: Metadata;
 }
 
 export interface AChildBuildMsg {
-    hit_info: HitInfo;
-    hit_source: HitSourceBuild;
+    hitInfo: HitInfo;
+    hitSource: HitSourceBuild;
 }
 
 export interface AChildEtaMsg {
-    hit_info: HitInfo;
-    hit_source: HitSourceEta;
+    hitInfo: HitInfo;
+    hitSource: HitSourceEta;
 }
 
 export interface HitSourceEta {
@@ -1053,31 +1053,31 @@ export interface ErrataLinkedAdvisory {
  * TypeScript guards
  */
 export function isArtifactRpm(artifact: Artifact): artifact is ArtifactRpm {
-    const { hit_source } = artifact;
+    const { hitSource } = artifact;
     return (
-        hit_source.aType === 'brew-build' ||
-        hit_source.aType === 'koji-build' ||
-        hit_source.aType === 'koji-build-cs'
+        hitSource.aType === 'brew-build' ||
+        hitSource.aType === 'koji-build' ||
+        hitSource.aType === 'koji-build-cs'
     );
 }
 
 export function isArtifactMbs(artifact: Artifact): artifact is ArtifactMbs {
-    const { hit_source } = artifact;
-    return hit_source.aType === 'redhat-module';
+    const { hitSource } = artifact;
+    return hitSource.aType === 'redhat-module';
 }
 
 export function isArtifactCompose(
     artifact: Artifact,
 ): artifact is ArtifactCompose {
-    const { hit_source } = artifact;
-    return hit_source.aType === 'productmd-compose';
+    const { hitSource } = artifact;
+    return hitSource.aType === 'productmd-compose';
 }
 
 export function isArtifactRedhatContainerImage(
     artifact: Artifact,
 ): artifact is ArtifactContainerImage {
-    const { hit_source } = artifact;
-    return hit_source.aType === 'redhat-container-image';
+    const { hitSource } = artifact;
+    return hitSource.aType === 'redhat-container-image';
 }
 
 export function isArtifactScratch(artifact: Artifact): boolean {
@@ -1086,25 +1086,25 @@ export function isArtifactScratch(artifact: Artifact): boolean {
         isArtifactMbs(artifact) ||
         isArtifactRedhatContainerImage(artifact)
     ) {
-        return artifact.hit_source.scratch;
+        return artifact.hitSource.scratch;
     }
     return false;
 }
 
 export function isAChildMsg(aChild: AChild | undefined): aChild is AChildMsg {
-    return _.has(aChild, 'hit_info');
+    return _.has(aChild, 'hitInfo');
 }
 
 export function isChildEtaMsg(
     aChild: AChild | undefined,
 ): aChild is AChildEtaMsg {
-    return _.has(aChild, 'hit_source.etaCiRunUrl');
+    return _.has(aChild, 'hitSource.etaCiRunUrl');
 }
 
 export function isAChildTestMsg(
     aChild: AChild | undefined,
 ): aChild is AChildTestMsg {
-    const msgStageName = _.get(aChild, 'hit_source.msgStage');
+    const msgStageName = _.get(aChild, 'hitSource.msgStage');
     if (msgStageName === 'test') {
         return true;
     }
@@ -1114,7 +1114,7 @@ export function isAChildTestMsg(
 export function isAChildBuildMsg(
     aChild: AChild | undefined,
 ): aChild is AChildBuildMsg {
-    const msgStageName = _.get(aChild, 'hit_source.msgStage');
+    const msgStageName = _.get(aChild, 'hitSource.msgStage');
     if (msgStageName === 'build') {
         return true;
     }
@@ -1147,31 +1147,27 @@ export function isAChildGreenwaveAndTestMsg(
  */
 
 export const getMsgBody = (aChild: AChildMsg): BrokerMsgBody => {
-    return _.get(aChild, 'hit_source.rawData.message.brokerMsgBody')!;
+    return aChild.hitSource.rawData.message.brokerMsgBody;
 };
 
 export const getMsgTimestamp = (aChild: AChildMsg): number => {
-    return _.get(aChild, 'hit_source.@timestamp')!;
+    return aChild.hitSource['@timestamp'];
 };
 
 export const getMsgVersion = (aChild: AChildTestMsg): string => {
-    return _.get(
-        aChild,
-        'hit_source.rawData.message.brokerMsgBody.version',
-        '',
-    );
+    return aChild.hitSource.rawData.message.brokerMsgBody.version;
 };
 
 export const getEtaMsgBody = (aChild: AChildEtaMsg): BrokerEtaMsgBody => {
-    return _.get(aChild, 'hit_source.rawData.message.brokerMsgBody')!;
+    return aChild.hitSource.rawData.message.brokerMsgBody;
 };
 
 export const getTestMsgBody = (aChild: AChildTestMsg): BrokerSchemaMsgBody => {
-    return _.get(aChild, 'hit_source.rawData.message.brokerMsgBody')!;
+    return aChild.hitSource.rawData.message.brokerMsgBody;
 };
 
 export const getMsgId = (aChild: AChildMsg): BrokerMsgId => {
-    return _.get(aChild, 'hit_source.rawData.message.brokerMsgId', '');
+    return aChild.hitSource.rawData.message.brokerMsgId;
 };
 
 export const getGwDecision = (
@@ -1181,24 +1177,18 @@ export const getGwDecision = (
 };
 
 export const getAType = (artifact: Artifact): ArtifactType => {
-    return artifact.hit_source.aType;
+    return artifact.hitSource.aType;
 };
 
 export const getANvr = (artifact: Artifact): string | undefined => {
     if (isArtifactRpm(artifact)) {
-        return _.get(artifact, 'hit_source.nvr');
-    }
-};
-
-export const getATaskid = (artifact: Artifact): string | undefined => {
-    if (isArtifactRpm(artifact)) {
-        return _.get(artifact, 'hit_source.taskId');
+        return _.get(artifact, 'hitSource.nvr');
     }
 };
 
 export const getABuildId = (artifact: Artifact): string | undefined => {
     if (isArtifactMbs(artifact) || isArtifactRpm(artifact))
-        return artifact.hit_source.buildId;
+        return artifact.hitSource.buildId;
 };
 
 export const getAEtaChildren = (artifact: Artifact): AChildEtaMsg[] => {
@@ -1224,7 +1214,7 @@ export const getThreadID = (args: {
         }
     }
     if (childTestMsg) {
-        return childTestMsg.hit_source.threadId;
+        return childTestMsg.hitSource.threadId;
     }
     return null;
 };
@@ -1256,15 +1246,17 @@ export function getTestMsgExtendedStatus(
     ) {
         return testMsg.test.result;
     }
-    return aChild.hit_source.msgState;
+    return aChild.hitSource.msgState;
 }
 
-export const getMsgStageName = (aChild: AChildSchemaMsg): MsgStageName => {
-    return aChild.hit_source.msgStage;
+export const getMsgStageName = (aChild: AChildTestMsg): MsgStageName => {
+    return aChild.hitSource.msgStage;
 };
 
-export const getMsgStateName = (aChild: AChildSchemaMsg): TestMsgStateName => {
-    return aChild.hit_source.msgState;
+export const getTestMsgStateName = (
+    aChild: AChildTestMsg,
+): TestMsgStateName => {
+    return aChild.hitSource.msgState;
 };
 
 export const getArtifactProduct = (artifact: Artifact): string | undefined => {
@@ -1273,7 +1265,7 @@ export const getArtifactProduct = (artifact: Artifact): string | undefined => {
      * Cenots/Fedora doesn't have gating workflow.
      */
     if (isArtifactMbs(artifact) || isArtifactRpm(artifact)) {
-        const { gateTag } = artifact.hit_source;
+        const { gateTag } = artifact.hitSource;
         if (_.isEmpty(gateTag)) {
             return;
         }
@@ -1293,7 +1285,7 @@ export const getArtifactProduct = (artifact: Artifact): string | undefined => {
  */
 export const getArtifactGatingTag = (artifact: Artifact): string | null => {
     if (isArtifactMbs(artifact) || isArtifactRpm(artifact)) {
-        return artifact.hit_source.gateTag;
+        return artifact.hitSource.gateTag;
     }
     return null;
 };
@@ -1306,7 +1298,7 @@ export const getArtifactGatingTag = (artifact: Artifact): string | null => {
  */
 export const getArtifacIssuer = (artifact: Artifact): string | null => {
     if (isArtifactMbs(artifact) || isArtifactRpm(artifact)) {
-        return artifact.hit_source.issuer;
+        return artifact.hitSource.issuer;
     }
     return null;
 };
@@ -1314,8 +1306,8 @@ export const getArtifacIssuer = (artifact: Artifact): string | null => {
 export const getTestcaseName = (aChild: AChild): string => {
     let testCaseName = 'unknonwn testcase name';
     if (isAChildTestMsg(aChild)) {
-        const { hit_source } = aChild;
-        const { testCaseName: tcn } = hit_source;
+        const { hitSource } = aChild;
+        const { testCaseName: tcn } = hitSource;
         const brokerMsgBody = getTestMsgBody(aChild);
         if (tcn) {
             testCaseName = tcn;
@@ -1381,33 +1373,29 @@ export const getArtifactTypeLabel = (type: ArtifactType) => {
 
 export function getArtifactName(artifact: Artifact): string | undefined {
     if (isArtifactRpm(artifact)) {
-        return artifact.hit_source.nvr;
+        return artifact.hitSource.nvr;
     } else if (isArtifactRedhatContainerImage(artifact)) {
-        return artifact.hit_source.nvr;
+        return artifact.hitSource.nvr;
     } else if (isArtifactMbs(artifact)) {
-        return artifact.hit_source.nsvc;
+        return artifact.hitSource.nsvc;
     } else if (isArtifactCompose(artifact)) {
-        return artifact.hit_source.composeId;
+        return artifact.hitSource.composeId;
     }
     return;
 }
 
 export function getArtifactId(artifact: Artifact): string | undefined {
     if (isArtifactRpm(artifact)) {
-        return artifact.hit_source.taskId;
+        return artifact.hitSource.taskId;
     } else if (isArtifactRedhatContainerImage(artifact)) {
-        return artifact.hit_source.taskId;
+        return artifact.hitSource.taskId;
     } else if (isArtifactMbs(artifact)) {
-        return artifact.hit_source.mbsId;
+        return artifact.hitSource.mbsId;
     } else if (isArtifactCompose(artifact)) {
-        return artifact.hit_source.composeId;
+        return artifact.hitSource.composeId;
     }
     return;
 }
-
-export const getArtifactChildren = (artifact: Artifact): AChildMsg[] => {
-    return _.get(artifact, 'children.hits', []);
-};
 
 /**
  * Construct the URL for the original resource associated with the artifact,
@@ -1416,19 +1404,19 @@ export const getArtifactChildren = (artifact: Artifact): AChildMsg[] => {
  * if no URL could be reliably constructed.
  */
 export const getArtifactRemoteUrl = (artifact: Artifact): string => {
-    const { hit_source } = artifact;
+    const { hitSource } = artifact;
     const urlMap: Record<ArtifactType, string> = {
         'brew-build': `${config.koji.rh.webUrl}/taskinfo?taskID=${
-            (hit_source as HitSourceArtifactRpm).taskId
+            (hitSource as HitSourceArtifactRpm).taskId
         }`,
         'koji-build': `${config.koji.fp.webUrl}/taskinfo?taskID=${
-            (hit_source as HitSourceArtifactRpm).taskId
+            (hitSource as HitSourceArtifactRpm).taskId
         }`,
         'koji-build-cs': `${config.koji.cs.webUrl}/taskinfo?taskID=${
-            (hit_source as HitSourceArtifactRpm).taskId
+            (hitSource as HitSourceArtifactRpm).taskId
         }`,
         'redhat-container-image': `${config.koji.rh.webUrl}/taskinfo?taskID=${
-            (hit_source as HitSourceArtifactContainerImage).taskId
+            (hitSource as HitSourceArtifactContainerImage).taskId
         }`,
         'copr-build': (() => {
             // XXX: fixme
@@ -1439,11 +1427,11 @@ export const getArtifactRemoteUrl = (artifact: Artifact): string => {
             return 'fixme';
         })(),
         'redhat-module': `${config.mbs.rh.webUrl}/mbs-ui/module/${
-            (hit_source as HitSourceArtifactMbs).mbsId
+            (hitSource as HitSourceArtifactMbs).mbsId
         }`,
         'productmd-compose': '',
     };
-    return urlMap[hit_source.aType];
+    return urlMap[hitSource.aType];
 };
 
 /**
@@ -1452,7 +1440,7 @@ export const getArtifactRemoteUrl = (artifact: Artifact): string => {
  */
 
 export const getArtifactLocalPath = (artifact: Artifact) =>
-    `/details/${artifact.hit_info._id}`;
+    `/details/${artifact.hitInfo._id}`;
 
 /**
  * Extract testcase documentation URL from a UMB message.

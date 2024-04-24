@@ -158,11 +158,10 @@ const dataToArtList = (data: any) => {
     const { hits: hits_, hits_info: hitsInfo } = data.artifacts;
     const hits = _.map(
         hits_,
-        ({ hit_info, hit_source, greenwaveDecision, children }) => ({
-            hit_info,
-            children,
-            hit_source,
-            greenwaveDecision,
+        ({ hit_info, hit_source, greenwaveDecision }) => ({
+            hitInfo: hit_info,
+            hitSource: hit_source,
+            greenwaveDecision: greenwaveDecision,
         }),
     );
     return { hits: hits as Artifact[], hitsInfo };

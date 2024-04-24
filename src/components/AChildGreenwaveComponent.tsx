@@ -640,77 +640,74 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
     </Alert>
 );
 
-// REMOVE:
+export type AChildGreenwaveComponentProps = AChildProps &
+    PropsWithGreenwaveState;
 
-// export type AChildGreenwaveComponentProps = AChildProps &
-//     PropsWithGreenwaveState;
-//
-// export const AChildGreenwaveComponent: React.FC<
-//     AChildGreenwaveComponentProps
-// > = (props) => {
-//     const {
-//         aChild,
-//         artifact,
-//         forceExpand,
-//         setExpandedResult,
-//         artifactDashboardUrl,
-//     } = props;
-//
-//     const { testcase } = aChild;
-//     /*
-//      * Expand a specific testcase according to query string and scroll to it
-//      * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
-//      */
-//     const onToggle = () => {
-//         setExpandedResult(forceExpand ? '' : testcase);
-//     };
-//     /** Note for info test results */
-//     const resultClasses = classNames(styles.helpSelect, {
-//         [styles.expandedResult]: forceExpand,
-//     });
-//     const toRender = (
-//         <DataListItem
-//             key={testcase}
-//             isExpanded={forceExpand}
-//             className={resultClasses}
-//             aria-labelledby="artifact-item-result"
-//         >
-//             <DataListItemRow>
-//                 <DataListToggle
-//                     id="toggle"
-//                     onClick={onToggle}
-//                     isExpanded={forceExpand}
-//                 />
-//                 <DataListItemCells
-//                     className="pf-u-m-0 pf-u-p-0"
-//                     dataListCells={[
-//                         <DataListCell
-//                             className="pf-u-m-0 pf-u-p-0"
-//                             key="secondary content"
-//                         >
-//                             <FaceForGreenwaveState
-//                                 aChild={aChild}
-//                                 artifact={artifact}
-//                                 artifactDashboardUrl={artifactDashboardUrl}
-//                             />
-//                         </DataListCell>,
-//                     ]}
-//                 />
-//             </DataListItemRow>
-//             <DataListContent
-//                 aria-label="Primary Content Result Details"
-//                 id="ex-result-expand1"
-//                 isHidden={!forceExpand}
-//             >
-//                 <BodyForGreenwaveState
-//                     aChild={aChild}
-//                     artifact={artifact}
-//                     isVisible={forceExpand}
-//                 />
-//             </DataListContent>
-//         </DataListItem>
-//     );
-//
-//     return toRender;
-// };
-//
+export const AChildGreenwaveComponent: React.FC<
+    AChildGreenwaveComponentProps
+> = (props) => {
+    const {
+        aChild,
+        artifact,
+        forceExpand,
+        setExpandedResult,
+        artifactDashboardUrl,
+    } = props;
+
+    const { testcase } = aChild;
+    /*
+     * Expand a specific testcase according to query string and scroll to it
+     * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
+     */
+    const onToggle = () => {
+        setExpandedResult(forceExpand ? '' : testcase);
+    };
+    /** Note for info test results */
+    const resultClasses = classNames(styles.helpSelect, {
+        [styles.expandedResult]: forceExpand,
+    });
+    const toRender = (
+        <DataListItem
+            key={testcase}
+            isExpanded={forceExpand}
+            className={resultClasses}
+            aria-labelledby="artifact-item-result"
+        >
+            <DataListItemRow>
+                <DataListToggle
+                    id="toggle"
+                    onClick={onToggle}
+                    isExpanded={forceExpand}
+                />
+                <DataListItemCells
+                    className="pf-u-m-0 pf-u-p-0"
+                    dataListCells={[
+                        <DataListCell
+                            className="pf-u-m-0 pf-u-p-0"
+                            key="secondary content"
+                        >
+                            <FaceForGreenwaveState
+                                aChild={aChild}
+                                artifact={artifact}
+                                artifactDashboardUrl={artifactDashboardUrl}
+                            />
+                        </DataListCell>,
+                    ]}
+                />
+            </DataListItemRow>
+            <DataListContent
+                aria-label="Primary Content Result Details"
+                id="ex-result-expand1"
+                isHidden={!forceExpand}
+            >
+                <BodyForGreenwaveState
+                    aChild={aChild}
+                    artifact={artifact}
+                    isVisible={forceExpand}
+                />
+            </DataListContent>
+        </DataListItem>
+    );
+
+    return toRender;
+};

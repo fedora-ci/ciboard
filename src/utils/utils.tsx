@@ -295,7 +295,7 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
 export const isGatingArtifact = (artifact: Artifact): boolean => {
     if (
         (isArtifactRpm(artifact) || isArtifactMbs(artifact)) &&
-        _.size(artifact.hit_source.gateTag) > 0
+        _.size(artifact.hitSource.gateTag) > 0
     ) {
         return true;
     } else if (isArtifactRedhatContainerImage(artifact)) {

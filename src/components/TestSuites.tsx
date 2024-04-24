@@ -19,13 +19,18 @@
  */
 
 import _ from 'lodash';
-import React, { useState } from 'react';
+import pako from 'pako';
+import React, { memo, useEffect, useState } from 'react';
+import { Buffer } from 'buffer';
 import classNames from 'classnames';
+import { useQuery } from '@apollo/client';
 import 'moment-duration-format';
 import {
     Alert,
     Flex,
     Label,
+    Title,
+    Spinner,
     Checkbox,
     FlexItem,
     DataList,
@@ -46,7 +51,16 @@ import {
 } from '@patternfly/react-table';
 import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
 
+import {
+    getMsgId,
+    Artifact,
+    getAType,
+    AChildTestMsg,
+    getArtifactId,
+} from '../types';
+import { xunitParser } from '../utils/xunitParser';
 import { mkSeparatedList } from '../utils/artifactsTable';
+import { ArtifactsXunitQuery } from '../queries/Artifacts';
 import { mapTypeToIconsProps, TestStatusIcon } from '../utils/utils';
 import {
     TestCase,
@@ -64,6 +78,35 @@ import {
 import styles from '../custom.module.css';
 import { ExternalLink } from './ExternalLink';
 import { humanReadableTime } from '../utils/timeUtils';
+
+interface TestSuitesInternalProps {
+    xunit: TestSuite[];
+}
+
+const TestSuitesInternal: React.FC<TestSuitesInternalProps> = (props) => {
+    const { xunit } = props;
+    if (_.isEmpty(xunit)) {
+        return (
+            <Alert
+                isInline
+                isPlain
+                key="error"
+                title="Could not parse detialed results"
+                variant="danger"
+            >
+                We were unable to parse the detailed test results as provided by
+                the CI system.
+            </Alert>
+        );
+    }
+    const testSuites = _.map(xunit, (suite) => (
+        <Flex direction={{ default: 'column' }} key={suite._uuid}>
+            <Title headingLevel="h4">{suite.name}</Title>
+            <TestSuiteDisplay suite={suite} />
+        </Flex>
+    ));
+    return <>{testSuites}</>;
+};
 
 const mkLogLink = (log: TestCaseLogsEntry): JSX.Element => (
     <ExternalLink href={log.$.href} key={log.$.name}>
@@ -372,3 +415,117 @@ export const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
         </>
     );
 };
+
+interface TestSuitesProps {
+    aChild: AChildTestMsg;
+    artifact: Artifact;
+}
+
+const TestSuites_: React.FC<TestSuitesProps> = (props) => {
+    const { aChild, artifact } = props;
+    const msgId = getMsgId(aChild);
+    const [xunit, setXunit] = useState<string>('');
+    const [xunitProcessed, setXunitProcessed] = useState(false);
+    /** why do we need msgError? */
+    const [msgError, setError] = useState<JSX.Element>();
+    const aType = getAType(artifact);
+    const aId = getArtifactId(artifact);
+    const { loading, data } = useQuery(ArtifactsXunitQuery, {
+        variables: {
+            atype: aType,
+            dbFieldName1: 'aid',
+            dbFieldValues1: [aId],
+            msg_id: msgId,
+        },
+        fetchPolicy: 'cache-first',
+        errorPolicy: 'all',
+        notifyOnNetworkStatusChange: true,
+    });
+    /** Even there is an error there could be data */
+    const haveData =
+        !loading &&
+        Boolean(data) &&
+        _.has(data, 'artifacts.artifacts[0].states');
+    useEffect(() => {
+        if (!haveData) return;
+        const state = _.find(
+            /** this is a bit strange, that received data doesn't propage to original
+             * artifact object. Original artifact.states objects stays old */
+            _.get(data, 'artifacts.artifacts[0].states'),
+            (aChild) => {
+                const msgId_ = getMsgId(aChild);
+                return msgId_ === msgId;
+            },
+        );
+        if (_.isNil(state)) return;
+        const xunitRaw: string = state.broker_msg_xunit;
+        if (_.isEmpty(xunitRaw)) {
+            setXunitProcessed(true);
+            return;
+        }
+        try {
+            /** Decode base64 encoded gzipped data */
+            const compressed = Buffer.from(xunitRaw, 'base64');
+            const decompressed = pako.inflate(compressed);
+            const utf8Decoded = Buffer.from(decompressed).toString('utf8');
+            setXunit(utf8Decoded);
+        } catch (err) {
+            const error = (
+                <Alert isInline isPlain title="Xunit error">
+                    Could not parse test results: {err}
+                </Alert>
+            );
+            setError(error);
+        }
+        setXunitProcessed(true);
+    }, [data, msgId, haveData, artifact.children]);
+    const inflating = data && !xunitProcessed;
+    if (loading || inflating) {
+        const text = loading ? 'Fetching test results…' : 'Inflating…';
+        return (
+            <Flex className="pf-u-p-sm">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-sm" size="md" /> {text}
+                </FlexItem>
+            </Flex>
+        );
+    }
+    if (msgError) return <>{msgError}</>;
+    if (_.isEmpty(xunit)) {
+        return <NoDetailedResults />;
+    }
+    let parsedXunit;
+    try {
+        parsedXunit = xunitParser(xunit);
+        if (_.isEmpty(parsedXunit)) {
+            return <NoDetailedResults />;
+        }
+    } catch (err) {
+        return <NoDetailedResults />;
+    }
+    /* TODO XXX: remove / generalize */
+    if (
+        parsedXunit[0].name === 'rpmdiff-analysis' ||
+        parsedXunit[0].name === 'rpmdiff-comparison'
+    ) {
+        return (
+            <div>
+                {parsedXunit[0].properties['baseosci.overall-result']} -{' '}
+                <a
+                    href={parsedXunit[0].properties['baseosci.url.rpmdiff-run']}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    detailed results on RPMdiff Web UI
+                </a>
+            </div>
+        );
+    }
+    return <TestSuitesInternal xunit={parsedXunit} />;
+};
+
+export const TestSuites = memo(
+    TestSuites_,
+    ({ aChild: state_prev }, { aChild: state_next }) =>
+        _.isEqual(state_prev, state_next),
+);

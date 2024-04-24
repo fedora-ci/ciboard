@@ -55,7 +55,6 @@ import {
     isArtifactRpm,
     getArtifactLocalPath,
     GreenwaveDecisionReply,
-    getAType,
 } from '../types';
 
 interface PrintRequirementsSizeProps {
@@ -88,7 +87,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     const decision: GreenwaveDecisionReply | undefined =
         artifact.greenwaveDecision;
     console.log(artifact);
-    const isScratch = _.get(artifact, 'hit_source.scratch', false);
+    const isScratch = _.get(artifact, 'hitSource.scratch', false);
     if (isScratch) {
         return null;
     }
@@ -169,11 +168,10 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
         (state) => state.artifacts,
     );
     const { artifact } = props;
-    const { hit_info, hit_source } = artifact;
-    const aType = getAType(artifact);
+    const { hitInfo, hitSource } = artifact;
     const href = getArtifactLocalPath(artifact);
     return (
-        <Card id={hit_info._id} isCompact>
+        <Card id={hitInfo._id} isCompact>
             <CardHeader>
                 <CardActions hasNoOffset={true}>
                     <Link to={href}>
@@ -191,7 +189,7 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
                         </Brand>
                     </FlexItem>
                     <FlexItem style={{ whiteSpace: 'nowrap' }}>
-                        {aType}
+                        {hitSource.aType}
                     </FlexItem>
                     <FlexItem
                         style={{
@@ -201,7 +199,7 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
                             fontSize: '80%',
                         }}
                     >
-                        <Link to="">{hit_source.taskId}</Link>
+                        <Link to="">{hitSource.taskId}</Link>
                     </FlexItem>
                     <FlexItem
                         style={{
@@ -211,19 +209,19 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
                             whiteSpace: 'nowrap',
                         }}
                     >
-                        {hit_source.nvr}
+                        {hitSource.nvr}
                     </FlexItem>
                     <FlexItem style={{ whiteSpace: 'nowrap' }}>
-                        {hit_source.issuer}
+                        {hitSource.issuer}
                     </FlexItem>
                     <FlexItem style={{ whiteSpace: 'nowrap' }}>
-                        {hit_source.scratch}
+                        {hitSource.scratch}
                     </FlexItem>
                     <FlexItem
                         align={{ default: 'alignRight' }}
                         style={{ whiteSpace: 'nowrap' }}
                     >
-                        {hit_source.gateTag}
+                        {hitSource.gateTag}
                     </FlexItem>
                     <FlexItem style={{ flex: '0 0 10%', whiteSpace: 'nowrap' }}>
                         <ArtifactGreenwaveStatesSummary
@@ -238,8 +236,6 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
 };
 
 /**
- * 
- * XXX ???
                 <FlexItem>{hitSource.component}</FlexItem>
                 <FlexItem>{hitSource.buildId}</FlexItem>
                 <FlexItem>{hitSource.brokerMsgIdGateTag}</FlexItem>
@@ -255,7 +251,7 @@ const ArtifactCard = (props: ArtifactCardProps) => {
     }
     return (
         <Flex>
-            <FlexItem>{artifact.hit_info._id}</FlexItem>
+            <FlexItem>{artifact.hitInfo._id}</FlexItem>
         </Flex>
     );
 };
@@ -291,8 +287,8 @@ const ArtList = (_props: ArtListProps) => {
 
 interface NothingFoundProps {}
 const NothingFound = (_props: NothingFoundProps) => {
-    const { hits_info } = useAppSelector((state) => state.artifacts);
-    const totalHits = hits_info?.total?.value;
+    const { hitsInfo } = useAppSelector((state) => state.artifacts);
+    const totalHits = hitsInfo?.total?.value;
     if (totalHits !== 0) return null;
     return (
         <Bullseye>

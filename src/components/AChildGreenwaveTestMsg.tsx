@@ -76,7 +76,7 @@ import {
     TestMsgDocsButton,
     TestMsgRerunButton,
     TestMsgStateMapping,
-    //TestMsgDetailedResults,
+    TestMsgDetailedResults,
 } from './AChildTestMsgComponent';
 import {
     TestInfo,
@@ -190,251 +190,249 @@ export const FaceForGreenwaveTestMsgState: React.FC<
     );
 };
 
-// REMOVE:
+interface BodyForGreenwaveTestMsgChildProps {
+    aChild: AChildGreenwaveAndTestMsg;
+    artifact: Artifact;
+    isVisible: boolean;
+}
 
-// export interface ArtifactGreenwaveTestMsgStateProps extends AChildProps {
-//     aChild: AChildGreenwaveAndTestMsg;
-// }
-//
-// export const ArtifactGreenwaveTestMsgState: React.FC<
-//     ArtifactGreenwaveTestMsgStateProps
-// > = (props) => {
-//     const {
-//         aChild,
-//         artifact,
-//         forceExpand,
-//         setExpandedResult,
-//         artifactDashboardUrl,
-//     } = props;
-//
-//     /*
-//      * Expand a specific testcase according to query string and scroll to it
-//      * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
-//      */
-//     const onToggle = () => {
-//         if (forceExpand) {
-//             setExpandedResult('');
-//         } else {
-//             const key = aChild.gs.testcase;
-//             setExpandedResult(key);
-//         }
-//     };
-//
-//     /** Note for info test results */
-//     const key = aChild.gs.testcase;
-//     const resultClasses = classNames(styles.helpSelect, {
-//         [styles.expandedResult]: forceExpand,
-//     });
-//
-//     const toRender = (
-//         <DataListItem
-//             aria-labelledby="artifact-item-result"
-//             className={resultClasses}
-//             isExpanded={forceExpand}
-//             key={key}
-//         >
-//             <DataListItemRow>
-//                 <DataListToggle
-//                     id="toggle"
-//                     isExpanded={forceExpand}
-//                     onClick={onToggle}
-//                 />
-//                 <DataListItemCells
-//                     className="pf-u-m-0 pf-u-p-0"
-//                     dataListCells={[
-//                         <DataListCell
-//                             className="pf-u-m-0 pf-u-p-0"
-//                             key="secondary content"
-//                         >
-//                             <FaceForGreenwaveTestMsgState
-//                                 artifact={artifact}
-//                                 artifactDashboardUrl={artifactDashboardUrl}
-//                                 aChild={aChild}
-//                             />
-//                         </DataListCell>,
-//                     ]}
-//                 />
-//             </DataListItemRow>
-//             <DataListContent
-//                 aria-label="Detailed information on test result"
-//                 id="ex-result-expand1"
-//                 isHidden={!forceExpand}
-//             >
-//                 <BodyForGreenwaveTestMsgChild
-//                     aChild={aChild}
-//                     artifact={artifact}
-//                     isVisible={forceExpand}
-//                 />
-//             </DataListContent>
-//         </DataListItem>
-//     );
-//
-//     return toRender;
-// };
+export const BodyForGreenwaveTestMsgChild: React.FC<
+    BodyForGreenwaveTestMsgChildProps
+> = (props) => {
+    const { artifact, isVisible, aChild } = props;
+    const [activeTabKey, setActiveTabKey] = useState<number | string>(
+        'tab-test-xunit',
+    );
+    const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
+        setActiveTabKey(tabIndex);
+    };
+    const testcase_name = getTestcaseName(aChild);
+    const product_version = getArtifactProduct(artifact);
+    const variables: any = { testcase_name };
+    if (!_.isNil(product_version)) {
+        variables.product_version = product_version;
+    }
+    const [getMetadata, { loading: metadataLoading, error: _error, data }] =
+        useLazyQuery<MetadataQueryResult>(MetadataQuery, {
+            variables,
+            errorPolicy: 'all',
+            /* need to re-fetch each time when user press save/back button */
+            fetchPolicy: 'cache-and-network',
+            notifyOnNetworkStatusChange: true,
+        });
+    useOnceCall(() => {
+        /* Fetch data only when ci-system is expanded. */
+        getMetadata();
+    }, isVisible);
+    if (!isVisible) {
+        return null;
+    }
+    if (metadataLoading) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading test
+                    information…
+                </FlexItem>
+            </Flex>
+        );
+    }
+    const metadata = data?.metadata_consolidated;
+    if (_.isNil(metadata) || _.isNil(metadata?.payload)) {
+        return (
+            <Flex className="pf-u-p-lg">
+                <FlexItem>Cannot fetch metadata info.</FlexItem>
+            </Flex>
+        );
+    }
+    const { contact, dependency, description, known_issues } = metadata.payload;
+    const isTestInfoTabHidden = !description && !contact;
+    const isTestKnownIssuesTabHidden = !known_issues;
+    const isTestDependencyTabHidden = !dependency;
+    return (
+        <>
+            <Tabs
+                activeKey={activeTabKey}
+                onSelect={handleTabClick}
+                isBox
+                aria-label="Tabs with ci-system info"
+                role="region"
+            >
+                <Tab
+                    eventKey={'tab-test-xunit'}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <RegistryIcon />
+                            </TabTitleIcon>{' '}
+                            <TabTitleText>Result</TabTitleText>{' '}
+                        </>
+                    }
+                    aria-label="Tab with xunit results"
+                >
+                    <GreenwaveWaiver waiver={aChild.gs.waiver} />
+                    <GreenwaveDetails requirement={aChild.gs.requirement} />
+                    <ResultNote aChild={aChild.ms} />
+                    <TestMsgDetailedResults
+                        artifact={artifact}
+                        aChild={aChild.ms}
+                    />
+                </Tab>
+                <Tab
+                    eventKey={'tab-test-known-issues'}
+                    isHidden={isTestKnownIssuesTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ExclamationCircleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Known issues</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with known issues"
+                >
+                    <>
+                        <TestKnownIssues metadata={metadata} />
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={'tab-test-deps'}
+                    isHidden={isTestDependencyTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ExclamationTriangleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Dependency</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with dependency information"
+                >
+                    <>
+                        <TestDependency metadata={metadata} />
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={'tab-test-info'}
+                    isHidden={isTestInfoTabHidden}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <InfoCircleIcon />
+                            </TabTitleIcon>
+                            <TabTitleText>Test info</TabTitleText>
+                        </>
+                    }
+                    aria-label="Tab with test info"
+                >
+                    <>
+                        <TestInfo metadata={metadata} />
+                        <TextContent>
+                            <Text component={TextVariants.small}>
+                                CI owners can update info on metadata page.
+                            </Text>
+                        </TextContent>
+                    </>
+                </Tab>
+                <Tab
+                    eventKey={'tab-test-details'}
+                    title={
+                        <>
+                            <TabTitleIcon>
+                                <ListIcon />
+                            </TabTitleIcon>{' '}
+                            <TabTitleText>Details</TabTitleText>{' '}
+                        </>
+                    }
+                    aria-label="Tab with test details"
+                >
+                    <GreenwaveResultInfo aChild={aChild.gs} />
+                    <TestMsgStateMapping
+                        artifact={artifact}
+                        aChild={aChild.ms}
+                    />
+                </Tab>
+            </Tabs>
+        </>
+    );
+};
 
-// interface BodyForGreenwaveTestMsgChildProps {
-//     aChild: AChildGreenwaveAndTestMsg;
-//     artifact: Artifact;
-//     isVisible: boolean;
-// }
-//
-// export const BodyForGreenwaveTestMsgChild: React.FC<
-//     BodyForGreenwaveTestMsgChildProps
-// > = (props) => {
-//     const { artifact, isVisible, aChild } = props;
-//     const [activeTabKey, setActiveTabKey] = useState<number | string>(
-//         'tab-test-xunit',
-//     );
-//     const handleTabClick: TabsProps['onSelect'] = (event, tabIndex) => {
-//         setActiveTabKey(tabIndex);
-//     };
-//     const testcase_name = getTestcaseName(aChild);
-//     const product_version = getArtifactProduct(artifact);
-//     const variables: any = { testcase_name };
-//     if (!_.isNil(product_version)) {
-//         variables.product_version = product_version;
-//     }
-//     const [getMetadata, { loading: metadataLoading, error: _error, data }] =
-//         useLazyQuery<MetadataQueryResult>(MetadataQuery, {
-//             variables,
-//             errorPolicy: 'all',
-//             /* need to re-fetch each time when user press save/back button */
-//             fetchPolicy: 'cache-and-network',
-//             notifyOnNetworkStatusChange: true,
-//         });
-//     useOnceCall(() => {
-//         /* Fetch data only when ci-system is expanded. */
-//         getMetadata();
-//     }, isVisible);
-//     if (!isVisible) {
-//         return null;
-//     }
-//     if (metadataLoading) {
-//         return (
-//             <Flex className="pf-u-p-lg">
-//                 <FlexItem>
-//                     <Spinner className="pf-u-mr-md" size="md" /> Loading test
-//                     information…
-//                 </FlexItem>
-//             </Flex>
-//         );
-//     }
-//     const metadata = data?.metadata_consolidated;
-//     if (_.isNil(metadata) || _.isNil(metadata?.payload)) {
-//         return (
-//             <Flex className="pf-u-p-lg">
-//                 <FlexItem>Cannot fetch metadata info.</FlexItem>
-//             </Flex>
-//         );
-//     }
-//     const { contact, dependency, description, known_issues } = metadata.payload;
-//     const isTestInfoTabHidden = !description && !contact;
-//     const isTestKnownIssuesTabHidden = !known_issues;
-//     const isTestDependencyTabHidden = !dependency;
-//     return (
-//         <>
-//             <Tabs
-//                 activeKey={activeTabKey}
-//                 onSelect={handleTabClick}
-//                 isBox
-//                 aria-label="Tabs with ci-system info"
-//                 role="region"
-//             >
-//                 <Tab
-//                     eventKey={'tab-test-xunit'}
-//                     title={
-//                         <>
-//                             <TabTitleIcon>
-//                                 <RegistryIcon />
-//                             </TabTitleIcon>{' '}
-//                             <TabTitleText>Result</TabTitleText>{' '}
-//                         </>
-//                     }
-//                     aria-label="Tab with xunit results"
-//                 >
-//                     <GreenwaveWaiver waiver={aChild.gs.waiver} />
-//                     <GreenwaveDetails requirement={aChild.gs.requirement} />
-//                     <ResultNote aChild={aChild.ms} />
-//                     <TestMsgDetailedResults
-//                         artifact={artifact}
-//                         aChild={aChild.ms}
-//                     />
-//                 </Tab>
-//                 <Tab
-//                     eventKey={'tab-test-known-issues'}
-//                     isHidden={isTestKnownIssuesTabHidden}
-//                     title={
-//                         <>
-//                             <TabTitleIcon>
-//                                 <ExclamationCircleIcon />
-//                             </TabTitleIcon>
-//                             <TabTitleText>Known issues</TabTitleText>
-//                         </>
-//                     }
-//                     aria-label="Tab with known issues"
-//                 >
-//                     <>
-//                         <TestKnownIssues metadata={metadata} />
-//                     </>
-//                 </Tab>
-//                 <Tab
-//                     eventKey={'tab-test-deps'}
-//                     isHidden={isTestDependencyTabHidden}
-//                     title={
-//                         <>
-//                             <TabTitleIcon>
-//                                 <ExclamationTriangleIcon />
-//                             </TabTitleIcon>
-//                             <TabTitleText>Dependency</TabTitleText>
-//                         </>
-//                     }
-//                     aria-label="Tab with dependency information"
-//                 >
-//                     <>
-//                         <TestDependency metadata={metadata} />
-//                     </>
-//                 </Tab>
-//                 <Tab
-//                     eventKey={'tab-test-info'}
-//                     isHidden={isTestInfoTabHidden}
-//                     title={
-//                         <>
-//                             <TabTitleIcon>
-//                                 <InfoCircleIcon />
-//                             </TabTitleIcon>
-//                             <TabTitleText>Test info</TabTitleText>
-//                         </>
-//                     }
-//                     aria-label="Tab with test info"
-//                 >
-//                     <>
-//                         <TestInfo metadata={metadata} />
-//                         <TextContent>
-//                             <Text component={TextVariants.small}>
-//                                 CI owners can update info on metadata page.
-//                             </Text>
-//                         </TextContent>
-//                     </>
-//                 </Tab>
-//                 <Tab
-//                     eventKey={'tab-test-details'}
-//                     title={
-//                         <>
-//                             <TabTitleIcon>
-//                                 <ListIcon />
-//                             </TabTitleIcon>{' '}
-//                             <TabTitleText>Details</TabTitleText>{' '}
-//                         </>
-//                     }
-//                     aria-label="Tab with test details"
-//                 >
-//                     <GreenwaveResultInfo aChild={aChild.gs} />
-//                     <TestMsgStateMapping
-//                         artifact={artifact}
-//                         aChild={aChild.ms}
-//                     />
-//                 </Tab>
-//             </Tabs>
-//         </>
-//     );
-// };
+export interface ArtifactGreenwaveTestMsgStateProps extends AChildProps {
+    aChild: AChildGreenwaveAndTestMsg;
+}
+
+export const ArtifactGreenwaveTestMsgState: React.FC<
+    ArtifactGreenwaveTestMsgStateProps
+> = (props) => {
+    const {
+        aChild,
+        artifact,
+        forceExpand,
+        setExpandedResult,
+        artifactDashboardUrl,
+    } = props;
+
+    /*
+     * Expand a specific testcase according to query string and scroll to it
+     * ?focus=tc:<test-case-name> or ?focus=id:<pipeline-id>
+     */
+    const onToggle = () => {
+        if (forceExpand) {
+            setExpandedResult('');
+        } else {
+            const key = aChild.gs.testcase;
+            setExpandedResult(key);
+        }
+    };
+
+    /** Note for info test results */
+    const key = aChild.gs.testcase;
+    const resultClasses = classNames(styles.helpSelect, {
+        [styles.expandedResult]: forceExpand,
+    });
+
+    const toRender = (
+        <DataListItem
+            aria-labelledby="artifact-item-result"
+            className={resultClasses}
+            isExpanded={forceExpand}
+            key={key}
+        >
+            <DataListItemRow>
+                <DataListToggle
+                    id="toggle"
+                    isExpanded={forceExpand}
+                    onClick={onToggle}
+                />
+                <DataListItemCells
+                    className="pf-u-m-0 pf-u-p-0"
+                    dataListCells={[
+                        <DataListCell
+                            className="pf-u-m-0 pf-u-p-0"
+                            key="secondary content"
+                        >
+                            <FaceForGreenwaveTestMsgState
+                                artifact={artifact}
+                                artifactDashboardUrl={artifactDashboardUrl}
+                                aChild={aChild}
+                            />
+                        </DataListCell>,
+                    ]}
+                />
+            </DataListItemRow>
+            <DataListContent
+                aria-label="Detailed information on test result"
+                id="ex-result-expand1"
+                isHidden={!forceExpand}
+            >
+                <BodyForGreenwaveTestMsgChild
+                    aChild={aChild}
+                    artifact={artifact}
+                    isVisible={forceExpand}
+                />
+            </DataListContent>
+        </DataListItem>
+    );
+
+    return toRender;
+};

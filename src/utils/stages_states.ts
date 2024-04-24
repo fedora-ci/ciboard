@@ -35,15 +35,12 @@ import {
     getTestMsgBody,
     AChildGreenwave,
     isAChildTestMsg,
-    getMsgStateName,
     getTestcaseName,
     GreenwaveResult,
-    getMsgStageName,
     TestMsgStateName,
     isAChildGreenwave,
     isAChildSchemaMsg,
     BrokerSchemaMsgBody,
-    getArtifactChildren,
     AChildrenByStateName,
     GreenwaveRequirement,
     GreenwaveDecisionReply,
@@ -74,6 +71,7 @@ type AChildrenByStageName = {
     msgStageName: MsgStageName;
     aChildrenByStateName: AChildrenByStateName;
 };
+
 
 /**
  * Entry point. This file is the most complicated part in this project.
@@ -210,9 +208,9 @@ const getKaiState = (
 
 const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
     const aChildrenByStageName: AChildrenByStageName[] = [];
-    const aChildren = getArtifactChildren(artifact);
-    const buildStage = _.omitBy(aChildrenByStateName(aChildren, 'build'), (x) =>
-        _.isEmpty(x),
+    const buildStage = _.omitBy(
+        aChildrenByStateName(artifact.children.hits, 'build'),
+        (x) => _.isEmpty(x),
     );
     if (_.some(_.values(buildStage), 'length')) {
         const msgStageName: MsgStageName = 'build';
@@ -233,16 +231,13 @@ const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
         }
     */
     let testStage: AChildrenByStateName = aChildrenByStateName(
-        aChildren,
+        artifact.children.hits,
         'test',
     );
     testStage = _.omitBy(testStage, (x) => _.isEmpty(x));
     if (_.some(_.values(testStage), 'length')) {
         const msgStageName: MsgStageName = 'test';
-        aChildrenByStageName.push({
-            msgStageName,
-            aChildrenByStateName: testStage,
-        });
+        aChildrenByStageName.push({ msgStageName, aChildrenByStateName: testStage });
     }
     return aChildrenByStageName;
 };
@@ -272,7 +267,7 @@ const mkGreenwaveStageStates = (
     const resultStatesGreenwave = mkResultStatesGreenwave(decision);
     _.assign(aChildrenByStateName, reqStatesGreenwave, resultStatesGreenwave);
     /* stage is always `greenwave` */
-    return { msgStageName: 'greenwave', aChildrenByStateName };
+    return { msgStageName: 'greenwave', aChildrenByStateName};
 };
 
 const mkReqStatesGreenwave = (
@@ -340,7 +335,7 @@ const mkStageStatesArray = (
     stageStates: Array<AChildrenByStageName>,
 ): StageStateAChildren[] => {
     const stageStatesArray: StageStateAChildren[] = [];
-    for (const { msgStageName, aChildrenByStateName } of stageStates) {
+    for (const { msgStageName, aChildrenByStateName} of stageStates) {
         for (const [stateName, aChildren] of _.toPairs(aChildrenByStateName)) {
             /** _.toPairs(obj) ===> [pair1, pair2, pair3] where pair == [key, value] */
             stageStatesArray.push([
@@ -461,9 +456,6 @@ export const aChildrenByStateName = (
              * pass tests
              */
             const aChildrenPassed = _.filter(aChildren, (aChild) => {
-                if (!isAChildTestMsg(aChild)) {
-                    return false;
-                }
                 const testResult = getTestMsgCompleteResult(
                     aChild,
                     msgStageName,
@@ -478,9 +470,6 @@ export const aChildrenByStateName = (
              * failed tests
              */
             const aChildrenFailed = _.filter(aChildren, (aChild) => {
-                if (!isAChildTestMsg(aChild)) {
-                    return false;
-                }
                 const testResult = getTestMsgCompleteResult(
                     aChild,
                     msgStageName,
@@ -495,9 +484,6 @@ export const aChildrenByStateName = (
              * info tests
              */
             const aChildrenInfo = _.filter(aChildren, (aChild) => {
-                if (!isAChildTestMsg(aChild)) {
-                    return false;
-                }
                 const testResult = getTestMsgCompleteResult(
                     aChild,
                     msgStageName,
@@ -512,9 +498,6 @@ export const aChildrenByStateName = (
              * needs_inspection tests
              */
             const aChildrenNeedsInspection = _.filter(aChildren, (aChild) => {
-                if (!isAChildTestMsg(aChild)) {
-                    return false;
-                }
                 const testResult = getTestMsgCompleteResult(
                     aChild,
                     msgStageName,
@@ -547,11 +530,9 @@ export const aChildrenByStateName = (
                 if (!isAChildSchemaMsg(aChild)) {
                     return false;
                 }
-                const aChildMsgStage = getMsgStageName(aChild);
-                const aChildMsgState = getMsgStateName(aChild);
                 if (
-                    aChildMsgStage === msgStageName &&
-                    aChildMsgState === msgStateName
+                    aChild.hitSource.msgStage === msgStageName &&
+                    aChild.hitSource.msgState === msgStateName
                 ) {
                     return true;
                 }
@@ -566,11 +547,10 @@ export const aChildrenByStateName = (
                 if (!isAChildSchemaMsg(aChild)) {
                     return false;
                 }
-                const aChildMsgStage = getMsgStageName(aChild);
-                const aChildMsgState = getMsgStateName(aChild);
+                const hitSource = aChild.hitSource;
                 if (
-                    aChildMsgStage === msgStageName &&
-                    aChildMsgState === msgStateName
+                    hitSource.msgStage === msgStageName &&
+                    hitSource.msgState === msgStateName
                 ) {
                     return true;
                 }
@@ -586,16 +566,17 @@ export const aChildrenByStateName = (
 };
 
 const getTestMsgCompleteResult = (
-    aChild: AChildTestMsg,
+    aChild: AChildMsg,
     reqStage: MsgStageName,
     reqState: MsgStateName,
 ): string | undefined => {
     if (!isAChildSchemaMsg(aChild)) {
         return;
     }
-    const aChildMsgStage = getMsgStageName(aChild);
-    const aChildMsgState = getMsgStateName(aChild);
-    if (aChildMsgStage !== reqStage || aChildMsgState !== reqState) {
+    if (
+        aChild.hitSource.msgStage !== reqStage ||
+        aChild.hitSource.msgState !== reqState
+    ) {
         return;
     }
     let testResult: string | undefined;

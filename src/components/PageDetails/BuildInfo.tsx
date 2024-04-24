@@ -399,9 +399,9 @@ interface BuildInfoMbsProps {
 }
 const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
     const { artifact } = props;
-    const { hit_source } = artifact;
+    const { hitSource } = artifact;
     const [activeTabKey, setActiveTabKey] = useState('summary');
-    const instance = kojiInstance(hit_source.aType);
+    const instance = kojiInstance(hitSource.aType);
 
     /*
      * Fetch available information about the build -- NVR, commit and build time,
@@ -413,7 +413,7 @@ const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
             ArtifactsDetailedInfoModuleBuild,
             {
                 variables: {
-                    build_id: Number(artifact.hit_source.buildId),
+                    build_id: Number(artifact.hitSource.buildId),
                     distgit_instance: instance,
                     koji_instance: instance,
                     mbs_instance: instance,
@@ -500,10 +500,10 @@ interface BuildInfoRpmProps {
 }
 const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
     const { artifact } = props;
-    const { hit_source } = artifact;
+    const { hitSource } = artifact;
     const [activeTabKey, setActiveTabKey] = useState('summary');
 
-    const kojiInst = kojiInstance(artifact.hit_source.aType);
+    const kojiInst = kojiInstance(artifact.hitSource.aType);
 
     /*
      * Fetch available information about the build -- NVR, commit and build time,
@@ -517,7 +517,7 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
                 variables: {
                     distgit_instance: kojiInst,
                     koji_instance: kojiInst,
-                    task_id: _.toNumber(hit_source.taskId),
+                    task_id: _.toNumber(hitSource.taskId),
                 },
                 errorPolicy: 'all',
             },
@@ -527,7 +527,7 @@ const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
     const { data: dataAdvisories, loading: loadingAdvisories } =
         useQuery<ErrataLinkedAdvisoriesReply>(LinkedErrataAdvisories, {
             variables: {
-                nvrs: [artifact.hit_source.nvr],
+                nvrs: [artifact.hitSource.nvr],
             },
             errorPolicy: 'all',
         });
