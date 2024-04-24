@@ -50,7 +50,7 @@ import {
     Tr,
     Tbody,
     Thead,
-    Table /* data-codemods */,
+    TableComposable,
 } from '@patternfly/react-table';
 
 import styles from '../../custom.module.css';
@@ -391,7 +391,11 @@ export const LinkedAdvisories: React.FC<LinkedAdvisoriesProps> = (props) => {
         );
     }
     return (
-        <Table aria-label="Simple table" variant="compact" borders={false}>
+        <TableComposable
+            aria-label="Simple table"
+            variant="compact"
+            borders={false}
+        >
             <Thead>
                 <Tr>
                     <Th>Product name</Th>
@@ -400,7 +404,7 @@ export const LinkedAdvisories: React.FC<LinkedAdvisoriesProps> = (props) => {
                 </Tr>
             </Thead>
             <Tbody>{advs}</Tbody>
-        </Table>
+        </TableComposable>
     );
 };
 
@@ -481,7 +485,7 @@ export const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
                     </LinkifyNewTab>
                 </HelperTextItem>
             </HelperText>
-            <Table
+            <TableComposable
                 aria-label="Errata Automation State Table"
                 variant="compact"
                 borders={false}
@@ -495,7 +499,7 @@ export const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
                     </Tr>
                 </Thead>
                 <Tbody>{advs}</Tbody>
-            </Table>
+            </TableComposable>
             <small>
                 <a
                     href={brokerMsgUrl}
@@ -815,7 +819,9 @@ export const HistoryList: React.FC<HistoryListProps> = (props) => {
     );
 };
 
-export const LimitWithScroll = (props: React.PropsWithChildren) => {
+export const LimitWithScroll = (
+    props: React.PropsWithChildren<React.ReactNode>,
+) => {
     const { children } = props;
     return (
         <Flex className="pf-u-p-md">

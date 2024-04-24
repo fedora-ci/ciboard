@@ -27,6 +27,7 @@ import {
     Tab,
     Tabs,
     List,
+    Title,
     Alert,
     Badge,
     Spinner,
@@ -42,7 +43,7 @@ import {
     DescriptionList,
     DescriptionListTerm,
     DescriptionListGroup,
-    DescriptionListDescription, EmptyStateHeader,
+    DescriptionListDescription,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
@@ -334,11 +335,14 @@ function BuildInfoEmpty(_props: {}) {
 function BuildInfoError(props: { message: string }) {
     return (
         <Bullseye>
-            <EmptyState variant="sm">
-                <EmptyStateHeader titleText="Could not load build information" icon={<EmptyStateIcon
+            <EmptyState variant="small">
+                <EmptyStateIcon
                     className="pf-u-danger-color-100"
                     icon={ExclamationCircleIcon}
-                />} headingLevel="h3" />
+                />
+                <Title headingLevel="h3" size="md">
+                    Could not load build information
+                </Title>
                 <EmptyStateBody>{props.message}</EmptyStateBody>
             </EmptyState>
         </Bullseye>
@@ -348,8 +352,11 @@ function BuildInfoError(props: { message: string }) {
 function BuildInfoLoading(_props: {}) {
     return (
         <Bullseye>
-            <EmptyState variant="sm">
-                <EmptyStateHeader titleText="Loading build information…" icon={<EmptyStateIcon icon={Spinner}  />} headingLevel="h3" />
+            <EmptyState variant="small">
+                <EmptyStateIcon component={Spinner} variant="container" />
+                <Title headingLevel="h3" size="md">
+                    Loading build information…
+                </Title>
             </EmptyState>
         </Bullseye>
     );

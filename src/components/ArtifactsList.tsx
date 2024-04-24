@@ -34,7 +34,8 @@ import {
     TitleSizes,
     EmptyState,
     TextContent,
-    EmptyStateIcon, EmptyStateHeader,
+    CardActions,
+    EmptyStateIcon,
 } from '@patternfly/react-core';
 import { Link } from 'react-router-dom';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
@@ -154,7 +155,10 @@ function ShowLoading(props: ShowLoadingProps) {
         <>
             <Bullseye>
                 <EmptyState>
-                    <EmptyStateHeader titleText="Loading search results…" icon={<EmptyStateIcon  icon={Spinner} />} headingLevel="h2" />
+                    <EmptyStateIcon variant="container" component={Spinner} />
+                    <Title headingLevel="h2" size="lg">
+                        Loading search results…
+                    </Title>
                 </EmptyState>
             </Bullseye>
         </>
@@ -174,10 +178,12 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
     const href = getArtifactLocalPath(artifact);
     return (
         <Card id={hit_info._id} isCompact>
-            <CardHeader actions={{ actions: <><Link to={href}>
+            <CardHeader>
+                <CardActions hasNoOffset={true}>
+                    <Link to={href}>
                         <Button variant="secondary">details</Button>
-                    </Link></>, hasNoOffset: true, className: undefined}} >
-                
+                    </Link>
+                </CardActions>
                 <Flex
                     style={{ flexGrow: 1 }}
                     flexWrap={{ default: 'nowrap' }}
@@ -286,10 +292,13 @@ const NothingFound = (_props: NothingFoundProps) => {
     return (
         <Bullseye>
             <EmptyState>
-                <EmptyStateHeader titleText="Nothing found" icon={<EmptyStateIcon
+                <EmptyStateIcon
                     className="pf-u-danger-color-100"
                     icon={ExclamationCircleIcon}
-                />} headingLevel="h2" />
+                />
+                <Title headingLevel="h2" size="lg">
+                    Nothing found
+                </Title>
             </EmptyState>
         </Bullseye>
     );

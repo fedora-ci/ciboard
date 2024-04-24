@@ -20,27 +20,24 @@
 
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { css } from '@patternfly/react-styles';
 import { useLazyQuery } from '@apollo/client';
 import {
     Nav,
-    Icon,
     Button,
     NavItem,
     NavList,
-    NavProps,
-    ButtonVariant,
-} from '@patternfly/react-core';
-import {
     Dropdown,
-    DropdownItem,
-    DropdownToggle,
+    NavProps,
     PageHeader,
+    DropdownItem,
+    ButtonVariant,
+    DropdownToggle,
     PageHeaderTools,
     PageHeaderToolsItem,
     PageHeaderToolsGroup,
-} from '@patternfly/react-core/deprecated';
+} from '@patternfly/react-core';
 import {
     AutomationIcon,
     ExternalLinkSquareAltIcon,
@@ -50,7 +47,10 @@ import accessibleStyles from '@patternfly/react-styles/css/utilities/Accessibili
 import { fetchUser } from '../actions';
 import { menuRoutes } from '../routes';
 import styles from '../custom.module.css';
-import { OnDropdownSelectType } from '../utils/artifactsTable';
+import {
+    OnDropdownSelectType,
+    OnDropdownToggleType,
+} from '../utils/artifactsTable';
 import { AuthzMappingQuery } from '../queries/Authz';
 import { useAppDispatch, useAppSelector } from '../hooks';
 
@@ -62,7 +62,7 @@ const logoProps = {
     },
 };
 
-type SelectedItemType = Parameters<Extract<NavProps['onSelect'], Function>>[1];
+type SelectedItemType = Parameters<Extract<NavProps['onSelect'], Function>>[0];
 
 const onLoginClick = () => {
     /**
@@ -77,14 +77,14 @@ const onLoginClick = () => {
 const LoginLink = () => {
     return (
         <Button
-            id="default-example-uid-01"
+            component="a"
             href="/login"
+            id="default-example-uid-01"
+            aria-label="Log in to CI Dashboard"
             icon={<ExternalLinkSquareAltIcon />}
+            iconPosition="right"
             onClick={onLoginClick}
             variant={ButtonVariant.link}
-            component="a"
-            aria-label="Log in to CI Dashboard"
-            iconPosition="right"
         >
             Login
         </Button>
@@ -111,7 +111,9 @@ const HeaderToolbar = () => {
     useEffect(() => {
         dispatch(fetchUser());
     }, [dispatch]);
-    const onDropdownToggle = (isDropdownOpen: boolean) => {
+    const onDropdownToggle: OnDropdownToggleType = (
+        isDropdownOpen: boolean,
+    ) => {
         setDropDownOpen(isDropdownOpen);
     };
     const onDropdownSelect: OnDropdownSelectType = (event) => {
@@ -129,11 +131,7 @@ const HeaderToolbar = () => {
                         onSelect={onDropdownSelect}
                         isOpen={isDropdownOpen}
                         toggle={
-                            <DropdownToggle
-                                onToggle={(_event, isDropdownOpen: boolean) =>
-                                    onDropdownToggle(isDropdownOpen)
-                                }
-                            >
+                            <DropdownToggle onToggle={onDropdownToggle}>
                                 {auth.displayName}
                             </DropdownToggle>
                         }
@@ -210,9 +208,9 @@ export const DashboardPageHeader = () => {
         });
     const PageNav = (
         <Nav
-            variant="horizontal"
-            onSelect={(_event, result: SelectedItemType) => onNavSelect(result)}
             className={styles['pageHeaderNav']}
+            variant="horizontal"
+            onSelect={onNavSelect}
             aria-label="Nav"
         >
             <NavList>{menuElements}</NavList>
@@ -223,13 +221,11 @@ export const DashboardPageHeader = () => {
             headerTools={<HeaderToolbar />}
             logo={
                 <>
-                    <Icon size="lg">
-                        <AutomationIcon className="pf-u-mr-sm" /> CI
-                    </Icon>
+                    <AutomationIcon size="lg" className="pf-u-mr-sm" /> CI
                     Dashboard
                 </>
             }
-            logoComponent="Link"
+            logoComponent={Link}
             logoProps={logoProps}
             topNav={PageNav}
         />

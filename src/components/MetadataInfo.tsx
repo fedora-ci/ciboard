@@ -35,7 +35,7 @@ import {
     Tbody,
     Thead,
     Caption,
-    Table /* data-codemods */,
+    TableComposable,
 } from '@patternfly/react-table';
 
 import {
@@ -76,7 +76,7 @@ const Dependency: React.FC<DependencyProps> = (props) => {
     };
 
     return (
-        <Table
+        <TableComposable
             className={styles.metadataTable}
             aria-label="Actions table"
             variant="compact"
@@ -126,7 +126,7 @@ const Dependency: React.FC<DependencyProps> = (props) => {
                     </Tr>
                 ))}
             </Tbody>
-        </Table>
+        </TableComposable>
     );
 };
 
@@ -146,7 +146,7 @@ export const KnownIssues: React.FC<KnownIssuesProps> = (props) => {
     };
 
     return (
-        <Table
+        <TableComposable
             className={styles.metadataTable}
             aria-label="Actions table"
             variant="compact"
@@ -193,7 +193,7 @@ export const KnownIssues: React.FC<KnownIssuesProps> = (props) => {
                     </Tr>
                 ))}
             </Tbody>
-        </Table>
+        </TableComposable>
     );
 };
 
@@ -383,9 +383,8 @@ export function useOnceCall(cb: Function, condition = true) {
     }, [cb, condition]);
 }
 
-type AChildDetailsEntryPropsWithChildren = React.PropsWithChildren & {
-    caption: string;
-};
+type AChildDetailsEntryPropsWithChildren =
+    React.PropsWithChildren<React.ReactNode> & { caption: string };
 
 const AChildDetailsEntry = (props: AChildDetailsEntryPropsWithChildren) => {
     const { children, caption } = props;
@@ -417,7 +416,13 @@ const mkLabel = (
         <DescriptionListGroup key={name}>
             <DescriptionListTerm>{name}</DescriptionListTerm>
             <DescriptionListDescription>
-                <Label isCompact color={color} icon={icon} variant="filled">
+                <Label
+                    isCompact
+                    color={color}
+                    icon={icon}
+                    variant="filled"
+                    isTruncated
+                >
                     <LinkifyNewTab>{value.toString()}</LinkifyNewTab>
                 </Label>
             </DescriptionListDescription>

@@ -30,6 +30,7 @@ import { ApolloError, useLazyQuery, useMutation } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import {
     Flex,
+    Title,
     Alert,
     Modal,
     Button,
@@ -49,7 +50,7 @@ import {
     ToolbarContent,
     ActionListItem,
     ActionListGroup,
-    EmptyStateVariant, EmptyStateHeader,
+    EmptyStateVariant,
 } from '@patternfly/react-core';
 import {
     Tr,
@@ -58,7 +59,7 @@ import {
     Tbody,
     Thead,
     ThProps,
-    Table /* data-codemods */,
+    TableComposable,
 } from '@patternfly/react-table';
 import {
     CopyIcon,
@@ -131,7 +132,7 @@ const Actions: FunctionComponent<ActionsProps> = (props) => {
                     <ActionListItem>
                         <Button
                             isInline
-                            size="sm"
+                            isSmall
                             variant="link"
                             id="edit-button"
                             component={(props) => (
@@ -143,7 +144,7 @@ const Actions: FunctionComponent<ActionsProps> = (props) => {
                     <ActionListItem>
                         <Button
                             isInline
-                            size="sm"
+                            isSmall
                             variant="link"
                             id="cancel-button"
                             component={(props) => (
@@ -160,7 +161,7 @@ const Actions: FunctionComponent<ActionsProps> = (props) => {
                             isInline
                             isDisabled={removeLoading}
                             isLoading={removeLoading}
-                            size="sm"
+                            isSmall
                             variant="link"
                             id="cancel-button"
                             icon={<Remove2Icon />}
@@ -256,7 +257,7 @@ export const IsLoading: FunctionComponent<IsLoadingProps> = (props) => {
         return null;
     }
     return (
-        <Spinner  size="sm" aria-label="Contents of the small example" />
+        <Spinner isSVG size="sm" aria-label="Contents of the small example" />
     );
 };
 
@@ -293,8 +294,11 @@ export const NothingFoundTR: FunctionComponent<NothingFoundTRProps> = (
         <Tr key="empty">
             <Td colSpan={colSpan}>
                 <Bullseye>
-                    <EmptyState variant={EmptyStateVariant.sm}>
-                        <EmptyStateHeader titleText="No entries found" icon={<EmptyStateIcon icon={SearchIcon} />} headingLevel="h2" />
+                    <EmptyState variant={EmptyStateVariant.small}>
+                        <EmptyStateIcon icon={SearchIcon} />
+                        <Title headingLevel="h2" size="lg">
+                            No entries found
+                        </Title>
                         <EmptyStateBody>Try again</EmptyStateBody>
                     </EmptyState>
                 </Bullseye>
@@ -405,7 +409,7 @@ const MetadataList: FunctionComponent<{}> = () => {
                 </ToolbarContent>
             </Toolbar>
 
-            <Table
+            <TableComposable
                 aria-label="Metadata table"
                 variant="compact"
                 isStriped
@@ -482,11 +486,11 @@ const MetadataList: FunctionComponent<{}> = () => {
                         );
                     })}
                 </Tbody>
-            </Table>
+            </TableComposable>
             <Button
                 variant="primary"
                 isInline
-                size="sm"
+                isSmall
                 component={(props) => <Link {...props} to="edit" />}
                 icon={<AddCircleOIcon />}
             >

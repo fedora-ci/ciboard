@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,12 +30,10 @@ import {
     TextArea,
     Checkbox,
     FormGroup,
-    HelperText,
     TextContent,
     ActionGroup,
     TextVariants,
-    FormHelperText,
-    HelperTextItem,
+    FormGroupProps,
 } from '@patternfly/react-core';
 import { ExternalLinkSquareAltIcon } from '@patternfly/react-icons';
 import { useApolloClient, useQuery } from '@apollo/client';
@@ -46,8 +44,6 @@ import { MetadataQuery } from '../queries/Metadata';
 import { MetadataQueryResult } from '../types';
 import { useAppDispatch, useAppSelector } from '../hooks';
 
-type Validate = 'success' | 'warning' | 'error' | 'default';
-
 const WaiveForm: React.FC<{}> = () => {
     const dispatch = useAppDispatch();
     const waiver = useAppSelector((store) => store.waive);
@@ -55,7 +51,8 @@ const WaiveForm: React.FC<{}> = () => {
     const [value, setValue] = useState('');
     const [checked, setChecked] = useState(false);
     const [isValid, setIsValid] = useState(false);
-    const [validated, setValidated] = useState<Validate>('default');
+    const [validated, setValidated] =
+        useState<FormGroupProps['validated']>('default');
     const [madeRequest, setMadeRequest] = useState(false);
 
     const handleTextInputChange = (value: string) => {
@@ -91,6 +88,7 @@ const WaiveForm: React.FC<{}> = () => {
 
     const invalidText =
         'Reason must have detailed explanation. Provide links to issues, bugs, etc';
+    const helperText = '';
     const agreementLabel = 'I agree and acknowledge the above information';
 
     const metadataLoaded = !qLoading && !qError && metadata;
@@ -119,47 +117,43 @@ const WaiveForm: React.FC<{}> = () => {
                         {metadataAggrementText || agreementText}
                     </Text>
                 </TextContent>
-                <FormGroup label="Reason" fieldId="reason" isRequired>
+                <FormGroup
+                    fieldId="reason"
+                    helperText={helperText}
+                    helperTextInvalid={invalidText}
+                    isRequired
+                    label="Reason"
+                    validated={validated}
+                >
                     <TextArea
-                        id="reason"
-                        value={value}
-                        onChange={(_event, value: string) =>
-                            handleTextInputChange(value)
-                        }
-                        validated={validated}
-                        className="pf-m-resize-vertical"
                         aria-describedby="age-helper"
+                        className="pf-m-resize-vertical"
+                        id="reason"
+                        onChange={handleTextInputChange}
+                        validated={validated}
+                        value={value}
                     />
-                    {validated === 'error' && (
-                        <FormHelperText>
-                            <HelperText>
-                                <HelperTextItem variant="error">
-                                    {invalidText}
-                                </HelperTextItem>
-                            </HelperText>
-                        </FormHelperText>
-                    )}
                 </FormGroup>
                 <FormGroup
-                    label="Required agreement"
                     fieldId="rquired-agreement"
                     isRequired
+                    label="Required agreement"
                 >
                     <Checkbox
+                        label={agreementLabel}
                         id="required-check"
                         name="required-check"
-                        label={agreementLabel}
-                        onChange={(_event, val) => setChecked(val)}
+                        onChange={setChecked}
                         isChecked={checked}
                     />
                 </FormGroup>
 
                 <ActionGroup>
                     <Button
-                        variant="primary"
-                        onClick={onClickSubmit}
-                        isLoading={madeRequest && !waiveError && !timestamp}
                         isDisabled={!isValid || !checked}
+                        isLoading={madeRequest && !waiveError && !timestamp}
+                        onClick={onClickSubmit}
+                        variant="primary"
                     >
                         Submit
                     </Button>
@@ -167,24 +161,24 @@ const WaiveForm: React.FC<{}> = () => {
                         Cancel
                     </Button>
                     <Button
-                        rel="noopener noreferrer"
-                        href={docs.waiving}
-                        icon={<ExternalLinkSquareAltIcon />}
-                        target="_blank"
-                        variant="link"
                         className="pf-u-ml-auto"
                         component="a"
+                        href={docs.waiving}
+                        icon={<ExternalLinkSquareAltIcon />}
                         iconPosition="right"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        variant="link"
                     >
                         Waiving documentation
                     </Button>
                 </ActionGroup>
                 {waiveError && (
                     <Alert
-                        title="Could not submit waiver"
-                        isPlain
-                        variant="danger"
                         isInline
+                        isPlain
+                        title="Could not submit waiver"
+                        variant="danger"
                     >
                         {waiveError}
                     </Alert>

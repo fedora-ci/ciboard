@@ -208,7 +208,7 @@ const TimelineSelection: React.FC<TimelineSelectionProps> = (_props: {}) => {
                 value={_.toNumber(newerThen)}
                 min={steps[0].value}
                 max={steps[3].value}
-                onChange={(_event, value: number) => onChange(value)}
+                onChange={onChange}
                 customSteps={steps}
             />
             <br />

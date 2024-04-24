@@ -31,7 +31,6 @@ import * as alertsSlice from '../slices/alertsSlice';
 import * as authSlice from '../slices/authSlice';
 import * as gatingTestsFormSlice from '../slices/gatingTestsFormSlice';
 import * as waiveSlice from '../slices/waiveSlice';
-import { AlertVariant } from '@patternfly/react-core';
 export * from '../slices/artifactsSlice';
 export * from '../slices/artifactsQuerySlice';
 
@@ -50,9 +49,9 @@ export const updateGatingSearchOptions = (
     gatingOptions: GASetSearchOptionsPayload,
 ) => gatingTestsFormSlice.updateCriteria(gatingOptions);
 
-export const popAlert = (key: number) => alertsSlice.popAlert({ key });
+type AlertVariantType = 'success' | 'danger' | 'warning' | 'info' | 'default';
 
-type AlertVariantKeys = keyof typeof AlertVariant;
+export const popAlert = (key: number) => alertsSlice.popAlert({ key });
 
 /**
  * Push a new alert to the alerts queue.
@@ -62,7 +61,7 @@ type AlertVariantKeys = keyof typeof AlertVariant;
  * @returns Promise that resolves after a succesful event dispatch.
  */
 export const pushAlert = (
-    variant: AlertVariantKeys,
+    variant: AlertVariantType,
     title: React.ReactNode,
     autoRm = true,
 ) => {

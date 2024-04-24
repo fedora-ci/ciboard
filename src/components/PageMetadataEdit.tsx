@@ -42,13 +42,10 @@ import {
     Checkbox,
     FormGroup,
     TextInput,
-    HelperText,
     FormSelect,
     ActionGroup,
     PageSection,
     FormFieldGroup,
-    HelperTextItem,
-    FormHelperText,
     FormSelectOption,
     FormFieldGroupHeader,
 } from '@patternfly/react-core';
@@ -58,9 +55,13 @@ import {
     Td,
     Tbody,
     Thead,
-    Table /* data-codemods */,
+    TableComposable,
 } from '@patternfly/react-table';
-import { HelpIcon, TrashIcon } from '@patternfly/react-icons';
+import {
+    HelpIcon,
+    TrashIcon,
+    ExclamationCircleIcon,
+} from '@patternfly/react-icons';
 
 import { config } from '../config';
 import { PageCommon } from './PageCommon';
@@ -107,7 +108,7 @@ export const SeveritySelect: React.FunctionComponent<SeveritySelectProps> = (
     return (
         <FormSelect
             value={issue.severity}
-            onChange={(_event, value: string) => onChange(value)}
+            onChange={onChange}
             aria-label="Severity Select"
         >
             {severityItems.map((option, index) => (
@@ -140,7 +141,7 @@ export const StatusSelect: React.FunctionComponent<StatusSelectProps> = (
     return (
         <FormSelect
             value={issue.status}
-            onChange={(_event, value: string) => onChange(value)}
+            onChange={onChange}
             aria-label="Status Select"
         >
             {statusItems.map((option, index) => (
@@ -170,7 +171,7 @@ export const IssueInfo: FunctionComponent<IssueInfoProps> = (props) => {
         <TextInput
             type="text"
             value={issue.info}
-            onChange={(_event, value: string) => onChange(value)}
+            onChange={onChange}
             aria-label="known issue info"
         />
     );
@@ -194,7 +195,7 @@ export const DepTestcase: FunctionComponent<DepTestcaseProps> = (props) => {
             placeholder="osci.brew-build./plans/tier1-internal.functional"
             type="text"
             value={dependency.testcaseName}
-            onChange={(_event, value: string) => onChange(value)}
+            onChange={onChange}
             aria-label="dependency testcase name"
         />
     );
@@ -218,7 +219,7 @@ export const DepComment: FunctionComponent<DepCommentProps> = (props) => {
             placeholder="explain dependency"
             type="text"
             value={dependency.comment}
-            onChange={(_event, value: string) => onChange(value)}
+            onChange={onChange}
             aria-label="dependency comment"
         />
     );
@@ -291,7 +292,11 @@ export const FormGroupKnownIssues: FunctionComponent<
             fieldId="form-known-issues-group"
             label="Known issues"
         >
-            <Table isStriped aria-label="Actions table" variant="compact">
+            <TableComposable
+                isStriped
+                aria-label="Actions table"
+                variant="compact"
+            >
                 <Thead noWrap>
                     <Tr>
                         <Th>{columnNames.info}</Th>
@@ -336,7 +341,7 @@ export const FormGroupKnownIssues: FunctionComponent<
                             </Tr>
                         ))}
                 </Tbody>
-            </Table>
+            </TableComposable>
             <Button variant="secondary" type="button" onClick={onClickAddNew}>
                 Add new known issue
             </Button>
@@ -371,7 +376,11 @@ export const FormGroupDependency: FunctionComponent<
             fieldId="form-dependencies-group"
             label="Relations to other tests"
         >
-            <Table isStriped aria-label="Actions table" variant="compact">
+            <TableComposable
+                isStriped
+                aria-label="Actions table"
+                variant="compact"
+            >
                 <Thead noWrap>
                     <Tr>
                         <Th>{columnNames.testcase}</Th>
@@ -417,7 +426,7 @@ export const FormGroupDependency: FunctionComponent<
                             </Tr>
                         ))}
                 </Tbody>
-            </Table>
+            </TableComposable>
             <Button variant="secondary" type="button" onClick={onClickAddNew}>
                 Add a new dependency
             </Button>
@@ -445,7 +454,7 @@ export const DependencySelect: React.FunctionComponent<
     return (
         <FormSelect
             value={dependency.dependency}
-            onChange={(_event, value: string) => onChange(value)}
+            onChange={onChange}
             aria-label="Dependency select"
         >
             {dependencyItems.map((option, index) => (
@@ -512,7 +521,7 @@ const FormGroupTestcase: FunctionComponent<FormGroupTestcaseProps> = (
                         onClick={(e) => e.preventDefault()}
                         className="pf-c-form__group-label-help"
                     >
-                        <HelpIcon />
+                        <HelpIcon noVerticalAlign />
                     </button>
                 </Popover>
             }
@@ -527,9 +536,7 @@ const FormGroupTestcase: FunctionComponent<FormGroupTestcaseProps> = (
                 type="text"
                 value={testcaseName}
                 aria-label="testcase name"
-                onChange={(_event, testcaseName: string) =>
-                    handleNameChange(testcaseName)
-                }
+                onChange={handleNameChange}
                 id="testcase-name-input-01"
             />
             <Checkbox
@@ -537,9 +544,7 @@ const FormGroupTestcase: FunctionComponent<FormGroupTestcaseProps> = (
                 aria-label="testcase name is regex"
                 id="testcase-is-regex-01"
                 isChecked={isRegex}
-                onChange={(event, checked: boolean) =>
-                    checkboxChange(checked, event)
-                }
+                onChange={checkboxChange}
                 name="is-regex"
             />
         </FormGroup>
@@ -564,6 +569,7 @@ const FormGroupPriority: FunctionComponent<FormGroupPriorityProps> = (
             label="Metadata priority"
             fieldId="form-priority"
             type="number"
+            helperText="The lower number the higher priority. Default value is applied if not specified."
         >
             <TextInput
                 isRequired
@@ -571,16 +577,8 @@ const FormGroupPriority: FunctionComponent<FormGroupPriorityProps> = (
                 id="form-priority"
                 name="priority"
                 value={priority}
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>
-                        The lower number the higher priority. Default value is
-                        applied if not specified.
-                    </HelperTextItem>
-                </HelperText>
-            </FormHelperText>
         </FormGroup>
     );
     return element;
@@ -612,31 +610,22 @@ const FormGroupProductVersion: FunctionComponent<
         doValidation(value);
     };
     const element = (
-        <FormGroup label="Product version" fieldId="form-product-version">
+        <FormGroup
+            label="Product version"
+            fieldId="form-product-version"
+            helperText="Keep empty to apply to all products. Example: rhel-8"
+            helperTextInvalid="Invalid product"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
+        >
             <TextInput
                 type="text"
                 id="form-product-version"
                 name="product-version"
                 value={productVersion}
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 validated={validated}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>
-                        Keep empty to apply to all products. Example: rhel-8
-                    </HelperTextItem>
-                </HelperText>
-            </FormHelperText>
-            {validated === 'error' && (
-                <FormHelperText>
-                    <HelperText>
-                        <HelperTextItem variant="error">
-                            Invalid product
-                        </HelperTextItem>
-                    </HelperText>
-                </FormHelperText>
-            )}
         </FormGroup>
     );
     return element;
@@ -655,23 +644,19 @@ const FormGroupDescription: FunctionComponent<FormGroupDescriptionProps> = (
         dispatch({ type: 'description', description: value });
     };
     const element = (
-        <FormGroup label="Description" fieldId="form-description">
+        <FormGroup
+            label="Description"
+            fieldId="form-description"
+            helperText="Information about the testcase. Its purpose, specifics, details"
+        >
             <TextArea
                 resizeOrientation="vertical"
                 id="form-description"
                 value={description}
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 name="description"
                 aria-label="testcase description"
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>
-                        Information about the testcase. Its purpose, specifics,
-                        details
-                    </HelperTextItem>
-                </HelperText>
-            </FormHelperText>
         </FormGroup>
     );
     return element;
@@ -690,22 +675,19 @@ const FormGroupWaiveMessage: FunctionComponent<FormGroupWaiveMessageProps> = (
         dispatch({ type: 'waiveMessage', waive_message: value });
     };
     const element = (
-        <FormGroup label="Waive message" fieldId="form-waive-message">
+        <FormGroup
+            label="Waive message"
+            fieldId="form-waive-message"
+            helperText="Warning message displayed in waiver form"
+        >
             <TextArea
                 resizeOrientation="vertical"
                 id="form-waive-message"
                 value={waive_message}
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 name="waiveMessage"
                 aria-label="testcase waive message"
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>
-                        Warning message displayed in waiver form
-                    </HelperTextItem>
-                </HelperText>
-            </FormHelperText>
         </FormGroup>
     );
     return element;
@@ -731,7 +713,7 @@ const FormGroupContactsTeamName: FunctionComponent<
                 placeholder="Cool team"
                 id="form-contacts-team"
                 name="contacts-team"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 value={team}
             />
         </FormGroup>
@@ -752,24 +734,20 @@ const FormGroupContactsCIName: FunctionComponent<
         dispatch({ type: 'contactsCIName', name: value });
     };
     const element = (
-        <FormGroup label="CI system name" fieldId="form-contacts-ci-name">
+        <FormGroup
+            label="CI system name"
+            fieldId="form-contacts-ci-name"
+            helperText="A human readable name for the system. Example: Installability"
+        >
             <TextInput
                 isRequired
                 type="text"
                 placeholder=""
                 id="form-contacts-ci-name"
                 name="contacts-ci-name"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 value={name}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>
-                        A human readable name for the system. Example:
-                        Installability
-                    </HelperTextItem>
-                </HelperText>
-            </FormHelperText>
         </FormGroup>
     );
     return element;
@@ -804,6 +782,10 @@ const FormGroupContactsCiSystemURL: FunctionComponent<
         <FormGroup
             label="URL link to the system or system's web interface"
             fieldId="form-contacts-url"
+            helperText="URL format"
+            helperTextInvalid="Invalid url"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
         >
             <TextInput
                 isRequired
@@ -811,24 +793,10 @@ const FormGroupContactsCiSystemURL: FunctionComponent<
                 placeholder="http://"
                 id="form-contacts-url"
                 name="contacts-url"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 validated={validated}
                 value={url}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>URL format</HelperTextItem>
-                </HelperText>
-            </FormHelperText>
-            {validated === 'error' && (
-                <FormHelperText>
-                    <HelperText>
-                        <HelperTextItem variant="error">
-                            Invalid url
-                        </HelperTextItem>
-                    </HelperText>
-                </FormHelperText>
-            )}
         </FormGroup>
     );
     return element;
@@ -860,31 +828,24 @@ const FormGroupContactsDocsLink: FunctionComponent<
         doValidation(value);
     };
     const element = (
-        <FormGroup label="Link to documentation" fieldId="form-contacts-docs">
+        <FormGroup
+            label="Link to documentation"
+            fieldId="form-contacts-docs"
+            helperText="URL format"
+            helperTextInvalid="Invalid url"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
+        >
             <TextInput
                 isRequired
                 type="text"
                 placeholder="http://"
                 id="form-contacts-docs"
                 name="contacts-docs"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 validated={validated}
                 value={docs}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>URL format</HelperTextItem>
-                </HelperText>
-            </FormHelperText>
-            {validated === 'error' && (
-                <FormHelperText>
-                    <HelperText>
-                        <HelperTextItem variant="error">
-                            Invalid url
-                        </HelperTextItem>
-                    </HelperText>
-                </FormHelperText>
-            )}
         </FormGroup>
     );
     return element;
@@ -916,31 +877,24 @@ const FormGroupContactsEmail: FunctionComponent<FormGroupContactsEmailProps> = (
         doValidation(value);
     };
     const element = (
-        <FormGroup label="Team's Email" fieldId="form-contacts-email">
+        <FormGroup
+            label="Team's Email"
+            fieldId="form-contacts-email"
+            helperText="Email format"
+            helperTextInvalid="Invalid email"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
+        >
             <TextInput
                 isRequired
                 type="text"
                 placeholder="coolteam@redhat.com"
                 id="form-contacts-email"
                 name="contacts-email"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 validated={validated}
                 value={email}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>Email format</HelperTextItem>
-                </HelperText>
-            </FormHelperText>
-            {validated === 'error' && (
-                <FormHelperText>
-                    <HelperText>
-                        <HelperTextItem variant="error">
-                            Invalid email
-                        </HelperTextItem>
-                    </HelperText>
-                </FormHelperText>
-            )}
         </FormGroup>
     );
     return element;
@@ -972,31 +926,24 @@ const FormGroupContactsGchat: FunctionComponent<FormGroupContactsGchatProps> = (
         doValidation(value);
     };
     const element = (
-        <FormGroup label="Team's gchat room" fieldId="form-contacts-gchat">
+        <FormGroup
+            label="Team's gchat room"
+            fieldId="form-contacts-gchat"
+            helperText="URL format"
+            helperTextInvalid="Invalid url"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
+        >
             <TextInput
                 isRequired
                 type="text"
                 placeholder="https://chat.google.com/room/AAAAwq9XDoM/ci-3Ln0mF_s"
                 id="form-contacts-gchat"
                 name="contacts-gchat"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 validated={validated}
                 value={gchat}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>URL format</HelperTextItem>
-                </HelperText>
-            </FormHelperText>
-            {validated === 'error' && (
-                <FormHelperText>
-                    <HelperText>
-                        <HelperTextItem variant="error">
-                            Invalid url
-                        </HelperTextItem>
-                    </HelperText>
-                </FormHelperText>
-            )}
         </FormGroup>
     );
     return element;
@@ -1028,31 +975,24 @@ const FormGroupContactsSlack: FunctionComponent<FormGroupContactsSlackProps> = (
         doValidation(value);
     };
     const element = (
-        <FormGroup label="Team Slack channel" fieldId="form-contacts-slack">
+        <FormGroup
+            label="Team Slack channel"
+            fieldId="form-contacts-slack"
+            helperText="URL format"
+            helperTextInvalid="Invalid url"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
+        >
             <TextInput
                 isRequired
                 type="text"
                 placeholder="https://example.slack.com/archives/T12Z1Z1XYZ9"
                 id="form-contacts-slack"
                 name="contacts-slack"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 validated={validated}
                 value={slackUrl}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>URL format</HelperTextItem>
-                </HelperText>
-            </FormHelperText>
-            {validated === 'error' && (
-                <FormHelperText>
-                    <HelperText>
-                        <HelperTextItem variant="error">
-                            Invalid url
-                        </HelperTextItem>
-                    </HelperText>
-                </FormHelperText>
-            )}
         </FormGroup>
     );
     return element;
@@ -1084,33 +1024,24 @@ const FormGroupContactsIrc: FunctionComponent<FormGroupContactsIrcProps> = (
         doValidation(value);
     };
     const element = (
-        <FormGroup label="IRC channel" fieldId="form-contacts-irc">
+        <FormGroup
+            label="IRC channel"
+            fieldId="form-contacts-irc"
+            helperText="Channel name starting with #"
+            helperTextInvalid="Invalid irc"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
+        >
             <TextInput
                 isRequired
                 type="text"
                 placeholder="#coolteam"
                 id="form-contacts-irc"
                 name="contacts-irc"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 validated={validated}
                 value={irc}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>
-                        Channel name starting with #
-                    </HelperTextItem>
-                </HelperText>
-            </FormHelperText>
-            {validated === 'error' && (
-                <FormHelperText>
-                    <HelperText>
-                        <HelperTextItem variant="error">
-                            Invalid irc
-                        </HelperTextItem>
-                    </HelperText>
-                </FormHelperText>
-            )}
         </FormGroup>
     );
     return element;
@@ -1145,6 +1076,10 @@ const FormGroupContactsReportIssue: FunctionComponent<
         <FormGroup
             label="Report issue URL"
             fieldId="form-contacts-report-issue"
+            helperText="URL format"
+            helperTextInvalid="Invalid url"
+            helperTextInvalidIcon={<ExclamationCircleIcon />}
+            validated={validated}
         >
             <TextInput
                 isRequired
@@ -1152,24 +1087,10 @@ const FormGroupContactsReportIssue: FunctionComponent<
                 placeholder="https://url.corp.redhat.com/rut-report-issue"
                 id="form-contacts-report-issue"
                 name="contacts-report-issue"
-                onChange={(_event, value: string) => onChange(value)}
+                onChange={onChange}
                 validated={validated}
                 value={url}
             />
-            <FormHelperText>
-                <HelperText>
-                    <HelperTextItem>URL format</HelperTextItem>
-                </HelperText>
-            </FormHelperText>
-            {validated === 'error' && (
-                <FormHelperText>
-                    <HelperText>
-                        <HelperTextItem variant="error">
-                            Invalid url
-                        </HelperTextItem>
-                    </HelperText>
-                </FormHelperText>
-            )}
         </FormGroup>
     );
     return element;
@@ -1604,10 +1525,7 @@ export const MetadataForm: React.FunctionComponent = () => {
 
 export function PageMetadataEdit() {
     return (
-        <PageCommon
-            key="MetadataForm"
-            title={`Metadata edit | ${config.defaultTitle}`}
-        >
+        <PageCommon title={`Metadata edit | ${config.defaultTitle}`}>
             <PageSection isFilled>
                 <MetadataForm />
             </PageSection>

@@ -25,6 +25,7 @@ import { ComponentType, useEffect, useState } from 'react';
 import {
     Flex,
     Label,
+    Title,
     Button,
     Spinner,
     Bullseye,
@@ -33,25 +34,23 @@ import {
     LabelProps,
     EmptyStateBody,
     EmptyStateIcon,
-    EmptyStateVariant, EmptyStateHeader,
+    EmptyStateVariant,
 } from '@patternfly/react-core';
 import {
-	sortable,
-	cellWidth,
-	Visibility,
-	classNames as rtClassNames,
-	TableVariant,
-	SortByDirection,
-	ICell,
-	IRow,
-	ISortBy,
-	OnSort
+    Table,
+    sortable,
+    cellWidth,
+    TableBody,
+    Visibility,
+    classNames as rtClassNames,
+    TableHeader,
+    TableVariant,
+    SortByDirection,
+    ICell,
+    IRow,
+    ISortBy,
+    OnSort,
 } from '@patternfly/react-table';
-import {
-	Table,
-	TableBody,
-	TableHeader
-} from '@patternfly/react-table/deprecated';
 import classNames from 'classnames';
 import { ApolloError } from '@apollo/client';
 import { global_danger_color_200 } from '@patternfly/react-tokens';
@@ -308,8 +307,11 @@ function makeEmptyStateRow({
                 props: { colSpan: 11 },
                 title: (
                     <Bullseye>
-                        <EmptyState variant={EmptyStateVariant.sm}>
-                            <EmptyStateHeader titleText={<>{title}</>} icon={<EmptyStateIcon icon={icon} color={icon_color} />} headingLevel="h2" />
+                        <EmptyState variant={EmptyStateVariant.small}>
+                            <EmptyStateIcon icon={icon} color={icon_color} />
+                            <Title headingLevel="h2" size="lg">
+                                {title}
+                            </Title>
                             <EmptyStateBody>{body}</EmptyStateBody>
                         </EmptyState>
                     </Bullseye>

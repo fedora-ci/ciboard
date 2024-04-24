@@ -20,6 +20,7 @@
 
 import { CSSProperties } from 'react';
 import {
+    IconSize,
     GhostIcon,
     HandPaperIcon,
     InfoCircleIcon,
@@ -32,13 +33,10 @@ import {
 } from '@patternfly/react-icons';
 
 import { TestStatus } from './types';
-import { Icon, IconComponentProps } from '@patternfly/react-core';
-
-type IconSize = IconComponentProps['size'];
 
 export interface TestStatusIconProps {
     isWaived?: boolean;
-    size?: IconSize;
+    size?: IconSize | keyof typeof IconSize;
     /**
      * String indicating the status/outcome of the test.
      * Examples: 'pass', 'failed', 'error', 'info'.
@@ -54,7 +52,6 @@ export function TestStatusIcon({
     status,
     style,
 }: TestStatusIconProps) {
-    <Icon size="sm"></Icon>;
     const commonIconProps = {
         size: size || ('sm' as IconSize),
         style,
@@ -63,83 +60,73 @@ export function TestStatusIcon({
     // Waived status takes precedence over everything else.
     if (isWaived)
         return (
-            <Icon {...commonIconProps}>
-                <HandPaperIcon
-                    className="pf-u-warning-color-100"
-                    title="Test failed but has been waived"
-                />
-            </Icon>
+            <HandPaperIcon
+                className="pf-u-warning-color-100"
+                title="Test failed but has been waived"
+                {...commonIconProps}
+            />
         );
     // Regular statuses follow.
     if (status === 'error')
         return (
-            <Icon {...commonIconProps}>
-                <ExclamationTriangleIcon
-                    className="pf-u-warning-color-100"
-                    title="Failed because of an infrastructure problem"
-                />
-            </Icon>
+            <ExclamationTriangleIcon
+                className="pf-u-warning-color-100"
+                title="Failed because of an infrastructure problem"
+                {...commonIconProps}
+            />
         );
     if (status === 'failed')
         return (
-            <Icon {...commonIconProps}>
-                <ExclamationCircleIcon
-                    className="pf-u-danger-color-100"
-                    title="Failed because one or more test cases failed"
-                />
-            </Icon>
+            <ExclamationCircleIcon
+                className="pf-u-danger-color-100"
+                title="Failed because one or more test cases failed"
+                {...commonIconProps}
+            />
         );
     if (status === 'info')
         return (
-            <Icon {...commonIconProps}>
-                <InfoCircleIcon
-                    className="pf-u-info-color-100"
-                    title="This result is informative"
-                />
-            </Icon>
+            <InfoCircleIcon
+                className="pf-u-info-color-100"
+                title="This result is informative"
+                {...commonIconProps}
+            />
         );
     if (status === 'missing')
         return (
-            <Icon {...commonIconProps}>
-                <GhostIcon
-                    className="pf-u-color-200"
-                    title="Results for this test are missing"
-                />
-            </Icon>
+            <GhostIcon
+                className="pf-u-color-200"
+                title="Results for this test are missing"
+                {...commonIconProps}
+            />
         );
     if (status === 'passed')
         return (
-            <Icon {...commonIconProps}>
-                <CheckCircleIcon
-                    className="pf-u-success-color-100"
-                    title="Test passed"
-                />
-            </Icon>
+            <CheckCircleIcon
+                className="pf-u-success-color-100"
+                title="Test passed"
+                {...commonIconProps}
+            />
         );
     if (status === 'queued')
         return (
-            <Icon {...commonIconProps}>
-                <HourglassHalfIcon
-                    className="pf-u-color-200"
-                    title="Test has been queued but hasn't run yet"
-                />
-            </Icon>
+            <HourglassHalfIcon
+                className="pf-u-color-200"
+                title="Test has been queued but hasn't run yet"
+                {...commonIconProps}
+            />
         );
     if (status === 'running')
         return (
-            <Icon {...commonIconProps}>
-                <InProgressIcon
-                    className="pf-u-color-200"
-                    title="Test is currently running"
-                />
-            </Icon>
+            <InProgressIcon
+                className="pf-u-color-200"
+                title="Test is currently running"
+                {...commonIconProps}
+            />
         );
 
     // This should never happen.
     console.error(`Unknown test status '${status}'`);
     return (
-        <Icon {...commonIconProps}>
-            <QuestionCircleIcon className="pf-u-color-100" />
-        </Icon>
+        <QuestionCircleIcon className="pf-u-color-100" {...commonIconProps} />
     );
 }
