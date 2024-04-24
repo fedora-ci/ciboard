@@ -65,24 +65,3 @@ export interface CiTest {
     runDetailsUrl?: string;
     waiveMessage?: string;
 }
-
-// Builds are not tracked by Greenwaive
-// https://pagure.io/fedora-ci/messages/blob/master/f/schemas/productmd-compose.build.error.yaml
-// https://pagure.io/fedora-ci/messages/blob/master/f/schemas/product-build.build.complete.yaml
-// https://pagure.io/fedora-ci/messages/blob/master/f/schemas/product-build.build.error.yaml
-
-export interface CiBuild {
-    name: string;
-    error?: MSG_V_1.MsgErrorType;
-    status: TestStatus;
-    logsUrl?: string;
-    docsUrl?: string;
-    contact?: CiContact;
-    rerunUrl?: string;
-    messageId?: string;
-    description?: string;
-    knownIssues?: MetadataKnownIssue[];
-    dependencies?: MetadataDependency[];
-    originalState: AChild;
-    runDetailsUrl?: string;
-}

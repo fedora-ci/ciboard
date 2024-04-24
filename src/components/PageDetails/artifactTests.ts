@@ -21,7 +21,7 @@
 
 import _ from 'lodash';
 
-import { CiBuild, CiContact, CiTest, TestStatus } from './types';
+import { CiContact, CiTest, TestStatus } from './types';
 import {
     AChild,
     MSG_V_1,
@@ -44,8 +44,6 @@ import {
     isAChildGreenwaveAndTestMsg,
     GreenwaveRequirementOutcome,
     getArtifactProduct,
-    isAChildBuildMsg,
-    getBrokerSchemaMsgBody,
 } from '../../types';
 import { getMessageError, isResultWaivable } from '../../utils/utils';
 import { mkStagesAndStates } from '../../utils/stages_states';
@@ -319,55 +317,9 @@ function transformTest(
         knownIssues,
         description,
         dependencies,
+        originalState: aChild,
+        runDetailsUrl,
         waiveMessage,
-        originalState: aChild,
-        runDetailsUrl,
-    };
-}
-
-function transformBuild(
-    artifact: Artifact,
-    aChild: AChild,
-    stateName: StateName,
-    metadata: MetadataRaw[],
-): CiBuild {
-    const docsUrl = getDocsUrl(aChild);
-    let error: MSG_V_1.MsgErrorType | undefined;
-    let logsUrl: string | undefined;
-    let messageId: string | undefined;
-    const name = getTestcaseName(aChild);
-    const rerunUrl = getRerunUrl(aChild);
-    let runDetailsUrl: string | undefined;
-    const testMetadata = mergedMetadata(artifact, aChild, metadata);
-    const contact = extractContact(aChild, testMetadata);
-    const dependencies = testMetadata?.payload?.dependency;
-    const description = testMetadata?.payload?.description;
-    const knownIssues = testMetadata?.payload?.known_issues;
-
-    if (isAChildBuildMsg(aChild)) {
-        const brokerMsg = getBrokerSchemaMsgBody(aChild);
-        error = getMessageError(brokerMsg);
-        logsUrl = brokerMsg.run?.log;
-        messageId = getMsgId(aChild);
-        runDetailsUrl = brokerMsg.run?.url;
-    }
-
-    let status = transformUmbStatus(stateName);
-
-    return {
-        name: name || 'unknown',
-        error,
-        status,
-        docsUrl,
-        contact,
-        logsUrl,
-        rerunUrl,
-        messageId,
-        knownIssues,
-        description,
-        dependencies,
-        originalState: aChild,
-        runDetailsUrl,
     };
 }
 
@@ -375,42 +327,14 @@ export function extractTests(
     artifact: Artifact,
     metadata: MetadataRaw[],
 ): CiTest[] {
-    // [stageName, stateName, states]
     const stagesStates = mkStagesAndStates(artifact);
     console.log(
         'FIX ME!!!!!! For GW artifacts it does not have DB tests, and otherwise applies too',
     );
-    const testStagesStates = _.filter(
-        stagesStates,
-        ([stage, _stateName, _tests]) => stage === 'test',
-    );
-    const tests = testStagesStates.flatMap(([_stage, stateName, tests]) => {
-        return tests.map((aChild) =>
+    const tests = stagesStates.flatMap(([_stage, stateName, tests]) =>
+        tests.map((aChild) =>
             transformTest(artifact, aChild, stateName, metadata),
-        );
-    });
-
+        ),
+    );
     return _.sortBy(tests, (test) => test.name);
-}
-
-export function extractBuilds(
-    artifact: Artifact,
-    metadata: MetadataRaw[],
-): CiBuild[] {
-    // [stageName, stateName, states]
-    const stagesStates = mkStagesAndStates(artifact);
-    console.log(
-        'FIX ME!!!!!! For GW artifacts it does not have DB tests, and otherwise applies too',
-    );
-    const buildStagesStates = _.filter(
-        stagesStates,
-        ([stage, _stateName, _tests]) => stage === 'build',
-    );
-    const builds = buildStagesStates.flatMap(([_stage, stateName, builds]) => {
-        return builds.map((aChild) =>
-            transformBuild(artifact, aChild, stateName, metadata),
-        );
-    });
-
-    return _.sortBy(builds, (test) => test.name);
 }
