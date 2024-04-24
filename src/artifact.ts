@@ -146,7 +146,7 @@ export interface ArtifactBase {
     states: StateKaiType[];
     states_eta: StateErrataToolAutomationType[];
     component_mapping?: ComponentComponentMappingType;
-    greenwaveDecision?: GreenwaveDecisionReplyType;
+    greenwave_decision?: GreenwaveDecisionReplyType;
     resultsdb_testscase: number[];
 }
 

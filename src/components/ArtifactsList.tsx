@@ -23,7 +23,6 @@ import _ from 'lodash';
 import {
     Card,
     Flex,
-    Text,
     Title,
     Brand,
     Button,
@@ -34,10 +33,8 @@ import {
     CardTitle,
     CardHeader,
     EmptyState,
-    TextContent,
     CardActions,
     EmptyStateIcon,
-    TitleSizes,
 } from '@patternfly/react-core';
 
 import { ReactComponent as RhLogo } from './../img/rhfavicon.svg';
@@ -45,104 +42,9 @@ import rhLogo from './../img/rhfavicon.svg';
 
 import { useAppSelector } from '../hooks';
 import { PaginationToolbar } from './PaginationToolbar';
-import {
-    Artifact,
-    ArtifactRPM,
-    GreenwaveDecisionReplyType,
-    isArtifactRPM,
-} from '../artifact';
+import { Artifact, ArtifactRPM, isArtifactRPM } from '../artifact';
 import { ExclamationCircleIcon, PlusCircleIcon } from '@patternfly/react-icons';
 import { Link } from 'react-router-dom';
-import {
-    resultColor,
-    isGatingArtifact,
-    GatingStatusIcon,
-} from '../utils/artifactUtils';
-
-interface PrintRequirementsSizeProps {
-    allReqs: { [key: string]: number };
-    reqName: string;
-}
-
-const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
-    const { reqName, allReqs } = props;
-    const color = resultColor(reqName);
-    const style = { color: `var(${color})`, whiteSpace: 'nowrap' };
-    return (
-        <Title style={style} headingLevel="h1" size={TitleSizes['md']}>
-            {allReqs[reqName]} {reqName}
-        </Title>
-    );
-};
-
-interface ArtifactGreenwaveStatesSummaryProps {
-    artifact: ArtifactRPM;
-    isLoading?: boolean;
-}
-export const ArtifactGreenwaveStatesSummary: React.FC<
-    ArtifactGreenwaveStatesSummaryProps
-> = (props) => {
-    const { artifact, isLoading } = props;
-    if (!isGatingArtifact(artifact)) {
-        return null;
-    }
-    const decision: GreenwaveDecisionReplyType | undefined =
-        artifact.greenwaveDecision;
-    console.log(artifact);
-    const isScratch = _.get(artifact, 'hitSource.scratch', false);
-    if (isScratch) {
-        return null;
-    }
-    if (_.isNil(decision) && !isLoading) {
-        return null;
-    }
-
-    const reqSummary: { [name: string]: number } = {};
-    /*
-     * Ignore the 'fetched-gating-yaml' virtual test as we dont display it in the UI.
-     * It is prevented from displaying in `ArtifactStatesList()`:
-     *     `if (stateName === 'fetched-gating-yaml') continue;`
-     */
-    const unsatisfiedCount = decision?.unsatisfied_requirements?.length;
-    const satisfiedCount = decision?.satisfied_requirements?.filter(
-        ({ type }) => type !== 'fetched-gating-yaml',
-    ).length;
-    if (unsatisfiedCount) {
-        reqSummary['err'] = unsatisfiedCount;
-    }
-    if (satisfiedCount) {
-        reqSummary['ok'] = satisfiedCount;
-    }
-
-    const gatingPassed = decision?.policies_satisfied;
-    const iconStyle = { height: '1.2em' };
-    const statusIcon = isLoading ? null : (
-        <GatingStatusIcon status={gatingPassed} style={iconStyle} />
-    );
-
-    return (
-        <Flex flexWrap={{ default: 'nowrap' }}>
-            <FlexItem>
-                <TextContent>
-                    <Text>{statusIcon}</Text>
-                </TextContent>
-            </FlexItem>
-            {_.map(reqSummary, (_len, reqName) => (
-                <FlexItem key={reqName} spacer={{ default: 'spacerMd' }}>
-                    <PrintRequirementsSize
-                        reqName={reqName}
-                        allReqs={reqSummary}
-                    />
-                </FlexItem>
-            ))}
-            {isLoading && (
-                <FlexItem spacer={{ default: 'spacerMd' }}>
-                    <Spinner size="sm" />
-                </FlexItem>
-            )}
-        </Flex>
-    );
-};
 
 interface ShowLoadingProps {}
 function ShowLoading(props: ShowLoadingProps) {
@@ -166,39 +68,22 @@ interface ArtifactRPMCardProps {
     artifact: ArtifactRPM;
 }
 const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
-    const { isLoadingExtended: isLoading } = useAppSelector(
-        (state) => state.artifacts,
-    );
     const { artifact } = props;
-    const { hitInfo, hitSource, greenwaveDecision } = artifact;
-    const hasGatingDecision = !_.isNil(greenwaveDecision);
+    const { hitInfo, hitSource } = artifact;
     return (
         <Card id={hitInfo._id} isCompact>
             <CardHeader>
                 <CardActions hasNoOffset={true}>
                     <Button variant="secondary">details</Button>
                 </CardActions>
-                <Flex
-                    style={{ flexGrow: 1 }}
-                    flexWrap={{ default: 'nowrap' }}
-                    justifyContent={{ default: 'justifyContentSpaceBetween' }}
-                >
+                <Flex>
                     <FlexItem>
                         <Brand alt="Red hat build" widths={{ default: '30px' }}>
                             <source srcSet={rhLogo} />
                         </Brand>
                     </FlexItem>
-                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
-                        {hitSource.aType}
-                    </FlexItem>
-                    <FlexItem
-                        style={{
-                            whiteSpace: 'nowrap',
-                            fontFamily:
-                                'var(--pf-global--FontFamily--monospace)',
-                            fontSize: '80%',
-                        }}
-                    >
+                    <FlexItem>{hitSource.aType}</FlexItem>
+                    <FlexItem style={{ marginLeft: '10px' }}>
                         <Link to="">{hitSource.taskId}</Link>
                     </FlexItem>
                     <FlexItem
@@ -206,29 +91,13 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
                             fontWeight: 'var(--pf-c-card__title--FontWeight)',
                             fontSize: 'var(--pf-c-card__title--FontSize)',
                             fontFamily: 'var(--pf-c-card__title--FontFamily)',
-                            whiteSpace: 'nowrap',
                         }}
                     >
                         {hitSource.nvr}
                     </FlexItem>
-                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
-                        {hitSource.issuer}
-                    </FlexItem>
-                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
-                        {hitSource.scratch}
-                    </FlexItem>
-                    <FlexItem
-                        align={{ default: 'alignRight' }}
-                        style={{ whiteSpace: 'nowrap' }}
-                    >
-                        {hitSource.gateTag}
-                    </FlexItem>
-                    <FlexItem style={{ flex: '0 0 10%', whiteSpace: 'nowrap' }}>
-                        <ArtifactGreenwaveStatesSummary
-                            artifact={artifact}
-                            isLoading={isLoading}
-                        />
-                    </FlexItem>
+                    <FlexItem>{hitSource.issuer}</FlexItem>
+                    <FlexItem>{hitSource.scratch}</FlexItem>
+                    <FlexItem>{hitSource.gateTag}</FlexItem>
                 </Flex>
             </CardHeader>
         </Card>
