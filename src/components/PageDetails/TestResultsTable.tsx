@@ -227,6 +227,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         .filter((test) => isRequiredFailed(test))
         .map((test, index) => (
             <Tr
+                isHoverable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
@@ -246,6 +247,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         .filter((test) => isRequiredAwaited(test))
         .map((test, index) => (
             <Tr
+                isHoverable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
@@ -265,6 +267,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         .filter((test) => isRequiredPassed(test))
         .map((test) => (
             <Tr
+                isHoverable
                 isRowSelected={selectedTest?.name === test.name}
                 key={test.name}
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
@@ -279,6 +282,7 @@ export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {
         .filter(({ required }) => !required)
         .map((test, index) => (
             <Tr
+                isHoverable
                 isRowSelected={selectedTest?.name === test.name}
                 key={index}
                 onRowClick={() => props.onSelect && props.onSelect(test.name)}
