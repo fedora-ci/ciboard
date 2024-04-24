@@ -73,11 +73,11 @@ import {
 } from './AChildGreenwaveComponent';
 import {
     ResultNote,
+    KaiRerunButton,
+    KaiStateMapping,
     TestMsgDocsButton,
-    TestMsgRerunButton,
-    TestMsgStateMapping,
     TestMsgDetailedResults,
-} from './AChildTestMsgComponent';
+} from './AChildTestMsg';
 import {
     TestInfo,
     useOnceCall,
@@ -110,7 +110,7 @@ export const GreenwaveTestMsgStateActions: React.FC<
                 )}
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <TestMsgRerunButton rerunUrl={rerunUrl} />
+                <KaiRerunButton rerunUrl={rerunUrl} />
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
                 <TestMsgDocsButton docsUrl={docsUrl} />
@@ -347,10 +347,7 @@ export const BodyForGreenwaveTestMsgChild: React.FC<
                     aria-label="Tab with test details"
                 >
                     <GreenwaveResultInfo aChild={aChild.gs} />
-                    <TestMsgStateMapping
-                        artifact={artifact}
-                        aChild={aChild.ms}
-                    />
+                    <KaiStateMapping artifact={artifact} aChild={aChild.ms} />
                 </Tab>
             </Tabs>
         </>
