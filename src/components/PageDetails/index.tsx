@@ -31,9 +31,7 @@ import {
     PageSection,
     EmptyStateBody,
     EmptyStateIcon,
-    PageSectionVariants,
-    EmptyStateHeader,
-    EmptyStateFooter,
+    PageSectionVariants, EmptyStateHeader, EmptyStateFooter,
 } from '@patternfly/react-core';
 import { useQuery, ApolloError, QueryHookOptions } from '@apollo/client';
 import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';
@@ -217,11 +215,7 @@ const NoFound = () => {
             <PageSection isFilled>
                 <Bullseye>
                     <EmptyState>
-                        <EmptyStateHeader
-                            titleText="No artifacts found"
-                            icon={<EmptyStateIcon icon={SearchIcon} />}
-                            headingLevel="h2"
-                        />
+                        <EmptyStateHeader titleText="No artifacts found" icon={<EmptyStateIcon icon={SearchIcon} />} headingLevel="h2" />
                         <EmptyStateBody>
                             No matching artifacts found in database
                         </EmptyStateBody>
@@ -244,24 +238,16 @@ const QueryError: React.FC<QueryErrorProps> = (props) => {
             <PageSection isFilled>
                 <Bullseye>
                     <EmptyState>
-                        <EmptyStateHeader
-                            titleText="Failed to load artifact"
-                            icon={
-                                <EmptyStateIcon
-                                    className="pf-v5-u-danger-color-100"
-                                    icon={ExclamationCircleIcon}
-                                />
-                            }
-                            headingLevel="h2"
-                        />
-                        <EmptyStateFooter>
-                            {error && (
-                                <EmptyStateBody>
-                                    Error: {error.toString()}
-                                </EmptyStateBody>
-                            )}
-                        </EmptyStateFooter>
-                    </EmptyState>
+                        <EmptyStateHeader titleText="Failed to load artifact" icon={<EmptyStateIcon
+                            className="pf-u-danger-color-100"
+                            icon={ExclamationCircleIcon}
+                        />} headingLevel="h2" /><EmptyStateFooter>
+                        {error && (
+                            <EmptyStateBody>
+                                Error: {error.toString()}
+                            </EmptyStateBody>
+                        )}
+                    </EmptyStateFooter></EmptyState>
                 </Bullseye>
             </PageSection>
         </PageCommon>
@@ -279,11 +265,10 @@ const IsLoading: React.FC<IsLoadingProps> = (props) => {
             <PageSection isFilled>
                 <Bullseye>
                     <EmptyState>
-                        <EmptyStateHeader
-                            titleText="Loading artifact(s)…"
-                            icon={<EmptyStateIcon icon={Spinner} />}
-                            headingLevel="h2"
-                        />
+                        <EmptyStateHeader titleText="Loading artifact(s)…" icon={<EmptyStateIcon
+                            
+                            icon={Spinner}
+                        />} headingLevel="h2" />
                     </EmptyState>
                 </Bullseye>
             </PageSection>

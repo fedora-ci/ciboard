@@ -22,11 +22,14 @@
 import _ from 'lodash';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Text, TextContent } from '@patternfly/react-core';
 import {
-    Dropdown,
-    DropdownItem,
-    DropdownToggle,
+	Text,
+	TextContent
+} from '@patternfly/react-core';
+import {
+	Dropdown,
+	DropdownItem,
+	DropdownToggle
 } from '@patternfly/react-core/deprecated';
 import { CaretDownIcon } from '@patternfly/react-icons';
 
@@ -67,7 +70,7 @@ export function DropdownSelector(props: DropdownSelectorProps) {
     const items = sstList!.map(({ display_name, name }) => (
         <DropdownItem
             key={name}
-            className={name === props.section ? 'pf-v5-u-font-weight-bold' : ''}
+            className={name === props.section ? 'pf-u-font-weight-bold' : ''}
             component={<Link to={`/sst/${name}`}>{display_name}</Link>}
         />
     ));

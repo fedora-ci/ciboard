@@ -305,7 +305,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
         <Flex justifyContent={{ default: 'justifyContentCenter' }}>
             <Toolbar
                 id="data-toolbar-with-query"
-                className="pf-v5-u-mx-xl"
+                className="pf-u-mx-xl"
                 style={{ background: 'inherit', maxWidth: '1000px' }}
             >
                 <ToolbarContent>{toolbarItems}</ToolbarContent>

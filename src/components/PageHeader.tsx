@@ -57,7 +57,7 @@ import { useAppDispatch, useAppSelector } from '../hooks';
 const logoProps = {
     to: '/',
     style: {
-        color: 'var(--pf-v5-global--secondary-color--100)',
+        color: 'var(--pf-global--secondary-color--100)',
         textDecoration: 'inherit',
     },
 };
@@ -224,7 +224,7 @@ export const DashboardPageHeader = () => {
             logo={
                 <>
                     <Icon size="lg">
-                        <AutomationIcon className="pf-v5-u-mr-sm" /> CI
+                        <AutomationIcon className="pf-u-mr-sm" /> CI
                     </Icon>
                     Dashboard
                 </>

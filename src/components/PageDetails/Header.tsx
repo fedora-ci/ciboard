@@ -57,24 +57,21 @@ function ArtifactTitle(props: ArtifactTitleProps) {
 
     return (
         <Flex spaceItems={{ default: 'spaceItemsLg' }}>
-            <TextContent className="pf-v5-u-mr-auto">
+            <TextContent className="pf-u-mr-auto">
                 <Title headingLevel="h1">{getArtifactName(artifact)}</Title>
             </TextContent>
             <FlexItem spacer={{ default: 'spacerXl' }}></FlexItem>
             {hasGatingDecision && (
                 <ArtifactGreenwaveStatesSummary artifact={artifact} />
             )}
-            {isScratch && <span className="pf-v5-u-color-200">scratch</span>}
+            {isScratch && <span className="pf-u-color-200">scratch</span>}
             {!isScratch && gatingTag && (
-                <span className="pf-v5-u-color-200" title="Gating tag">
+                <span className="pf-u-color-200" title="Gating tag">
                     <CodeBranchIcon /> {gatingTag}
                 </span>
             )}
             {issuer && (
-                <span
-                    className="pf-v5-u-color-200"
-                    title="Build issuer/packager"
-                >
+                <span className="pf-u-color-200" title="Build issuer/packager">
                     <UserIcon /> {issuer}
                 </span>
             )}
@@ -95,7 +92,7 @@ export function ArtifactHeader(props: ArtifactHeaderProps) {
     const externalLink = (
         <ExternalLink href={artifactUrl}>
             <CubeIcon
-                className="pf-v5-u-mr-xs"
+                className="pf-u-mr-xs"
                 style={{ verticalAlign: '-.125em' }}
             />{' '}
             {artifactTypeLabel} #{artId}

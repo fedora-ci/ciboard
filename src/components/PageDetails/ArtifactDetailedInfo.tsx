@@ -112,7 +112,7 @@ const NoData: React.FC<NoDataProps> = (props) => {
         return null;
     }
     return (
-        <Flex className="pf-v5-u-p-lg">
+        <Flex className="pf-u-p-lg">
             <Alert
                 isInline
                 isPlain
@@ -133,10 +133,9 @@ export const LoadingData: React.FC<LoadingDataProps> = (props) => {
         return null;
     }
     return (
-        <Flex className="pf-v5-u-p-lg">
+        <Flex className="pf-u-p-lg">
             <FlexItem>
-                <Spinner className="pf-v5-u-mr-md" size="md" /> Loading build
-                info…
+                <Spinner className="pf-u-mr-md" size="md" /> Loading build info…
             </FlexItem>
         </Flex>
     );
@@ -165,8 +164,8 @@ const BuildInfo: React.FC<BuildInfoProps> = (props) => {
     }
 
     const descListClassName = classNames(
-        'pf-v5-u-px-lg',
-        'pf-v5-u-py-md',
+        'pf-u-px-lg',
+        'pf-u-py-md',
         styles['buildInfo'],
     );
 
@@ -254,7 +253,7 @@ export const TagsList: React.FC<TagsListProps> = (props) => {
 
     return (
         <List
-            className="pf-v5-u-font-size-sm"
+            className="pf-u-font-size-sm"
             component={ListComponent.ol}
             type={OrderType.number}
         >
@@ -432,7 +431,7 @@ export const ErrataAutomation: React.FC<ErrataAutomationProps> = (props) => {
     const latestAChildEta = getAEtaChildren(artifact)?.at(-1);
     if (_.isNil(latestAChildEta)) {
         return (
-            <Flex className="pf-v5-u-p-lg">
+            <Flex className="pf-u-p-lg">
                 <Alert
                     isInline
                     isPlain
@@ -551,10 +550,10 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
 
     if (loading) {
         return (
-            <Flex className="pf-v5-u-p-lg">
+            <Flex className="pf-u-p-lg">
                 <FlexItem>
-                    <Spinner className="pf-v5-u-mr-md" size="md" /> Loading
-                    build info…
+                    <Spinner className="pf-u-mr-md" size="md" /> Loading build
+                    info…
                 </FlexItem>
             </Flex>
         );
@@ -563,7 +562,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
     const haveData = !loading && data && !_.isEmpty(data.mbsBuild);
     if (!haveData) {
         return (
-            <Flex className="pf-v5-u-p-lg">
+            <Flex className="pf-u-p-lg">
                 <Alert
                     isInline
                     isPlain
@@ -627,8 +626,8 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
     );
 
     const descListClassName = classNames(
-        'pf-v5-u-px-lg',
-        'pf-v5-u-py-md',
+        'pf-u-px-lg',
+        'pf-u-py-md',
         styles['buildInfo'],
     );
 
@@ -712,7 +711,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
                 eventKey="components"
                 title={<TabTitleText>Components</TabTitleText>}
             >
-                <Flex className="pf-v5-u-p-md" flex={{ default: 'flexNone' }}>
+                <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
                     <FlexItem
                         flex={{ default: 'flex_1' }}
                         style={{
@@ -747,7 +746,7 @@ const ArtifactDetailedInfoModuleBuild: React.FC<
                 eventKey="active-tags"
                 title={<TabTitleText>Active Tags</TabTitleText>}
             >
-                <Flex className="pf-v5-u-p-md" flex={{ default: 'flexNone' }}>
+                <Flex className="pf-u-p-md" flex={{ default: 'flexNone' }}>
                     <TagsList instance={instance} tags={build.tags} />
                 </Flex>
             </Tab>
@@ -801,7 +800,7 @@ export const HistoryList: React.FC<HistoryListProps> = (props) => {
     const log = _.orderBy(lines, ['time'], ['asc']);
     return (
         <List
-            className="pf-v5-u-font-size-sm"
+            className="pf-u-font-size-sm"
             component={ListComponent.ol}
             type={OrderType.number}
         >
@@ -819,7 +818,7 @@ export const HistoryList: React.FC<HistoryListProps> = (props) => {
 export const LimitWithScroll = (props: React.PropsWithChildren) => {
     const { children } = props;
     return (
-        <Flex className="pf-v5-u-p-md">
+        <Flex className="pf-u-p-md">
             <FlexItem
                 flex={{ default: 'flex_1' }}
                 style={{

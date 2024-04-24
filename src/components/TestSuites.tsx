@@ -36,11 +36,15 @@ import {
     DataListContent,
     DataListItemCells,
 } from '@patternfly/react-core';
-import { IRow, cellWidth, TableVariant } from '@patternfly/react-table';
 import {
-    Table,
-    TableBody,
-    TableHeader,
+	IRow,
+	cellWidth,
+	TableVariant
+} from '@patternfly/react-table';
+import {
+	Table,
+	TableBody,
+	TableHeader
 } from '@patternfly/react-table/deprecated';
 import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
 
@@ -183,7 +187,7 @@ export const ArchitectureLabel: React.FC<ArchitectureLabelProps> = ({
     if (_.isEmpty(architecture)) return null;
     return (
         <Label
-            icon={<MicrochipIcon className="pf-v5-u-color-200" />}
+            icon={<MicrochipIcon className="pf-u-color-200" />}
             isCompact
             title={`This test was run on the ${architecture} machine architecture`}
             variant="outline"
@@ -209,8 +213,8 @@ const TestCaseItem: React.FC<TestCaseItemProps> = (props) => {
     const hasContent = hasTestCaseContent(test);
     const iconProps = mapTypeToIconsProps(test.status);
     const nameClassName = classNames(
-        'pf-v5-u-text-nowrap',
-        'pf-v5-u-font-weight-bold',
+        'pf-u-text-nowrap',
+        'pf-u-font-weight-bold',
         iconProps ? iconProps.className : '',
     );
     const machineArchitecture = getProperty(test, 'baseosci.arch');
@@ -234,7 +238,7 @@ const TestCaseItem: React.FC<TestCaseItemProps> = (props) => {
                     {time && (
                         <FlexItem
                             align={{ default: 'alignRight' }}
-                            className="pf-v5-u-color-200"
+                            className="pf-u-color-200"
                             style={{ fontFamily: 'monospace' }}
                         >
                             <OutlinedClockIcon title="Elapsed time" /> {time}
@@ -357,7 +361,7 @@ export const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
 
     return (
         <>
-            <Flex className="pf-v5-u-ml-lg pf-v5-u-mb-md">{checkboxes}</Flex>
+            <Flex className="pf-u-ml-lg pf-u-mb-md">{checkboxes}</Flex>
 
             {_.isEmpty(filteredCases) && (
                 <Alert isInline title="No test cases selected" variant="info" />

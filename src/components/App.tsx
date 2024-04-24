@@ -91,7 +91,7 @@ export function App() {
 
     return (
         <ApolloProvider client={apolloClient}>
-            <div className="pf-v5-u-h-100vh">
+            <div className="pf-u-h-100vh">
                 <HashRouter>
                     <Routes>
                         <Route

@@ -34,8 +34,7 @@ import {
     TitleSizes,
     EmptyState,
     TextContent,
-    EmptyStateIcon,
-    EmptyStateHeader,
+    EmptyStateIcon, EmptyStateHeader,
 } from '@patternfly/react-core';
 import { Link } from 'react-router-dom';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
@@ -155,11 +154,7 @@ function ShowLoading(props: ShowLoadingProps) {
         <>
             <Bullseye>
                 <EmptyState>
-                    <EmptyStateHeader
-                        titleText="Loading search results…"
-                        icon={<EmptyStateIcon icon={Spinner} />}
-                        headingLevel="h2"
-                    />
+                    <EmptyStateHeader titleText="Loading search results…" icon={<EmptyStateIcon  icon={Spinner} />} headingLevel="h2" />
                 </EmptyState>
             </Bullseye>
         </>
@@ -179,19 +174,10 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
     const href = getArtifactLocalPath(artifact);
     return (
         <Card id={hit_info._id} isCompact>
-            <CardHeader
-                actions={{
-                    actions: (
-                        <>
-                            <Link to={href}>
-                                <Button variant="secondary">details</Button>
-                            </Link>
-                        </>
-                    ),
-                    hasNoOffset: true,
-                    className: undefined,
-                }}
-            >
+            <CardHeader actions={{ actions: <><Link to={href}>
+                        <Button variant="secondary">details</Button>
+                    </Link></>, hasNoOffset: true, className: undefined}} >
+                
                 <Flex
                     style={{ flexGrow: 1 }}
                     flexWrap={{ default: 'nowrap' }}
@@ -209,7 +195,7 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
                         style={{
                             whiteSpace: 'nowrap',
                             fontFamily:
-                                'var(--pf-v5-global--FontFamily--monospace)',
+                                'var(--pf-global--FontFamily--monospace)',
                             fontSize: '80%',
                         }}
                     >
@@ -217,11 +203,9 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
                     </FlexItem>
                     <FlexItem
                         style={{
-                            fontWeight:
-                                'var(--pf-v5-c-card__title--FontWeight)',
-                            fontSize: 'var(--pf-v5-c-card__title--FontSize)',
-                            fontFamily:
-                                'var(--pf-v5-c-card__title--FontFamily)',
+                            fontWeight: 'var(--pf-c-card__title--FontWeight)',
+                            fontSize: 'var(--pf-c-card__title--FontSize)',
+                            fontFamily: 'var(--pf-c-card__title--FontFamily)',
                             whiteSpace: 'nowrap',
                         }}
                     >
@@ -302,16 +286,10 @@ const NothingFound = (_props: NothingFoundProps) => {
     return (
         <Bullseye>
             <EmptyState>
-                <EmptyStateHeader
-                    titleText="Nothing found"
-                    icon={
-                        <EmptyStateIcon
-                            className="pf-v5-u-danger-color-100"
-                            icon={ExclamationCircleIcon}
-                        />
-                    }
-                    headingLevel="h2"
-                />
+                <EmptyStateHeader titleText="Nothing found" icon={<EmptyStateIcon
+                    className="pf-u-danger-color-100"
+                    icon={ExclamationCircleIcon}
+                />} headingLevel="h2" />
             </EmptyState>
         </Bullseye>
     );

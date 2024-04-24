@@ -72,7 +72,7 @@ export function PaginationToolbar(_props: PaginationToolbarProps) {
                         <FlexItem
                             style={{
                                 fontWeight:
-                                    'var(--pf-v5-global--FontWeight--bold)',
+                                    'var(--pf-global--FontWeight--bold)',
                             }}
                         >
                             {queryState.queryString}

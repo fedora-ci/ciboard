@@ -65,7 +65,7 @@ export function TestStatusIcon({
         return (
             <Icon {...commonIconProps}>
                 <HandPaperIcon
-                    className="pf-v5-u-warning-color-100"
+                    className="pf-u-warning-color-100"
                     title="Test failed but has been waived"
                 />
             </Icon>
@@ -75,7 +75,7 @@ export function TestStatusIcon({
         return (
             <Icon {...commonIconProps}>
                 <ExclamationTriangleIcon
-                    className="pf-v5-u-warning-color-100"
+                    className="pf-u-warning-color-100"
                     title="Failed because of an infrastructure problem"
                 />
             </Icon>
@@ -84,7 +84,7 @@ export function TestStatusIcon({
         return (
             <Icon {...commonIconProps}>
                 <ExclamationCircleIcon
-                    className="pf-v5-u-danger-color-100"
+                    className="pf-u-danger-color-100"
                     title="Failed because one or more test cases failed"
                 />
             </Icon>
@@ -93,7 +93,7 @@ export function TestStatusIcon({
         return (
             <Icon {...commonIconProps}>
                 <InfoCircleIcon
-                    className="pf-v5-u-info-color-100"
+                    className="pf-u-info-color-100"
                     title="This result is informative"
                 />
             </Icon>
@@ -102,7 +102,7 @@ export function TestStatusIcon({
         return (
             <Icon {...commonIconProps}>
                 <GhostIcon
-                    className="pf-v5-u-color-200"
+                    className="pf-u-color-200"
                     title="Results for this test are missing"
                 />
             </Icon>
@@ -111,7 +111,7 @@ export function TestStatusIcon({
         return (
             <Icon {...commonIconProps}>
                 <CheckCircleIcon
-                    className="pf-v5-u-success-color-100"
+                    className="pf-u-success-color-100"
                     title="Test passed"
                 />
             </Icon>
@@ -120,7 +120,7 @@ export function TestStatusIcon({
         return (
             <Icon {...commonIconProps}>
                 <HourglassHalfIcon
-                    className="pf-v5-u-color-200"
+                    className="pf-u-color-200"
                     title="Test has been queued but hasn't run yet"
                 />
             </Icon>
@@ -129,7 +129,7 @@ export function TestStatusIcon({
         return (
             <Icon {...commonIconProps}>
                 <InProgressIcon
-                    className="pf-v5-u-color-200"
+                    className="pf-u-color-200"
                     title="Test is currently running"
                 />
             </Icon>
@@ -139,7 +139,7 @@ export function TestStatusIcon({
     console.error(`Unknown test status '${status}'`);
     return (
         <Icon {...commonIconProps}>
-            <QuestionCircleIcon className="pf-v5-u-color-100" />
+            <QuestionCircleIcon className="pf-u-color-100" />
         </Icon>
     );
 }

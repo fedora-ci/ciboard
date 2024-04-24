@@ -156,7 +156,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         <TestStatusIcon
             status={selectedTest.status}
             style={{
-                marginRight: 'var(--pf-v5-global--spacer--sm)',
+                marginRight: 'var(--pf-global--spacer--sm)',
                 verticalAlign: '-0.125em',
             }}
         />
@@ -213,7 +213,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             <ContactWidget contact={selectedTest?.contact} />
         );
     const descriptionWidget = !_.isEmpty(selectedTest?.description) && (
-        <TextContent className="pf-v5-u-mb-md">
+        <TextContent className="pf-u-mb-md">
             <Text>
                 <b>Description:</b>{' '}
                 <LinkifyNewTab>{selectedTest?.description}</LinkifyNewTab>
@@ -225,13 +225,13 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         (!_.isNil(selectedTest?.waiver) && selectedTest?.error);
     const errorAlert = shouldShowError && (
         <Alert
-            className="pf-v5-u-mt-md"
+            className="pf-u-mt-md"
             isInline
             title="Test not completed"
             variant="danger"
         >
             {selectedTest.error && (
-                <TextContent className="pf-v5-u-font-size-sm">
+                <TextContent className="pf-u-font-size-sm">
                     <Text>
                         <strong>Reason:</strong> {selectedTest.error.reason}
                     </Text>
@@ -245,7 +245,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                 </TextContent>
             )}
             {!selectedTest.error && (
-                <TextContent className="pf-v5-u-font-size-sm">
+                <TextContent className="pf-u-font-size-sm">
                     <Text>
                         This test has failed to complete, but the CI system
                         provided no more information. Please contact the team
@@ -257,12 +257,12 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     );
     const failedAlert = selectedTest?.status === 'failed' && (
         <Alert
-            className="pf-v5-u-mt-md"
+            className="pf-u-mt-md"
             isInline
             title="Test failed"
             variant="danger"
         >
-            <TextContent className="pf-v5-u-font-size-sm">
+            <TextContent className="pf-u-font-size-sm">
                 {selectedTest.error && (
                     // Show error message provided by CI if available.
                     <Text>
@@ -292,7 +292,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
             onResize={(_event, newWidth: number) => onResize(newWidth)}
         >
             <DrawerHead>
-                <Title className="pf-v5-u-pb-sm" headingLevel="h3" size="xl">
+                <Title className="pf-u-pb-sm" headingLevel="h3" size="xl">
                     {statusIcon}
                     {selectedTest?.name}
                 </Title>
@@ -310,7 +310,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
                     {reportIssueButton}
                 </Flex>
             </DrawerHead>
-            <DrawerPanelBody className="pf-v5-u-pb-sm">
+            <DrawerPanelBody className="pf-u-pb-sm">
                 {descriptionWidget}
                 {contactWidget}
                 {errorAlert}
@@ -348,19 +348,19 @@ export const GreenwaveWaiver: React.FC<GreenwaveWaiverProps> = (props) => {
     const humanTime = timestampForUser(waiver.timestamp);
     return (
         <Alert
-            className="pf-v5-u-mt-md"
+            className="pf-u-mt-md"
             customIcon={<HandPaperIcon />}
             isExpandable
             isInline
             title="Test result waived"
             variant="warning"
         >
-            <TextContent className="pf-v5-u-font-size-sm">
+            <TextContent className="pf-u-font-size-sm">
                 <Text component="p">
                     This test result was waived by <b>{waiver.username}</b> on{' '}
                     {humanTime} with the following comment:
                 </Text>
-                <Text className="pf-v5-u-py-xs" component="blockquote">
+                <Text className="pf-u-py-xs" component="blockquote">
                     <LinkifyNewTab>{waiver.comment}</LinkifyNewTab>
                 </Text>
             </TextContent>

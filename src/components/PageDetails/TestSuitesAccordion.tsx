@@ -161,7 +161,7 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
                     <TestStatusIcon
                         status={status}
                         style={{
-                            marginRight: 'var(--pf-v5-global--spacer--sm)',
+                            marginRight: 'var(--pf-global--spacer--sm)',
                             verticalAlign: '-0.125em',
                         }}
                     />

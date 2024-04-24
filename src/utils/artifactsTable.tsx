@@ -22,29 +22,33 @@ import _ from 'lodash';
 import React from 'react';
 import { LegacyRef, useState } from 'react';
 import {
-    List,
-    Text,
-    Title,
-    Spinner,
-    Bullseye,
-    ListItem,
-    OrderType,
-    EmptyState,
-    TextContent,
-    TextVariants,
-    ListComponent,
-    EmptyStateBody,
-    EmptyStateIcon,
-    EmptyStateVariant,
-    ExpandableSection,
-    EmptyStateHeader,
+	List,
+	Text,
+	Title,
+	Spinner,
+	Bullseye,
+	ListItem,
+	OrderType,
+	EmptyState,
+	TextContent,
+	TextVariants,
+	ListComponent,
+	EmptyStateBody,
+	EmptyStateIcon,
+	EmptyStateVariant,
+	ExpandableSection, EmptyStateHeader
 } from '@patternfly/react-core';
 import {
-    DropdownProps,
-    DropdownToggleProps,
+	DropdownProps,
+	DropdownToggleProps
 } from '@patternfly/react-core/deprecated';
-import { RowWrapperProps, IRow } from '@patternfly/react-table';
-import { TableProps } from '@patternfly/react-table/deprecated';
+import {
+	RowWrapperProps,
+	IRow
+} from '@patternfly/react-table';
+import {
+	TableProps
+} from '@patternfly/react-table/deprecated';
 import { ExclamationCircleIcon, LinkIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 
@@ -64,7 +68,7 @@ export interface ArtifactNameProps {
 export const ArtifactName: React.FC<ArtifactNameProps> = ({ artifact }) => {
     return (
         <TextContent>
-            <Title size="lg" headingLevel="h4" className="pf-v5-u-m-0">
+            <Title size="lg" headingLevel="h4" className="pf-u-m-0">
                 {getArtifactName(artifact) ||
                     'Unknown artifact, please file a bug'}
             </Title>
@@ -196,9 +200,7 @@ export const ShowErrors = ({ error, forceExpand }: any) => {
             <Text component={TextVariants.small}>
                 <ExpandableSection
                     toggleText={toggleText}
-                    onToggle={(_event, isExpanded: boolean) =>
-                        onToggle(isExpanded)
-                    }
+                    onToggle={(_event, isExpanded: boolean) => onToggle(isExpanded)}
                     isExpanded={isExpanded}
                 >
                     <List component={ListComponent.ol} type={OrderType.number}>
@@ -233,7 +235,7 @@ export const mkSpecialRows = (args: InputRowType): IRow[] => {
             />
         );
     } else if (type === 'loading') {
-        Icon = () => <EmptyStateIcon icon={Spinner} />;
+        Icon = () => <EmptyStateIcon  icon={Spinner} />;
     }
     return [
         {
@@ -246,10 +248,7 @@ export const mkSpecialRows = (args: InputRowType): IRow[] => {
                             <Bullseye>
                                 <EmptyState variant={EmptyStateVariant.sm}>
                                     <Icon />
-                                    <EmptyStateHeader
-                                        titleText={<>{title}</>}
-                                        headingLevel="h2"
-                                    />
+                                    <EmptyStateHeader titleText={<>{title}</>} headingLevel="h2" />
                                     <EmptyStateBody>{body}</EmptyStateBody>
                                 </EmptyState>
                             </Bullseye>

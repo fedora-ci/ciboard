@@ -2,7 +2,6 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,37 +18,37 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-.pf-v5-c-drawer__panel-main .pf-v5-c-drawer__body,
-.pf-v5-c-drawer__panel-main .pf-v5-c-tabs {
+.pf-c-drawer__panel-main .pf-c-drawer__body,
+.pf-c-drawer__panel-main .pf-c-tabs {
     flex-shrink: 0;
 }
 
-.pf-v5-c-label.labelToggled {
-    --pf-v5-c-label__icon--Color: white;
-    --pf-v5-c-label__content--Color: white;
+.pf-c-label.labelToggled {
+    --pf-c-label__icon--Color: white;
+    --pf-c-label__content--Color: white;
 }
 
-.pf-v5-c-label.pf-m-red.labelToggled {
-    --pf-v5-c-label--BackgroundColor: var(--pf-global--danger-color--100);
-    --pf-v5-c-label__content--before--BorderColor: var(
-        --pf-v5-global--danger-color--100
+.pf-c-label.pf-m-red.labelToggled {
+    --pf-c-label--BackgroundColor: var(--pf-global--danger-color--100);
+    --pf-c-label__content--before--BorderColor: var(
+        --pf-global--danger-color--100
     );
 }
 
-.pf-v5-c-label.pf-m-green.labelToggled {
-    --pf-v5-c-label--BackgroundColor: var(--pf-global--success-color--100);
-    --pf-v5-c-label__content--before--BorderColor: var(
-        --pf-v5-global--success-color--100
+.pf-c-label.pf-m-green.labelToggled {
+    --pf-c-label--BackgroundColor: var(--pf-global--success-color--100);
+    --pf-c-label__content--before--BorderColor: var(
+        --pf-global--success-color--100
     );
 }
 
-.detailsDrawerPanel .pf-v5-c-drawer__head .pf-v5-c-button {
+.detailsDrawerPanel .pf-c-drawer__head .pf-c-button {
     padding: 0;
 }
 
 .dependencyList {
-    --pf-v5-c-list--li--MarginTop: 0;
-    color: var(--pf-v5-global--Color--200);
+    --pf-c-list--li--MarginTop: 0;
+    color: var(--pf-global--Color--200);
 }
 
 /*
@@ -60,12 +59,12 @@
 }
 
 .knownIssuesList .fixed {
-    color: var(--pf-v5-global--Color--200);
+    color: var(--pf-global--Color--200);
     text-decoration: line-through;
 }
 
 .knownIssuesList .irrelevant {
-    color: var(--pf-v5-global--Color--200);
+    color: var(--pf-global--Color--200);
     font-style: italic;
     filter: grayscale(1);
 }
@@ -80,7 +79,7 @@
 }
 
 .testCasesTable tbody.pf-m-expanded {
-    background: var(--pf-v5-global--BackgroundColor--200);
-    border-bottom: var(--pf-v5-c-table--border-width--base) solid
-        var(--pf-v5-c-table--BorderColor);
+    background: var(--pf-global--BackgroundColor--200);
+    border-bottom: var(--pf-c-table--border-width--base) solid
+        var(--pf-c-table--BorderColor);
 }
