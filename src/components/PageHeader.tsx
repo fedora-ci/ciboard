@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,25 +18,26 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import * as React from 'react';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { css } from '@patternfly/react-styles';
 import { useLazyQuery } from '@apollo/client';
 import {
-    Nav,
     Button,
+    ButtonVariant,
+    Dropdown,
+    DropdownItem,
+    DropdownToggle,
+    Nav,
     NavItem,
     NavList,
-    Dropdown,
     NavProps,
     PageHeader,
-    DropdownItem,
-    ButtonVariant,
-    DropdownToggle,
     PageHeaderTools,
-    PageHeaderToolsItem,
     PageHeaderToolsGroup,
+    PageHeaderToolsItem,
 } from '@patternfly/react-core';
 import {
     AutomationIcon,

@@ -22,18 +22,18 @@ import _ from 'lodash';
 import * as React from 'react';
 import { useState } from 'react';
 import {
-    Text,
-    Form,
-    Alert,
-    Modal,
-    Button,
-    TextArea,
-    Checkbox,
-    FormGroup,
-    TextContent,
     ActionGroup,
-    TextVariants,
+    Alert,
+    Button,
+    Checkbox,
+    Form,
+    FormGroup,
     FormGroupProps,
+    Modal,
+    Text,
+    TextArea,
+    TextContent,
+    TextVariants,
 } from '@patternfly/react-core';
 import { ExternalLinkSquareAltIcon } from '@patternfly/react-icons';
 import { useApolloClient, useQuery } from '@apollo/client';
