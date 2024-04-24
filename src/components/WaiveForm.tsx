@@ -83,7 +83,7 @@ const WaiveForm: React.FC<{}> = () => {
     const agreementLabel = 'I agree and acknowledge the above information';
 
     const metadataAggrementText = waiver.ciTest?.waiveMessage;
-    const agreementText = `You should have active kerberos session. Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
+    const agreementText = `Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
     composes and unverified or failed builds can cause issues in system integration. Before waiving these tests it is good to check 
     other possible options, in particular some CI-systems can fail due to outages and different circumstances. It is good to restart 
     the test or to contact CI-owners for assistance. Proceed waiving test-result only when other efforts have not succeeded.`;
