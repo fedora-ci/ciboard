@@ -69,11 +69,11 @@ export const ArtifactsDetailedInfoKojiTask = gql`
                 owner_id
                 owner_name
                 package_id
-                completion_ts
                 completion_time
+                completion_ts
                 tags(instance: $koji_instance) {
-                    id
                     name
+                    id
                 }
                 history(instance: $koji_instance) {
                     ...TagHistoryFragment
@@ -138,7 +138,6 @@ export const ArtifactsSearchFastQuery1 = gql`
         $artTypes: [String]
         $newerThen: String
         $queryString: String
-        $doDeepSearch: Boolean
         $paginationSize: Int
         $paginationFrom: Int
     ) {
@@ -147,7 +146,6 @@ export const ArtifactsSearchFastQuery1 = gql`
             artTypes: $artTypes
             newerThen: $newerThen
             queryString: $queryString
-            doDeepSearch: $doDeepSearch
             paginationSize: $paginationSize
             paginationFrom: $paginationFrom
         ) {
@@ -170,7 +168,6 @@ export const ArtifactsSearchSlowQuery2 = gql`
         $artTypes: [String]
         $newerThen: String
         $queryString: String
-        $doDeepSearch: Boolean
         $paginationSize: Int
         $paginationFrom: Int
     ) {
@@ -179,7 +176,6 @@ export const ArtifactsSearchSlowQuery2 = gql`
             artTypes: $artTypes
             newerThen: $newerThen
             queryString: $queryString
-            doDeepSearch: $doDeepSearch
             paginationSize: $paginationSize
             paginationFrom: $paginationFrom
         ) {
