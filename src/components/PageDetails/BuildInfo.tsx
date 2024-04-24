@@ -2,7 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023, 2024 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,11 +40,10 @@ import {
     EmptyStateBody,
     EmptyStateIcon,
     DescriptionList,
-    EmptyStateHeader,
     DescriptionListTerm,
     DescriptionListGroup,
     DescriptionListDescription,
-    Truncate,
+    EmptyStateHeader,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
@@ -293,44 +292,6 @@ function BuildMetadataRpm(props: BuildMetadataRpmProps) {
             className: styles['timestamp'],
         },
     ];
-
-    if (_.isArray(build.gitlabCommitMr) && _.size(build.gitlabCommitMr)) {
-        const csItems = [
-            {
-                label: 'GitLab MR Author',
-                value: (
-                    <ExternalLink href={build.gitlabCommitMr[0].author.web_url}>
-                        {build.gitlabCommitMr[0].author.name}
-                    </ExternalLink>
-                ),
-            },
-            {
-                label: 'GitLab MR title',
-                value: (
-                    <Truncate
-                        content={build.gitlabCommitMr[0].title}
-                        tooltipPosition={'bottom'}
-                    />
-                ),
-            },
-            {
-                label: 'GitLab MR link',
-                value: (
-                    <ExternalLink href={build.gitlabCommitMr[0].web_url}>
-                        <Truncate
-                            style={{ maxWidth: '300px' }}
-                            content={build.gitlabCommitMr[0].web_url}
-                        />
-                    </ExternalLink>
-                ),
-            },
-            {
-                label: 'GitLab MR target branch',
-                value: <>{build.gitlabCommitMr[0].target_branch}</>,
-            },
-        ];
-        items.push(...csItems);
-    }
 
     const descListClassName = classNames(
         'pf-v5-u-px-lg',

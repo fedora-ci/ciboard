@@ -1005,54 +1005,6 @@ export interface CommitObject {
     committer_name: string;
 }
 
-// https://docs.gitlab.com/ee/api/commits.html#list-merge-requests-associated-with-a-commit
-
-export interface GitlabCommitMr {
-    id: number;
-    iid: number;
-    project_id: number;
-    title: string;
-    description: string;
-    state: string;
-    created_at: string;
-    updated_at: string;
-    target_branch: string;
-    source_branch: string;
-    upvotes: number;
-    downvotes: number;
-    author: {
-        web_url: string;
-        name: string;
-        avatar_url: string;
-        username: string;
-        state: string;
-        id: number;
-    };
-    assignee: null | string;
-    source_project_id: number;
-    target_project_id: number;
-    labels: string[];
-    draft: boolean;
-    work_in_progress: boolean;
-    milestone: null | string;
-    merge_when_pipeline_succeeds: boolean;
-    merge_status: boolean;
-    sha: string;
-    merge_commit_sha: string | null;
-    squash_commit_sha: string | null;
-    user_notes_count: number;
-    discussion_locked: null | boolean;
-    should_remove_source_branch: null | boolean;
-    force_remove_source_branch: boolean;
-    web_url: string;
-    time_stats: {
-        time_estimate: number;
-        total_time_spent: number;
-        human_time_estimate: null | string;
-        human_total_time_spent: null | string;
-    };
-}
-
 export interface KojiBuildTag {
     id: number;
     name: string;
@@ -1077,7 +1029,6 @@ export interface KojiHistory {
 export interface KojiBuildInfo {
     build_id: number;
     commit_obj?: CommitObject;
-    gitlabCommitMr?: GitlabCommitMr[];
     completion_time: string;
     completion_ts: number;
     history?: KojiHistory;

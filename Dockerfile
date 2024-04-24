@@ -1,4 +1,4 @@
-FROM quay.io/fedoraci/ciboard-server:aab4ae6
+FROM quay.io/fedoraci/ciboard-server:f213021
 
 # npm mirror to use to install dependencies.
 ARG NPMLOCATION=open
