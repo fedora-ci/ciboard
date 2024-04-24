@@ -19,7 +19,7 @@
  */
 
 import _ from 'lodash';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { useEffect } from 'react';
 import { useApolloClient } from '@apollo/client';
 import {
     Text,
@@ -159,9 +159,9 @@ const ArtifactTypeSelection: React.FC<
             <Tile
                 id={key}
                 title=""
-                isStacked
                 isSelected={isSelected}
                 onKeyDown={onKeyDown}
+                isStacked
                 onClick={onSelect}
             >
                 {menuName}
@@ -204,18 +204,20 @@ const TimelineSelection: React.FC<TimelineSelectionProps> = (_props: {}) => {
     );
 };
 
-interface SearchInputProps {
-    qsValue: string;
-    setQsValue: Dispatch<SetStateAction<string>>;
-}
-const SearchInput: React.FC<SearchInputProps> = (props) => {
-    const { qsValue, setQsValue } = props;
+interface SearchInputProps {}
+const SearchInput: React.FC<SearchInputProps> = (_props: {}) => {
     const dispatch = useAppDispatch();
     const client = useApolloClient();
+    const queryString = useAppSelector(
+        (state) => state.artifactsQuery.queryString,
+    );
     const onKeyPress = (keyEvent: React.KeyboardEvent) => {
-        if (keyEvent.key === 'Enter' && qsValue && !_.isEmpty(qsValue)) {
+        if (
+            keyEvent.key === 'Enter' &&
+            queryString &&
+            !_.isEmpty(queryString)
+        ) {
             dispatch(actPage(1));
-            dispatch(actQueryString(qsValue));
             dispatch(actLoad(client));
             keyEvent.stopPropagation();
             keyEvent.preventDefault();
@@ -223,16 +225,16 @@ const SearchInput: React.FC<SearchInputProps> = (props) => {
     };
     const handleInputChange = (
         _event: React.FormEvent<HTMLInputElement>,
-        qsValue: string,
+        value: string,
     ) => {
-        setQsValue(qsValue);
+        dispatch(actQueryString(value));
     };
     return (
         <>
             <TextInputGroup>
                 <TextInputGroupMain
                     icon={<SearchIcon />}
-                    value={qsValue}
+                    value={queryString}
                     onChange={handleInputChange}
                     onKeyDown={onKeyPress}
                 />
@@ -248,18 +250,30 @@ interface SearchToolbarProps {}
 export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
     const client = useApolloClient();
     const dispatch = useAppDispatch();
-    const [qsValue, setQsValue] = useState<string>('');
+    const queryState = useAppSelector((state) => state.artifactsQuery);
+
+    useEffect(() => {
+        if (!_.isEmpty(queryState.queryString)) {
+            /* this case covers legacy functionality when queryString is set in legacy-page, and forwarded to this page */
+            /* Run only once if there was a forward from legacy */
+            dispatch(actPage(1));
+            dispatch(actLoad(client));
+        }
+        /**
+         * Ensure the useEffect only runs once.
+         * That will not invoke re-renders because dispatch value will not change
+         */
+    }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const onClickDoSearch = () => {
         dispatch(actPage(1));
-        dispatch(actQueryString(qsValue));
         dispatch(actLoad(client));
     };
 
     const toolbarItems = (
         <>
             <ToolbarItem style={{ flexBasis: '100%' }}>
-                <SearchInput setQsValue={setQsValue} qsValue={qsValue} />
+                <SearchInput />
             </ToolbarItem>
             <ToolbarItem style={{ flexBasis: '100%' }}>
                 <ExpandableSection toggleText="more">

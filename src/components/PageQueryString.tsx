@@ -21,7 +21,6 @@
 import _ from 'lodash';
 import { useEffect } from 'react';
 import { PageSection } from '@patternfly/react-core';
-import { useApolloClient } from '@apollo/client';
 import { useSearchParams } from 'react-router-dom';
 
 import { config } from '../config';
@@ -30,17 +29,8 @@ import { SearchToolbar } from './SearchToolbar';
 import { ShowArtifacts } from './ArtifactsList';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { useAppDispatch, useAppSelector } from '../hooks';
-import {
-    actPage,
-    actPaginationSize,
-    InitialState as queryInitialState,
-} from '../slices/artifactsQuerySlice';
-import {
-    actArtTypes,
-    actLoad,
-    actNewerThen,
-    actQueryString,
-} from './../actions';
+import { InitialState as queryInitialState } from '../slices/artifactsQuerySlice';
+import { actArtTypes, actNewerThen, actQueryString } from './../actions';
 
 interface SetQueryStringProps {}
 const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
@@ -48,86 +38,52 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
     const queryState = useAppSelector((state) => state.artifactsQuery);
     const [searchParams, setSearchParams] = useSearchParams();
     const dispatch = useAppDispatch();
-    const client = useApolloClient();
-    /** Used to init redux-store when page is opened for first time, and there are query-string params */
-    const initQs = searchParams.get('qs');
-    const initNewer = searchParams.get('newer');
-    const initArtTypesString = searchParams.get('atypes');
-    const initPage = searchParams.get('page');
-    const initPageSize = searchParams.get('pagesize');
+    const newer = searchParams.get('newer');
+    const queryString = searchParams.get('qs');
+    const atypesString = searchParams.get('atypes');
     useEffect(() => {
-        if (initNewer) {
-            /** this will reset page to 1 */
-            dispatch(actNewerThen(initNewer));
-        }
-        if (initPageSize) {
-            /** this will reset page to 1 */
-            const pagesize = _.toNumber(initPageSize);
-            dispatch(actPaginationSize(pagesize));
-        }
-        if (initArtTypesString) {
-            /** this will reset page to 1 */
-            const atypes = initArtTypesString.split(',');
+        if (atypesString) {
+            const atypes = atypesString.split(',');
             dispatch(actArtTypes(atypes));
         }
-        if (initQs) {
-            dispatch(actQueryString(initQs));
-            dispatch(actLoad(client));
+        if (newer) {
+            dispatch(actNewerThen(newer));
         }
-        if (initPage) {
-            /** Order of the above `if` is important */
-            const page = _.toNumber(initPage);
-            dispatch(actPage(page));
+        if (queryString) {
+            dispatch(actQueryString(queryString));
         }
         /**
          * Ensure the useEffect only runs once.
          * That will not invoke re-renders because dispatch value will not change
          */
     }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const { page, paginationSize } = queryState;
-    useEffect(() => {
-        if (queryInitialState.page === page) {
-            searchParams.delete('page');
-        } else {
-            searchParams.set('page', `${page}`);
-        }
-        if (queryInitialState.paginationSize === paginationSize) {
-            searchParams.delete('pagesize');
-        } else {
-            searchParams.set('pagesize', `${paginationSize}`);
-        }
-        setSearchParams(searchParams.toString());
-    }, [page, paginationSize]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const { artTypes, newerThen, queryString } = queryState;
     useEffect(() => {
         const currentParams = Object.fromEntries(searchParams.entries());
-        if (artTypes) {
-            if (_.isEqual(queryInitialState.artTypes, queryState.artTypes)) {
-                _.unset(currentParams, 'atypes');
-            } else {
-                currentParams['atypes'] = artTypes.join(',');
-            }
+        if (
+            queryState.artTypes &&
+            !_.isEqual(_.split(atypesString, ','), queryState.queryString) &&
+            !_.isEqual(queryInitialState.artTypes, queryState.artTypes)
+        ) {
+            currentParams['atypes'] = queryState.artTypes.join(',');
         }
-        if (newerThen) {
-            if (_.isEqual(queryInitialState.newerThen, queryState.newerThen)) {
-                _.unset(currentParams, 'newer');
-            } else {
-                currentParams['newer'] = newerThen.toString();
-            }
+        if (
+            queryState.newerThen &&
+            !_.isEqual(newer, queryState.newerThen) &&
+            !_.isEqual(queryInitialState.newerThen, queryState.newerThen)
+        ) {
+            currentParams['newer'] = queryState.newerThen.toString();
         }
-        if (queryString) {
-            if (
-                _.isEqual(queryInitialState.queryString, queryState.queryString)
-            ) {
-                _.unset(currentParams, 'qs');
-            } else {
-                currentParams['qs'] = queryString;
-            }
+        if (
+            queryState.queryString &&
+            !_.isEqual(queryString, queryState.queryString) &&
+            !_.isEqual(queryInitialState.queryString, queryState.queryString)
+        ) {
+            currentParams['qs'] = queryState.queryString;
         }
         setSearchParams(currentParams);
-    }, [artifacts, artTypes, newerThen, queryString]); // eslint-disable-line react-hooks/exhaustive-deps
+        console.log('XXXXX XXXXX effect');
+    }, [artifacts]); // eslint-disable-line react-hooks/exhaustive-deps
+    console.log('XXXXX XXXXX');
     return null;
 };
 

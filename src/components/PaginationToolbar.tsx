@@ -18,22 +18,103 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { Flex, FlexItem, Pagination } from '@patternfly/react-core';
+import React, { useEffect } from 'react';
+import { Pagination } from '@patternfly/react-core';
 import { useApolloClient } from '@apollo/client';
+import { useSearchParams } from 'react-router-dom';
 
 import { useAppSelector, useAppDispatch } from '../hooks';
 import { actLoad, actPage, actPaginationSize } from './../actions';
+import { InitialState } from '../slices/artifactsQuerySlice';
 
-export interface PaginationToolbarProps {}
-export function PaginationToolbar(_props: PaginationToolbarProps) {
+/***  CAN BE REMOVED
+
+export function PaginationToolbar2(props: PaginationToolbarProps) {
     const dispatch = useAppDispatch();
     const client = useApolloClient();
     const artifacts = useAppSelector((state) => state.artifacts);
-    const queryState = useAppSelector((state) => state.artifactsQuery);
+    const artifactsQuery = useAppSelector((state) => state.artifactsQuery);
+    const isLoading = artifacts.isLoading;
+    const currentPage = artifactsQuery.page;
+    const totalPages = artifacts.totalHits / artifactsQuery.paginationSize;
+    const loadNextIsEnabled = totalPages > artifactsQuery.page;
+    const loadPrevIsEnabled = totalPages && artifactsQuery.page > 1;
+
+    const onClickLoadNext = () => {
+        dispatch(actPageNext());
+        dispatch(actLoad(client));
+    };
+    const onClickLoadPrev = () => {
+        dispatch(actPagePrev());
+        dispatch(actLoad(client));
+    };
+
+    return (
+        <Toolbar style={{ background: 'inherit' }} id="toolbar-top">
+            <ToolbarContent>
+                <ToolbarGroup alignment={{ default: 'alignRight' }}>
+                    <ToolbarItem style={{ minWidth: '30px' }}>
+                        {isLoading && (
+                            <>
+                                Loading <Spinner size="md" />
+                            </>
+                        )}
+                    </ToolbarItem>
+                    <ToolbarItem>
+                        <Button
+                            variant="tertiary"
+                            onClick={onClickLoadPrev}
+                            isDisabled={!loadPrevIsEnabled}
+                        >
+                            <AngleLeftIcon />
+                        </Button>
+                    </ToolbarItem>
+                    <ToolbarItem>
+                        <TextContent>
+                            <Text>{currentPage}</Text>
+                        </TextContent>
+                    </ToolbarItem>
+                    <ToolbarItem>
+                        <Button
+                            variant="tertiary"
+                            onClick={onClickLoadNext}
+                            isDisabled={!loadNextIsEnabled}
+                        >
+                            <AngleRightIcon />
+                        </Button>
+                    </ToolbarItem>
+                </ToolbarGroup>
+            </ToolbarContent>
+        </Toolbar>
+    );
+}
+
+*/
+
+export interface PaginationToolbarProps {}
+export function PaginationToolbar(props: PaginationToolbarProps) {
+    const dispatch = useAppDispatch();
+    const client = useApolloClient();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const artifacts = useAppSelector((state) => state.artifacts);
     const { totalHits } = artifacts;
     const artifactsQuery = useAppSelector((state) => state.artifactsQuery);
-    const { paginationSize } = artifactsQuery;
+    const { page, paginationSize } = artifactsQuery;
     const currentPage = artifactsQuery.page;
+
+    useEffect(() => {
+        if (InitialState.page === page) {
+            searchParams.delete('page');
+        } else {
+            searchParams.set('page', `${page}`);
+        }
+        if (InitialState.paginationSize === paginationSize) {
+            searchParams.delete('perpage');
+        } else {
+            searchParams.set('perpage', `${paginationSize}`);
+        }
+        setSearchParams(searchParams.toString());
+    }, [page, paginationSize, searchParams, setSearchParams]);
 
     const onSetPage = (
         _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
@@ -43,7 +124,7 @@ export function PaginationToolbar(_props: PaginationToolbarProps) {
         dispatch(actLoad(client));
     };
 
-    const onPageSizeSelect = (
+    const onPerPageSelect = (
         _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
         newPerPage: number,
         newPage: number,
@@ -56,20 +137,13 @@ export function PaginationToolbar(_props: PaginationToolbarProps) {
     return (
         <Pagination
             isSticky
-            page={currentPage}
-            ouiaId="PaginationTop"
-            perPage={paginationSize}
-            widgetId="pagination menu bar"
             itemCount={totalHits}
+            perPage={paginationSize}
+            page={currentPage}
             onSetPage={onSetPage}
-            onPerPageSelect={onPageSizeSelect}
-        >
-            <Flex style={{ order: -1, flexGrow: 1 }}>
-                <FlexItem style={{ flex: '0 0 23%' }} />
-                <FlexItem>
-                    Search results for: "{queryState.queryString}"
-                </FlexItem>
-            </Flex>
-        </Pagination>
+            widgetId="pagination menu bar"
+            onPerPageSelect={onPerPageSelect}
+            ouiaId="PaginationTop"
+        />
     );
 }
