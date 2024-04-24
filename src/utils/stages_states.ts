@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022, 2023, 2024 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -76,7 +76,6 @@ type AChildrenByStageName = {
 };
 
 /**
-
  * Entry point. This file is the most complicated part in this project.
  */
 export const mkStagesAndStates = (
