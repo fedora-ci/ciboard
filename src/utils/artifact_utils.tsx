@@ -19,8 +19,6 @@
  */
 
 import _ from 'lodash';
-import moment from 'moment';
-import Linkify from 'linkify-react';
 import { CSSProperties } from 'react';
 import {
     InfoIcon,
@@ -35,28 +33,27 @@ import {
     OutlinedQuestionCircleIcon,
 } from '@patternfly/react-icons';
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon';
+import moment from 'moment';
+import Linkify from 'linkify-react';
 import { IntermediateRepresentation } from 'linkifyjs';
-import { config } from '../config';
-
 import {
     MSG_V_1,
     Artifact,
     MSG_V_0_1,
     KojiInstance,
     ArtifactType,
-    ChildTestMsg,
-    isArtifactMbs,
-    isArtifactRpm,
+    StateTestMsg,
     BrokerTestMsg,
-    ArtifactChild,
-    ChildGreenwave,
+    ArtifactState,
+    StateGreenwave,
     DistGitInstance,
     MbsInstanceType,
-    isGreenwaveChild,
+    isGreenwaveState,
     isGreenwaveAndTestMsg,
     GreenwaveRequirementTypes,
     isArtifactRedhatContainerImage,
 } from '../types';
+import { config } from '../config';
 
 /**
  * Typescript guards
@@ -294,7 +291,7 @@ export function mapTypeToIconsProps(type: string): IconProps | null {
 
 export const isGatingArtifact = (artifact: Artifact): boolean => {
     if (
-        (isArtifactRpm(artifact) || isArtifactMbs(artifact)) &&
+        (isArtifactRPM(artifact) || isArtifactMBS(artifact)) &&
         _.size(artifact.hitSource.gateTag) > 0
     ) {
         return true;
@@ -516,22 +513,22 @@ const SATISFIED_REQUIREMENT_TYPES: GreenwaveRequirementTypes[] = [
     'test-result-passed',
 ];
 
-const isRequirementSatisfied = (child: ChildGreenwave): boolean => {
-    if (!child.requirement) {
+const isRequirementSatisfied = (state: StateGreenwave): boolean => {
+    if (!state.requirement) {
         return true;
     }
-    return _.includes(SATISFIED_REQUIREMENT_TYPES, child.requirement?.type);
+    return _.includes(SATISFIED_REQUIREMENT_TYPES, state.requirement?.type);
 };
 
 /**
  * Should we display a waive button for this result in the dashboard?
  * Show the button only if the test is blocking gating.
  * Greenwave shows all known tests from ResultsDB.
- * @param child The state object of the test result in question.
+ * @param state The state object of the test result in question.
  */
-export const isResultWaivable = (child: ArtifactChild): boolean => {
-    if (isGreenwaveAndTestMsg(child)) return !isRequirementSatisfied(child.gs);
-    if (isGreenwaveChild(child)) return !isRequirementSatisfied(child);
+export const isResultWaivable = (state: ArtifactState): boolean => {
+    if (isGreenwaveAndTestMsg(state)) return !isRequirementSatisfied(state.gs);
+    if (isGreenwaveState(state)) return !isRequirementSatisfied(state);
     return false;
 };
 
@@ -545,17 +542,17 @@ const MISSING_REQUIREMENT_TYPES: GreenwaveRequirementTypes[] = [
     'test-result-missing-waived',
 ];
 
-const isRequirementMissing = (child: ChildGreenwave): boolean =>
-    _.includes(MISSING_REQUIREMENT_TYPES, child.requirement?.type);
+const isRequirementMissing = (state: StateGreenwave): boolean =>
+    _.includes(MISSING_REQUIREMENT_TYPES, state.requirement?.type);
 
 /**
  * Check if the Greenwave state is missing the required test result.
- * @param child The Greenwave state to check.
+ * @param state The Greenwave state to check.
  * @returns `true` if the required result is missing in Greenwave, `false` otherwise.
  */
-export const isResultMissing = (child: ChildTestMsg): boolean => {
-    if (isGreenwaveAndTestMsg(child)) return isRequirementMissing(child.gs);
-    if (isGreenwaveChild(child)) return isRequirementMissing(child);
+export const isResultMissing = (state: StateTestMsg): boolean => {
+    if (isGreenwaveAndTestMsg(state)) return isRequirementMissing(state.gs);
+    if (isGreenwaveState(state)) return isRequirementMissing(state);
     return false;
 };
 

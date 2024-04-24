@@ -60,7 +60,7 @@ import { TestResultQuickLinks } from './TestResultQuickLinks';
 import { Artifact } from '../../types';
 import { ExternalLink } from '../ExternalLink';
 import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
-import { LinkifyNewTab, getArtifactProduct } from '../../utils/utils';
+import { LinkifyNewTab, getArtifactProduct } from '../../utils/artifact_utils';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';

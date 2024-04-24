@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 
 import _ from 'lodash';
-import React from 'react';
+import * as React from 'react';
 import { LegacyRef, useState } from 'react';
 import {
     List,
@@ -44,14 +44,10 @@ import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
 import { ExclamationCircleIcon, LinkIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 
-import styles from '../custom.module.css';
-import {
-    Artifact,
-    getArtifactId,
-    getArtifactName,
-    getArtifactRemoteUrl,
-} from '../types';
+import { getArtifactName, getArtifactRemoteUrl } from './artifact_utils';
+import { Artifact } from '../artifact';
 import { ArtifactGreenwaveStatesSummary } from '../components/GatingStatus';
+import styles from '../custom.module.css';
 
 export interface ArtifactNameProps {
     artifact: Artifact;
@@ -103,18 +99,16 @@ export interface ArtifactUrlProps {
 
 export const ArtifactUrl: React.FC<ArtifactUrlProps> = (props) => {
     const { artifact } = props;
-    const url = getArtifactRemoteUrl(artifact);
-    const aid = getArtifactId(artifact);
     return (
         <TextContent>
             <Text component={TextVariants.small}>
                 <a
-                    href={url}
+                    href={getArtifactRemoteUrl(artifact)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {aid}
+                    {artifact.aid}
                 </a>
             </Text>
         </TextContent>

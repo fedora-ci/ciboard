@@ -39,7 +39,7 @@ import {
 } from '@patternfly/react-table';
 
 import styles from '../custom.module.css';
-import { LinkifyNewTab } from '../utils/utils';
+import { LinkifyNewTab } from '../utils/artifact_utils';
 import { mkLabel, StateDetailsEntry } from './ArtifactState';
 import {
     Metadata,

@@ -45,7 +45,7 @@ import {
     getTestcaseName,
     isResultWaivable,
     getTestMsgExtendedStatus,
-} from '../../utils/utils';
+} from '../../utils/artifact_utils';
 import { mkStagesAndStates } from '../../utils/stages_states';
 import { CiContact, CiTest, TestStatus } from './types';
 

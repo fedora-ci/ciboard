@@ -75,14 +75,14 @@ import {
     getTestcaseName,
     getArtifactProduct,
     TestStatusIcon,
-} from '../utils/utils';
+} from '../utils/artifact_utils';
 import {
     Artifact,
     GreenwaveRequirementType,
     GreenwaveWaiveType,
     StateGreenwaveType,
 } from '../artifact';
-import { isResultMissing } from '../utils/utils';
+import { isResultMissing } from '../utils/artifact_utils';
 import { ArtifactStateProps } from './ArtifactState';
 import {
     StateDetailsEntry,
