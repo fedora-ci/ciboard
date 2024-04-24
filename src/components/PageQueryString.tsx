@@ -201,11 +201,7 @@ export function PageQueryString(_props: {}) {
 
     return (
         <PageCommon title={pageTitle}>
-            <PageSection
-                aria-label="Artifacts search"
-                hasOverflowScroll
-                isFilled={false}
-            >
+            <PageSection hasOverflowScroll isFilled={false}>
                 <SearchToolbar />
                 <ShowArtifacts />
             </PageSection>
