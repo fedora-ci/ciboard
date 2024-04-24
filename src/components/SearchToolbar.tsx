@@ -23,20 +23,15 @@ import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useApolloClient } from '@apollo/client';
 import {
     Text,
-    List,
     Flex,
     Tile,
     Slider,
     Button,
     Popover,
     Toolbar,
-    Checkbox,
     FlexItem,
-    ListItem,
     HelperText,
     ToolbarItem,
-    TextContent,
-    TextVariants,
     ToolbarContent,
     HelperTextItem,
     TextInputGroup,
@@ -44,15 +39,14 @@ import {
     ExpandableSection,
     TextInputGroupMain,
     TextInputGroupUtilities,
+    Checkbox,
 } from '@patternfly/react-core';
 import { HelpIcon, SearchIcon } from '@patternfly/react-icons';
 
-import { actDoDeepSearch, actLoad, actNewQuery, actPage } from './../actions';
+import { actDoDeepSearch, actLoad, actPage } from './../actions';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { actArtTypes, actNewerThen, actQueryString } from './../actions';
 import { useSearchParams } from 'react-router-dom';
-import { useStore } from 'react-redux';
-import { RootStateType } from '../slices';
 
 /**
  * These are default search-field for each artifact type. List here all possible artifact-types:
@@ -77,6 +71,7 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
             <Popover
                 position={PopoverPosition['bottomEnd']}
                 aria-label="Uncontrolled popover with button in the body that can close it"
+                headerContent={<div>Query help</div>}
                 hasAutoWidth
                 headerIcon={<HelpIcon />}
                 hideOnOutsideClick={false}
@@ -86,11 +81,38 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                             <HelperTextItem
                                 style={{ fontFamily: 'RedHatDisplay' }}
                             >
-                                <TextContent>
-                                    <Text component={TextVariants.h1}>
-                                        Query examples
-                                    </Text>
-                                </TextContent>
+                                Known fields
+                            </HelperTextItem>
+                            <HelperTextItem
+                                style={{ fontFamily: 'RedHatMono' }}
+                            >
+                                nvr
+                                <br />
+                                source
+                                <br />
+                                issuer
+                                <br />
+                                taskId
+                                <br />
+                                contId
+                                <br />
+                                scratch
+                                <br />
+                                gateTag
+                                <br />
+                                buildId
+                                <br />
+                                component
+                                <br />
+                                brokerMsgIdGateTag
+                            </HelperTextItem>
+                        </HelperText>
+                        <br />
+                        <HelperText>
+                            <HelperTextItem
+                                style={{ fontFamily: 'RedHatDisplay' }}
+                            >
+                                Examples
                             </HelperTextItem>
                             <HelperTextItem
                                 style={{
@@ -98,68 +120,11 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                                     fontFamily: 'RedHatMono',
                                 }}
                             >
-                                <List isPlain isBordered>
-                                    <ListItem>errata 1217*</ListItem>
-                                    <ListItem>
-                                        component: kernel AND scratch: true AND
-                                        issuer: sb*
-                                    </ListItem>
-                                    <ListItem>
-                                        component: kernel AND gateTag:
-                                        (rhel-8.8* OR rhel-9.2*)
-                                    </ListItem>
-                                </List>
+                                component: kernel AND scratch: true AND issuer:
+                                sb* <br />
+                                component: kernel AND gateTag: (rhel-8.8* OR
+                                rhel-9.2*)
                             </HelperTextItem>
-                            <HelperText>
-                                <HelperTextItem
-                                    style={{ fontFamily: 'RedHatDisplay' }}
-                                >
-                                    <TextContent>
-                                        <Text component={TextVariants.h1}>
-                                            Known fields
-                                        </Text>
-                                    </TextContent>
-                                </HelperTextItem>
-                                <HelperTextItem
-                                    style={{ fontFamily: 'RedHatMono' }}
-                                >
-                                    <List isPlain isBordered>
-                                        <ListItem>
-                                            nvr: "annobin-12.28-1.el9"
-                                        </ListItem>
-                                        <ListItem>
-                                            source:
-                                            "git+https://pkgs.devel.redhat.com/git/rpms/annobin#b9e86e0c6d348cb7a7045c7f26e8c0aef3068061"
-                                        </ListItem>
-                                        <ListItem>issuer: "mrezanin"</ListItem>
-                                        <ListItem>taskId: "56055780"</ListItem>
-                                        <ListItem>contId: </ListItem>
-                                        <ListItem>scratch: false</ListItem>
-                                        <ListItem>
-                                            gateTag: "rhel-9.4.0-gate "
-                                        </ListItem>
-                                        <ListItem>buildId: "2721481"</ListItem>
-                                        <ListItem>
-                                            component: "annobin"
-                                        </ListItem>
-                                        <ListItem>msgFullText: </ListItem>
-                                        <ListItem>
-                                            msgState: "complete | running |
-                                            error | queued"
-                                        </ListItem>
-                                        <ListItem>
-                                            msgStage: "test | build"
-                                        </ListItem>
-                                        <ListItem>
-                                            testCaseName:
-                                            "osci.brew-build.test-compose.integration"
-                                        </ListItem>
-                                        <ListItem>
-                                            brokerMsgIdGateTag:{' '}
-                                        </ListItem>
-                                    </List>
-                                </HelperTextItem>
-                            </HelperText>
                         </HelperText>
                         <br />
                         <a
@@ -176,8 +141,8 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                     </>
                 )}
             >
-                <Button variant="plain" isInline>
-                    Query help
+                <Button variant="plain">
+                    <HelpIcon color="orange" />
                 </Button>
             </Popover>
         </>
@@ -324,12 +289,10 @@ const SearchInput: React.FC<SearchInputProps> = (props) => {
     const { qsValue, setQsValue } = props;
     const dispatch = useAppDispatch();
     const client = useApolloClient();
-    const store = useStore<RootStateType>();
     const onKeyPress = (keyEvent: React.KeyboardEvent) => {
         if (keyEvent.key === 'Enter' && qsValue && !_.isEmpty(qsValue)) {
             dispatch(actPage(1));
             dispatch(actQueryString(qsValue));
-            dispatch(actNewQuery(store.getState().artifactsQuery));
             dispatch(actLoad(client));
             keyEvent.stopPropagation();
             keyEvent.preventDefault();
@@ -361,7 +324,6 @@ const SearchInput: React.FC<SearchInputProps> = (props) => {
 interface SearchToolbarProps {}
 export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
     const client = useApolloClient();
-    const store = useStore<RootStateType>();
     const dispatch = useAppDispatch();
     const [searchParams, _setSearchParams] = useSearchParams();
     const [qsValue, setQsValue] = useState<string>('');
@@ -381,7 +343,6 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
     const onClickDoSearch = () => {
         dispatch(actPage(1));
         dispatch(actQueryString(qsValue));
-        dispatch(actNewQuery(store.getState().artifactsQuery));
         dispatch(actLoad(client));
     };
 

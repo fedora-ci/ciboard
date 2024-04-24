@@ -105,6 +105,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
     }
     const decision: GreenwaveDecisionReply | undefined =
         artifact.greenwaveDecision;
+    console.log(artifact);
     if (_.isNil(decision) && !isLoading) {
         return null;
     }

@@ -31,9 +31,7 @@ export function PaginationToolbar(_props: PaginationToolbarProps) {
     const artifacts = useAppSelector((state) => state.artifacts);
     const queryState = useAppSelector((state) => state.artifactsQuery);
     const { totalHits } = artifacts;
-    const artifactsQuery = useAppSelector(
-        (state) => state.artifactsCurrentQuery,
-    );
+    const artifactsQuery = useAppSelector((state) => state.artifactsQuery);
     const { paginationSize } = artifactsQuery;
     const currentPage = artifactsQuery.page;
 

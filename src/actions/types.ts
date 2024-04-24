@@ -41,16 +41,13 @@ export const ARTIFACTS_LOADING = 'ARTIFACTS_LOADING';
  */
 
 export interface IStateArtifactsQuery {
+    page: number;
     sortBy: string | undefined;
     artTypes: string[] | undefined;
     newerThen: string | undefined;
     doDeepSearch: boolean;
     queryString: string | undefined;
     paginationSize: number;
-}
-
-export interface IStateArtifactsCurrentQuery extends IStateArtifactsQuery {
-    page: number;
 }
 
 export interface IStateAlerts {
