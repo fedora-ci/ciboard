@@ -66,16 +66,9 @@ export function PaginationToolbar(_props: PaginationToolbarProps) {
         >
             <Flex style={{ order: -1, flexGrow: 1 }}>
                 <FlexItem style={{ flex: '0 0 23%' }} />
-                <Flex>
-                    <FlexItem>Search results for:</FlexItem>
-                    <FlexItem
-                        style={{
-                            fontWeight: 'var(--pf-global--FontWeight--bold)',
-                        }}
-                    >
-                        {queryState.queryString}
-                    </FlexItem>
-                </Flex>
+                <FlexItem>
+                    Search results for: "{queryState.queryString}"
+                </FlexItem>
             </Flex>
         </Pagination>
     );

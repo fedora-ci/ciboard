@@ -19,13 +19,13 @@
  */
 
 import _ from 'lodash';
-import { ApolloClient } from '@apollo/client';
 import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import { ApolloClient, ApolloError } from '@apollo/client';
+import { GetState } from '../reduxStore';
 
 // XXX: add global ApoloError redux?
 
 import { Artifact } from '../artifact';
-import { GetState } from '../reduxStore';
 import { ArtifactsCompleteQuery } from '../queries/Artifacts';
 
 interface IStateArtifacts {
@@ -81,6 +81,13 @@ export const { artList, isLoading } = artifactsSlice.actions;
 export const artifactsReducer = artifactsSlice.reducer;
 
 // Get
+
+/**
+ * set next page + call load
+    loadNext: actLoadNext,
+ *   set prev page + call load
+    loadPrev: actLoadPrev,
+*/
 
 export const {
     /** set isLoading to true */
