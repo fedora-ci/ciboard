@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022, 2023, 2024 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -156,16 +156,6 @@ export const getMessageError = (brokerMsgBody: BrokerSchemaMsgBody) => {
     if (MSG_V_1.isMsg(brokerMsgBody) && 'error' in brokerMsgBody) {
         return brokerMsgBody.error;
     }
-};
-
-export const getMsgTestNote = (brokerMsgBody: BrokerSchemaMsgBody) => {
-    let note: string | undefined;
-    if (MSG_V_0_1.isMsg(brokerMsgBody)) {
-        note = brokerMsgBody.note;
-    } else if (MSG_V_1.isMsg(brokerMsgBody)) {
-        note = brokerMsgBody.test.note;
-    }
-    return note;
 };
 
 export interface IconProps {
