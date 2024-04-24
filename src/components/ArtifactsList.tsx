@@ -21,6 +21,7 @@
 
 import _ from 'lodash';
 import {
+    Card,
     Flex,
     Text,
     Title,
@@ -29,20 +30,20 @@ import {
     Spinner,
     FlexItem,
     Bullseye,
+    CardHeader,
     TitleSizes,
     EmptyState,
     TextContent,
     EmptyStateIcon,
     EmptyStateHeader,
 } from '@patternfly/react-core';
-import { Td, Th, Tr, Table, Tbody, Thead } from '@patternfly/react-table';
 import { Link } from 'react-router-dom';
-import { CSSProperties } from 'react';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
-import rhMbs from './../img/rhmbs.png';
 import rhLogo from './../img/rhfavicon.svg';
 import rhContLogo from './../img/rhcont.png';
+import rhMbs from './../img/rhmbs.png';
+
 import { useAppSelector } from '../hooks';
 import { PaginationToolbar } from './PaginationToolbar';
 import {
@@ -52,20 +53,17 @@ import {
 } from '../utils/utils';
 import {
     Artifact,
-    getAType,
     ArtifactRpm,
-    ArtifactMbs,
-    isArtifactMbs,
     isArtifactRpm,
     getArtifactLocalPath,
-    ArtifactContainerImage,
     GreenwaveDecisionReply,
+    getAType,
     isArtifactRedhatContainerImage,
-    getArtifactTypeLabel,
-    getArtifactId,
-    getArtifactRemoteUrl,
+    ArtifactContainerImage,
+    isArtifactMbs,
+    ArtifactMbs,
 } from '../types';
-import { ExternalLink } from './ExternalLink';
+import { CSSProperties } from 'react';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
@@ -88,24 +86,22 @@ const PrintRequirementsSize = (props: PrintRequirementsSizeProps) => {
 
 interface ArtifactGreenwaveStatesSummaryProps {
     artifact: ArtifactRpm | ArtifactContainerImage | ArtifactMbs;
+    isLoading?: boolean;
 }
 export const ArtifactGreenwaveStatesSummary: React.FC<
     ArtifactGreenwaveStatesSummaryProps
 > = (props) => {
-    const { artifact } = props;
-    const { isLoadingExtended: isLoading } = useAppSelector(
-        (state) => state.artifacts,
-    );
-    const isScratch = _.get(artifact, 'hit_source.scratch', false);
-    if (isScratch) {
-        return <>scratch</>;
-    }
+    const { artifact, isLoading } = props;
     if (!isGatingArtifact(artifact)) {
         return null;
     }
     const decision: GreenwaveDecisionReply | undefined =
         artifact.greenwaveDecision;
     console.log(artifact);
+    const isScratch = _.get(artifact, 'hit_source.scratch', false);
+    if (isScratch) {
+        return null;
+    }
     if (_.isNil(decision) && !isLoading) {
         return null;
     }
@@ -176,295 +172,314 @@ function ShowLoading(props: ShowLoadingProps) {
     );
 }
 
-const makeArtifactRowRpm = (artifact: ArtifactRpm): ArtifactRow => {
-    const { hit_source } = artifact;
+interface ArtifactRPMCardProps {
+    artifact: ArtifactRpm;
+}
+const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
+    const { isLoadingExtended: isLoading } = useAppSelector(
+        (state) => state.artifacts,
+    );
+    const { artifact } = props;
+    const { hit_info, hit_source } = artifact;
     const aType = getAType(artifact);
     const href = getArtifactLocalPath(artifact);
-    const cell0: JSX.Element = (
-        <>
-            <Brand alt="Red hat build" widths={{ default: '30px' }}>
-                <source srcSet={rhLogo} />
-            </Brand>
-        </>
+    return (
+        <Card id={hit_info._id} isCompact>
+            <CardHeader
+                actions={{
+                    actions: (
+                        <>
+                            <Link to={href}>
+                                <Button variant="secondary">details</Button>
+                            </Link>
+                        </>
+                    ),
+                    hasNoOffset: true,
+                    className: undefined,
+                }}
+            >
+                <Flex
+                    style={{ flexGrow: 1 }}
+                    flexWrap={{ default: 'nowrap' }}
+                    justifyContent={{ default: 'justifyContentSpaceBetween' }}
+                >
+                    <FlexItem>
+                        <Brand alt="Red hat build" widths={{ default: '30px' }}>
+                            <source srcSet={rhLogo} />
+                        </Brand>
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {aType}
+                    </FlexItem>
+                    <FlexItem
+                        style={{
+                            whiteSpace: 'nowrap',
+                            fontFamily:
+                                'var(--pf-v5-global--FontFamily--monospace)',
+                            fontSize: '80%',
+                        }}
+                    >
+                        <Link to="">{hit_source.taskId}</Link>
+                    </FlexItem>
+                    <FlexItem
+                        style={{
+                            fontWeight:
+                                'var(--pf-v5-c-card__title--FontWeight)',
+                            fontSize: 'var(--pf-v5-c-card__title--FontSize)',
+                            fontFamily:
+                                'var(--pf-v5-c-card__title--FontFamily)',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {hit_source.nvr}
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {hit_source.issuer}
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {hit_source.scratch}
+                    </FlexItem>
+                    <FlexItem
+                        align={{ default: 'alignRight' }}
+                        style={{ whiteSpace: 'nowrap' }}
+                    >
+                        {hit_source.gateTag}
+                    </FlexItem>
+                    <FlexItem style={{ flex: '0 0 10%', whiteSpace: 'nowrap' }}>
+                        <ArtifactGreenwaveStatesSummary
+                            artifact={artifact}
+                            isLoading={isLoading}
+                        />
+                    </FlexItem>
+                </Flex>
+            </CardHeader>
+        </Card>
     );
-    const cell1: JSX.Element = <>{getArtifactTypeLabel(aType)}</>;
-    const artifactUrl = getArtifactRemoteUrl(artifact);
-    const artId = getArtifactId(artifact);
-    const cell2: JSX.Element = (
-        <ExternalLink href={artifactUrl}>{artId}</ExternalLink>
-    );
-    const cell3: JSX.Element = <>{hit_source.nvr}</>;
-    const cell4: JSX.Element = (
-        <>
-            <ArtifactGreenwaveStatesSummary artifact={artifact} />
-        </>
-    );
-    const cell5: JSX.Element = <>{hit_source.gateTag}</>;
-    const cell6: JSX.Element = <>{hit_source.issuer}</>;
-    const cell7: JSX.Element = (
-        <>
-            <Link to={href}>
-                <Button variant="secondary">details</Button>
-            </Link>
-        </>
-    );
-    const artifactRow: ArtifactRow = [
-        cell0,
-        cell1,
-        cell2,
-        cell3,
-        cell4,
-        cell5,
-        cell6,
-        cell7,
-    ];
-    return artifactRow;
 };
 
-const makeArtifactRowRedhatContainerImage = (
-    artifact: ArtifactContainerImage,
-): ArtifactRow => {
-    const { hit_source } = artifact;
+interface ArtifactRedhatContainerImageCardProps {
+    artifact: ArtifactContainerImage;
+}
+const ArtifactRedhatContainerImageCard = (
+    props: ArtifactRedhatContainerImageCardProps,
+) => {
+    const { isLoadingExtended: isLoading } = useAppSelector(
+        (state) => state.artifacts,
+    );
+    const { artifact } = props;
+    const { hit_info, hit_source } = artifact;
     const aType = getAType(artifact);
     const href = getArtifactLocalPath(artifact);
-    const cell0: JSX.Element = (
-        <>
-            <Brand alt="Red hat container image" widths={{ default: '30px' }}>
-                <source srcSet={rhContLogo} />
-            </Brand>
-        </>
+    return (
+        <Card id={hit_info._id} isCompact>
+            <CardHeader
+                actions={{
+                    actions: (
+                        <>
+                            <Link to={href}>
+                                <Button variant="secondary">details</Button>
+                            </Link>
+                        </>
+                    ),
+                    hasNoOffset: true,
+                    className: undefined,
+                }}
+            >
+                <Flex
+                    style={{ flexGrow: 1 }}
+                    flexWrap={{ default: 'nowrap' }}
+                    justifyContent={{ default: 'justifyContentSpaceBetween' }}
+                >
+                    <FlexItem>
+                        <Brand
+                            alt="Red hat container image"
+                            widths={{ default: '30px' }}
+                        >
+                            <source srcSet={rhContLogo} />
+                        </Brand>
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {aType}
+                    </FlexItem>
+                    <FlexItem
+                        style={{
+                            whiteSpace: 'nowrap',
+                            fontFamily:
+                                'var(--pf-v5-global--FontFamily--monospace)',
+                            fontSize: '80%',
+                        }}
+                    >
+                        <Link to="">{hit_source.taskId}</Link>
+                    </FlexItem>
+                    <FlexItem
+                        style={{
+                            fontWeight:
+                                'var(--pf-v5-c-card__title--FontWeight)',
+                            fontSize: 'var(--pf-v5-c-card__title--FontSize)',
+                            fontFamily:
+                                'var(--pf-v5-c-card__title--FontFamily)',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {hit_source.nvr}
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {hit_source.issuer}
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {hit_source.scratch}
+                    </FlexItem>
+                    <FlexItem
+                        align={{ default: 'alignRight' }}
+                        style={{ whiteSpace: 'nowrap' }}
+                    >
+                        {hit_source.contTag}
+                    </FlexItem>
+                    <FlexItem style={{ flex: '0 0 10%', whiteSpace: 'nowrap' }}>
+                        <ArtifactGreenwaveStatesSummary
+                            artifact={artifact}
+                            isLoading={isLoading}
+                        />
+                    </FlexItem>
+                </Flex>
+            </CardHeader>
+        </Card>
     );
-    const cell1: JSX.Element = <>{getArtifactTypeLabel(aType)}</>;
-    const artifactUrl = getArtifactRemoteUrl(artifact);
-    const artId = getArtifactId(artifact);
-    const cell2: JSX.Element = (
-        <ExternalLink href={artifactUrl}>{artId}</ExternalLink>
-    );
-    const cell3: JSX.Element = <>{hit_source.nvr}</>;
-    const cell4: JSX.Element = (
-        <>
-            <ArtifactGreenwaveStatesSummary artifact={artifact} />
-        </>
-    );
-    const cell5: JSX.Element = <>{hit_source.contTag}</>;
-    const cell6: JSX.Element = <>{hit_source.issuer}</>;
-    const cell7: JSX.Element = (
-        <>
-            <Link to={href}>
-                <Button variant="secondary">details</Button>
-            </Link>
-        </>
-    );
-    const artifactRow: ArtifactRow = [
-        cell0,
-        cell1,
-        cell2,
-        cell3,
-        cell4,
-        cell5,
-        cell6,
-        cell7,
-    ];
-    return artifactRow;
 };
 
-const makeArtifactRowMbs = (artifact: ArtifactMbs): ArtifactRow => {
-    const { hit_source } = artifact;
+interface ArtifactMbsCardProps {
+    artifact: ArtifactMbs;
+}
+const ArtifactMbsCard = (props: ArtifactMbsCardProps) => {
+    const { isLoadingExtended: isLoading } = useAppSelector(
+        (state) => state.artifacts,
+    );
+    const { artifact } = props;
+    const { hit_info, hit_source } = artifact;
     const aType = getAType(artifact);
     const href = getArtifactLocalPath(artifact);
-    const cell0: JSX.Element = (
-        <>
-            <Brand alt="Red hat container image" widths={{ default: '30px' }}>
-                <source srcSet={rhMbs} />
-            </Brand>
-        </>
+    return (
+        <Card id={hit_info._id} isCompact>
+            <CardHeader
+                actions={{
+                    actions: (
+                        <>
+                            <Link to={href}>
+                                <Button variant="secondary">details</Button>
+                            </Link>
+                        </>
+                    ),
+                    hasNoOffset: true,
+                    className: undefined,
+                }}
+            >
+                <Flex
+                    style={{ flexGrow: 1 }}
+                    flexWrap={{ default: 'nowrap' }}
+                    justifyContent={{ default: 'justifyContentSpaceBetween' }}
+                >
+                    <FlexItem>
+                        <Brand
+                            alt="Red hat container image"
+                            widths={{ default: '30px' }}
+                        >
+                            <source srcSet={rhMbs} />
+                        </Brand>
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {aType}
+                    </FlexItem>
+                    <FlexItem
+                        style={{
+                            whiteSpace: 'nowrap',
+                            fontFamily:
+                                'var(--pf-v5-global--FontFamily--monospace)',
+                            fontSize: '80%',
+                        }}
+                    >
+                        <Link to="">{hit_source.mbsId}</Link>
+                    </FlexItem>
+                    <FlexItem
+                        style={{
+                            fontWeight:
+                                'var(--pf-v5-c-card__title--FontWeight)',
+                            fontSize: 'var(--pf-v5-c-card__title--FontSize)',
+                            fontFamily:
+                                'var(--pf-v5-c-card__title--FontFamily)',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {hit_source.nsvc}
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {hit_source.issuer}
+                    </FlexItem>
+                    <FlexItem style={{ whiteSpace: 'nowrap' }}>
+                        {hit_source.scratch}
+                    </FlexItem>
+                    <FlexItem
+                        align={{ default: 'alignRight' }}
+                        style={{ whiteSpace: 'nowrap' }}
+                    >
+                        {hit_source.gateTag}
+                    </FlexItem>
+                    <FlexItem style={{ flex: '0 0 10%', whiteSpace: 'nowrap' }}>
+                        <ArtifactGreenwaveStatesSummary
+                            artifact={artifact}
+                            isLoading={isLoading}
+                        />
+                    </FlexItem>
+                </Flex>
+            </CardHeader>
+        </Card>
     );
-    const cell1: JSX.Element = <>{getArtifactTypeLabel(aType)}</>;
-    const artId = getArtifactId(artifact);
-    const artifactUrl = getArtifactRemoteUrl(artifact);
-    const cell2: JSX.Element = (
-        <ExternalLink href={artifactUrl}>{artId}</ExternalLink>
-    );
-    const cell3: JSX.Element = <>{hit_source.nsvc}</>;
-    const cell4: JSX.Element = (
-        <>
-            <ArtifactGreenwaveStatesSummary artifact={artifact} />
-        </>
-    );
-    const cell5: JSX.Element = <>{hit_source.gateTag}</>;
-    const cell6: JSX.Element = <>{hit_source.issuer}</>;
-    const cell7: JSX.Element = (
-        <>
-            <Link to={href}>
-                <Button variant="secondary">details</Button>
-            </Link>
-        </>
-    );
-    const artifactRow: ArtifactRow = [
-        cell0,
-        cell1,
-        cell2,
-        cell3,
-        cell4,
-        cell5,
-        cell6,
-        cell7,
-    ];
-    return artifactRow;
 };
 
-type ArtifactRow =
-    | [
-          JSX.Element,
-          JSX.Element,
-          JSX.Element,
-          JSX.Element,
-          JSX.Element,
-          JSX.Element,
-          JSX.Element,
-          JSX.Element,
-      ]
-    | undefined;
-
-const columnNames = {
-    logo: '',
-    aType: 'Type',
-    id: 'Id',
-    artifactName: 'Name',
-    issuer: 'Issuer',
-    gateTag: 'Build tag',
-    gatingStatus: 'Gating status',
-    details: '',
-};
-
-const makeArtifactRow = (artifact: Artifact): ArtifactRow | undefined => {
+interface ArtifactCardProps {
+    artifact: Artifact;
+}
+const ArtifactCard = (props: ArtifactCardProps) => {
+    const { artifact } = props;
     if (isArtifactRpm(artifact)) {
-        return makeArtifactRowRpm(artifact);
+        return <ArtifactRPMCard artifact={artifact} />;
     }
     if (isArtifactRedhatContainerImage(artifact)) {
-        return makeArtifactRowRedhatContainerImage(artifact);
+        return <ArtifactRedhatContainerImageCard artifact={artifact} />;
     }
     if (isArtifactMbs(artifact)) {
-        return makeArtifactRowMbs(artifact);
+        return <ArtifactMbsCard artifact={artifact} />;
     }
-    //<FlexItem>{artifact.hit_info._id}</FlexItem>
+    return (
+        <Flex>
+            <FlexItem>{artifact.hit_info._id}</FlexItem>
+        </Flex>
+    );
 };
 
 interface ArtListProps {}
-const ArtifactsTable = (_props: ArtListProps) => {
+const ArtList = (_props: ArtListProps) => {
     const { artList } = useAppSelector((state) => state.artifacts);
     if (_.isEmpty(artList)) return null;
-    const entries: ArtifactRow[] = [];
+    const entries: JSX.Element[] = [];
     _.map(artList, (artifact: any) => {
-        entries.push(makeArtifactRow(artifact));
+        entries.push(
+            <Flex>
+                <FlexItem style={{ flex: '0 0 20%' }} />
+                <FlexItem style={{ flexBasis: '60%' }}>
+                    <ArtifactCard artifact={artifact} />
+                </FlexItem>
+            </Flex>,
+        );
     });
     return (
         <>
-            <Table aria-label="Simple table" variant="compact" borders={true}>
-                <Thead>
-                    <Tr>
-                        <Th>{columnNames.logo}</Th>
-                        <Th>{columnNames.aType}</Th>
-                        <Th>{columnNames.id}</Th>
-                        <Th>{columnNames.artifactName}</Th>
-                        <Th>{columnNames.gatingStatus}</Th>
-                        <Th>{columnNames.gateTag}</Th>
-                        <Th>{columnNames.issuer}</Th>
-                        <Th>{columnNames.details}</Th>
-                    </Tr>
-                </Thead>
-                <Tbody>
-                    {_.map(entries, (aRow, index) => {
-                        if (!aRow) {
-                            return <></>;
-                        }
-                        return (
-                            <Tr key={index}>
-                                <Td
-                                    style={{
-                                        verticalAlign: 'middle',
-                                        tableLayout: 'fixed',
-                                        width: '1%',
-                                    }}
-                                    dataLabel={columnNames.logo}
-                                >
-                                    {aRow[0]}
-                                </Td>
-                                <Td
-                                    style={{
-                                        verticalAlign: 'middle',
-                                        whiteSpace: 'nowrap',
-                                        tableLayout: 'fixed',
-                                        width: '1%',
-                                    }}
-                                    dataLabel={columnNames.aType}
-                                >
-                                    {aRow[1]}
-                                </Td>
-                                <Td
-                                    style={{
-                                        verticalAlign: 'middle',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                    dataLabel={columnNames.id}
-                                >
-                                    {aRow[2]}
-                                </Td>
-                                <Td
-                                    style={{
-                                        verticalAlign: 'middle',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                    dataLabel={columnNames.artifactName}
-                                >
-                                    {aRow[3]}
-                                </Td>
-                                <Td
-                                    style={{
-                                        verticalAlign: 'middle',
-                                        whiteSpace: 'nowrap',
-                                        tableLayout: 'fixed',
-                                        width: '1%',
-                                    }}
-                                    dataLabel={columnNames.gatingStatus}
-                                >
-                                    {aRow[4]}
-                                </Td>
-                                <Td
-                                    style={{
-                                        verticalAlign: 'middle',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                    dataLabel={columnNames.gateTag}
-                                >
-                                    {aRow[5]}
-                                </Td>
-                                <Td
-                                    style={{
-                                        verticalAlign: 'middle',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        maxWidth: '12em',
-                                    }}
-                                    dataLabel={columnNames.issuer}
-                                >
-                                    {aRow[6]}
-                                </Td>
-                                <Td
-                                    style={{
-                                        verticalAlign: 'middle',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                    dataLabel={columnNames.details}
-                                >
-                                    {aRow[7]}
-                                </Td>
-                            </Tr>
-                        );
-                    })}
-                </Tbody>
-            </Table>
+            <Flex
+                spaceItems={{ default: 'spaceItemsXs' }}
+                direction={{ default: 'column' }}
+                flexWrap={{ default: 'nowrap' }}
+            >
+                {entries}
+            </Flex>
         </>
     );
 };
@@ -497,7 +512,7 @@ export function ShowArtifacts() {
         <>
             <PaginationToolbar />
             <ShowLoading />
-            <ArtifactsTable />
+            <ArtList />
             <NothingFound />
         </>
     );
