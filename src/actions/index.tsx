@@ -19,7 +19,7 @@
  */
 
 import _ from 'lodash';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { ApolloClient } from '@apollo/client';
 
 import { Artifact, getANvr, getAType } from '../types';
@@ -78,13 +78,7 @@ export const pushAlert = (
 
 export const fetchUser = () => {
     return async (dispatch: AppDispatch) => {
-        let res: AxiosResponse<any, any>;
-        try {
-            res = await axios.get('/current_user');
-        } catch (err) {
-            console.log('Cannot get current user', err);
-            return;
-        }
+        const res = await axios.get('/current_user');
         dispatch(authSlice.fetchUser(res.data));
     };
 };
