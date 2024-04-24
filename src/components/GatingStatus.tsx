@@ -78,7 +78,6 @@ const gwStateMappings: Record<GreenwaveRequirementTypes, any> = {
     blacklisted: { default: 'blacklisted' },
     'test-result-failed': {
         needs_inspection: 'needs inspection',
-        failed: 'failed',
         default: 'failed',
     },
     'test-result-passed': {
@@ -100,15 +99,9 @@ const gwStateMappings: Record<GreenwaveRequirementTypes, any> = {
     'failed-fetch-gating-yaml': { default: 'fail fetch gating.yaml' },
     'invalid-gating-yaml-waived': { default: 'invalid gating.yaml waived' },
     'missing-gating-yaml-waived': { default: 'missing gating.yaml waived' },
-    'test-result-failed-waived': {
-        needs_inspection: 'needs inspection',
-        default: 'failed waived',
-    },
+    'test-result-failed-waived': { default: 'failed waived' },
     'test-result-missing-waived': { default: 'missing waived' },
-    'test-result-errored-waived': {
-        error: 'errored',
-        default: 'errored waived',
-    },
+    'test-result-errored-waived': { default: 'erroredd waived' },
     'failed-fetch-gating-yaml-waived': {
         default: 'fail fetch gating.yaml waived',
     },
