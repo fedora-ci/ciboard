@@ -19,7 +19,49 @@
  */
 
 import { gql } from '@apollo/client';
-import { Artifact, KojiTaskInfo, MbsBuildInfo } from '../types';
+import {
+    Artifact,
+    KojiTaskInfo,
+    MbsBuildInfo,
+    ComponentMapping,
+} from '../types';
+
+const stateEntryFragment = gql`
+    fragment StateEntryFragment on StateType {
+        broker_msg_body
+        kai_state {
+            stage
+            state
+            msg_id
+            version
+            thread_id
+            timestamp
+            test_case_name
+        }
+        custom_metadata {
+            payload
+        }
+    }
+`;
+
+const mainFragment = gql`
+    fragment MainFragment on ArtifactType {
+        _id
+        aid
+        type
+        payload
+    }
+`;
+
+const statesFragment = gql`
+    fragment StatesFragment on ArtifactType {
+        _id
+        states(onlyactual: true) {
+            ...StateEntryFragment
+        }
+    }
+    ${stateEntryFragment}
+`;
 
 const commitInfoFragment = gql`
     fragment CommitInfoFragment on CommitObject {
@@ -122,6 +164,13 @@ export const ArtifactsDetailedInfoModuleBuild = gql`
     ${tagHistoryFragment}
 `;
 
+export interface ArtifactsCompleteQueryData {
+    artifacts: {
+        hits_info: any;
+        hits: Artifact[];
+    };
+}
+
 export const ArtifactsShallowQuery = gql`
     query ArtifactsComplete(
         $sortBy: String
@@ -147,6 +196,9 @@ export const ArtifactsShallowQuery = gql`
         }
     }
 `;
+
+/*
+ */
 
 export const ArtifactsGreenwaveQuery = gql`
     query ArtifactsComplete(
@@ -181,13 +233,6 @@ export const ArtifactsGreenwaveQuery = gql`
         }
     }
 `;
-
-export interface ArtifactsCompleteQueryData {
-    artifacts: {
-        hits_info: any;
-        hits: Artifact[];
-    };
-}
 
 export const ArtifactsCompleteQuery = gql`
     query ArtifactsComplete(
@@ -230,4 +275,100 @@ export const ArtifactsCompleteQuery = gql`
     }
 `;
 
-// We need metadata for all test for specific artifact. This will help to show dependency between tests.
+export const ArtifactsListByFiltersQuery = gql`
+    query ArtifactsListByFiltersQuery1(
+        $limit: Int
+        $atype: String!
+        $aid_offset: String
+        $dbFieldName1: String
+        $dbFieldValues1: [String]
+        $dbFieldName2: String
+        $dbFieldValues2: [String]
+        $options: ArtifactsOptionsInputType
+    ) {
+        artifacts(
+            atype: $atype
+            limit: $limit
+            options: $options
+            aid_offset: $aid_offset
+            dbFieldName1: $dbFieldName1
+            dbFieldValues1: $dbFieldValues1
+            dbFieldName2: $dbFieldName2
+            dbFieldValues2: $dbFieldValues2
+        ) {
+            has_next
+            artifacts {
+                ...MainFragment
+                ...StatesFragment
+            }
+        }
+    }
+    ${mainFragment}
+    ${statesFragment}
+`;
+
+export const PageGatingGetSSTTeams = gql`
+    query PageGatingGetSSTTeams($product_id: Int) {
+        sstInfo(product_id: $product_id)
+    }
+`;
+
+export interface PageGatingArtifactsData {
+    artifacts?: {
+        has_next: boolean;
+        artifacts: Artifact[] & {
+            component_mapping: ComponentMapping;
+        };
+    };
+}
+
+export const PageGatingArtifacts = gql`
+    query PageGatingArtifacts(
+        $limit: Int
+        $atype: String!
+        $aid_offset: String
+        $dbFieldName1: String
+        $dbFieldValues1: [String]
+        $dbFieldName2: String
+        $dbFieldValues2: [String]
+        $dbFieldName3: String
+        $dbFieldValues3: [String]
+        $dbFieldNameComponentMapping1: String
+        $dbFieldValuesComponentMapping1: [String]
+        $options: ArtifactsOptionsInputType
+    ) {
+        artifacts(
+            atype: $atype
+            limit: $limit
+            options: $options
+            aid_offset: $aid_offset
+            dbFieldName1: $dbFieldName1
+            dbFieldValues1: $dbFieldValues1
+            dbFieldName2: $dbFieldName2
+            dbFieldValues2: $dbFieldValues2
+            dbFieldName3: $dbFieldName3
+            dbFieldValues3: $dbFieldValues3
+            dbFieldNameComponentMapping1: $dbFieldNameComponentMapping1
+            dbFieldValuesComponentMapping1: $dbFieldValuesComponentMapping1
+        ) {
+            has_next
+            artifacts {
+                ...MainFragment
+                ...StatesFragment
+                component_mapping {
+                    _updated
+                    product_id
+                    qa_contact
+                    description
+                    def_assignee
+                    sst_team_name
+                    component_name
+                    qa_contact_name
+                    def_assignee_name
+                }
+            }
+        }
+    }
+    ${mainFragment}
+    ${statesFragment}
+`;

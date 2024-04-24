@@ -20,7 +20,7 @@
  */
 
 import _ from 'lodash';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Flex,
     Stack,
@@ -36,7 +36,7 @@ import {
     CodeBranchIcon,
     AngleDoubleLeftIcon,
 } from '@patternfly/react-icons';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
     Artifact,
