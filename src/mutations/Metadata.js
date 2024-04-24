@@ -23,27 +23,32 @@ import { gql } from '@apollo/client';
 export const MetadataUpdate = gql`
     mutation MetadataUpdate(
         $_id: ID
-        $testcaseName: String
-        $testcaseNameIsRegex: Boolean
+        $testcase_name: String
+        $testcase_name_is_regex: Boolean
         $priority: Int
-        $productVersion: String
+        $product_version: String
         $payload: JSON
     ) {
-        metadataUpdate(
+        metadata_update(
             _id: $_id
-            testcaseName: $testcaseName
-            testcaseNameIsRegex: $testcaseNameIsRegex
+            testcase_name: $testcase_name
+            testcase_name_is_regex: $testcase_name_is_regex
             priority: $priority
-            productVersion: $productVersion
+            product_version: $product_version
             payload: $payload
         ) {
             _id
+            _version
             _updated
+            _update_history {
+                time
+                author
+            }
             payload
             priority
-            testcaseName
-            productVersion
-            testcaseNameIsRegex
+            testcase_name
+            product_version
+            testcase_name_is_regex
         }
     }
 `;

@@ -130,9 +130,9 @@ export interface MissingTestContactWidgetProps {
 }
 
 export function MissingTestContactWidget(props: MissingTestContactWidgetProps) {
-    const variables: any = { testcaseName: props.testcaseName };
+    const variables: any = { testcase_name: props.testcaseName };
     if (!_.isNil(props.productVersion)) {
-        variables.productVersion = props.productVersion;
+        variables.product_version = props.productVersion;
     }
 
     const { data, loading } = useQuery<MetadataQueryResult>(MetadataQuery, {
@@ -144,7 +144,7 @@ export function MissingTestContactWidget(props: MissingTestContactWidgetProps) {
         skip: _.isEmpty(props.testcaseName),
     });
 
-    const metadataContact = data?.metadataConsolidated.payload?.contact;
+    const metadataContact = data?.metadata_consolidated.payload?.contact;
     const haveData = !loading && !_.isEmpty(metadataContact);
 
     if (loading) {

@@ -62,7 +62,7 @@ export const menuRoutes: MenuEntry[] = [
         key: 'metadata',
         path: '/metadata',
         element: <PageMetadataList />,
-        // XXX: uncomment reqAuthzFlag: 'can_edit_metadata',
+        reqAuthzFlag: 'can_edit_metadata',
     },
     {
         title: 'Help',

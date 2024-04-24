@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,6 @@ import {
     EmptyState,
     AlertGroup,
     ActionList,
-    PageSection,
     ToolbarItem,
     SearchInput,
     ModalVariant,
@@ -51,6 +50,7 @@ import {
     ActionListItem,
     ActionListGroup,
     EmptyStateVariant,
+    PageSection,
 } from '@patternfly/react-core';
 import {
     Tr,
@@ -232,7 +232,7 @@ export interface KnownIssue {
 export interface Dependency {
     comment: string;
     dependency: 'is_required' | 'is_related_to';
-    testcaseName: string;
+    testcase_name: string;
 }
 
 /* based on schema */
@@ -242,10 +242,10 @@ export type MetadataEntryType = {
     priority: number;
     dependency: Dependency[];
     description?: string;
-    knownIssues: KnownIssue[];
-    testcaseName: string;
-    productVersion?: string;
-    testcaseNameIsRegex: boolean;
+    known_issues: KnownIssue[];
+    testcase_name: string;
+    product_version?: string;
+    testcase_name_is_regex: boolean;
 };
 
 interface IsLoadingProps {
@@ -319,11 +319,11 @@ export const IsRegex: FunctionComponent<IsRegexProps> = (props) => {
 };
 
 interface MetadataRawListQueryResult {
-    metadataRaw: MetadataEntryType[];
+    metadata_raw: MetadataEntryType[];
 }
 
 interface MetadataRemoveEntry {
-    metadataUpdate: MetadataRaw;
+    metadata_update: MetadataRaw;
 }
 
 const MetadataList: FunctionComponent<{}> = () => {
@@ -346,7 +346,7 @@ const MetadataList: FunctionComponent<{}> = () => {
     };
     const [, forceUpdate] = useReducer(forceUpdateReducer, 0);
 
-    const haveData = !loading && metadata && !_.isEmpty(metadata.metadataRaw);
+    const haveData = !loading && metadata && !_.isEmpty(metadata.metadata_raw);
 
     const customStyle1 = {
         borderLeft: '3px solid var(--pf-global--primary-color--100)',
@@ -378,7 +378,7 @@ const MetadataList: FunctionComponent<{}> = () => {
     };
 
     const metadataSorted = haveData
-        ? _.sortBy(metadata.metadataRaw, ['priority'])
+        ? _.sortBy(metadata.metadata_raw, ['priority'])
         : [];
     if (activeSortDirection === 'desc') {
         _.reverse(metadataSorted);
@@ -391,7 +391,7 @@ const MetadataList: FunctionComponent<{}> = () => {
     };
 
     const metadataShow = _.filter(metadataSorted, (e) =>
-        _.includes(e.testcaseName, valueSearch),
+        _.includes(e.testcase_name, valueSearch),
     );
 
     return (
@@ -454,14 +454,14 @@ const MetadataList: FunctionComponent<{}> = () => {
                                     isActionCell
                                     dataLabel={columnNames.name}
                                 >
-                                    {mEntry.testcaseName}
+                                    {mEntry.testcase_name}
                                 </Td>
                                 <Td
                                     dataLabel={columnNames.isRegex}
                                     modifier="nowrap"
                                 >
                                     <IsRegex
-                                        isRegex={mEntry.testcaseNameIsRegex}
+                                        isRegex={mEntry.testcase_name_is_regex}
                                     />
                                 </Td>
                                 <Td
@@ -474,7 +474,7 @@ const MetadataList: FunctionComponent<{}> = () => {
                                     dataLabel={columnNames.product}
                                     modifier="nowrap"
                                 >
-                                    {mEntry.productVersion}
+                                    {mEntry.product_version}
                                 </Td>
                                 <Td modifier="nowrap">
                                     <Actions

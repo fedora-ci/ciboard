@@ -22,34 +22,34 @@ import { gql } from '@apollo/client';
 
 export const MetadataRawListQuery = gql`
     query MetadataRawListQuery {
-        metadataRaw {
+        metadata_raw {
             _id
+            testcase_name
+            testcase_name_is_regex
             priority
-            testcaseName
-            productVersion
-            testcaseNameIsRegex
+            product_version
         }
     }
 `;
 
 export const MetadataRawQuery = gql`
-    query MetadataRawQuery($_id: String) {
-        metadataRaw(_id: $_id) {
+    query MetadataRawQuery($_id: ID) {
+        metadata_raw(_id: $_id) {
             _id
-            payload
+            testcase_name
+            testcase_name_is_regex
             priority
-            testcaseName
-            productVersion
-            testcaseNameIsRegex
+            product_version
+            payload
         }
     }
 `;
 
 export const MetadataQuery = gql`
-    query MetadataQuery($testcaseName: String!, $productVersion: String) {
-        metadataConsolidated(
-            testcaseName: $testcaseName
-            productVersion: $productVersion
+    query MetadataQuery($testcase_name: String!, $product_version: String) {
+        metadata_consolidated(
+            testcase_name: $testcase_name
+            product_version: $product_version
         ) {
             payload
         }

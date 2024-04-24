@@ -2,7 +2,7 @@ import { gql } from '@apollo/client';
 
 export default gql`
     query {
-        waiverDbInfo {
+        waiver_db_info {
             version
             auth_method
         }

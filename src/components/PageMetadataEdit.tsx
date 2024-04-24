@@ -186,7 +186,7 @@ export const DepTestcase: FunctionComponent<DepTestcaseProps> = (props) => {
     if (_.isNull(dispatch)) return null;
     const onChange = (value: string) => {
         const updatedDependency: Dependency = _.assign({}, dependency, {
-            testcaseName: value,
+            testcase_name: value,
         });
         dispatch({ type: 'updateDependency', dependency, updatedDependency });
     };
@@ -194,7 +194,7 @@ export const DepTestcase: FunctionComponent<DepTestcaseProps> = (props) => {
         <TextInput
             placeholder="osci.brew-build./plans/tier1-internal.functional"
             type="text"
-            value={dependency.testcaseName}
+            value={dependency.testcase_name}
             onChange={onChange}
             aria-label="dependency testcase name"
         />
@@ -1138,7 +1138,7 @@ const metadataReducer: Reducer<MetadataRaw, MetadataAction> = (
     switch (action.type) {
         case 'productVersion': {
             return update(state, {
-                productVersion: { $set: action.productVersion },
+                product_version: { $set: action.productVersion },
             });
         }
         case 'description': {
@@ -1223,12 +1223,12 @@ const metadataReducer: Reducer<MetadataRaw, MetadataAction> = (
         }
         case 'testcaseName': {
             return update(state, {
-                testcaseName: { $set: action.testcaseName },
+                testcase_name: { $set: action.testcaseName },
             });
         }
         case 'testcaseNameIsRegex': {
             return update(state, {
-                testcaseNameIsRegex: { $set: action.isRegex },
+                testcase_name_is_regex: { $set: action.isRegex },
             });
         }
         case 'newIssue': {
@@ -1250,7 +1250,7 @@ const metadataReducer: Reducer<MetadataRaw, MetadataAction> = (
             const dependency = state.payload?.dependency || [];
             const newDependencies: Dependency[] = [
                 {
-                    testcaseName: '',
+                    testcase_name: '',
                     dependency: 'is_required',
                     comment: '',
                 },
@@ -1328,7 +1328,7 @@ const metadataReducer: Reducer<MetadataRaw, MetadataAction> = (
 
 const InitMetadata: MetadataRaw = {
     priority: 100,
-    testcaseNameIsRegex: false,
+    testcase_name_is_regex: false,
 };
 
 export interface MetadataPayload {
@@ -1342,18 +1342,18 @@ export interface MetadataPayload {
 /* Based on reply from server */
 export interface MetadataRaw {
     _id?: string;
-    testcaseName?: string;
-    testcaseNameIsRegex?: boolean;
+    testcase_name?: string;
+    testcase_name_is_regex?: boolean;
     priority?: number;
-    productVersion?: string;
+    product_version?: string;
     payload?: MetadataPayload;
 }
 
 interface MetadataUpdateResult {
-    metadataUpdate: MetadataRaw;
+    metadata_update: MetadataRaw;
 }
 interface MetadataRawResult {
-    metadataRaw: MetadataRaw[];
+    metadata_raw: MetadataRaw[];
 }
 
 type MetadataFormParams = 'clone' | 'id';
@@ -1374,8 +1374,8 @@ export const MetadataForm: React.FunctionComponent = () => {
         });
 
     useEffect(() => {
-        if (_.isString(id)) {
-            console.log('XXX do META query', id);
+        /* ObjectID ObjectId is 24 character hex string. */
+        if (_.isString(id) && id.length === 24 && validator.isHexadecimal(id)) {
             getMetadata({ variables: { _id: id } });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1391,7 +1391,7 @@ export const MetadataForm: React.FunctionComponent = () => {
             /* for missing entries in DB GraphQL will return `null` instead of `undefined` */
             dispatch({
                 type: 'metadataLoaded',
-                metadata: qData.metadataRaw[0],
+                metadata: qData.metadata_raw[0],
             });
         }
     }, [qData, qError, qLoading]);
@@ -1462,11 +1462,11 @@ export const MetadataForm: React.FunctionComponent = () => {
         <MetadataDispatchContext.Provider value={dispatch}>
             <Form isWidthLimited>
                 <FormGroupTestcase
-                    testcaseName={metadata.testcaseName}
-                    isRegex={metadata.testcaseNameIsRegex}
+                    testcaseName={metadata.testcase_name}
+                    isRegex={metadata.testcase_name_is_regex}
                 />
                 <FormGroupProductVersion
-                    productVersion={metadata.productVersion}
+                    productVersion={metadata.product_version}
                 />
                 <FormGroupDescription description={description} />
                 <FormGroupWaiveMessage message={waive_message} />

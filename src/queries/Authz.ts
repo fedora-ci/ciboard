@@ -22,7 +22,7 @@ import { gql } from '@apollo/client';
 
 export const AuthzMappingQuery = gql`
     query AuthZMappingQuery {
-        authzMapping {
+        authz_mapping {
             can_edit_metadata
         }
     }
