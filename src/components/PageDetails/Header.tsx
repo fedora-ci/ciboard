@@ -20,7 +20,7 @@
  */
 
 import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
     Flex,
     Stack,
@@ -36,7 +36,7 @@ import {
     CodeBranchIcon,
     AngleDoubleLeftIcon,
 } from '@patternfly/react-icons';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import {
     Artifact,
@@ -92,16 +92,10 @@ export interface BackButtonProps {}
 
 const BackButton: React.FC<BackButtonProps> = (props) => {
     const navigate = useNavigate();
-    let location = useLocation();
-    // -1 - means go back to prev history
-    const [navigationDepth, setNavigationDepth] = useState(-1);
-    useEffect(() => {
-        // this will track side-bar changes and url
-        setNavigationDepth(navigationDepth - 1);
-    }, [location]);
     if (!(window.history.state && window.history.state.idx > 0)) {
         return null;
     }
+
     return (
         <div
             style={{
@@ -114,7 +108,7 @@ const BackButton: React.FC<BackButtonProps> = (props) => {
                 style={{
                     position: 'absolute',
                 }}
-                onClick={() => navigate(navigationDepth)}
+                onClick={() => navigate(-1)}
             >
                 <Flex>
                     <FlexItem>
