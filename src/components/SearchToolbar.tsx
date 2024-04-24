@@ -274,10 +274,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
                 <SearchInput setQsValue={setQsValue} qsValue={qsValue} />
             </ToolbarItem>
             <ToolbarItem style={{ flexBasis: '100%' }}>
-                <ExpandableSection
-                    style={{ flexBasis: '100%' }}
-                    toggleText="more"
-                >
+                <ExpandableSection toggleText="more">
                     <div style={{ maxWidth: '400px' }}>
                         <TimelineSelection />
                     </div>
