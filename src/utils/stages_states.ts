@@ -70,8 +70,6 @@ import {
  */
 
 export type StageStateAChildren = [MsgStageName, StateName, AChild[]];
-export type StageStateNumAChildren = [MsgStageName, StateName, number];
-
 type AChildrenByStageName = {
     msgStageName: MsgStageName;
     aChildrenByStateName: AChildrenByStateName;
