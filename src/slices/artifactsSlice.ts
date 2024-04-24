@@ -125,7 +125,6 @@ export const actLoad =
             newerThen,
             queryString,
             doDeepSearch,
-            isExtendedQs,
             paginationSize,
         } = getState().artifactsCurrentQuery;
         const paginationFrom = (page - 1) * paginationSize;
@@ -138,7 +137,6 @@ export const actLoad =
                 newerThen,
                 queryString,
                 doDeepSearch,
-                isExtendedQs,
                 paginationSize,
                 paginationFrom,
             };

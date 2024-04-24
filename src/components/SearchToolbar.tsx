@@ -48,13 +48,7 @@ import {
 } from '@patternfly/react-core';
 import { HelpIcon, SearchIcon } from '@patternfly/react-icons';
 
-import {
-    actLoad,
-    actPage,
-    actNewQuery,
-    actDoDeepSearch,
-    actIsExtendedQs,
-} from './../actions';
+import { actDoDeepSearch, actLoad, actNewQuery, actPage } from './../actions';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { actArtTypes, actNewerThen, actQueryString } from './../actions';
 import { useSearchParams } from 'react-router-dom';
@@ -79,12 +73,6 @@ const artifactTypeToHumanName = {
 
 interface HelpForSearchInputProps {}
 const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
-    const isExtendedQs = useAppSelector(
-        (state) => state.artifactsQuery.isExtendedQs,
-    );
-    if (!isExtendedQs) {
-        return null;
-    }
     return (
         <>
             <Popover
@@ -329,35 +317,6 @@ const DoDeepSearch: React.FC<DoDeepSearchProps> = (_props: {}) => {
     );
 };
 
-interface IsExtendedQsProps {}
-const IsExtendedQs: React.FC<IsExtendedQsProps> = (_props: {}) => {
-    const dispatch = useAppDispatch();
-    const isExtendedQs = useAppSelector(
-        (state) => state.artifactsQuery.isExtendedQs,
-    );
-    const onChange = (
-        _event: React.FormEvent<HTMLInputElement>,
-        checked: boolean,
-    ) => {
-        // event.currentTarget.name === 'extendedquery'
-        if (isExtendedQs !== checked) {
-            dispatch(actIsExtendedQs(checked));
-        }
-    };
-
-    return (
-        <>
-            <Checkbox
-                label="Do extended query"
-                isChecked={isExtendedQs}
-                onChange={onChange}
-                id="extended-query-string"
-                name="extendedquery"
-            />
-        </>
-    );
-};
-
 interface SearchInputProps {
     qsValue: string;
     setQsValue: Dispatch<SetStateAction<string>>;
@@ -451,9 +410,6 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
                     <Flex direction={{ default: 'column' }}>
                         <FlexItem>
                             <DoDeepSearch />
-                        </FlexItem>
-                        <FlexItem>
-                            <IsExtendedQs />
                         </FlexItem>
                         <FlexItem grow={{ default: 'grow' }}>
                             <div style={{ maxWidth: '400px' }}>

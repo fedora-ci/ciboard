@@ -139,7 +139,6 @@ export const ArtifactsSearchFastQuery1 = gql`
         $newerThen: String
         $queryString: String
         $doDeepSearch: Boolean
-        $isExtendedQs: Boolean
         $paginationSize: Int
         $paginationFrom: Int
     ) {
@@ -149,7 +148,6 @@ export const ArtifactsSearchFastQuery1 = gql`
             newerThen: $newerThen
             queryString: $queryString
             doDeepSearch: $doDeepSearch
-            isExtendedQs: $isExtendedQs
             paginationSize: $paginationSize
             paginationFrom: $paginationFrom
         ) {
@@ -173,7 +171,6 @@ export const ArtifactsSearchSlowQuery2 = gql`
         $newerThen: String
         $queryString: String
         $doDeepSearch: Boolean
-        $isExtendedQs: Boolean
         $paginationSize: Int
         $paginationFrom: Int
     ) {
@@ -183,7 +180,6 @@ export const ArtifactsSearchSlowQuery2 = gql`
             newerThen: $newerThen
             queryString: $queryString
             doDeepSearch: $doDeepSearch
-            isExtendedQs: $isExtendedQs
             paginationSize: $paginationSize
             paginationFrom: $paginationFrom
         ) {
