@@ -20,17 +20,14 @@
 import _ from 'lodash';
 
 import {
-    AChild,
     MSG_V_1,
     Artifact,
-    getMsgId,
     AChildMsg,
     MSG_V_0_1,
     StateName,
-    getMsgBody,
-    MsgStateName,
     MsgStageName,
     AChildTestMsg,
+    ArtifactChild,
     KnownMsgStates,
     getTestMsgBody,
     AChildGreenwave,
@@ -39,14 +36,13 @@ import {
     GreenwaveResult,
     TestMsgStateName,
     isAChildGreenwave,
-    isAChildSchemaMsg,
-    BrokerSchemaMsgBody,
     AChildrenByStateName,
     GreenwaveRequirement,
     GreenwaveDecisionReply,
     AChildGreenwaveAndTestMsg,
     GreenwaveRequirementTypes,
     isAChildGreenwaveAndTestMsg,
+    getMsgId,
 } from '../types';
 
 /**
@@ -66,7 +62,7 @@ import {
  *  * brew-build.test.complete -> complete
  */
 
-export type StageStateAChildren = [MsgStageName, StateName, AChild[]];
+export type StageStateAChildren = [MsgStageName, StateName, ArtifactChild[]];
 
 /**
  * Entry point. This file is the most complicated part in this project.
@@ -76,10 +72,10 @@ export const mkStagesAndStates = (
 ): StageStateAChildren[] => {
     const stagesStates: Array<{
         stage: MsgStageName;
-        aChildren: AChildrenByStateName;
+        children: AChildrenByStateName;
     }> = [];
     // Preprocess Kai results into a list of results sorted by stage and state.
-    const testMsgStagesStates = aChildrenByStageName(artifact);
+    const testMsgStagesStates = mkStagesTestStates(artifact);
     stagesStates.push(...testMsgStagesStates);
     /*
      * Greenwave always produces structured-reply, check if this reply makes any sense.
@@ -203,24 +199,21 @@ const getKaiState = (
  *         running: [...]
  *     }
  */
-
-type AChildrenByStageName = {
-    msgStageName: MsgStageName;
-    aChildrenByStateName: AChildrenByStateName;
-};
-
-const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
-    const aChildrenByStageName: AChildrenByStageName[] = [];
-    const buildStage = _.omitBy(
-        aChildrenByStateName(artifact.children.hits, 'build'),
+// XXX: was: mkStagesKaiStates
+const mkStagesTestStates = (
+    artifact: Artifact,
+): {
+    _msgStageName: MsgStageName;
+    children: AChildrenByStateName;
+}[] => {
+    const stageStates = [];
+    const buildStates = _.omitBy(
+        transformTestMsgStates(artifact.children.hits, 'build'),
         (x) => _.isEmpty(x),
     );
-    if (_.some(_.values(buildStage), 'length')) {
-        const msgStageName: MsgStageName = 'build';
-        aChildrenByStageName.push({
-            msgStageName,
-            aChildrenByStateName: buildStage,
-        });
+    if (_.some(_.values(buildStates), 'length')) {
+        const stage: MsgStageName = 'build';
+        stageStates.push({ stage, states: buildStates });
     }
     /*
     testStates resolves in:
@@ -233,17 +226,17 @@ const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
             running: []
         }
     */
-    let testStage: AChildrenByStateName = aChildrenByStateName(
+    // XXXXXXXX ?????????????
+    let testStates: AChildrenByStateName = transformTestMsgStates(
         artifact.children.hits,
         'test',
     );
-    testStage = _.omitBy(testStage, (x) => _.isEmpty(x));
-    if (_.some(_.values(testStage), 'length')) {
+    testStates = _.omitBy(testStates, (x) => _.isEmpty(x));
+    if (_.some(_.values(testStates), 'length')) {
         const stage: MsgStageName = 'test';
-        // XXXXXXXXXXXXXx <-SSSSSS stage
-        aChildrenByStageName.push({ stage, states: testStage });
+        stageStates.push({ stage, states: testStates });
     }
-    return aChildrenByStageName;
+    return stageStates;
 };
 
 const mkGreenwaveStateReq = (
@@ -433,8 +426,32 @@ const minimizeStagesStates = (
     );
 };
 
+const getTestCompleteResult = (
+    state: AChildTestMsg,
+    reqStage: MsgStageName,
+    reqState: StateName,
+): string | undefined => {
+    if (
+        state.hitSource.msgStage !== reqStage ||
+        state.hitSource.msgState !== reqState
+    ) {
+        return undefined;
+    }
+    let testResult: string | undefined;
+    const testMsg = getTestMsgBody(state);
+    if (MSG_V_0_1.isMsg(testMsg)) {
+        const broker_msg = testMsg as MSG_V_0_1.MsgRPMBuildTestComplete;
+        testResult = broker_msg.status;
+    }
+    if (MSG_V_1.isMsg(testMsg)) {
+        const broker_msg = testMsg as MSG_V_1.MsgRPMBuildTestComplete;
+        testResult = broker_msg.test.result;
+    }
+    return testResult;
+};
+
 /**
- * Transforms msgAChild to expected states in UI.
+ * Transforms state provided by kai to expected states in UI.
  *
  * For test events in the complete state is split between passed and failed.
  *
@@ -444,160 +461,150 @@ const minimizeStagesStates = (
  * From: [ state1, state2, state3, ...]
  * To:   { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
  */
-export const aChildrenByStateName = (
-    aChildren: AChildMsg[],
-    msgStageName: MsgStageName,
+// was: transformKaiStates
+export const transformTestMsgStates = (
+    children: AChildMsg[],
+    // XXX: stage -> msgStageName
+    stage: MsgStageName,
 ): AChildrenByStateName => {
-    const aChildrenByState: AChildrenByStateName = {};
-    /** statesNames: ['running', 'complete', .... ] */
+    const statesByCategory: AChildrenByStateName = {};
+    /** statesNames: ['running', 'complete'] */
     const statesNames: StateName[] = _.intersection<StateName>(
-        _.map(aChildren, _.flow(_.identity, _.partialRight(_.get, 'msgState'))),
+        _.map(children, _.flow(_.identity, _.partialRight(_.get, 'msgState'))),
         KnownMsgStates,
     );
-    _.forEach(statesNames, (msgStateName) => {
+    _.forEach(statesNames, (stateName) => {
         /**
          * For complete test states, count failed, passed and other events
          */
         /**
          * complete tests to extended: [passed, failed, info, needs_inspection, not_applicable]
          */
-        if (msgStateName === 'complete' && msgStageName === 'test') {
+        if (stateName === 'complete' && stage === 'test') {
             /**
              * pass tests
              */
-            const aChildrenPassed = _.filter(aChildren, (aChild) => {
-                const testResult = getTestMsgCompleteResult(
-                    aChild,
-                    msgStageName,
-                    msgStateName,
-                );
-                return _.includes(['PASS', 'PASSED'], _.toUpper(testResult));
-            });
-            if (!_.isEmpty(aChildrenPassed)) {
-                aChildrenByState['passed'] = aChildrenPassed;
+            const category_passed = _.filter(
+                children,
+                (child: AChildTestMsg) => {
+                    const testResult = getTestCompleteResult(
+                        child,
+                        stage,
+                        stateName,
+                    );
+                    return _.includes(
+                        ['PASS', 'PASSED'],
+                        _.toUpper(testResult),
+                    );
+                },
+            );
+            if (!_.isEmpty(category_passed)) {
+                statesByCategory.passed = category_passed;
             }
             /**
              * failed tests
              */
-            const aChildrenFailed = _.filter(aChildren, (aChild) => {
-                const testResult = getTestMsgCompleteResult(
-                    aChild,
-                    msgStageName,
-                    msgStateName,
-                );
-                return _.includes(['FAIL', 'FAILED'], _.toUpper(testResult));
-            });
-            if (!_.isEmpty(aChildrenFailed)) {
-                aChildrenByState['failed'] = aChildrenFailed;
+            const category_failed = _.filter(
+                children,
+                (child: AChildTestMsg) => {
+                    const testResult = getTestCompleteResult(
+                        child,
+                        stage,
+                        stateName,
+                    );
+                    return _.includes(
+                        ['FAIL', 'FAILED'],
+                        _.toUpper(testResult),
+                    );
+                },
+            );
+            if (!_.isEmpty(category_failed)) {
+                statesByCategory.failed = category_failed;
             }
             /**
              * info tests
              */
-            const aChildrenInfo = _.filter(aChildren, (aChild) => {
-                const testResult = getTestMsgCompleteResult(
-                    aChild,
-                    msgStageName,
-                    msgStateName,
+            const category_info = _.filter(children, (child: AChildTestMsg) => {
+                const testResult = getTestCompleteResult(
+                    child,
+                    stage,
+                    stateName,
                 );
                 return _.isEqual('INFO', _.toUpper(testResult));
             });
-            if (!_.isEmpty(aChildrenInfo)) {
-                aChildrenByState['info'] = aChildrenInfo;
+            if (!_.isEmpty(category_info)) {
+                statesByCategory.info = category_info;
             }
             /**
              * needs_inspection tests
              */
-            const aChildrenNeedsInspection = _.filter(aChildren, (aChild) => {
-                const testResult = getTestMsgCompleteResult(
-                    aChild,
-                    msgStageName,
-                    msgStateName,
-                );
-                return _.isEqual('NEEDS_INSPECTION', _.toUpper(testResult));
-            });
-            if (!_.isEmpty(aChildrenNeedsInspection)) {
-                aChildrenByState['needs_inspection'] = aChildrenNeedsInspection;
+            const category_needs_inspections = _.filter(
+                children,
+                (state: ChildTestMsg) => {
+                    const testResult = getTestCompleteResult(
+                        state,
+                        stage,
+                        stateName,
+                    );
+                    return _.isEqual('NEEDS_INSPECTION', _.toUpper(testResult));
+                },
+            );
+            if (!_.isEmpty(category_needs_inspections)) {
+                statesByCategory.needs_inspection = category_needs_inspections;
             }
             /**
              * not_applicable tests
              */
-            const aChildrenNotApplicable = _.filter(
-                aChildren,
-                (aChild: AChildTestMsg) => {
-                    const testResult = getTestMsgCompleteResult(
-                        aChild,
-                        msgStageName,
-                        msgStateName,
+            const category_not_applicable = _.filter(
+                children,
+                (child: AChildTestMsg) => {
+                    const testResult = getTestCompleteResult(
+                        child,
+                        stage,
+                        stateName,
                     );
                     return _.isEqual('NOT_APPLICABLE', _.toUpper(testResult));
                 },
             );
-            if (!_.isEmpty(aChildrenNotApplicable)) {
-                aChildrenByState['not_applicable'] = aChildrenNeedsInspection;
+            if (!_.isEmpty(category_not_applicable)) {
+                statesByCategory.not_applicable = category_not_applicable;
             }
-        } else if (msgStateName === 'error' && msgStageName === 'build') {
-            const aChilrenBuildsFailed = _.filter(aChildren, (aChild) => {
-                if (!isAChildSchemaMsg(aChild)) {
+        } else if (stateName === 'error' && stage === 'build') {
+            const category_failed = _.filter(
+                children,
+                (child: AChildTestMsg) => {
+                    if (
+                        child.hitSource.msgStage === stage &&
+                        child.hitSource.msgState === stateName
+                    ) {
+                        return true;
+                    }
                     return false;
-                }
-                if (
-                    aChild.hitSource.msgStage === msgStageName &&
-                    aChild.hitSource.msgState === msgStateName
-                ) {
-                    return true;
-                }
-                return false;
-            });
-            if (!_.isEmpty(aChilrenBuildsFailed)) {
-                aChildrenByState['failed'] = aChilrenBuildsFailed;
+                },
+            );
+            if (!_.isEmpty(category_failed)) {
+                statesByCategory.failed = category_failed;
             }
         } else {
             /** other categories for asked stage */
-            const aChildrenOther = _.filter(aChildren, (aChild) => {
-                if (!isAChildSchemaMsg(aChild)) {
+            const category_other = _.filter(
+                children,
+                (child: AChildTestMsg) => {
+                    const hitSource = child.hitSource;
+                    if (
+                        hitSource.msgStage === stage &&
+                        hitSource.msgState === stateName
+                    ) {
+                        return true;
+                    }
                     return false;
-                }
-                const hitSource = aChild.hitSource;
-                if (
-                    hitSource.msgStage === msgStageName &&
-                    hitSource.msgState === msgStateName
-                ) {
-                    return true;
-                }
-                return false;
-            });
-            if (!_.isEmpty(aChildrenOther)) {
-                aChildrenByState[msgStateName] = aChildrenOther;
+                },
+            );
+            if (!_.isEmpty(category_other)) {
+                statesByCategory[stateName] = category_other;
             }
         }
     });
 
-    return aChildrenByState;
-};
-
-const getTestMsgCompleteResult = (
-    aChild: AChildMsg,
-    reqStage: MsgStageName,
-    reqState: MsgStateName,
-): string | undefined => {
-    if (!isAChildSchemaMsg(aChild)) {
-        return;
-    }
-    if (
-        aChild.hitSource.msgStage !== reqStage ||
-        aChild.hitSource.msgState !== reqState
-    ) {
-        return;
-    }
-    let testResult: string | undefined;
-    const msgBody = getMsgBody(aChild) as BrokerSchemaMsgBody;
-    if (MSG_V_0_1.isMsg(msgBody)) {
-        const msgBody_ = msgBody as MSG_V_0_1.MsgRPMBuildTestComplete;
-        testResult = msgBody_.status;
-    }
-    if (MSG_V_1.isMsg(msgBody)) {
-        const msgBody_ = msgBody as MSG_V_1.MsgRPMBuildTestComplete;
-        testResult = msgBody_.test.result;
-    }
-    return testResult;
+    return statesByCategory;
 };
