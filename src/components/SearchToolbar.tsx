@@ -171,7 +171,7 @@ const ArtifactTypeSelection: React.FC<
             <Tile
                 id={key}
                 key={key}
-                style={{ margin: '0 2px', fontFamily: 'RedHatDisplay' }}
+                style={{ margin: '0 2px' }}
                 title=""
                 onClick={onSelect}
                 isStacked

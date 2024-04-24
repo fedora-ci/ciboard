@@ -67,9 +67,7 @@ export function PaginationToolbar(_props: PaginationToolbarProps) {
             {totalHits && (
                 <Flex style={{ order: -1, flexGrow: 1 }}>
                     <Flex>
-                        <FlexItem style={{ fontFamily: 'RedHatText' }}>
-                            Search results for:
-                        </FlexItem>
+                        <FlexItem>Search results for:</FlexItem>
                         <FlexItem
                             style={{
                                 fontWeight:

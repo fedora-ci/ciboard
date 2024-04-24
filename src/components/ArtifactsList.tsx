@@ -363,62 +363,14 @@ const ArtifactsTable = (_props: ArtListProps) => {
             <Table aria-label="Simple table" variant="compact" borders={true}>
                 <Thead>
                     <Tr>
-                        <Th
-                            style={{
-                                maxWidth: 'none',
-                            }}
-                        >
-                            {columnNames.logo}
-                        </Th>
-                        <Th
-                            style={{
-                                maxWidth: 'none',
-                            }}
-                        >
-                            {columnNames.aType}
-                        </Th>
-                        <Th
-                            style={{
-                                maxWidth: 'none',
-                            }}
-                        >
-                            {columnNames.id}
-                        </Th>
-                        <Th
-                            style={{
-                                maxWidth: 'none',
-                            }}
-                        >
-                            {columnNames.artifactName}
-                        </Th>
-                        <Th
-                            style={{
-                                maxWidth: 'none',
-                            }}
-                        >
-                            {columnNames.gatingStatus}
-                        </Th>
-                        <Th
-                            style={{
-                                maxWidth: 'none',
-                            }}
-                        >
-                            {columnNames.gateTag}
-                        </Th>
-                        <Th
-                            style={{
-                                maxWidth: 'none',
-                            }}
-                        >
-                            {columnNames.issuer}
-                        </Th>
-                        <Th
-                            style={{
-                                maxWidth: 'none',
-                            }}
-                        >
-                            {columnNames.details}
-                        </Th>
+                        <Th>{columnNames.logo}</Th>
+                        <Th>{columnNames.aType}</Th>
+                        <Th>{columnNames.id}</Th>
+                        <Th>{columnNames.artifactName}</Th>
+                        <Th>{columnNames.gatingStatus}</Th>
+                        <Th>{columnNames.gateTag}</Th>
+                        <Th>{columnNames.issuer}</Th>
+                        <Th>{columnNames.details}</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
@@ -453,7 +405,6 @@ const ArtifactsTable = (_props: ArtListProps) => {
                                     style={{
                                         verticalAlign: 'middle',
                                         whiteSpace: 'nowrap',
-                                        fontFamily: 'RedHatMono',
                                     }}
                                     dataLabel={columnNames.id}
                                 >
