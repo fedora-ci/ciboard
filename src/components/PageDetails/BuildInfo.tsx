@@ -2,7 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,28 +46,18 @@ import {
     DescriptionListDescription,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
-
-import {
-    TagsList,
-    HistoryList,
-    LoadingData,
-    LimitWithScroll,
-    ErrataAutomation,
-    LinkedAdvisories,
-} from './ArtifactDetailedInfo';
-import { ExternalLink } from '../ExternalLink';
 import styles from '../../custom.module.css';
 import {
     Artifact,
-    ArtifactMbs,
-    ArtifactRpm,
-    KojiInstance,
+    ArtifactMBS,
+    ArtifactRPM,
     MbsBuildInfo,
     kojiInstance,
     KojiBuildInfo,
-    isArtifactMbs,
-    isArtifactRpm,
-} from '../../types';
+    isArtifactMBS,
+    isArtifactRPM,
+    KojiInstanceType,
+} from '../../artifact';
 import {
     ArtifactsDetailedInfoKojiTask,
     ArtifactsDetailedInfoModuleBuild,
@@ -86,15 +76,24 @@ import {
     mkLinkKojiWebBuildId,
     mkCommitHashFromSource,
     mkLinkPkgsDevelFromSource,
-} from '../../utils/artifact_utils';
+} from '../../utils/artifactUtils';
 import {
     secondsToTimestampWithTz,
     timestampToTimestampWithTz,
 } from '../../utils/timeUtils';
+import {
+    TagsList,
+    HistoryList,
+    LoadingData,
+    LimitWithScroll,
+    ErrataAutomation,
+    LinkedAdvisories,
+} from './ArtifactDetailedInfo';
+import { ExternalLink } from '../ExternalLink';
 
 interface BuildMetadataMbsProps {
     build: MbsBuildInfo;
-    instance: KojiInstance;
+    instance: KojiInstanceType;
 }
 
 function BuildMetadataMbs(props: BuildMetadataMbsProps) {
@@ -224,7 +223,7 @@ function BuildMetadataMbs(props: BuildMetadataMbsProps) {
 
 interface BuildMetadataRpmProps {
     build: KojiBuildInfo;
-    instance: KojiInstance;
+    instance: KojiInstanceType;
 }
 
 function BuildMetadataRpm(props: BuildMetadataRpmProps) {
@@ -364,7 +363,7 @@ function BuildInfoLoading(_props: {}) {
 
 interface ModuleBuildComponentsProps {
     build?: MbsBuildInfo;
-    instance: KojiInstance;
+    instance: KojiInstanceType;
 }
 
 function ModuleBuildComponents(props: ModuleBuildComponentsProps) {
@@ -395,7 +394,7 @@ function ModuleBuildComponents(props: ModuleBuildComponentsProps) {
 }
 
 interface BuildInfoMbsProps {
-    artifact: ArtifactMbs;
+    artifact: ArtifactMBS;
 }
 const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
     const { artifact } = props;
@@ -496,7 +495,7 @@ const BuildInfoMbs: React.FunctionComponent<BuildInfoMbsProps> = (props) => {
 };
 
 interface BuildInfoRpmProps {
-    artifact: ArtifactRpm;
+    artifact: ArtifactRPM;
 }
 const BuildInfoRpm: React.FunctionComponent<BuildInfoRpmProps> = (props) => {
     const { artifact } = props;
@@ -621,7 +620,7 @@ export interface BuildInfoProps {
 }
 
 export function BuildInfo({ artifact }: BuildInfoProps) {
-    if (isArtifactMbs(artifact)) return <BuildInfoMbs artifact={artifact} />;
-    if (isArtifactRpm(artifact)) return <BuildInfoRpm artifact={artifact} />;
+    if (isArtifactMBS(artifact)) return <BuildInfoMbs artifact={artifact} />;
+    if (isArtifactRPM(artifact)) return <BuildInfoRpm artifact={artifact} />;
     return <BuildInfoEmpty />;
 }

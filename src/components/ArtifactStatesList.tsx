@@ -46,7 +46,7 @@ import {
     getTestcaseName,
     isGreenwaveState,
     isKaiState,
-} from '../utils/artifact_utils';
+} from '../utils/artifactUtils';
 import { ArtifactState } from './ArtifactState';
 import {
     StageNameStateNameStatesType,

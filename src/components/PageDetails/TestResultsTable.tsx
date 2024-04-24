@@ -19,15 +19,15 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { useContext } from 'react';
 import {
-    Flex,
-    Label,
-    Title,
     Alert,
     Button,
     CardBody,
+    Flex,
+    Label,
+    Title,
 } from '@patternfly/react-core';
 import {
     BookIcon,
@@ -36,22 +36,22 @@ import {
     UsersIcon,
 } from '@patternfly/react-icons';
 import {
+    TableComposable,
+    Tbody,
     Td,
     Th,
-    Tr,
-    Tbody,
     Thead,
-    TableComposable,
+    Tr,
 } from '@patternfly/react-table';
 import { useHref } from 'react-router-dom';
 
-import { CiTest } from './types';
+import { Artifact } from '../../artifact';
 import { SelectedTestContext } from './contexts';
+import { CiTest } from './types';
 import { TestStatusIcon } from './TestStatusIcon';
 import { ExternalLink } from '../ExternalLink';
 import { WaiveButton } from './WaiveButton';
 import { DependencyList } from './DependencyList';
-import { Artifact } from '../../types';
 
 interface SingleTestRowProps {
     artifact: Artifact;

@@ -23,18 +23,18 @@ import {
     Flex,
     Text,
     Title,
-    Spinner,
     FlexItem,
     TitleSizes,
     TextContent,
+    Spinner,
 } from '@patternfly/react-core';
 
 import {
     GatingStatusIcon,
     isGatingArtifact,
     resultColor,
-} from '../utils/artifact_utils';
-import { Artifact, GreenwaveDecisionReplyType } from '../types';
+} from '../utils/artifactUtils';
+import { Artifact, GreenwaveDecisionReplyType } from '../artifact';
 
 interface PrintRequirementsSizeProps {
     allReqs: { [key: string]: number };
@@ -70,7 +70,7 @@ export const ArtifactGreenwaveStatesSummary: React.FC<
         return null;
     }
     const decision: GreenwaveDecisionReplyType | undefined =
-        artifact.hitSource.greenwaveDecision;
+        artifact.greenwave_decision;
     const isScratch = _.get(artifact, 'payload.scratch', true);
     if (isScratch) {
         return null;

@@ -2,7 +2,6 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,20 +18,20 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _ from 'lodash';
-import React from 'react';
+import * as _ from 'lodash';
+import * as React from 'react';
 import { useQuery } from '@apollo/client';
 import {
-    Text,
     Alert,
-    Spinner,
     Bullseye,
+    Spinner,
+    Text,
     TextContent,
 } from '@patternfly/react-core';
 import { UsersIcon } from '@patternfly/react-icons';
 
-import { CiContact } from './types';
 import { ExternalLink } from '../ExternalLink';
+import { CiContact } from './types';
 import { MetadataQuery } from '../../queries/Metadata';
 import { MetadataQueryResult } from '../MetadataInfo';
 

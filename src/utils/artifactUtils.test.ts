@@ -25,7 +25,7 @@ import {
     isResultWaivable,
     parseScmUrl,
     getRerunUrl,
-} from './artifact_utils';
+} from './artifactUtils';
 
 describe('getRerunUrl', () => {
     test('get rerun URL from pure Greenwave state', () => {

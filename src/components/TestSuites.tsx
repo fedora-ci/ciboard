@@ -53,7 +53,7 @@ import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
 import classNames from 'classnames';
 
 import { Artifact, StateKaiType } from '../artifact';
-import { mapTypeToIconsProps, TestStatusIcon } from '../utils/artifact_utils';
+import { mapTypeToIconsProps, TestStatusIcon } from '../utils/artifactUtils';
 import { ArtifactsXunitQuery } from '../queries/Artifacts';
 import { mkSeparatedList } from '../utils/artifactsTable';
 import { xunitParser } from '../utils/xunitParser';

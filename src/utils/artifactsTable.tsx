@@ -44,7 +44,7 @@ import { TableProps, RowWrapperProps, IRow } from '@patternfly/react-table';
 import { ExclamationCircleIcon, LinkIcon } from '@patternfly/react-icons';
 import { global_danger_color_200 as globalDangerColor200 } from '@patternfly/react-tokens';
 
-import { getArtifactName, getArtifactRemoteUrl } from './artifact_utils';
+import { getArtifactName, getArtifactRemoteUrl } from './artifactUtils';
 import { Artifact } from '../artifact';
 import { ArtifactGreenwaveStatesSummary } from '../components/GatingStatus';
 import styles from '../custom.module.css';

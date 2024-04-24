@@ -49,7 +49,7 @@ import {
     isGatingArtifact,
     GatingStatusIcon,
     getArtifactLocalPath,
-} from '../utils/artifact_utils';
+} from '../utils/artifactUtils';
 import {
     Artifact,
     ArtifactRPM,

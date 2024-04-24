@@ -2,7 +2,6 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,28 +18,28 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _ from 'lodash';
-import pako from 'pako';
+import * as _ from 'lodash';
 import { Buffer } from 'buffer';
+import pako from 'pako';
 import { useContext, useState } from 'react';
-import { useQuery } from '@apollo/client';
 import {
-    Alert,
-    Spinner,
     Accordion,
+    AccordionContent,
     AccordionItem,
     AccordionToggle,
+    Alert,
     DrawerPanelBody,
-    AccordionContent,
+    Spinner,
 } from '@patternfly/react-core';
 import update from 'immutability-helper';
 
 import './index.css';
 import { TestSuite } from '../../testsuite';
-import { TestStatusIcon } from '../../utils/artifact_utils';
+import { TestStatusIcon } from '../../utils/artifactUtils';
 import { TestSuiteDisplay } from '../TestSuites';
-import { Artifact } from '../../types';
+import { Artifact } from '../../artifact';
 import { SelectedTestContext } from './contexts';
+import { useQuery } from '@apollo/client';
 import { ArtifactsXunitQuery } from '../../queries/Artifacts';
 import { xunitParser } from '../../utils/xunitParser';
 
@@ -64,9 +63,9 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
         loading,
     } = useQuery(ArtifactsXunitQuery, {
         variables: {
-            atype: artifact?.hitSource.aType,
+            atype: artifact?.type,
             dbFieldName1: 'aid',
-            dbFieldValues1: [artifact?.hitSource.aid],
+            dbFieldValues1: [artifact?.aid],
             msg_id: selectedTest?.messageId,
         },
         fetchPolicy: 'cache-first',

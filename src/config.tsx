@@ -18,7 +18,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { getOSVersionFromNvr } from './utils/artifact_utils';
+import { getOSVersionFromNvr } from './utils/artifactUtils';
 import { ArtifactType } from './artifact';
 
 /**

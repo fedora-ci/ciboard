@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 
 import _ from 'lodash';
-import React from 'react';
+import * as React from 'react';
 import {
     Flex,
     Text,
@@ -39,7 +39,7 @@ import {
 } from '@patternfly/react-table';
 
 import styles from '../custom.module.css';
-import { LinkifyNewTab } from '../utils/artifact_utils';
+import { LinkifyNewTab } from '../utils/artifactUtils';
 import { mkLabel, StateDetailsEntry } from './ArtifactState';
 import {
     Metadata,

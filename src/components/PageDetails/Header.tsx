@@ -29,6 +29,7 @@ import {
 } from '@patternfly/react-core';
 import { CodeBranchIcon, CubeIcon, UserIcon } from '@patternfly/react-icons';
 
+import { Artifact, isArtifactScratch } from '../../artifact';
 import {
     getArtifactName,
     getArtifacIssuer,
@@ -36,9 +37,8 @@ import {
     getArtifactRemoteUrl,
     getArtifactTypeLabel,
     getArtifactId,
-} from '../../utils/artifact_utils';
+} from '../../utils/artifactUtils';
 import { ExternalLink } from '../ExternalLink';
-import { Artifact, isArtifactScratch } from '../../types';
 import { ArtifactGreenwaveStatesSummary } from '../GatingStatus';
 
 interface ArtifactTitleProps {
@@ -47,6 +47,7 @@ interface ArtifactTitleProps {
 
 function ArtifactTitle(props: ArtifactTitleProps) {
     const { artifact } = props;
+    const { hitSource } = artifact;
     const gatingTag = getArtifactGatingTag(artifact);
     const hasGatingDecision = !_.isNil(artifact.greenwaveDecision);
     const isScratch = isArtifactScratch(artifact);

@@ -67,7 +67,7 @@ import {
     getUmbDocsUrl,
     LinkifyNewTab,
     TestStatusIcon,
-} from '../utils/artifact_utils';
+} from '../utils/artifactUtils';
 import { MSG_V_1, MSG_V_0_1, Metadata } from '../types';
 import { Artifact, StateKaiType, StateNameType } from '../artifact';
 import {

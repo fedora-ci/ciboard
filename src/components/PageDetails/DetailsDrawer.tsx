@@ -2,7 +2,6 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,48 +18,48 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { PropsWithChildren, useContext, useState } from 'react';
 import useLocalStorage from 'react-use-localstorage';
 import {
-    Tab,
-    Flex,
-    Tabs,
-    Text,
-    Title,
     Alert,
     Badge,
     Button,
     Drawer,
-    DrawerHead,
-    TextContent,
-    TabTitleText,
     DrawerActions,
-    DrawerContent,
-    DrawerPanelBody,
     DrawerCloseButton,
+    DrawerContent,
+    DrawerHead,
+    DrawerPanelBody,
     DrawerPanelContent,
+    Flex,
+    Tab,
+    Tabs,
+    TabTitleText,
+    Text,
+    TextContent,
+    Title,
 } from '@patternfly/react-core';
 import {
     BookIcon,
-    RedoIcon,
     ExclamationCircleIcon,
+    RedoIcon,
 } from '@patternfly/react-icons';
 
 import './index.css';
-import { CiTest } from './types';
-import { KnownIssues } from './KnownIssues';
-import { WaiveButton } from './WaiveButton';
+import { LinkifyNewTab, getArtifactProduct } from '../../utils/artifactUtils';
+import { ExternalLink } from '../ExternalLink';
 import { SelectedTestContext } from './contexts';
 import { ContactWidget, MissingTestContactWidget } from './ContactWidget';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestStatusIcon } from './TestStatusIcon';
+import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
+import { CiTest } from './types';
+import { Artifact } from '../../artifact';
+import { KnownIssues } from './KnownIssues';
+import { WaiveButton } from './WaiveButton';
 import { TestResultMetadata } from './TestResultMetadata';
 import { TestResultQuickLinks } from './TestResultQuickLinks';
-import { Artifact } from '../../types';
-import { ExternalLink } from '../ExternalLink';
-import { GreenwaveWaiver } from '../ArtifactGreenwaveState';
-import { LinkifyNewTab, getArtifactProduct } from '../../utils/artifact_utils';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';

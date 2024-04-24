@@ -2,7 +2,6 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,34 +21,34 @@
 import * as _ from 'lodash';
 
 import {
-    MSG_V_1,
     Artifact,
-    MSG_V_0_1,
-    StateTestMsg,
-    ArtifactState,
-    isStateTestMsg,
-    getTestMsgBody,
-    MetadataContact,
-    isGreenwaveState,
-    StateExtendedName,
-    MetadataDependency,
-    GreenwaveWaiveType,
-    isGreenwaveAndTestMsg,
-    StateExtendedTestMsgName,
     GreenwaveRequirementOutcome,
-} from '../../types';
+    GreenwaveWaiveType,
+    StateExtendedNameType,
+    StateKaiType,
+    StateType,
+} from '../../artifact';
 import {
     getDocsUrl,
-    getRerunUrl,
+    getKaiExtendedStatus,
     getMessageError,
+    getRerunUrl,
     getTestcaseName,
+    isGreenwaveKaiState,
+    isGreenwaveState,
+    isKaiState,
     isResultWaivable,
-    getTestMsgExtendedStatus,
-} from '../../utils/artifact_utils';
+} from '../../utils/artifactUtils';
+import {
+    MSG_V_0_1,
+    MSG_V_1,
+    MetadataContact,
+    MetadataDependency,
+} from '../../types';
 import { mkStagesAndStates } from '../../utils/stages_states';
 import { CiContact, CiTest, TestStatus } from './types';
 
-function transformUmbStatus(stateName: StateExtendedTestMsgName): TestStatus {
+function transformUmbStatus(stateName: StateExtendedNameType): TestStatus {
     if (
         ['error', 'test-result-errored', 'test-result-errored-waived'].includes(
             stateName,
@@ -104,13 +103,13 @@ function transformGreenwaveOutcome(
     return 'failed';
 }
 
-function extractContactFromUmb(test: StateTestMsg): CiContact | undefined {
-    const testMsg = getTestMsgBody(test);
+function extractContactFromUmb(test: StateKaiType): CiContact | undefined {
+    const { broker_msg_body } = test;
     let contact: MSG_V_0_1.MsgContactType | MSG_V_1.MsgContactType | undefined;
-    if (MSG_V_0_1.isMsg(testMsg)) {
-        contact = testMsg.ci;
-    } else if (MSG_V_1.isMsg(testMsg)) {
-        contact = testMsg.contact;
+    if (MSG_V_0_1.isMsg(broker_msg_body)) {
+        contact = broker_msg_body.ci;
+    } else if (MSG_V_1.isMsg(broker_msg_body)) {
+        contact = broker_msg_body.contact;
     }
 
     if (!contact) {
@@ -128,7 +127,7 @@ function extractContactFromUmb(test: StateTestMsg): CiContact | undefined {
     };
 }
 
-function extractContact(test: StateTestMsg): CiContact {
+function extractContact(test: StateType): CiContact {
     let contact: CiContact = {};
     let metadataContact: MetadataContact | undefined;
 
@@ -136,13 +135,13 @@ function extractContact(test: StateTestMsg): CiContact {
         // This is handled later in the UI by querying custom metadata.
         return contact;
     }
-    if (isStateTestMsg(test)) {
+    if (isKaiState(test)) {
         _.merge(contact, extractContactFromUmb(test));
-        metadataContact = test.customMetadata?.payload?.contact;
+        metadataContact = test.custom_metadata?.payload?.contact;
     }
-    if (isGreenwaveAndTestMsg(test)) {
-        _.merge(contact, extractContactFromUmb(test.ms));
-        metadataContact = test.ms.customMetadata?.payload?.contact;
+    if (isGreenwaveKaiState(test)) {
+        _.merge(contact, extractContactFromUmb(test.ks));
+        metadataContact = test.ks.custom_metadata?.payload?.contact;
     }
 
     // Merge in data from the `custom_metadata` Kai state field.
@@ -175,8 +174,8 @@ function extractContact(test: StateTestMsg): CiContact {
 }
 
 function transformTest(
-    test: StateTestMsg,
-    stateName: StateExtendedName,
+    test: StateType,
+    stateName: StateExtendedNameType,
 ): CiTest {
     const contact = extractContact(test);
     let dependencies: MetadataDependency[] | undefined;
@@ -189,7 +188,7 @@ function transformTest(
     const name = getTestcaseName(test);
     const rerunUrl = getRerunUrl(test);
     const required =
-        (isGreenwaveState(test) || isGreenwaveAndTestMsg(test)) &&
+        (isGreenwaveState(test) || isGreenwaveKaiState(test)) &&
         stateName !== 'additional-tests';
     let runDetailsUrl: string | undefined;
     const waivable = isResultWaivable(test);
@@ -197,23 +196,22 @@ function transformTest(
 
     if (isGreenwaveState(test)) {
         waiver = test.waiver;
-    } else if (isStateTestMsg(test)) {
-        const testMsg = getTestMsgBody(test);
-        dependencies = test.customMetadata?.payload?.dependency;
-        description = test.customMetadata?.payload?.description;
-        error = getMessageError(testMsg);
-        knownIssues = test.customMetadata?.payload?.known_issues;
-        logsUrl = testMsg.run.log;
+    } else if (isKaiState(test)) {
+        dependencies = test.custom_metadata?.payload?.dependency;
+        description = test.custom_metadata?.payload?.description;
+        error = getMessageError(test.broker_msg_body);
+        knownIssues = test.custom_metadata?.payload?.known_issues;
+        logsUrl = test.broker_msg_body.run.log;
         messageId = test.kai_state.msg_id;
-        runDetailsUrl = testMsg.run.url;
-    } else if (isGreenwaveAndTestMsg(test)) {
-        dependencies = test.ms.custom_metadata?.payload?.dependency;
-        description = test.ms.custom_metadata?.payload?.description;
+        runDetailsUrl = test.broker_msg_body.run.url;
+    } else if (isGreenwaveKaiState(test)) {
+        dependencies = test.ks.custom_metadata?.payload?.dependency;
+        description = test.ks.custom_metadata?.payload?.description;
         error = getMessageError(test.ks.broker_msg_body);
-        knownIssues = test.ms.custom_metadata?.payload?.known_issues;
-        logsUrl = test.ms.broker_msg_body.run.log;
-        messageId = test.ms.kai_state.msg_id;
-        runDetailsUrl = test.ms.broker_msg_body.run.url;
+        knownIssues = test.ks.custom_metadata?.payload?.known_issues;
+        logsUrl = test.ks.broker_msg_body.run.log;
+        messageId = test.ks.kai_state.msg_id;
+        runDetailsUrl = test.ks.broker_msg_body.run.url;
         waiver = test.gs.waiver;
     }
 
@@ -238,7 +236,7 @@ function transformTest(
          * `error.reason`, but `test.result === 'failed'`. For an example, see
          * https://datagrepper.engineering.redhat.com/id?id=ID:osci-jenkins-master-0-43277-1681457299489-309:1:1:1:1&is_raw=true&size=extra-large
          */
-        status = transformUmbStatus(getTestMsgExtendedStatus(test.ms));
+        status = transformUmbStatus(getKaiExtendedStatus(test.ks));
     }
 
     return {
