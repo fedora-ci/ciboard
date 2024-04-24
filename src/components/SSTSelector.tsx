@@ -22,13 +22,12 @@
 import _ from 'lodash';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Text, TextContent } from '@patternfly/react-core';
 import {
     Dropdown,
     DropdownItem,
     DropdownToggle,
-    Text,
-    TextContent,
-} from '@patternfly/react-core';
+} from '@patternfly/react-core/deprecated';
 import { CaretDownIcon } from '@patternfly/react-icons';
 
 import { SSTItem } from '../types';
@@ -36,7 +35,7 @@ import { SSTItem } from '../types';
 interface DropdownSelectorProps {
     section?: string;
     sstList?: SSTItem[];
-};
+}
 
 export function DropdownSelector(props: DropdownSelectorProps) {
     const sstList = props.sstList;
@@ -52,8 +51,7 @@ export function DropdownSelector(props: DropdownSelectorProps) {
 
     const onFocus = () => {
         const toggleElement = document.getElementById('sst-dropdown-toggle');
-        if (toggleElement)
-            toggleElement.focus();
+        if (toggleElement) toggleElement.focus();
     };
 
     const onToggle = (isOpen: boolean) => {
@@ -69,21 +67,15 @@ export function DropdownSelector(props: DropdownSelectorProps) {
     const items = sstList!.map(({ display_name, name }) => (
         <DropdownItem
             key={name}
-            className={name === props.section ? 'pf-u-font-weight-bold' : ''}
-            component={
-                <Link to={`/sst/${name}`}>{display_name}</Link>
-            }
+            className={name === props.section ? 'pf-v5-u-font-weight-bold' : ''}
+            component={<Link to={`/sst/${name}`}>{display_name}</Link>}
         />
     ));
 
-    const currentSST = _.find(
-        sstList,
-        ({ name }) => (name === props.section)
-    );
+    const currentSST = _.find(sstList, ({ name }) => name === props.section);
 
     let dropdownLabel = 'Select a subsystem…';
-    if (currentSST)
-        dropdownLabel = currentSST.display_name;
+    if (currentSST) dropdownLabel = currentSST.display_name;
 
     return (
         <Dropdown
@@ -92,7 +84,7 @@ export function DropdownSelector(props: DropdownSelectorProps) {
             onSelect={onSelect}
             toggle={
                 <DropdownToggle
-                    onToggle={onToggle}
+                    onToggle={(_event, isOpen: boolean) => onToggle(isOpen)}
                     toggleIndicator={CaretDownIcon}
                 >
                     {dropdownLabel}

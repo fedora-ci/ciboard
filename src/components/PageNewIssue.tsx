@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,28 +19,26 @@
  */
 
 import _ from 'lodash';
-import * as React from 'react';
+import React from 'react';
 import {
     Card,
-    CardBody,
-    CardHeader,
     Flex,
     List,
-    ListItem,
-    PageSection,
-    Spinner,
     Text,
-    TextContent,
     Title,
+    Spinner,
+    CardBody,
+    ListItem,
+    CardHeader,
+    PageSection,
+    TextContent,
 } from '@patternfly/react-core';
+import { IRow, ICell, TableVariant } from '@patternfly/react-table';
 import {
-    ICell,
-    IRow,
     Table,
     TableBody,
     TableHeader,
-    TableVariant,
-} from '@patternfly/react-table';
+} from '@patternfly/react-table/deprecated';
 import { useQuery } from '@apollo/client';
 
 import { config } from '../config';
@@ -87,7 +85,7 @@ function WaiverDbPermissions() {
         return <Spinner size="md" />;
     }
     if (_.isError(error)) {
-        return <div className="pf-u-danger-color-100">{error.message}</div>;
+        return <div className="pf-v5-u-danger-color-100">{error.message}</div>;
     }
     const perms = data!.waiver_db_permissions as WaiverDbPermission[];
     const rows: IRow[] = _.map(perms, (permission) => mkRow(permission));
@@ -117,14 +115,14 @@ function WaiverDbInfoSummary() {
         return <Spinner size="md" />;
     }
     if (_.isError(error)) {
-        return <div className="pf-u-danger-color-100">{error.message}</div>;
+        return <div className="pf-v5-u-danger-color-100">{error.message}</div>;
     }
     const info = data!.waiver_db_info;
     return (
         <TextContent>
             <Text>
-                WaiverDB version: {info.version}. Auth method:{' '}
-                {info.auth_method}.
+                WaiverDB version: {info?.version}. Auth method:{' '}
+                {info?.auth_method}.
             </Text>
         </TextContent>
     );
@@ -174,7 +172,7 @@ const BaseOsCard: React.FC<{}> = () => (
 );
 
 const OsciCard: React.FC<{}> = () => (
-    <Card className="pf-u-h-100">
+    <Card className="pf-v5-u-h-100">
         <CardHeader>
             <Title headingLevel="h3" size="2xl">
                 OSCI

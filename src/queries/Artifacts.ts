@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,108 +19,7 @@
  */
 
 import { gql } from '@apollo/client';
-import {
-    Artifact,
-    ComponentComponentMappingType,
-    KojiTaskInfo,
-    MbsBuildInfo,
-} from '../artifact';
-
-const stateEntryFragment = gql`
-    fragment StateEntryFragment on StateType {
-        broker_msg_body
-        kai_state {
-            stage
-            state
-            msg_id
-            version
-            thread_id
-            timestamp
-            test_case_name
-        }
-        custom_metadata {
-            payload
-        }
-    }
-`;
-
-const mainFragment = gql`
-    fragment MainFragment on ArtifactType {
-        _id
-        aid
-        type
-        payload
-    }
-`;
-
-const statesFragment = gql`
-    fragment StatesFragment on ArtifactType {
-        _id
-        states(onlyactual: true) {
-            ...StateEntryFragment
-        }
-    }
-    ${stateEntryFragment}
-`;
-
-const etaStatesFragment = gql`
-    fragment EtaStatesFragment on ArtifactType {
-        _id
-        states_eta {
-            broker_msg_body
-            kai_state {
-                msg_id
-                version
-                timestamp
-            }
-        }
-    }
-    ${stateEntryFragment}
-`;
-
-/**
-export const ArtifactsQuery = gql`
-    query Artifacts(
-        $atype: String!
-        $limit: Int
-        $aid_offset: String
-        $regexs: [String]
-        $dbFieldName: String
-        $dbFieldValues: [String]
-        $options: ArtifactsOptionsInputType
-    ) {
-        artifacts(
-            atype: $atype
-            limit: $limit
-            regexs: $regexs
-            options: $options
-            aid_offset: $aid_offset
-            dbFieldName: $dbFieldName
-            dbFieldValues: $dbFieldValues
-        ) {
-            has_next
-            artifacts {
-                ...MainFragment
-            }
-        }
-    }
-    ${mainFragment}
-`;
-*/
-
-const greenwaveDecisionFragment = gql`
-    fragment GreenwaveDecisionFragment on ArtifactType {
-        _id
-        greenwave_decision {
-            policies_satisfied
-            unsatisfied_requirements
-            satisfied_requirements
-            results
-            waivers
-            summary
-        }
-    }
-`;
+import { Artifact, MetadataRaw, KojiTaskInfo, MbsBuildInfo } from '../types';
 
 const commitInfoFragment = gql`
     fragment CommitInfoFragment on CommitObject {
@@ -147,16 +46,19 @@ const tagHistoryFragment = gql`
 `;
 
 export interface ArtifactsDetailedInfoKojiTaskData {
-    koji_task?: KojiTaskInfo;
+    kojiTask?: KojiTaskInfo;
 }
 
+/**
+ * Fetch koji-tags, koji-histroy for Koji task
+ */
 export const ArtifactsDetailedInfoKojiTask = gql`
-    query ArtifactsDetailedInfoKojiBuild(
+    query ArtifactsDetailedInfoKojiTask(
         $task_id: Int!
         $koji_instance: KojiInstanceInputType
         $distgit_instance: DistGitInstanceInputType
     ) {
-        koji_task(task_id: $task_id, instance: $koji_instance) {
+        kojiTask(task_id: $task_id, instance: $koji_instance) {
             builds(task_id: $task_id, instance: $koji_instance) {
                 nvr
                 name
@@ -167,11 +69,11 @@ export const ArtifactsDetailedInfoKojiTask = gql`
                 owner_id
                 owner_name
                 package_id
-                completion_time
                 completion_ts
+                completion_time
                 tags(instance: $koji_instance) {
-                    name
                     id
+                    name
                 }
                 history(instance: $koji_instance) {
                     ...TagHistoryFragment
@@ -179,6 +81,7 @@ export const ArtifactsDetailedInfoKojiTask = gql`
                 commit_obj(instance: $distgit_instance) {
                     ...CommitInfoFragment
                 }
+                gitlabCommitMr
             }
         }
     }
@@ -187,9 +90,12 @@ export const ArtifactsDetailedInfoKojiTask = gql`
 `;
 
 export interface ArtifactsDetailedInfoModuleBuildData {
-    mbs_build?: MbsBuildInfo;
+    mbsBuild?: MbsBuildInfo;
 }
 
+/**
+ * Fetch koji-tags, koji-histroy for Module build
+ */
 export const ArtifactsDetailedInfoModuleBuild = gql`
     query ArtifactsDetailedInfoModuleBuild(
         $build_id: Int!
@@ -197,7 +103,7 @@ export const ArtifactsDetailedInfoModuleBuild = gql`
         $koji_instance: KojiInstanceInputType
         $distgit_instance: DistGitInstanceInputType
     ) {
-        mbs_build(build_id: $build_id, instance: $mbs_instance) {
+        mbsBuild(build_id: $build_id, instance: $mbs_instance) {
             commit(instance: $distgit_instance) {
                 ...CommitInfoFragment
             }
@@ -223,180 +129,144 @@ export const ArtifactsDetailedInfoModuleBuild = gql`
     ${tagHistoryFragment}
 `;
 
+/**
+ * Used for generic artifact search on main page, without gating status
+ * Next: ArtifactsSearchSlowQuery2
+ */
+export const ArtifactsSearchFastQuery1 = gql`
+    query ArtifactsComplete(
+        $sortBy: String
+        $artTypes: [String]
+        $newerThen: String
+        $queryString: String
+        $doDeepSearch: Boolean
+        $isExtendedQs: Boolean
+        $paginationSize: Int
+        $paginationFrom: Int
+    ) {
+        artifacts(
+            sortBy: $sortBy
+            artTypes: $artTypes
+            newerThen: $newerThen
+            queryString: $queryString
+            doDeepSearch: $doDeepSearch
+            isExtendedQs: $isExtendedQs
+            paginationSize: $paginationSize
+            paginationFrom: $paginationFrom
+        ) {
+            hits {
+                hit_info
+                hit_source
+            }
+            hits_info
+        }
+    }
+`;
+
+/**
+ * Used for generic artifact search on main page, with gating status
+ * Prev: ArtifactsSearchFastQuery1
+ */
+export const ArtifactsSearchSlowQuery2 = gql`
+    query ArtifactsComplete(
+        $sortBy: String
+        $artTypes: [String]
+        $newerThen: String
+        $queryString: String
+        $doDeepSearch: Boolean
+        $isExtendedQs: Boolean
+        $paginationSize: Int
+        $paginationFrom: Int
+    ) {
+        artifacts(
+            sortBy: $sortBy
+            artTypes: $artTypes
+            newerThen: $newerThen
+            queryString: $queryString
+            doDeepSearch: $doDeepSearch
+            isExtendedQs: $isExtendedQs
+            paginationSize: $paginationSize
+            paginationFrom: $paginationFrom
+        ) {
+            hits_info
+            hits {
+                hit_info
+                hit_source
+                children(onlyActual: true) {
+                    stagesSummary
+                }
+                greenwaveDecision {
+                    results
+                    waivers
+                    summary
+                    policies_satisfied
+                    satisfied_requirements
+                    unsatisfied_requirements
+                }
+            }
+        }
+    }
+`;
+
 export interface ArtifactsCompleteQueryData {
     artifacts: {
-        has_next: boolean;
-        artifacts: Artifact[];
+        hits_info: any;
+        hits: Artifact[];
     };
+    metadataRaw: MetadataRaw[];
 }
 
+/**
+ * Specific artifact need to show
+ * Metadata is required for all tests. This will help to show dependency between tests.
+ */
 export const ArtifactsCompleteQuery = gql`
     query ArtifactsComplete(
-        $limit: Int
-        $atype: String!
-        $aid_offset: String
-        $dbFieldName1: String
-        $dbFieldValues1: [String]
-        $dbFieldName2: String
-        $dbFieldValues2: [String]
-        $options: ArtifactsOptionsInputType
+        $sortBy: String
+        $artTypes: [String]
+        $newerThen: String
+        $queryString: String
+        $isExtendedQs: Boolean
+        $paginationSize: Int
+        $paginationFrom: Int
     ) {
         artifacts(
-            atype: $atype
-            limit: $limit
-            options: $options
-            aid_offset: $aid_offset
-            dbFieldName1: $dbFieldName1
-            dbFieldValues1: $dbFieldValues1
-            dbFieldName2: $dbFieldName2
-            dbFieldValues2: $dbFieldValues2
+            sortBy: $sortBy
+            artTypes: $artTypes
+            newerThen: $newerThen
+            queryString: $queryString
+            isExtendedQs: $isExtendedQs
+            paginationSize: $paginationSize
+            paginationFrom: $paginationFrom
         ) {
-            has_next
-            artifacts {
-                ...MainFragment
-                ...StatesFragment
-                ...EtaStatesFragment
-                ...GreenwaveDecisionFragment
-            }
-        }
-    }
-    ${mainFragment}
-    ${statesFragment}
-    ${etaStatesFragment}
-    ${greenwaveDecisionFragment}
-`;
-
-export const ArtifactsListByFiltersQuery = gql`
-    query ArtifactsListByFiltersQuery1(
-        $limit: Int
-        $atype: String!
-        $aid_offset: String
-        $dbFieldName1: String
-        $dbFieldValues1: [String]
-        $dbFieldName2: String
-        $dbFieldValues2: [String]
-        $options: ArtifactsOptionsInputType
-    ) {
-        artifacts(
-            atype: $atype
-            limit: $limit
-            options: $options
-            aid_offset: $aid_offset
-            dbFieldName1: $dbFieldName1
-            dbFieldValues1: $dbFieldValues1
-            dbFieldName2: $dbFieldName2
-            dbFieldValues2: $dbFieldValues2
-        ) {
-            has_next
-            artifacts {
-                ...MainFragment
-                ...StatesFragment
-            }
-        }
-    }
-    ${mainFragment}
-    ${statesFragment}
-`;
-
-/**
- *  Refetch states fragment. Need to find replaces, data, and write merge for it.
- * https://www.apollographql.com/docs/react/caching/cache-field-behavior/#merging-arrays-of-non-normalized-objects
- */
-/**
- * This query is used when need to fetch xunit for specific test-result.
- */
-export const ArtifactsXunitQuery = gql`
-    query ArtifactsXunitQuery(
-        $atype: String!
-        $dbFieldName1: String
-        $dbFieldValues1: [String]
-        $msg_id: [String]
-    ) {
-        artifacts(
-            atype: $atype
-            dbFieldName1: $dbFieldName1
-            dbFieldValues1: $dbFieldValues1
-            limit: 1
-        ) {
-            artifacts {
-                _id
-                states(onlyactual: true) {
-                    kai_state {
-                        msg_id
+            hits_info
+            hits {
+                hit_info
+                hit_source
+                children(onlyActual: true) {
+                    hits_info
+                    hits {
+                        hit_info
+                        hit_source
                     }
-                    broker_msg_xunit(msg_id: $msg_id)
+                }
+                greenwaveDecision {
+                    results
+                    waivers
+                    summary
+                    policies_satisfied
+                    satisfied_requirements
+                    unsatisfied_requirements
                 }
             }
         }
-    }
-`;
-
-export interface PageGatingGetSSTTeamsData {
-    db_sst_list?: string[];
-}
-
-export const PageGatingGetSSTTeams = gql`
-    query PageGatingGetSSTTeams($product_id: Int) {
-        db_sst_list(product_id: $product_id)
-    }
-`;
-
-export interface PageGatingArtifactsData {
-    artifacts?: {
-        has_next: boolean;
-        artifacts: Artifact[] & {
-            component_mapping: ComponentComponentMappingType;
-        };
-    };
-}
-
-export const PageGatingArtifacts = gql`
-    query PageGatingArtifacts(
-        $limit: Int
-        $atype: String!
-        $aid_offset: String
-        $dbFieldName1: String
-        $dbFieldValues1: [String]
-        $dbFieldName2: String
-        $dbFieldValues2: [String]
-        $dbFieldName3: String
-        $dbFieldValues3: [String]
-        $dbFieldNameComponentMapping1: String
-        $dbFieldValuesComponentMapping1: [String]
-        $options: ArtifactsOptionsInputType
-    ) {
-        artifacts(
-            atype: $atype
-            limit: $limit
-            options: $options
-            aid_offset: $aid_offset
-            dbFieldName1: $dbFieldName1
-            dbFieldValues1: $dbFieldValues1
-            dbFieldName2: $dbFieldName2
-            dbFieldValues2: $dbFieldValues2
-            dbFieldName3: $dbFieldName3
-            dbFieldValues3: $dbFieldValues3
-            dbFieldNameComponentMapping1: $dbFieldNameComponentMapping1
-            dbFieldValuesComponentMapping1: $dbFieldValuesComponentMapping1
-        ) {
-            has_next
-            artifacts {
-                ...MainFragment
-                ...StatesFragment
-                component_mapping {
-                    component_name
-                    def_assignee
-                    def_assignee_name
-                    description
-                    product_id
-                    qa_contact
-                    qa_contact_name
-                    sst_team_name
-                    _updated
-                }
-            }
+        metadataRaw {
+            _id
+            payload
+            priority
+            testcaseName
+            productVersion
+            testcaseNameIsRegex
         }
     }
-    ${mainFragment}
-    ${statesFragment}
 `;

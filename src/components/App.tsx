@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,13 +18,12 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as React from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import {
-    ApolloClient,
-    ApolloLink,
-    ApolloProvider,
     HttpLink,
+    ApolloLink,
+    ApolloClient,
+    ApolloProvider,
     InMemoryCache,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
@@ -92,7 +91,7 @@ export function App() {
 
     return (
         <ApolloProvider client={apolloClient}>
-            <div className="pf-u-h-100vh">
+            <div className="pf-v5-u-h-100vh">
                 <HashRouter>
                     <Routes>
                         <Route

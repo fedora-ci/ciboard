@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022, 2023, 2024 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,62 +20,88 @@
 import _ from 'lodash';
 
 import {
-    getTestcaseName,
-    isGreenwaveKaiState,
-    isGreenwaveState,
-    isKaiState,
-} from './artifactUtils';
-import {
+    AChild,
+    MSG_V_1,
     Artifact,
-    GreenwaveDecisionReplyType,
-    GreenwaveRequirementType,
-    GreenwaveRequirementTypesType,
-    GreenwaveResultType,
-    KnownKaiStates,
-    StageNameType,
-    StateExtendedNameType,
-    StateGreenwaveKaiType,
-    StateGreenwaveType,
-    StateKaiType,
-    StateNameType,
-    StatesByCategoryType,
-    StateType,
-} from '../artifact';
-import { MSG_V_0_1, MSG_V_1 } from '../types';
-
-export type StageNameStateNameStatesType = [
-    StageNameType,
-    StateExtendedNameType,
-    StateType[],
-];
+    getMsgId,
+    AChildMsg,
+    MSG_V_0_1,
+    StateName,
+    getMsgBody,
+    MsgStateName,
+    MsgStageName,
+    AChildTestMsg,
+    KnownMsgStates,
+    getTestMsgBody,
+    AChildGreenwave,
+    isAChildTestMsg,
+    getMsgStateName,
+    getTestcaseName,
+    GreenwaveResult,
+    getMsgStageName,
+    TestMsgStateName,
+    isAChildGreenwave,
+    isAChildSchemaMsg,
+    BrokerSchemaMsgBody,
+    getArtifactChildren,
+    AChildrenByStateName,
+    GreenwaveRequirement,
+    GreenwaveDecisionReply,
+    AChildGreenwaveAndTestMsg,
+    GreenwaveRequirementTypes,
+    isAChildGreenwaveAndTestMsg,
+} from '../types';
 
 /**
+ * Derived from topic
+ *
+ * Stage can be: 'build', 'dispatch', 'test', 'promote', etc....
+ * stage (in standard called as `event`) is always the second item from the end of the topic
+ * Examples:
+ *
+ * * pull-request.test.error -> test
+ * * brew-build.promote.error -> promote
+ *
+ * State is always the latest part of the topic
+ * Examples:
+ *
+ *  * brew-build.promote.error -> error
+ *  * brew-build.test.complete -> complete
+ */
+
+export type StageStateAChildren = [MsgStageName, StateName, AChild[]];
+export type StageStateNumAChildren = [MsgStageName, StateName, number];
+
+type AChildrenByStageName = {
+    msgStageName: MsgStageName;
+    aChildrenByStateName: AChildrenByStateName;
+};
+
+/**
+
  * Entry point. This file is the most complicated part in this project.
  */
 export const mkStagesAndStates = (
     artifact: Artifact,
-): StageNameStateNameStatesType[] => {
-    const stagesStates: Array<{
-        stage: StageNameType;
-        states: StatesByCategoryType;
-    }> = [];
-    // Preprocess Kai results into a list of results sorted by stage and state.
-    const kaiStagesStates = mkStagesKaiStates(artifact);
-    stagesStates.push(...kaiStagesStates);
+): StageStateAChildren[] => {
+    const stagesStates: Array<AChildrenByStageName> = [];
+    // Preprocess broker-messages into a list sorted by stage and state.
+    const testMsgStagesStates = aChildrenByStageName(artifact);
+    stagesStates.push(...testMsgStagesStates);
     /*
      * Greenwave always produces structured-reply, check if this reply makes any sense.
      * TODO: Move this into a parsing and validation module.
      */
     if (
-        artifact.greenwave_decision &&
-        _.isBoolean(artifact.greenwave_decision?.policies_satisfied)
+        artifact.greenwaveDecision &&
+        _.isBoolean(artifact.greenwaveDecision?.policies_satisfied)
     ) {
         /*
          * Preprocess Greenwave response into a list of results sorted by state.
          * The stage is fixed to 'greenwave' for all of them.
          */
         const greenwaveStageStates = mkGreenwaveStageStates(
-            artifact.greenwave_decision,
+            artifact.greenwaveDecision,
         );
         stagesStates.push(greenwaveStageStates);
     } else {
@@ -87,10 +113,10 @@ export const mkStagesAndStates = (
      */
     const stageStatesArray = mkStageStatesArray(stagesStates);
     /*
-     * Merge Kai and Greenwave results corresponding to the same test into a single
+     * Merge testMsgAChild and Greenwave results corresponding to the same test into a single
      * consolidated structure.
      */
-    mergeKaiAndGreenwaveState(stageStatesArray);
+    mergeTestMsgAndGreenwaveAChild(stageStatesArray);
     /*
      * Remove superfluous items left over after the merge.
      */
@@ -105,42 +131,45 @@ export const mkStagesAndStates = (
  * @returns All items from the `stagesStates` array that are in the stage `stage`.
  */
 const filterByStageName = (
-    stage: StageNameType,
-    stagesStates: StageNameStateNameStatesType[],
+    stage: MsgStageName,
+    stagesStates: StageStateAChildren[],
 ) =>
     _.filter(
         stagesStates,
         ([stageName, _stateName, _state]) => stageName === stage,
     );
 
-const getKaiState = (
-    states: StageNameStateNameStatesType[],
-    stateNameReq: StateExtendedNameType,
+const getTestMsgAChild = (
+    states: StageStateAChildren[],
+    stateNameReq: TestMsgStateName,
     runUrl: string,
     msgId: string | undefined,
-): StateKaiType | undefined => {
+): AChildTestMsg | undefined => {
     const s = _.find(
         states,
         ([_stageName, stateName, _states]) =>
             stateNameReq.toLocaleLowerCase() === stateName.toLocaleLowerCase(),
     );
     if (_.isNil(s)) return;
-    const [_stageName, _stateName, kaiStates] = s;
-    const kaiState = _.find(kaiStates as StateKaiType[], (state) => {
-        /* this is broken and should be removed */
-        const theSameRefUrl = runUrl === state.broker_msg_body.run.url;
-        /*
-         * Next test should stay. It must be the only 1 way to test Greenwave-to-Kai correspondance.
-         * It must be done by using by msg_id
-         * When https://issues.redhat.com/browse/OSCI-3605 is closed remove `theSameRefUrl` test.
-         */
-        const theSameMsgId =
-            _.isString(msgId) &&
-            !_.isEmpty(msgId) &&
-            msgId === state.kai_state.msg_id;
-        return theSameMsgId || theSameRefUrl;
-    });
-    return kaiState;
+    const [_stageName, _stateName, aChildrenTestMsg] = s;
+    const testMsgAChild = _.find(
+        aChildrenTestMsg as AChildTestMsg[],
+        (aChild) => {
+            /* this is broken and should be removed */
+            const testMsg = getTestMsgBody(aChild);
+            const theSameRefUrl = runUrl === testMsg.run.url;
+            /*
+             * Next test should stay. It must be the only 1 way to test Greenwave-to-testMsgAChild correspondance.
+             * It must be done by using by msg_id
+             * When https://issues.redhat.com/browse/OSCI-3605 is closed remove `theSameRefUrl` test.
+             */
+            const msgId_ = getMsgId(aChild);
+            const theSameMsgId =
+                _.isString(msgId) && !_.isEmpty(msgId) && msgId === msgId_;
+            return theSameMsgId || theSameRefUrl;
+        },
+    );
+    return testMsgAChild;
 };
 
 /**
@@ -156,7 +185,7 @@ const getKaiState = (
  * This function collects all the artifact's results that we know about as
  * well as those that only Greenwave knows (or does not know) about and
  * packs them into a unified structure. In this process, at the moment the
- * results we have (from Kai) have precendence over Greenwave's info.
+ * results we have (from testMsgAChild) have precendence over Greenwave's info.
  *
  * As an example, assume that the test `x.y.z` is required for gating.
  * Until the test finishes (or the requirement is waived), it's missing
@@ -184,20 +213,19 @@ const getKaiState = (
  *         running: [...]
  *     }
  */
-const mkStagesKaiStates = (
-    artifact: Artifact,
-): {
-    stage: StageNameType;
-    states: StatesByCategoryType;
-}[] => {
-    const stageStates = [];
-    const buildStates = _.omitBy(
-        transformKaiStates(artifact.states, 'build'),
-        (x) => _.isEmpty(x),
+
+const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
+    const aChildrenByStageName: AChildrenByStageName[] = [];
+    const aChildren = getArtifactChildren(artifact);
+    const buildStage = _.omitBy(aChildrenByStateName(aChildren, 'build'), (x) =>
+        _.isEmpty(x),
     );
-    if (_.some(_.values(buildStates), 'length')) {
-        const stage: StageNameType = 'build';
-        stageStates.push({ stage, states: buildStates });
+    if (_.some(_.values(buildStage), 'length')) {
+        const msgStageName: MsgStageName = 'build';
+        aChildrenByStageName.push({
+            msgStageName,
+            aChildrenByStateName: buildStage,
+        });
     }
     /*
     testStates resolves in:
@@ -210,23 +238,26 @@ const mkStagesKaiStates = (
             running: []
         }
     */
-    let testStates: StatesByCategoryType = transformKaiStates(
-        artifact.states,
+    let testStage: AChildrenByStateName = aChildrenByStateName(
+        aChildren,
         'test',
     );
-    testStates = _.omitBy(testStates, (x) => _.isEmpty(x));
-    if (_.some(_.values(testStates), 'length')) {
-        const stage: StageNameType = 'test';
-        stageStates.push({ stage, states: testStates });
+    testStage = _.omitBy(testStage, (x) => _.isEmpty(x));
+    if (_.some(_.values(testStage), 'length')) {
+        const msgStageName: MsgStageName = 'test';
+        aChildrenByStageName.push({
+            msgStageName,
+            aChildrenByStateName: testStage,
+        });
     }
-    return stageStates;
+    return aChildrenByStageName;
 };
 
 const mkGreenwaveStateReq = (
-    req: GreenwaveRequirementType,
-    decision: GreenwaveDecisionReplyType,
-): StateGreenwaveType => {
-    const state: StateGreenwaveType = {
+    req: GreenwaveRequirement,
+    decision: GreenwaveDecisionReply,
+): AChildGreenwave => {
+    const state: AChildGreenwave = {
         testcase: req.testcase,
         requirement: req,
     };
@@ -240,58 +271,40 @@ const mkGreenwaveStateReq = (
 };
 
 const mkGreenwaveStageStates = (
-    decision: GreenwaveDecisionReplyType,
-): {
-    /* stage is always `greenwave` */
-    stage: StageNameType;
-    states: StatesByCategoryType;
-} => {
-    const states: StatesByCategoryType = {};
+    decision: GreenwaveDecisionReply,
+): AChildrenByStageName => {
+    const aChildrenByStateName: AChildrenByStateName = {};
     const reqStatesGreenwave = mkReqStatesGreenwave(decision);
     const resultStatesGreenwave = mkResultStatesGreenwave(decision);
-    _.assign(states, reqStatesGreenwave, resultStatesGreenwave);
-    return { stage: 'greenwave', states };
+    _.assign(aChildrenByStateName, reqStatesGreenwave, resultStatesGreenwave);
+    /* stage is always `greenwave` */
+    return { msgStageName: 'greenwave', aChildrenByStateName };
 };
 
-function printify(obj: any) {
-    var cache: any[] = [];
-    function circular_ok(key: string, value: any) {
-        if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
-                return;
-            }
-            cache.push(value);
-        }
-        return value;
-    }
-    var answer = JSON.stringify(obj, circular_ok);
-    return JSON.parse(answer);
-}
-
-const mkReqStatesGreenwave = (
-    decision: GreenwaveDecisionReplyType,
-): StatesByCategoryType => {
+export const mkReqStatesGreenwave = (
+    decision: GreenwaveDecisionReply,
+): AChildrenByStateName => {
     const { satisfied_requirements, unsatisfied_requirements } = decision;
-    const requirements: GreenwaveRequirementType[] = _.concat(
+    const requirements: GreenwaveRequirement[] = _.concat(
         satisfied_requirements,
         unsatisfied_requirements,
     );
     /* {'test-result-passed' : [GreenwaveRequirementType], 'fetched-gating-yaml' : ... } */
     const requirementsByType = _.groupBy(requirements, 'type');
     /* {'test-result-passed' : [StateGreenWaveType], 'fetched-gating-yaml' : ... } */
-    const statesByReqType: StatesByCategoryType = {};
+    const statesByReqType: AChildrenByStateName = {};
     _.forOwn(
         requirementsByType,
         (
-            reqsByType: GreenwaveRequirementType[],
+            reqsByType: GreenwaveRequirement[],
             reqType /* GreenwaveRequirementTypesType */,
         ) => {
             /* [r1,r2,r3] => [{req:r1}, {req:r2}, {req:r3}] */
-            const greenwaveStates: StateGreenwaveType[] = _.map(
+            const greenwaveStates: AChildGreenwave[] = _.map(
                 reqsByType,
                 (req) => mkGreenwaveStateReq(req, decision),
             );
-            statesByReqType[reqType as GreenwaveRequirementTypesType] =
+            statesByReqType[reqType as GreenwaveRequirementTypes] =
                 greenwaveStates;
         },
     );
@@ -299,22 +312,22 @@ const mkReqStatesGreenwave = (
 };
 
 const mkResultStatesGreenwave = (
-    decision: GreenwaveDecisionReplyType,
-): StatesByCategoryType => {
+    decision: GreenwaveDecisionReply,
+): AChildrenByStateName => {
     const { satisfied_requirements, unsatisfied_requirements, results } =
         decision;
-    const requirements: GreenwaveRequirementType[] = _.concat(
+    const requirements: GreenwaveRequirement[] = _.concat(
         satisfied_requirements,
         unsatisfied_requirements,
     );
-    const resultsToShow: GreenwaveResultType[] = _.filter(
+    const resultsToShow: GreenwaveResult[] = _.filter(
         results,
         (result) =>
             !requirements.some((req) => result.testcase.name === req.testcase),
     );
-    const resultStates: StateGreenwaveType[] = _.map(
+    const resultStates: AChildGreenwave[] = _.map(
         resultsToShow,
-        (res): StateGreenwaveType => ({
+        (res): AChildGreenwave => ({
             testcase: res.testcase.name,
             result: res,
         }),
@@ -330,60 +343,57 @@ stage_states_array is the second form:
     ]
 */
 const mkStageStatesArray = (
-    stageStates: Array<{
-        stage: StageNameType;
-        states: StatesByCategoryType;
-    }>,
-): StageNameStateNameStatesType[] => {
-    const stageStatesArray: StageNameStateNameStatesType[] = [];
-    for (const { stage, states } of stageStates) {
-        for (const [stateName, statesList] of _.toPairs(states)) {
+    stageStates: Array<AChildrenByStageName>,
+): StageStateAChildren[] => {
+    const stageStatesArray: StageStateAChildren[] = [];
+    for (const { msgStageName, aChildrenByStateName } of stageStates) {
+        for (const [stateName, aChildren] of _.toPairs(aChildrenByStateName)) {
             /** _.toPairs(obj) ===> [pair1, pair2, pair3] where pair == [key, value] */
             stageStatesArray.push([
-                stage,
-                stateName as StateExtendedNameType,
-                statesList,
+                msgStageName,
+                stateName as MsgStateName,
+                aChildren,
             ]);
         }
     }
     return stageStatesArray;
 };
 
-const mergeKaiAndGreenwaveState = (
-    stageStatesArray: StageNameStateNameStatesType[],
+const mergeTestMsgAndGreenwaveAChild = (
+    stageStatesArray: StageStateAChildren[],
 ): void => {
     /**
-     * Add Kai state to Greenwave state if both apply:
-     * 1) greenwaveState.result.outcome == Kai extended state
-     * 2) greenwaveState.result.ref_url == Kai message run.url
+     * Add testMsgAChild state to Greenwave state if both apply:
+     * 1) greenwaveState.result.outcome == testMsgAChild extended state
+     * 2) greenwaveState.result.ref_url == testMsgAChild message run.url
      */
     const greenwaveStageStates = filterByStageName(
         'greenwave',
         stageStatesArray,
     );
-    const kaiStageStates = filterByStageName('test', stageStatesArray);
-    _.forEach(greenwaveStageStates, ([_stageName, _stateName, states]) => {
-        _.forEach(states as StateGreenwaveType[], (greenwaveState, index) => {
+    const testMsgStageStates = filterByStageName('test', stageStatesArray);
+    _.forEach(greenwaveStageStates, ([_stageName, _stateName, children]) => {
+        _.forEach(children as AChildGreenwave[], (greenwaveState, index) => {
             const outcome = greenwaveState.result?.outcome;
             const refUrl = greenwaveState.result?.ref_url;
             const msgId = greenwaveState.result?.data.msg_id?.[0];
             if (_.isNil(outcome) || _.isNil(refUrl)) {
                 return;
             }
-            const kaiState = getKaiState(
-                kaiStageStates,
-                _.toLower(outcome) as StateExtendedNameType,
+            const testMsgAChild = getTestMsgAChild(
+                testMsgStageStates,
+                _.toLower(outcome) as TestMsgStateName,
                 refUrl,
                 msgId,
             );
-            if (_.isNil(kaiState)) {
+            if (_.isNil(testMsgAChild)) {
                 return;
             }
-            const newState: StateGreenwaveKaiType = {
+            const newState: AChildGreenwaveAndTestMsg = {
                 gs: greenwaveState,
-                ks: kaiState,
+                ms: testMsgAChild,
             };
-            states[index] = newState;
+            children[index] = newState;
         });
     });
 };
@@ -392,29 +402,29 @@ const mergeKaiAndGreenwaveState = (
  * Remove states from `test` stage that also appear in the `greenwave` stage.
  */
 const minimizeStagesStates = (
-    stageStatesArray: StageNameStateNameStatesType[],
+    stageStatesArray: StageStateAChildren[],
 ): void => {
     const greenwave = filterByStageName('greenwave', stageStatesArray);
-    // Consolidate all Greenwave and Greenwave+Kai results into a single array.
+    // Consolidate all Greenwave and Greenwave+testMsgAChild results into a single array.
     const greenwaveTestNames: string[] = [];
     _.forEach(greenwave, ([_stageName, _stateName, states]) =>
         _.forEach(states, (state) => {
-            if (isGreenwaveState(state)) {
+            if (isAChildGreenwave(state)) {
                 greenwaveTestNames.push(state.testcase);
             }
-            if (isGreenwaveKaiState(state)) {
+            if (isAChildGreenwaveAndTestMsg(state)) {
                 greenwaveTestNames.push(state.gs.testcase);
             }
         }),
     );
-    // Remove Kai results that appear in the above array.
+    // Remove testMsgAChild results that appear in the above array.
     const test = filterByStageName('test', stageStatesArray);
-    _.forEach(test, ([_stageName, _stateName, states]) => {
-        _.remove(states, (state) => {
-            if (!isKaiState(state)) {
+    _.forEach(test, ([_stageName, _stateName, children]) => {
+        _.remove(children, (child) => {
+            if (!isAChildTestMsg(child)) {
                 return false;
             }
-            const testCaseName = getTestcaseName(state);
+            const testCaseName = getTestcaseName(child);
             return _.includes(greenwaveTestNames, testCaseName);
         });
     });
@@ -424,33 +434,8 @@ const minimizeStagesStates = (
     );
 };
 
-const getTestCompleteResult = (
-    state: StateKaiType,
-    reqStage: StageNameType,
-    reqState: StateNameType,
-): string | undefined => {
-    if (
-        state.kai_state.stage !== reqStage ||
-        state.kai_state.state !== reqState
-    ) {
-        return undefined;
-    }
-    let testResult: string | undefined;
-    if (MSG_V_0_1.isMsg(state.broker_msg_body)) {
-        const broker_msg =
-            state.broker_msg_body as MSG_V_0_1.MsgRPMBuildTestComplete;
-        testResult = broker_msg.status;
-    }
-    if (MSG_V_1.isMsg(state.broker_msg_body)) {
-        const broker_msg =
-            state.broker_msg_body as MSG_V_1.MsgRPMBuildTestComplete;
-        testResult = broker_msg.test.result;
-    }
-    return testResult;
-};
-
 /**
- * Transforms state provided by kai to expected states in UI.
+ * Transforms msgAChild to expected states in UI.
  *
  * For test events in the complete state is split between passed and failed.
  *
@@ -460,134 +445,180 @@ const getTestCompleteResult = (
  * From: [ state1, state2, state3, ...]
  * To:   { error: [], queued: [], running: [], failed: [], info: [], passed: [] }
  */
-export const transformKaiStates = (
-    states: StateKaiType[],
-    stage: StageNameType,
-): StatesByCategoryType => {
-    const states_by_category: StatesByCategoryType = {};
-    /** statesNames: ['running', 'complete'] */
-    const statesNames: StateNameType[] = _.intersection<StateNameType>(
-        _.map(
-            states,
-            _.flow(_.identity, _.partialRight(_.get, 'kai_state.state')),
-        ),
-        KnownKaiStates,
+export const aChildrenByStateName = (
+    aChildren: AChildMsg[],
+    msgStageName: MsgStageName,
+): AChildrenByStateName => {
+    const aChildrenByState: AChildrenByStateName = {};
+    /** statesNames: ['running', 'complete', .... ] */
+    const presentStates = _.map(aChildren, (aChild) => {
+        if (!isAChildSchemaMsg(aChild)) {
+            return;
+        }
+        return getMsgStateName(aChild);
+    });
+    const statesNames: StateName[] = _.intersection<StateName>(
+        _.compact(presentStates),
+        KnownMsgStates,
     );
-    _.forEach(statesNames, (state_name) => {
+    _.forEach(statesNames, (msgStateName) => {
         /**
          * For complete test states, count failed, passed and other events
          */
         /**
          * complete tests to extended: [passed, failed, info, needs_inspection, not_applicable]
          */
-        if (state_name === 'complete' && stage === 'test') {
+        if (msgStateName === 'complete' && msgStageName === 'test') {
             /**
              * pass tests
              */
-            const category_passed = _.filter(states, (state: StateKaiType) => {
-                const testResult = getTestCompleteResult(
-                    state,
-                    stage,
-                    state_name,
+            const aChildrenPassed = _.filter(aChildren, (aChild) => {
+                if (!isAChildTestMsg(aChild)) {
+                    return false;
+                }
+                const testResult = getTestMsgCompleteResult(
+                    aChild,
+                    msgStageName,
+                    msgStateName,
                 );
                 return _.includes(['PASS', 'PASSED'], _.toUpper(testResult));
             });
-            if (!_.isEmpty(category_passed)) {
-                states_by_category.passed = category_passed;
+            if (!_.isEmpty(aChildrenPassed)) {
+                aChildrenByState['passed'] = aChildrenPassed;
             }
             /**
              * failed tests
              */
-            const category_failed = _.filter(states, (state: StateKaiType) => {
-                const testResult = getTestCompleteResult(
-                    state,
-                    stage,
-                    state_name,
+            const aChildrenFailed = _.filter(aChildren, (aChild) => {
+                if (!isAChildTestMsg(aChild)) {
+                    return false;
+                }
+                const testResult = getTestMsgCompleteResult(
+                    aChild,
+                    msgStageName,
+                    msgStateName,
                 );
                 return _.includes(['FAIL', 'FAILED'], _.toUpper(testResult));
             });
-            if (!_.isEmpty(category_failed)) {
-                states_by_category.failed = category_failed;
+            if (!_.isEmpty(aChildrenFailed)) {
+                aChildrenByState['failed'] = aChildrenFailed;
             }
             /**
              * info tests
              */
-            const category_info = _.filter(states, (state: StateKaiType) => {
-                const testResult = getTestCompleteResult(
-                    state,
-                    stage,
-                    state_name,
+            const aChildrenInfo = _.filter(aChildren, (aChild) => {
+                if (!isAChildTestMsg(aChild)) {
+                    return false;
+                }
+                const testResult = getTestMsgCompleteResult(
+                    aChild,
+                    msgStageName,
+                    msgStateName,
                 );
                 return _.isEqual('INFO', _.toUpper(testResult));
             });
-            if (!_.isEmpty(category_info)) {
-                states_by_category.info = category_info;
+            if (!_.isEmpty(aChildrenInfo)) {
+                aChildrenByState['info'] = aChildrenInfo;
             }
             /**
              * needs_inspection tests
              */
-            const category_needs_inspections = _.filter(
-                states,
-                (state: StateKaiType) => {
-                    const testResult = getTestCompleteResult(
-                        state,
-                        stage,
-                        state_name,
-                    );
-                    return _.isEqual('NEEDS_INSPECTION', _.toUpper(testResult));
-                },
-            );
-            if (!_.isEmpty(category_needs_inspections)) {
-                states_by_category.needs_inspection =
-                    category_needs_inspections;
+            const aChildrenNeedsInspection = _.filter(aChildren, (aChild) => {
+                if (!isAChildTestMsg(aChild)) {
+                    return false;
+                }
+                const testResult = getTestMsgCompleteResult(
+                    aChild,
+                    msgStageName,
+                    msgStateName,
+                );
+                return _.isEqual('NEEDS_INSPECTION', _.toUpper(testResult));
+            });
+            if (!_.isEmpty(aChildrenNeedsInspection)) {
+                aChildrenByState['needs_inspection'] = aChildrenNeedsInspection;
             }
             /**
              * not_applicable tests
              */
-            const category_not_applicable = _.filter(
-                states,
-                (state: StateKaiType) => {
-                    const testResult = getTestCompleteResult(
-                        state,
-                        stage,
-                        state_name,
+            const aChildrenNotApplicable = _.filter(
+                aChildren,
+                (aChild: AChildTestMsg) => {
+                    const testResult = getTestMsgCompleteResult(
+                        aChild,
+                        msgStageName,
+                        msgStateName,
                     );
                     return _.isEqual('NOT_APPLICABLE', _.toUpper(testResult));
                 },
             );
-            if (!_.isEmpty(category_not_applicable)) {
-                states_by_category.not_applicable = category_not_applicable;
+            if (!_.isEmpty(aChildrenNotApplicable)) {
+                aChildrenByState['not_applicable'] = aChildrenNeedsInspection;
             }
-        } else if (state_name === 'error' && stage === 'build') {
-            const category_failed = _.filter(states, (state: StateKaiType) => {
+        } else if (msgStateName === 'error' && msgStageName === 'build') {
+            const aChilrenBuildsFailed = _.filter(aChildren, (aChild) => {
+                if (!isAChildSchemaMsg(aChild)) {
+                    return false;
+                }
+                const aChildMsgStage = getMsgStageName(aChild);
+                const aChildMsgState = getMsgStateName(aChild);
                 if (
-                    state.kai_state.stage === stage &&
-                    state.kai_state.state === state_name
+                    aChildMsgStage === msgStageName &&
+                    aChildMsgState === msgStateName
                 ) {
                     return true;
                 }
                 return false;
             });
-            if (!_.isEmpty(category_failed)) {
-                states_by_category.failed = category_failed;
+            if (!_.isEmpty(aChilrenBuildsFailed)) {
+                aChildrenByState['failed'] = aChilrenBuildsFailed;
             }
         } else {
             /** other categories for asked stage */
-            const category_other = _.filter(states, (state: StateKaiType) => {
-                const kai_state = state.kai_state;
+            const aChildrenOther = _.filter(aChildren, (aChild) => {
+                if (!isAChildSchemaMsg(aChild)) {
+                    return false;
+                }
+                const aChildMsgStage = getMsgStageName(aChild);
+                const aChildMsgState = getMsgStateName(aChild);
                 if (
-                    kai_state.stage === stage &&
-                    kai_state.state === state_name
+                    aChildMsgStage === msgStageName &&
+                    aChildMsgState === msgStateName
                 ) {
                     return true;
                 }
                 return false;
             });
-            if (!_.isEmpty(category_other)) {
-                states_by_category[state_name] = category_other;
+            if (!_.isEmpty(aChildrenOther)) {
+                aChildrenByState[msgStateName] = aChildrenOther;
             }
         }
     });
 
-    return states_by_category;
+    return aChildrenByState;
+};
+
+const getTestMsgCompleteResult = (
+    aChild: AChildTestMsg,
+    reqStage: MsgStageName,
+    reqState: MsgStateName,
+): string | undefined => {
+    if (!isAChildSchemaMsg(aChild)) {
+        return;
+    }
+    const aChildMsgStage = getMsgStageName(aChild);
+    const aChildMsgState = getMsgStateName(aChild);
+    if (aChildMsgStage !== reqStage || aChildMsgState !== reqState) {
+        return;
+    }
+    let testResult: string | undefined;
+    const msgBody = getMsgBody(aChild) as BrokerSchemaMsgBody;
+    if (MSG_V_0_1.isMsg(msgBody)) {
+        const msgBody_ = msgBody as MSG_V_0_1.MsgRPMBuildTestComplete;
+        testResult = msgBody_.status;
+    }
+    if (MSG_V_1.isMsg(msgBody)) {
+        const msgBody_ = msgBody as MSG_V_1.MsgRPMBuildTestComplete;
+        testResult = msgBody_.test.result;
+    }
+    return testResult;
 };

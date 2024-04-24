@@ -25,7 +25,6 @@ import { ComponentType, useEffect, useState } from 'react';
 import {
     Flex,
     Label,
-    Title,
     Button,
     Spinner,
     Bullseye,
@@ -35,18 +34,25 @@ import {
     EmptyStateBody,
     EmptyStateIcon,
     EmptyStateVariant,
+    EmptyStateHeader,
 } from '@patternfly/react-core';
-import ReactTable, {
-    Table,
+import {
     sortable,
     cellWidth,
-    TableBody,
     Visibility,
     classNames as rtClassNames,
-    TableHeader,
     TableVariant,
     SortByDirection,
+    ICell,
+    IRow,
+    ISortBy,
+    OnSort,
 } from '@patternfly/react-table';
+import {
+    Table,
+    TableBody,
+    TableHeader,
+} from '@patternfly/react-table/deprecated';
 import classNames from 'classnames';
 import { ApolloError } from '@apollo/client';
 import { global_danger_color_200 } from '@patternfly/react-tokens';
@@ -68,7 +74,7 @@ interface EmptyStateParam {
     title: string;
 }
 
-const columns: ReactTable.ICell[] = [
+const columns: ICell[] = [
     {
         /* 0 */
         title: 'NVR',
@@ -121,7 +127,7 @@ const columns: ReactTable.ICell[] = [
     },
 ];
 
-function makeRow(row: SSTResult): ReactTable.IRow[] {
+function makeRow(row: SSTResult): IRow[] {
     const cells = [];
     cells.push({
         sortKey: row.nvr,
@@ -295,7 +301,7 @@ function makeEmptyStateRow({
     icon,
     icon_color,
     title,
-}: EmptyStateParam): ReactTable.IRow {
+}: EmptyStateParam): IRow {
     return {
         heightAuto: true,
         cells: [
@@ -303,11 +309,17 @@ function makeEmptyStateRow({
                 props: { colSpan: 11 },
                 title: (
                     <Bullseye>
-                        <EmptyState variant={EmptyStateVariant.small}>
-                            <EmptyStateIcon icon={icon} color={icon_color} />
-                            <Title headingLevel="h2" size="lg">
-                                {title}
-                            </Title>
+                        <EmptyState variant={EmptyStateVariant.sm}>
+                            <EmptyStateHeader
+                                titleText={<>{title}</>}
+                                icon={
+                                    <EmptyStateIcon
+                                        icon={icon}
+                                        color={icon_color}
+                                    />
+                                }
+                                headingLevel="h2"
+                            />
                             <EmptyStateBody>{body}</EmptyStateBody>
                         </EmptyState>
                     </Bullseye>
@@ -325,8 +337,8 @@ interface ResultsTableProps {
 
 export function ResultsTable(props: ResultsTableProps) {
     const { error, loading, results } = props;
-    const [rows, setRows] = useState<ReactTable.IRow[]>([]);
-    const [sortBy, setSortBy] = useState<ReactTable.ISortBy>({});
+    const [rows, setRows] = useState<IRow[]>([]);
+    const [sortBy, setSortBy] = useState<ISortBy>({});
 
     /** `columns` is global var, need to reset before previous render */
     /** https://issues.redhat.com/browse/OSCI-3214 */
@@ -356,7 +368,7 @@ export function ResultsTable(props: ResultsTableProps) {
         }
     }, [error, loading, results]);
 
-    const onSort: ReactTable.OnSort = (_event, index, direction) => {
+    const onSort: OnSort = (_event, index, direction) => {
         const sortedRows = rows.sort((a, b) =>
             a[index].sortKey < b[index].sortKey
                 ? -1

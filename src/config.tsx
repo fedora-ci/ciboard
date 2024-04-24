@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022, 2024 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { getOSVersionFromNvr } from './utils/artifactUtils';
-import { ArtifactType } from './artifact';
+import { getOSVersionFromNvr } from './utils/utils';
+import { ArtifactType } from './types';
 
 /**
  * CI Dashboard global configuration.
@@ -60,7 +60,7 @@ export const config = {
             webUrl: 'https://release-engineering.github.io/mbs-ui/',
         },
         rh: {
-            webUrl: 'https://mbsweb.engineering.redhat.com/',
+            webUrl: 'https://mbsweb.engineering.redhat.com/mbs-ui/',
         },
     },
     waiverdb: {

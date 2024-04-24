@@ -20,7 +20,6 @@
  */
 
 import _ from 'lodash';
-import * as React from 'react';
 import { useQuery } from '@apollo/client';
 import { Link, Route, Routes, useParams } from 'react-router-dom';
 import {
@@ -200,7 +199,7 @@ function PageSSTInternal() {
                                     <Text>
                                         <Spinner
                                             size="md"
-                                            className="pf-u-mr-sm"
+                                            className="pf-v5-u-mr-sm"
                                         />
                                         Loading SST list…
                                     </Text>

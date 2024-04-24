@@ -19,15 +19,15 @@
  */
 
 import { gql } from '@apollo/client';
-import { ErrataLinkedAdvisory } from '../artifact';
+import { ErrataLinkedAdvisory } from '../types';
 
 export interface ErrataLinkedAdvisoriesReply {
-    teiid_et_linked_advisories: ErrataLinkedAdvisory[];
+    teiidEtLinkedAdvisories: ErrataLinkedAdvisory[];
 }
 
 export const LinkedErrataAdvisories = gql`
     query LinkedAdvisoriesQuery($nvrs: [String]!) {
-        teiid_et_linked_advisories(nvrs: $nvrs) {
+        teiidEtLinkedAdvisories(nvrs: $nvrs) {
             build_nvr
             build_id
             advisory_id

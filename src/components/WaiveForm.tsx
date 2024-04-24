@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2022, 2023, 2024 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,27 +22,29 @@ import _ from 'lodash';
 import * as React from 'react';
 import { useState } from 'react';
 import {
-    ActionGroup,
-    Alert,
-    Button,
-    Checkbox,
-    Form,
-    FormGroup,
-    FormGroupProps,
-    Modal,
     Text,
+    Form,
+    Alert,
+    Modal,
+    Button,
     TextArea,
+    Checkbox,
+    FormGroup,
+    HelperText,
     TextContent,
+    ActionGroup,
     TextVariants,
+    FormHelperText,
+    HelperTextItem,
 } from '@patternfly/react-core';
 import { ExternalLinkSquareAltIcon } from '@patternfly/react-icons';
-import { useApolloClient, useQuery } from '@apollo/client';
+import { useApolloClient } from '@apollo/client';
 
 import { docs } from '../config';
 import { createWaiver, submitWaiver, resetWaiverReply } from '../actions';
-import { MetadataQuery } from '../queries/Metadata';
-import { MetadataQueryResult } from '../types';
 import { useAppDispatch, useAppSelector } from '../hooks';
+
+type Validate = 'success' | 'warning' | 'error' | 'default';
 
 const WaiveForm: React.FC<{}> = () => {
     const dispatch = useAppDispatch();
@@ -51,8 +53,7 @@ const WaiveForm: React.FC<{}> = () => {
     const [value, setValue] = useState('');
     const [checked, setChecked] = useState(false);
     const [isValid, setIsValid] = useState(false);
-    const [validated, setValidated] =
-        useState<FormGroupProps['validated']>('default');
+    const [validated, setValidated] = useState<Validate>('default');
     const [madeRequest, setMadeRequest] = useState(false);
 
     const handleTextInputChange = (value: string) => {
@@ -64,16 +65,7 @@ const WaiveForm: React.FC<{}> = () => {
         setValidated(validated);
     };
 
-    const waiverFor = waiver.testcase;
-    const {
-        loading: qLoading,
-        error: qError,
-        data: metadata,
-    } = useQuery<MetadataQueryResult>(MetadataQuery, {
-        variables: { testcase_name: waiverFor },
-        errorPolicy: 'all',
-        notifyOnNetworkStatusChange: true,
-    });
+    const waiverFor = waiver.ciTest?.name;
 
     const onClickCancel = () => {
         dispatch(createWaiver(undefined, undefined));
@@ -88,19 +80,16 @@ const WaiveForm: React.FC<{}> = () => {
 
     const invalidText =
         'Reason must have detailed explanation. Provide links to issues, bugs, etc';
-    const helperText = '';
     const agreementLabel = 'I agree and acknowledge the above information';
 
-    const metadataLoaded = !qLoading && !qError && metadata;
-    const metadataAggrementText = metadataLoaded
-        ? metadata?.metadata_consolidated?.payload?.waive_message
-        : '';
-    const agreementText = `Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
+    const metadataAggrementText = waiver.ciTest?.waiveMessage;
+    const agreementText = `You should have active kerberos session. Waiving test results may have an impact on the RHEL release process. Broken builds can lead to broken RHEL 
     composes and unverified or failed builds can cause issues in system integration. Before waiving these tests it is good to check 
     other possible options, in particular some CI-systems can fail due to outages and different circumstances. It is good to restart 
     the test or to contact CI-owners for assistance. Proceed waiving test-result only when other efforts have not succeeded.`;
-    const { testcase, waiveError, timestamp } = waiver;
-    if (_.isNil(testcase)) {
+    const { ciTest, waiveError, timestamp } = waiver;
+    const testcaseName = ciTest?.name;
+    if (_.isNil(testcaseName)) {
         return null;
     }
     return (
@@ -117,43 +106,47 @@ const WaiveForm: React.FC<{}> = () => {
                         {metadataAggrementText || agreementText}
                     </Text>
                 </TextContent>
-                <FormGroup
-                    fieldId="reason"
-                    helperText={helperText}
-                    helperTextInvalid={invalidText}
-                    isRequired
-                    label="Reason"
-                    validated={validated}
-                >
+                <FormGroup label="Reason" fieldId="reason" isRequired>
                     <TextArea
-                        aria-describedby="age-helper"
-                        className="pf-m-resize-vertical"
                         id="reason"
-                        onChange={handleTextInputChange}
-                        validated={validated}
                         value={value}
+                        onChange={(_event, value: string) =>
+                            handleTextInputChange(value)
+                        }
+                        validated={validated}
+                        className="pf-m-resize-vertical"
+                        aria-describedby="age-helper"
                     />
+                    {validated === 'error' && (
+                        <FormHelperText>
+                            <HelperText>
+                                <HelperTextItem variant="error">
+                                    {invalidText}
+                                </HelperTextItem>
+                            </HelperText>
+                        </FormHelperText>
+                    )}
                 </FormGroup>
                 <FormGroup
+                    label="Required agreement"
                     fieldId="rquired-agreement"
                     isRequired
-                    label="Required agreement"
                 >
                     <Checkbox
-                        label={agreementLabel}
                         id="required-check"
                         name="required-check"
-                        onChange={setChecked}
+                        label={agreementLabel}
+                        onChange={(_event, val) => setChecked(val)}
                         isChecked={checked}
                     />
                 </FormGroup>
 
                 <ActionGroup>
                     <Button
-                        isDisabled={!isValid || !checked}
-                        isLoading={madeRequest && !waiveError && !timestamp}
-                        onClick={onClickSubmit}
                         variant="primary"
+                        onClick={onClickSubmit}
+                        isLoading={madeRequest && !waiveError && !timestamp}
+                        isDisabled={!isValid || !checked}
                     >
                         Submit
                     </Button>
@@ -161,24 +154,24 @@ const WaiveForm: React.FC<{}> = () => {
                         Cancel
                     </Button>
                     <Button
-                        className="pf-u-ml-auto"
-                        component="a"
+                        rel="noopener noreferrer"
                         href={docs.waiving}
                         icon={<ExternalLinkSquareAltIcon />}
-                        iconPosition="right"
-                        rel="noopener noreferrer"
                         target="_blank"
                         variant="link"
+                        className="pf-v5-u-ml-auto"
+                        component="a"
+                        iconPosition="right"
                     >
                         Waiving documentation
                     </Button>
                 </ActionGroup>
                 {waiveError && (
                     <Alert
-                        isInline
-                        isPlain
                         title="Could not submit waiver"
+                        isPlain
                         variant="danger"
+                        isInline
                     >
                         {waiveError}
                     </Alert>
@@ -191,8 +184,9 @@ const WaiveForm: React.FC<{}> = () => {
 export const WaiveModal: React.FC<{}> = () => {
     const dispatch = useAppDispatch();
     const waiver = useAppSelector((store) => store.waive);
-    const { artifact, testcase, timestamp } = waiver;
-    const showWaiveForm = artifact && !_.isEmpty(testcase) && !timestamp;
+    const { artifact, ciTest, timestamp } = waiver;
+    const testcaseName = ciTest;
+    const showWaiveForm = artifact && !_.isEmpty(testcaseName) && !timestamp;
     const onClose = () => {
         dispatch(createWaiver(undefined, undefined));
     };

@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2023 Andrei Stepanov <astepano@redhat.com>
  * Copyright (c) 2022 Matěj Grabovský <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
@@ -19,7 +19,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as React from 'react';
 import {
     Chart,
     ChartBar,
@@ -28,7 +27,6 @@ import {
     ChartTooltip,
     getCustomTheme,
     ChartThemeColor,
-    ChartThemeVariant,
 } from '@patternfly/react-charts';
 
 /**
@@ -59,7 +57,6 @@ const colorScale: string[] = [
 
 const chartTheme = getCustomTheme(
     ChartThemeColor.default,
-    ChartThemeVariant.default,
     {
         bar: { colorScale },
         chart: { colorScale },

@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,27 +18,29 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import * as React from 'react';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { css } from '@patternfly/react-styles';
 import { useLazyQuery } from '@apollo/client';
 import {
-    Button,
-    ButtonVariant,
-    Dropdown,
-    DropdownItem,
-    DropdownToggle,
     Nav,
+    Icon,
+    Button,
     NavItem,
     NavList,
     NavProps,
+    ButtonVariant,
+} from '@patternfly/react-core';
+import {
+    Dropdown,
+    DropdownItem,
+    DropdownToggle,
     PageHeader,
     PageHeaderTools,
-    PageHeaderToolsGroup,
     PageHeaderToolsItem,
-} from '@patternfly/react-core';
+    PageHeaderToolsGroup,
+} from '@patternfly/react-core/deprecated';
 import {
     AutomationIcon,
     ExternalLinkSquareAltIcon,
@@ -48,22 +50,19 @@ import accessibleStyles from '@patternfly/react-styles/css/utilities/Accessibili
 import { fetchUser } from '../actions';
 import { menuRoutes } from '../routes';
 import styles from '../custom.module.css';
-import {
-    OnDropdownSelectType,
-    OnDropdownToggleType,
-} from '../utils/artifactsTable';
+import { OnDropdownSelectType } from '../utils/artifactsTable';
 import { AuthzMappingQuery } from '../queries/Authz';
 import { useAppDispatch, useAppSelector } from '../hooks';
 
 const logoProps = {
-    to: '/',
+    href: '/',
     style: {
-        color: 'var(--pf-global--secondary-color--100)',
+        color: 'var(--pf-v5-global--secondary-color--100)',
         textDecoration: 'inherit',
     },
 };
 
-type SelectedItemType = Parameters<Extract<NavProps['onSelect'], Function>>[0];
+type SelectedItemType = Parameters<Extract<NavProps['onSelect'], Function>>[1];
 
 const onLoginClick = () => {
     /**
@@ -78,14 +77,14 @@ const onLoginClick = () => {
 const LoginLink = () => {
     return (
         <Button
-            component="a"
-            href="/login"
             id="default-example-uid-01"
-            aria-label="Log in to CI Dashboard"
+            href="/login"
             icon={<ExternalLinkSquareAltIcon />}
-            iconPosition="right"
             onClick={onLoginClick}
             variant={ButtonVariant.link}
+            component="a"
+            aria-label="Log in to CI Dashboard"
+            iconPosition="right"
         >
             Login
         </Button>
@@ -112,9 +111,7 @@ const HeaderToolbar = () => {
     useEffect(() => {
         dispatch(fetchUser());
     }, [dispatch]);
-    const onDropdownToggle: OnDropdownToggleType = (
-        isDropdownOpen: boolean,
-    ) => {
+    const onDropdownToggle = (isDropdownOpen: boolean) => {
         setDropDownOpen(isDropdownOpen);
     };
     const onDropdownSelect: OnDropdownSelectType = (event) => {
@@ -132,7 +129,11 @@ const HeaderToolbar = () => {
                         onSelect={onDropdownSelect}
                         isOpen={isDropdownOpen}
                         toggle={
-                            <DropdownToggle onToggle={onDropdownToggle}>
+                            <DropdownToggle
+                                onToggle={(_event, isDropdownOpen: boolean) =>
+                                    onDropdownToggle(isDropdownOpen)
+                                }
+                            >
                                 {auth.displayName}
                             </DropdownToggle>
                         }
@@ -159,7 +160,7 @@ const HeaderToolbar = () => {
 };
 
 interface AuthzMapping {
-    authz_mapping: {
+    authzMapping: {
         can_edit_metadata: boolean;
     };
 }
@@ -209,9 +210,9 @@ export const DashboardPageHeader = () => {
         });
     const PageNav = (
         <Nav
-            className={styles['pageHeaderNav']}
             variant="horizontal"
-            onSelect={onNavSelect}
+            onSelect={(_event, result: SelectedItemType) => onNavSelect(result)}
+            className={styles['pageHeaderNav']}
             aria-label="Nav"
         >
             <NavList>{menuElements}</NavList>
@@ -222,11 +223,13 @@ export const DashboardPageHeader = () => {
             headerTools={<HeaderToolbar />}
             logo={
                 <>
-                    <AutomationIcon size="lg" className="pf-u-mr-sm" /> CI
-                    Dashboard
+                    <Icon size="lg">
+                        <AutomationIcon className="pf-v5-u-mr-sm" />
+                    </Icon>
+                    CI Dashboard
                 </>
             }
-            logoComponent={Link}
+            logoComponent="a"
             logoProps={logoProps}
             topNav={PageNav}
         />

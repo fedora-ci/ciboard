@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,73 +18,71 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import React, { MouseEventHandler } from 'react';
-import {
-    Text,
-    Button,
-    Toolbar,
-    Spinner,
-    TextContent,
-    ToolbarItem,
-    ToolbarGroup,
-    ToolbarContent,
-} from '@patternfly/react-core';
-import { AngleLeftIcon, AngleRightIcon } from '@patternfly/react-icons';
+import { useApolloClient } from '@apollo/client';
+import { Flex, FlexItem, Pagination } from '@patternfly/react-core';
 
-export interface PaginationToolbarProps {
-    isLoading?: boolean;
-    currentPage: number;
-    onClickLoadPrev: MouseEventHandler;
-    onClickLoadNext: MouseEventHandler;
-    loadPrevIsDisabled: boolean;
-    loadNextIsDisabled: boolean;
-}
+import { useAppSelector, useAppDispatch } from '../hooks';
+import { actLoad, actPage, actPaginationSize } from './../actions';
 
-export function PaginationToolbar(props: PaginationToolbarProps) {
-    const {
-        isLoading,
-        currentPage,
-        onClickLoadPrev,
-        onClickLoadNext,
-        loadPrevIsDisabled,
-        loadNextIsDisabled,
-    } = props;
+export interface PaginationToolbarProps {}
+export function PaginationToolbar(_props: PaginationToolbarProps) {
+    const dispatch = useAppDispatch();
+    const client = useApolloClient();
+    const artifacts = useAppSelector((state) => state.artifacts);
+    const queryState = useAppSelector((state) => state.artifactsQuery);
+    const { totalHits } = artifacts;
+    const artifactsQuery = useAppSelector(
+        (state) => state.artifactsCurrentQuery,
+    );
+    const { paginationSize } = artifactsQuery;
+    const currentPage = artifactsQuery.page;
+
+    const onSetPage = (
+        _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+        newPage: number,
+    ) => {
+        dispatch(actPage(newPage));
+        dispatch(actLoad(client));
+    };
+
+    const onPageSizeSelect = (
+        _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+        newPerPage: number,
+        newPage: number,
+    ) => {
+        dispatch(actPaginationSize(newPerPage));
+        dispatch(actPage(newPage));
+        dispatch(actLoad(client));
+    };
+
     return (
-        <Toolbar style={{ background: 'inherit' }} id="toolbar-top">
-            <ToolbarContent>
-                <ToolbarGroup alignment={{ default: 'alignRight' }}>
-                    <ToolbarItem style={{ minWidth: '30px' }}>
-                        {isLoading && (
-                            <>
-                                Loading <Spinner size="md" />
-                            </>
-                        )}
-                    </ToolbarItem>
-                    <ToolbarItem>
-                        <Button
-                            variant="tertiary"
-                            onClick={onClickLoadPrev}
-                            isDisabled={loadPrevIsDisabled}
+        <Pagination
+            isSticky
+            page={currentPage}
+            ouiaId="PaginationTop"
+            perPage={paginationSize}
+            widgetId="pagination menu bar"
+            itemCount={totalHits}
+            onSetPage={onSetPage}
+            onPerPageSelect={onPageSizeSelect}
+        >
+            {totalHits && (
+                <Flex style={{ order: -1, flexGrow: 1 }}>
+                    <Flex>
+                        <FlexItem style={{ fontFamily: 'RedHatText' }}>
+                            Search results for:
+                        </FlexItem>
+                        <FlexItem
+                            style={{
+                                fontWeight:
+                                    'var(--pf-v5-global--FontWeight--bold)',
+                            }}
                         >
-                            <AngleLeftIcon />
-                        </Button>
-                    </ToolbarItem>
-                    <ToolbarItem>
-                        <TextContent>
-                            <Text>{currentPage}</Text>
-                        </TextContent>
-                    </ToolbarItem>
-                    <ToolbarItem>
-                        <Button
-                            variant="tertiary"
-                            onClick={onClickLoadNext}
-                            isDisabled={loadNextIsDisabled}
-                        >
-                            <AngleRightIcon />
-                        </Button>
-                    </ToolbarItem>
-                </ToolbarGroup>
-            </ToolbarContent>
-        </Toolbar>
+                            {queryState.queryString || 'all'}
+                        </FlexItem>
+                    </Flex>
+                </Flex>
+            )}
+        </Pagination>
     );
 }

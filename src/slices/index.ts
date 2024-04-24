@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2024 Andrei Stepanov <astepano@redhat.com>
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
@@ -21,18 +21,24 @@
 
 import { combineReducers } from 'redux';
 
-import { alertsReducer } from './alertsSlice';
 import { authReducer } from './authSlice';
-import { filtersReducer } from './filtersSlice';
-import { gatingTestsFormReducer } from './gatingTestsFormSlice';
 import { waiveReducer } from './waiveSlice';
+import { alertsReducer } from './alertsSlice';
+import { artifactsReducer } from './artifactsSlice';
+import {
+    artifactsQueryReducer,
+    artifactsQueryCurrentReducer,
+} from './artifactsQuerySlice';
+import { gatingTestsFormReducer } from './gatingTestsFormSlice';
 
 export const rootReducer = combineReducers({
-    alerts: alertsReducer,
     auth: authReducer,
-    filters: filtersReducer,
-    gatingTestsForm: gatingTestsFormReducer,
     waive: waiveReducer,
+    alerts: alertsReducer,
+    artifacts: artifactsReducer,
+    artifactsQuery: artifactsQueryReducer,
+    gatingTestsForm: gatingTestsFormReducer,
+    artifactsCurrentQuery: artifactsQueryCurrentReducer,
 });
 
 export type RootStateType = ReturnType<typeof rootReducer>;

@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2024 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import { AlertVariant } from '@patternfly/react-core';
-import { Artifact, StateType } from '../artifact';
 import React from 'react';
+import { AlertVariant } from '@patternfly/react-core';
+
+import { Artifact } from '../types';
+import { CiTest } from '../components/PageDetails/types';
 
 export const SST_PAGE = 'SST_PAGE';
 export const SST_MENU = 'SUBMIT_MENU';
@@ -38,12 +40,18 @@ export const ARTIFACTS_LOADING = 'ARTIFACTS_LOADING';
  * States
  */
 
-export interface IStateFilters {
-    type: string;
-    active: string[];
-    options: {
-        skipScratch: boolean;
-    };
+export interface IStateArtifactsQuery {
+    sortBy: string | undefined;
+    artTypes: string[] | undefined;
+    newerThen: string | undefined;
+    doDeepSearch: boolean;
+    isExtendedQs: boolean;
+    queryString: string | undefined;
+    paginationSize: number;
+}
+
+export interface IStateArtifactsCurrentQuery extends IStateArtifactsQuery {
+    page: number;
 }
 
 export interface IStateAlerts {
@@ -55,16 +63,16 @@ export interface IStateAlerts {
 }
 
 export interface IStateWaiver {
-    artifact?: Artifact;
     reason: string;
-    testcase?: string;
+    artifact?: Artifact;
+    ciTest?: CiTest;
     timestamp?: number;
     waiveError: string;
 }
 
 export interface IStateAuth {
-    displayName: string;
     nameID: string;
+    displayName: string;
 }
 
 /*
@@ -81,19 +89,6 @@ export interface PopAlertPayload {
     key: number;
 }
 
-export interface AddFilterPayload {
-    newval: string;
-    type: string;
-}
-
-export interface DeleteFilterPayload {
-    delval: string;
-}
-
-export interface SetOptionsForFiltersPayload {
-    skipScratch: boolean;
-}
-
 export interface GASetSearchOptionsPayload {
     gateTag?: string;
     packager?: string;
@@ -106,16 +101,16 @@ export interface GASetSearchOptionsPayload {
 
 export interface CreateWaiverPayload {
     artifact: Artifact | undefined;
-    testcase: string | undefined;
+    ciTest: CiTest | undefined;
 }
 
 export interface SubmitWaiverPayload {
+    reason: string;
     /* Cannot send waiver */
     waiveError: string;
-    reason: string;
 }
 
 export interface FetchUserPayload {
-    displayName: string;
     nameID: string;
+    displayName: string;
 }

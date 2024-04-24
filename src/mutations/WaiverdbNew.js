@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2024 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@ export default gql`
         $product_version: String!
         $comment: String!
     ) {
-        waiver_db_new(
+        waiverNew(
             subject_type: $subject_type
             subject_identifier: $subject_identifier
             testcase: $testcase
