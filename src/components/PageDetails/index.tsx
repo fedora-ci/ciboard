@@ -221,7 +221,6 @@ export function PageDetails(_props: {}) {
     const queryVars = {
         artTypes,
         queryString,
-        isExtendedQs: true,
     };
     const queryOptions: QueryHookOptions = {
         variables: queryVars,
