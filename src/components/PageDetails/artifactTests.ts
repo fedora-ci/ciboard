@@ -19,7 +19,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import { CiContact, CiTest, TestStatus } from './types';
 import {
@@ -31,12 +31,12 @@ import {
     getDocsUrl,
     getRerunUrl,
     ChildTestMsg,
-    ArtifactChild,
     isChildTestMsg,
     getTestMsgBody,
     MetadataContact,
     getTestcaseName,
     isGreenwaveChild,
+    TestMsgStateName,
     MetadataDependency,
     GreenwaveWaiveType,
     isGreenwaveAndTestMsg,
@@ -46,7 +46,7 @@ import {
 import { getMessageError, isResultWaivable } from '../../utils/utils';
 import { mkStagesAndStates } from '../../utils/stages_states';
 
-function transformUmbStatus(stateName: StateName): TestStatus {
+function transformUmbStatus(stateName: TestMsgStateName): TestStatus {
     if (
         ['error', 'test-result-errored', 'test-result-errored-waived'].includes(
             stateName,
@@ -125,7 +125,7 @@ function extractContactFromUmb(test: ChildTestMsg): CiContact | undefined {
     };
 }
 
-function extractContact(test: ArtifactChild): CiContact {
+function extractContact(test: ChildTestMsg): CiContact {
     let contact: CiContact = {};
     let metadataContact: MetadataContact | undefined;
 
@@ -171,7 +171,7 @@ function extractContact(test: ArtifactChild): CiContact {
     return contact;
 }
 
-function transformTest(test: ArtifactChild, stateName: StateName): CiTest {
+function transformTest(test: ChildTestMsg, stateName: StateName): CiTest {
     const contact = extractContact(test);
     let dependencies: MetadataDependency[] | undefined;
     let description: string | undefined;
@@ -201,16 +201,13 @@ function transformTest(test: ArtifactChild, stateName: StateName): CiTest {
         messageId = getMsgId(test);
         runDetailsUrl = testMsg.run.url;
     } else if (isGreenwaveAndTestMsg(test)) {
-        const msgBody = getTestMsgBody(test.ms);
-        const msgId = getMsgId(test.ms);
-        logsUrl = msgBody.run.log;
-        runDetailsUrl = msgBody.run.url;
-        error = getMessageError(msgBody);
-        const metadata = test.ms.customMetadata;
-        dependencies = metadata?.payload?.dependency;
-        description = metadata?.payload?.description;
-        knownIssues = metadata?.payload?.known_issues;
-        messageId = msgId;
+        dependencies = test.ms.custom_metadata?.payload?.dependency;
+        description = test.ms.custom_metadata?.payload?.description;
+        error = getMessageError(test.ks.broker_msg_body);
+        knownIssues = test.ms.custom_metadata?.payload?.known_issues;
+        logsUrl = test.ms.broker_msg_body.run.log;
+        messageId = test.ms.kai_state.msg_id;
+        runDetailsUrl = test.ms.broker_msg_body.run.url;
         waiver = test.gs.waiver;
     }
 

@@ -39,7 +39,7 @@ import './index.css';
 import { TestSuite } from '../../testsuite';
 import { TestStatusIcon } from '../../utils/utils';
 import { TestSuiteDisplay } from '../TestSuites';
-import { Artifact, getArtifactId } from '../../types';
+import { Artifact, getAType, getArtifactId } from '../../types';
 import { SelectedTestContext } from './contexts';
 import { ArtifactsXunitQuery } from '../../queries/Artifacts';
 import { xunitParser } from '../../utils/xunitParser';
@@ -52,11 +52,13 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
     const [expandedSuites, setExpandedSuites] = useState<
         Partial<Record<number, boolean>>
     >({});
-    const selectedTest = useContext(SelectedTestContext);
     const { artifact } = props;
+    const selectedTest = useContext(SelectedTestContext);
     let error: string | undefined;
     let suites: TestSuite[] | undefined;
-    const artifactId = artifact ? getArtifactId(artifact) : undefined;
+    const artifactId = getArtifactId(artifact);
+    const aType = getAType(artifact);
+
     const {
         data,
         error: queryError,
@@ -73,7 +75,9 @@ export function TestSuitesAccordion(props: TestSuitesAccordionProps) {
         skip: !artifact || !selectedTest?.messageId,
         notifyOnNetworkStatusChange: true,
     });
+
     if (!artifact || !selectedTest) return null;
+
     const haveData =
         !loading &&
         !_.isEmpty(data) &&

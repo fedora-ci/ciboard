@@ -32,7 +32,10 @@ import {
 import { LinkIcon } from '@patternfly/react-icons';
 import { LinkifyNewTab } from '../utils/utils';
 import { ArtifactKaiState, ArtifactKaiStateProps } from './AChildTestMsg';
-import { AChildGreenwave, AChildGreenwaveProps } from './AChildGreenwave';
+import {
+    ArtifactGreenwaveState,
+    ArtifactGreenwaveStateProps,
+} from './AChildGreenwave';
 import {
     ArtifactGreenwaveTestMsgState,
     ArtifactGreenwaveTestMsgStateProps,
@@ -163,7 +166,7 @@ export const AChild: React.FC<AChildProps> = (props) => {
             props as ArtifactGreenwaveTestMsgStateProps,
         );
     } else if (isGreenwaveChild(aChild)) {
-        return AChildGreenwave(props as AChildGreenwaveProps);
+        return ArtifactGreenwaveState(props as ArtifactGreenwaveStateProps);
     } else if (isChildTestMsg(aChild)) {
         return ArtifactKaiState(props as ArtifactKaiStateProps);
     }
