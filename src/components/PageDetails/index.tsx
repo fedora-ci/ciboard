@@ -19,72 +19,63 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
-    Card,
-    Flex,
-    Title,
-    Spinner,
     Bullseye,
+    Card,
     EmptyState,
-    PageSection,
     EmptyStateBody,
     EmptyStateIcon,
+    Flex,
+    PageSection,
     PageSectionVariants,
+    Spinner,
+    Title,
 } from '@patternfly/react-core';
-import { useQuery, ApolloError, QueryHookOptions } from '@apollo/client';
 import { ExclamationCircleIcon, SearchIcon } from '@patternfly/react-icons';
+import { useQuery } from '@apollo/client';
+
+import { useNavigate } from 'react-router-dom';
 
 import './index.css';
-import { config } from '../../config';
-import { CiTest } from './types';
 import { Artifact } from '../../artifact';
-import { BuildInfo } from './BuildInfo';
-import { WaiveModal } from '../WaiveForm';
-import { extractTests } from './artifactTests';
-import { DetailsDrawer } from './DetailsDrawer';
-import { ArtifactHeader } from './Header';
-import { getArtifactName } from '../../utils/artifactUtils';
-import { TestResultsTable } from './TestResultsTable';
-import { SelectedTestContext } from './contexts';
-import { PageCommon, ToastAlertGroup } from '../PageCommon';
 import {
     ArtifactsCompleteQuery,
     ArtifactsCompleteQueryData,
 } from '../../queries/Artifacts';
+import { getArtifactName } from '../../utils/artifactUtils';
+import { config } from '../../config';
+import { CiTest } from './types';
+import { SelectedTestContext } from './contexts';
+import { TestResultsTable } from './TestResultsTable';
+import { BuildInfo } from './BuildInfo';
+import { DetailsDrawer } from './DetailsDrawer';
+import { ArtifactHeader } from './Header';
+import { PageCommon, ToastAlertGroup } from '../PageCommon';
+import { WaiveModal } from '../WaiveForm';
+import { extractTests } from './artifactTests';
+//import { ArtifactsListNew } from './ArtifactsListNew';
 
-type PageResultsNewParams = 'artifactId';
-
-const knownIdPrefixesPrio = [
-    'brew-build',
-    'koji-build-cs',
-    'koji-build',
-    'productmd-compose',
-    'redhat-module',
-    'fedora-module',
-    'redhat-container-image',
-];
-
-const getArtType = (id: string) => {
-    return _.find(knownIdPrefixesPrio, (type) => _.startsWith(id, type));
-};
-
-const findTestByName = (tests: CiTest[], name?: string) => {
-    if (!name) return;
-    return _.find(tests, (test) => test.name === name);
-};
+type PageResultsNewParams = 'search' | 'type' | 'value';
 
 interface SingleArtifactViewProps {
     artifact: Artifact;
 }
+
 function SingleArtifactView(props: SingleArtifactViewProps) {
     const { artifact } = props;
+
     const [selectedTestName, setSelectedTestName] = useState<string>();
     // Docs: https://reactrouter.com/en/main/hooks/use-search-params
     const [searchParams, setSearchParams] = useSearchParams();
+
     let tests: CiTest[] = [];
+    const findTestByName = (name?: string) => {
+        if (!name) return;
+        return _.find(tests, (test) => test.name === name);
+    };
 
     /*
      * Change currently selected test whenever the `?focus` URL parameter
@@ -93,23 +84,27 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
     useEffect(() => {
         if (searchParams.has('focus')) {
             // NOTE: We know that `.get()` must return non-null since `.has()` is true.
-            const testCaseName = searchParams.get('focus');
-            setSelectedTestName(testCaseName!);
+            setSelectedTestName(searchParams.get('focus')!);
         } else {
             setSelectedTestName(undefined);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
 
+    let pageTitle = `Artifact search results | ${config.defaultTitle}`;
+
     // Construct a specific title for the single-artifact case.
-    let pageTitle = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
-    if (artifact.greenwaveDecision?.summary) {
-        if (artifact.greenwaveDecision.policies_satisfied)
+    pageTitle = `${getArtifactName(artifact)} | ${config.defaultTitle}`;
+    if (artifact.greenwave_decision?.summary) {
+        if (artifact.greenwave_decision.policies_satisfied)
             pageTitle = `✅ ${pageTitle}`;
         else pageTitle = `❌ ${pageTitle}`;
     }
+
     tests = extractTests(artifact);
-    const selectedTest = findTestByName(tests, selectedTestName);
+
+    const selectedTest = findTestByName(selectedTestName);
+
     const onTestSelect = (name: string | undefined) => {
         if (name && name !== selectedTestName) {
             setSelectedTestName(name);
@@ -155,147 +150,115 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
     );
 }
 
-const dataToArtList = (data: any) => {
-    const { hits: hits_, hits_info: hitsInfo } = data.artifacts;
-    const hits = _.map(
-        hits_,
-        ({ hit_info, hit_source, greenwaveDecision }) => ({
-            hitInfo: hit_info,
-            hitSource: hit_source,
-            greenwaveDecision: greenwaveDecision,
-        }),
-    );
-    return { hits: hits as Artifact[], hitsInfo };
-};
-
 export function PageDetails(_props: {}) {
     const params = useParams<PageResultsNewParams>();
-    const artifactId = params.artifactId || '';
-    const artifactType = getArtType(artifactId);
+
+    // Used for pagination in the multi-artifact view.
+    const [aidStack, setAidStack] = useState<string[]>([]);
+    const aidOffset = _.last(aidStack);
+    const currentPage = 1 + aidStack.length;
+
+    const artifactType = params.type || '';
+    const fieldName = params.search || '';
+    const fieldPath = fieldName === 'aid' ? fieldName : `payload.${fieldName}`;
+    const fieldValues = params.value?.split(',') || [];
+
     let pageTitle = `Artifact search results | ${config.defaultTitle}`;
-    const artTypes = [artifactType];
-    const queryString = `_id: "${artifactId}"`;
-    const queryVars = {
-        artTypes,
-        queryString,
-    };
-    const queryOptions: QueryHookOptions = {
-        variables: queryVars,
-        errorPolicy: 'all',
-        fetchPolicy: 'cache-first',
-        notifyOnNetworkStatusChange: true,
-    };
 
     const { data, error, loading } = useQuery<ArtifactsCompleteQueryData>(
         ArtifactsCompleteQuery,
-        queryOptions,
+        {
+            variables: {
+                atype: artifactType,
+                aid_offset: aidOffset,
+                dbFieldName1: fieldPath,
+                dbFieldValues1: fieldValues,
+            },
+            errorPolicy: 'all',
+            fetchPolicy: 'cache-first',
+        },
     );
 
-    const hits = data?.artifacts?.hits;
-    const haveData = !_.isNil(hits) && !error && !loading;
+    const artifacts = data?.artifacts?.artifacts;
+    const haveData = !_.isNil(artifacts) && !error && !loading;
 
+    // Show spinner while the query is loading.
     if (loading) {
-        // Show spinner while the query is loading.
-        <IsLoading />;
+        return (
+            <PageCommon title={pageTitle}>
+                <PageSection isFilled>
+                    <Bullseye>
+                        <EmptyState>
+                            <EmptyStateIcon
+                                variant="container"
+                                component={Spinner}
+                            />
+                            <Title headingLevel="h2" size="lg">
+                                Loading artifact(s)…
+                            </Title>
+                        </EmptyState>
+                    </Bullseye>
+                </PageSection>
+            </PageCommon>
+        );
     }
+
+    // Show error page if the query failed.
     if (!haveData) {
-        return <QueryError error={error} />;
+        return (
+            <PageCommon title={pageTitle}>
+                <PageSection isFilled>
+                    <Bullseye>
+                        <EmptyState>
+                            <EmptyStateIcon
+                                className="pf-u-danger-color-100"
+                                icon={ExclamationCircleIcon}
+                            />
+                            <Title headingLevel="h2" size="lg">
+                                Failed to load artifact
+                            </Title>
+                            {error && (
+                                <EmptyStateBody>
+                                    Error: {error.toString()}
+                                </EmptyStateBody>
+                            )}
+                        </EmptyState>
+                    </Bullseye>
+                </PageSection>
+            </PageCommon>
+        );
     }
-    if (haveData && _.isEmpty(hits)) {
-        return <NoFound />;
-    }
-    const artList = dataToArtList(data);
 
-    return (
-        <PageCommon title={pageTitle}>
-            <PageSection isFilled>
-                <SingleArtifactView artifact={artList.hits[0]} />
-            </PageSection>
-        </PageCommon>
-    );
-}
-
-// Show information message if query succeeded but no artifacts were returned.
-const NoFound = () => {
-    let pageTitle = `Artifact search results | ${config.defaultTitle}`;
-    return (
-        <PageCommon title={pageTitle}>
-            <PageSection isFilled>
-                <Bullseye>
-                    <EmptyState>
-                        <EmptyStateIcon icon={SearchIcon} />
-                        <Title headingLevel="h2" size="lg">
-                            No artifacts found
-                        </Title>
-                        <EmptyStateBody>
-                            No matching artifacts found in database
-                        </EmptyStateBody>
-                    </EmptyState>
-                </Bullseye>
-            </PageSection>
-        </PageCommon>
-    );
-};
-
-// Show error page if the query failed.
-interface QueryErrorProps {
-    error?: ApolloError;
-}
-const QueryError: React.FC<QueryErrorProps> = (props) => {
-    const { error } = props;
-    let pageTitle = `Artifact search results | ${config.defaultTitle}`;
-    return (
-        <PageCommon title={pageTitle}>
-            <PageSection isFilled>
-                <Bullseye>
-                    <EmptyState>
-                        <EmptyStateIcon
-                            className="pf-u-danger-color-100"
-                            icon={ExclamationCircleIcon}
-                        />
-                        <Title headingLevel="h2" size="lg">
-                            Failed to load artifact
-                        </Title>
-                        {error && (
+    // Show information message if query succeeded but no artifacts were returned.
+    if (haveData && _.isEmpty(artifacts)) {
+        return (
+            <PageCommon title={pageTitle}>
+                <PageSection isFilled>
+                    <Bullseye>
+                        <EmptyState>
+                            <EmptyStateIcon icon={SearchIcon} />
+                            <Title headingLevel="h2" size="lg">
+                                No artifacts found
+                            </Title>
                             <EmptyStateBody>
-                                Error: {error.toString()}
+                                No matching artifacts found in database
                             </EmptyStateBody>
-                        )}
-                    </EmptyState>
-                </Bullseye>
-            </PageSection>
-        </PageCommon>
-    );
-};
+                        </EmptyState>
+                    </Bullseye>
+                </PageSection>
+            </PageCommon>
+        );
+    }
 
-// Show error page if the query failed.
-interface IsLoadingProps {
-    error?: ApolloError;
-}
-const IsLoading: React.FC<IsLoadingProps> = (props) => {
-    let pageTitle = `Artifact search results | ${config.defaultTitle}`;
+    //   const navigate = useNavigate();
+    //   const handleNavigation = () => {
+    // Programmatically navigate to another route within your app
+    //   navigate('/another-route');
+    // };
+
     return (
         <PageCommon title={pageTitle}>
-            <PageSection isFilled>
-                <Bullseye>
-                    <EmptyState>
-                        <EmptyStateIcon
-                            variant="container"
-                            component={Spinner}
-                        />
-                        <Title headingLevel="h2" size="lg">
-                            Loading artifact(s)…
-                        </Title>
-                    </EmptyState>
-                </Bullseye>
-            </PageSection>
+            <PageSection isFilled></PageSection>
         </PageCommon>
     );
-};
-
-// XXX
-//   const navigate = useNavigate();
-//   const handleNavigation = () => {
-// Programmatically navigate to another route within your app
-//   navigate('/another-route');
-// };
+}

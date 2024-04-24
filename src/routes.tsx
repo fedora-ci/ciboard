@@ -81,12 +81,6 @@ export const otherRoutes: MenuEntry[] = [
     },
     {
         title: '',
-        key: 'details',
-        path: '/details/:artifactId',
-        element: <PageDetails />,
-    },
-    {
-        title: '',
         key: 'metadata-edit',
         path: '/metadata/edit/:id?/:clone?',
         element: <PageMetadataEdit />,

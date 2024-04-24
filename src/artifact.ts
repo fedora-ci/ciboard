@@ -107,7 +107,7 @@ export function isArtifactRPM(artifact: Artifact): artifact is ArtifactRPM {
 
 export function isArtifactMBS(artifact: Artifact): artifact is ArtifactMBS {
     const { hitSource } = artifact;
-    return hitSource?.aType === 'redhat-module';
+    return hitSource.aType === 'redhat-module';
 }
 
 export function isArtifactCompose(
@@ -201,8 +201,6 @@ export type HitSourceRpm = {
 export type HitSourceMBS = {
     aType: string;
     scratch: boolean;
-    gateTag: string;
-    issuer: string;
 };
 
 export type HitSourceContainerImage = {

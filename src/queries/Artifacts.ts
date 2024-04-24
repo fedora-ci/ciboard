@@ -225,10 +225,19 @@ export const ArtifactsDetailedInfoModuleBuild = gql`
 
 export interface ArtifactsCompleteQueryData {
     artifacts: {
-        hits_info: any;
-        hits: Artifact[];
+        has_next: boolean;
+        artifacts: Artifact[];
     };
 }
+
+/*
+                    sortBy,
+                    artTypes,
+                    newerThen,
+                    queryString,
+                    paginationSize,
+                    paginationFrom,
+*/
 
 export const ArtifactsShallowQuery = gql`
     query ArtifactsComplete(
@@ -257,53 +266,16 @@ export const ArtifactsShallowQuery = gql`
 `;
 
 /*
- */
-
-export const ArtifactsGreenwaveQuery = gql`
-    query ArtifactsComplete(
-        $sortBy: String
-        $artTypes: [String]
-        $newerThen: String
-        $queryString: String
-        $paginationSize: Int
-        $paginationFrom: Int
-    ) {
-        artifacts(
-            sortBy: $sortBy
-            artTypes: $artTypes
-            newerThen: $newerThen
-            queryString: $queryString
-            paginationSize: $paginationSize
-            paginationFrom: $paginationFrom
-        ) {
-            hits_info
-            hits {
-                hit_info
-                hit_source
-                greenwaveDecision {
-                    results
-                    waivers
-                    summary
-                    policies_satisfied
-                    satisfied_requirements
-                    unsatisfied_requirements
+children {
+                hits_info
+                hits {
+                    hit_info
+                    hit_source
                 }
             }
-        }
-    }
-`;
+            */
 
-/*                
-children {
-                    hits_info
-                    hits {
-                        hit_info
-                        hit_source
-                    }
-                }
-*/
-
-export const ArtifactsCompleteQuery = gql`
+export const ArtifactsGreenwaveQuery = gql`
     query ArtifactsComplete(
         $sortBy: String
         $artTypes: [String]

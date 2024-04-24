@@ -21,41 +21,41 @@
 import _ from 'lodash';
 import { CSSProperties } from 'react';
 import {
-    InfoIcon,
-    GhostIcon,
-    UnlinkIcon,
-    HistoryIcon,
-    InProgressIcon,
-    TimesCircleIcon,
     CheckCircleIcon,
-    TrafficLightIcon,
     ExclamationTriangleIcon,
+    GhostIcon,
+    HistoryIcon,
+    InfoIcon,
+    InProgressIcon,
     OutlinedQuestionCircleIcon,
+    TimesCircleIcon,
+    TrafficLightIcon,
+    UnlinkIcon,
 } from '@patternfly/react-icons';
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon';
 import moment from 'moment';
 import Linkify from 'linkify-react';
 import { IntermediateRepresentation } from 'linkifyjs';
+
 import {
     Artifact,
-    StateType,
     ArtifactType,
-    StateKaiType,
-    KaiStateType,
-    isArtifactMBS,
-    isArtifactRPM,
-    MbsInstanceType,
-    KojiInstanceType,
-    StateGreenwaveType,
     DistGitInstanceType,
-    StateGreenwaveKaiType,
-    StateExtendedKaiNameType,
     GreenwaveRequirementTypesType,
+    isArtifactMBS,
     isArtifactRedhatContainerImage,
+    isArtifactRPM,
+    KaiStateType,
+    KojiInstanceType,
+    MbsInstanceType,
+    StateExtendedKaiNameType,
+    StateGreenwaveKaiType,
+    StateGreenwaveType,
+    StateKaiType,
+    StateType,
 } from '../artifact';
 import { config, mappingDatagrepperUrl } from '../config';
 import { MSG_V_1, MSG_V_0_1, BrokerMessagesType } from '../types';
-
 /**
  *Typescript guards
  */
@@ -119,16 +119,16 @@ const artifact_type_labels: Record<ArtifactType, string> = {
 };
 
 export function getArtifactName(artifact: Artifact): string | undefined {
-    switch (artifact.hitSource.aType) {
+    switch (artifact.type) {
         case 'brew-build':
         case 'copr-build':
         case 'koji-build':
         case 'redhat-container-image':
-            return artifact.hitSource.nvr;
+            return artifact.payload.nvr;
         case 'redhat-module':
-            return artifact.hitSource.nsvc;
+            return artifact.payload.nsvc;
         case 'productmd-compose':
-            return artifact.hitSource.aid;
+            return artifact.aid;
         default:
             return;
     }
@@ -254,9 +254,8 @@ export const getArtifactRemoteUrl = (artifact: Artifact) => {
  * Construct the relative path which uniquely identifies artifact in CI Dashboard UI.
  * @returns Subpath relative to the CI Dashboard root.
  */
-
 export const getArtifactLocalPath = (artifact: Artifact) =>
-    `/details/${artifact.hitInfo._id}`;
+    `/artifact/${artifact.type}/aid/${artifact.aid}`;
 
 /**
  * Extract testcase documentation URL from a UMB message.
@@ -401,7 +400,7 @@ export const getArtifactProduct = (artifact: Artifact): string | undefined => {
  */
 export const getArtifactGatingTag = (artifact: Artifact): string | null => {
     if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
-        return artifact.hitSource.gateTag;
+        return artifact.payload.gate_tag_name;
     }
     return null;
 };
@@ -414,7 +413,7 @@ export const getArtifactGatingTag = (artifact: Artifact): string | null => {
  */
 export const getArtifacIssuer = (artifact: Artifact): string | null => {
     if (isArtifactMBS(artifact) || isArtifactRPM(artifact)) {
-        return artifact.hitSource.issuer;
+        return artifact.payload.issuer;
     }
     return null;
 };

@@ -31,16 +31,16 @@ import { ShowArtifacts } from './ArtifactsList';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import {
-    actLoad,
-    actArtTypes,
-    actNewerThen,
-    actQueryString,
-} from './../actions';
-import {
     actPage,
     actPaginationSize,
     InitialState as queryInitialState,
 } from '../slices/artifactsQuerySlice';
+import {
+    actArtTypes,
+    actLoad,
+    actNewerThen,
+    actQueryString,
+} from './../actions';
 
 interface SetQueryStringProps {}
 const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
