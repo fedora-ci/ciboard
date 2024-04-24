@@ -32,28 +32,12 @@ import {
     CardHeader,
     EmptyState,
     EmptyStateIcon,
-    Brand,
-    Icon,
-    DescriptionList,
-    DescriptionListTerm,
-    DescriptionListGroup,
-    DescriptionListDescription,
-    Button,
-    Gallery,
-    GalleryItem,
-    StackItem,
-    Stack,
-    CardActions,
 } from '@patternfly/react-core';
-
-import { ReactComponent as RhLogo } from './../img/rhfavicon.svg';
-import rhLogo from './../img/rhfavicon.svg';
 
 import { useAppSelector } from '../hooks';
 import { PaginationToolbar } from './PaginationToolbar';
 import { Artifact, ArtifactRPM, isArtifactRPM } from '../artifact';
-import { ExclamationCircleIcon, PlusCircleIcon } from '@patternfly/react-icons';
-import { Link } from 'react-router-dom';
+import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
 interface ShowLoadingProps {}
 function ShowLoading(props: ShowLoadingProps) {
@@ -80,31 +64,21 @@ const ArtifactRPMCard = (props: ArtifactRPMCardProps) => {
     const { artifact } = props;
     const { hitInfo, hitSource } = artifact;
     return (
-        <Card id={hitInfo._id} isCompact style={{ minWidth: '600px' }}>
+        <Card id={hitInfo._id} isSelectable>
             <CardHeader>
-                <CardActions hasNoOffset={true}>
-                    <Button variant="secondary">details</Button>
-                </CardActions>
-                <Brand alt="Red hat build" widths={{ default: '30px' }}>
-                    <source srcSet={rhLogo} />
-                </Brand>
-                <Flex spaceItems={{ default: 'spaceItemsMd' }}>
-                    <Flex></Flex>
-                    <FlexItem>{hitSource.aType}</FlexItem>
-                    <FlexItem>
-                        <Link to="">{hitSource.taskId}</Link>
-                    </FlexItem>
-                </Flex>
+                <CardTitle>
+                    {hitSource.taskId} {hitSource.aType}
+                </CardTitle>
             </CardHeader>
-            <CardTitle>{hitSource.nvr}</CardTitle>
-            <CardBody isFilled={false}>
+            <CardBody>
                 <Flex>
+                    <FlexItem>{hitSource.nvr}</FlexItem>
                     <FlexItem>{hitSource.issuer}</FlexItem>
                     <FlexItem>{hitSource.scratch}</FlexItem>
                     <FlexItem>{hitSource.component}</FlexItem>
                     <FlexItem>{hitSource.buildId}</FlexItem>
                     <FlexItem>{hitSource.gateTag}</FlexItem>
-                    <FlexItem>{hitSource.issuer}</FlexItem>
+                    <FlexItem>{hitSource.source}</FlexItem>
                     <FlexItem>{hitSource.brokerMsgIdGateTag}</FlexItem>
                 </Flex>
             </CardBody>
@@ -133,20 +107,9 @@ const ArtList = (_props: ArtListProps) => {
     if (_.isEmpty(artList)) return null;
     const entries: JSX.Element[] = [];
     _.map(artList, (artifact: any) => {
-        entries.push(
-            <Flex>
-                <FlexItem style={{ flex: '0 0 20%' }} />
-                <FlexItem>
-                    <ArtifactCard artifact={artifact} />
-                </FlexItem>
-            </Flex>,
-        );
+        entries.push(<ArtifactCard artifact={artifact} />);
     });
-    return (
-        <>
-            <Flex direction={{ default: 'column' }}>{entries}</Flex>
-        </>
-    );
+    return <>{entries}</>;
 };
 
 interface NothingFoundProps {}
@@ -172,7 +135,7 @@ const NothingFound = (_props: NothingFoundProps) => {
 export function ShowArtifacts() {
     return (
         <>
-            <PaginationToolbar />
+            <PaginationToolbar />;
             <ShowLoading />
             <ArtList />
             <NothingFound />

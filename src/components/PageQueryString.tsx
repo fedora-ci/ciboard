@@ -19,73 +19,14 @@
  */
 
 import _ from 'lodash';
-import { useEffect } from 'react';
 import { PageSection } from '@patternfly/react-core';
-import { useSearchParams } from 'react-router-dom';
 
 import { config } from '../config';
 import { WaiveModal } from './WaiveForm';
 import { SearchToolbar } from './SearchToolbar';
 import { ShowArtifacts } from './ArtifactsList';
+import { useAppSelector } from '../hooks';
 import { PageCommon, ToastAlertGroup } from './PageCommon';
-import { useAppDispatch, useAppSelector } from '../hooks';
-import { InitialState as queryInitialState } from '../slices/artifactsQuerySlice';
-import { actArtTypes, actNewerThen, actQueryString } from './../actions';
-
-interface SetQueryStringProps {}
-const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
-    const artifacts = useAppSelector((state) => state.artifacts);
-    const queryState = useAppSelector((state) => state.artifactsQuery);
-    const [searchParams, setSearchParams] = useSearchParams();
-    const dispatch = useAppDispatch();
-    const newer = searchParams.get('newer');
-    const queryString = searchParams.get('qs');
-    const atypesString = searchParams.get('atypes');
-    useEffect(() => {
-        if (atypesString) {
-            const atypes = atypesString.split(',');
-            dispatch(actArtTypes(atypes));
-        }
-        if (newer) {
-            dispatch(actNewerThen(newer));
-        }
-        if (queryString) {
-            dispatch(actQueryString(queryString));
-        }
-        /**
-         * Ensure the useEffect only runs once.
-         * That will not invoke re-renders because dispatch value will not change
-         */
-    }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
-    useEffect(() => {
-        const currentParams = Object.fromEntries(searchParams.entries());
-        if (
-            queryState.artTypes &&
-            !_.isEqual(_.split(atypesString, ','), queryState.queryString) &&
-            !_.isEqual(queryInitialState.artTypes, queryState.artTypes)
-        ) {
-            currentParams['atypes'] = queryState.artTypes.join(',');
-        }
-        if (
-            queryState.newerThen &&
-            !_.isEqual(newer, queryState.newerThen) &&
-            !_.isEqual(queryInitialState.newerThen, queryState.newerThen)
-        ) {
-            currentParams['newer'] = queryState.newerThen.toString();
-        }
-        if (
-            queryState.queryString &&
-            !_.isEqual(queryString, queryState.queryString) &&
-            !_.isEqual(queryInitialState.queryString, queryState.queryString)
-        ) {
-            currentParams['qs'] = queryState.queryString;
-        }
-        setSearchParams(currentParams);
-        console.log('XXXXX XXXXX effect');
-    }, [artifacts]); // eslint-disable-line react-hooks/exhaustive-deps
-    console.log('XXXXX XXXXX');
-    return null;
-};
 
 export function PageQueryString(_props: {}) {
     const artifactsQuery = useAppSelector((state) => state.artifactsQuery);
@@ -108,7 +49,6 @@ export function PageQueryString(_props: {}) {
             </PageSection>
             <ToastAlertGroup />
             <WaiveModal />
-            <SetQueryString />
         </PageCommon>
     );
 }

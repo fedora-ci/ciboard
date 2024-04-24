@@ -18,9 +18,11 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+import { Buffer } from 'buffer';
 import _ from 'lodash';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useApolloClient } from '@apollo/client';
+import { useSearchParams } from 'react-router-dom';
 import {
     Text,
     Flex,
@@ -76,7 +78,7 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                 hideOnOutsideClick={false}
                 bodyContent={(hide) => (
                     <div>
-                        <>
+                        <React.Fragment>
                             <HelperText>
                                 <HelperTextItem>
                                     This is default helper text
@@ -102,7 +104,7 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                                     This is error helper text
                                 </HelperTextItem>
                             </HelperText>
-                        </>
+                        </React.Fragment>
                         <div>
                             <button onClick={hide}>close</button>
                         </div>
@@ -147,6 +149,7 @@ const ArtifactTypeSelection: React.FC<
         dispatch(actArtTypes(artTypes));
     };
     const onKeyDown = (event: React.KeyboardEvent) => {
+        console.log(event.key);
         if (event.key === ' ' || event.key === 'Enter') {
             event.preventDefault();
             onSelect(event);
@@ -186,6 +189,7 @@ const TimelineSelection: React.FC<TimelineSelectionProps> = (_props: {}) => {
     const onChange = (value: number) => {
         const newValue = _.toString(value);
         if (newerThen !== newValue) {
+            console.log('Dispatch', newerThen, newValue);
             dispatch(actNewerThen(newValue));
         }
     };
@@ -250,14 +254,43 @@ interface SearchToolbarProps {}
 export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
     const client = useApolloClient();
     const dispatch = useAppDispatch();
-    const queryState = useAppSelector((state) => state.artifactsQuery);
+    const filters = useAppSelector((state) => state.artifactsQuery);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    /** 
+    useEffect(() => {
+        // Drop URL parameter if no filters are active.
+        if (_.isEmpty(filters.active) && searchParams.has('filters')) {
+            setSearchParams({});
+        }
+    }, [filters.active, searchParams, setSearchParams]);
+*/
 
     useEffect(() => {
-        if (!_.isEmpty(queryState.queryString)) {
-            /* this case covers legacy functionality when queryString is set in legacy-page, and forwarded to this page */
+        if (filters.queryString) {
             /* Run only once if there was a forward from legacy */
             dispatch(actPage(1));
             dispatch(actLoad(client));
+        }
+        /** Check if there are filters. */
+        const filters_enc = searchParams.get('filters');
+        if (!filters_enc) {
+            /** No filters in url */
+            return;
+        }
+        /** There are some filters. */
+        try {
+            /** Filters from URL */
+            const filters = JSON.parse(
+                Buffer.from(filters_enc, 'base64').toString(),
+            );
+            //dispatch(setOptionsForFilters(filters.options));
+            for (const filter of filters.active) {
+                /** Add filters from URL */
+                //dispatch(addFilter(filter, filters.type));
+            }
+        } catch (e) {
+            console.warn('Could not retrieve filters from URL', e);
         }
         /**
          * Ensure the useEffect only runs once.
@@ -302,6 +335,28 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
             </ToolbarItem>
         </>
     );
+
+    const filtersEncoded = searchParams.get('filters');
+    // filters active
+    if (!_.isEmpty()) {
+        let urlFilters = {};
+        if (filtersEncoded) {
+            urlFilters = JSON.parse(
+                Buffer.from(filtersEncoded, 'base64').toString(),
+            );
+        }
+        if (!_.isEqual(urlFilters, filters)) {
+            /** Update URL with new filters param. */
+            const filtersJson = JSON.stringify(filters);
+            try {
+                const filtersEncoded =
+                    Buffer.from(filtersJson).toString('base64');
+                setSearchParams({ filters: filtersEncoded });
+            } catch (ex) {
+                console.log('Cannot set filters %o: %s', filters, ex);
+            }
+        }
+    }
 
     const toolBar = (
         <Flex justifyContent={{ default: 'justifyContentCenter' }}>
