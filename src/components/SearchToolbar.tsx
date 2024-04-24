@@ -157,13 +157,12 @@ const ArtifactTypeSelection: React.FC<
         const isSelected = _.includes(selectedArtTypes, key);
         tilesItems.push(
             <Tile
-                id={key}
                 key={key}
                 title=""
-                onClick={onSelect}
                 isStacked
-                onKeyDown={onKeyDown}
                 isSelected={isSelected}
+                onKeyDown={onKeyDown}
+                onClick={onSelect}
             >
                 {menuName}
             </Tile>,
