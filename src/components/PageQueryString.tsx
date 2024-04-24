@@ -98,7 +98,7 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
         } else {
             searchParams.set('pagesize', `${paginationSize}`);
         }
-        setSearchParams(searchParams.toString(), { replace: true });
+        setSearchParams(searchParams.toString());
     }, [page, paginationSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const { artTypes, newerThen, queryString } = queryState;
@@ -124,7 +124,7 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
                 searchParams.set('qs', queryString);
             }
         }
-        setSearchParams(searchParams.toString(), { replace: true });
+        setSearchParams(searchParams.toString());
     }, [artifacts, artTypes, newerThen, queryString]); // eslint-disable-line react-hooks/exhaustive-deps
     return null;
 };

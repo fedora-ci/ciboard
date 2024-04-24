@@ -113,10 +113,10 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
     const onTestSelect = (name: string | undefined) => {
         if (name && name !== selectedTestName) {
             setSelectedTestName(name);
-            setSearchParams({ focus: name }, { replace: true });
+            setSearchParams({ focus: name });
         } else {
             setSelectedTestName(undefined);
-            setSearchParams({}, { replace: true });
+            setSearchParams({});
         }
     };
     /*
