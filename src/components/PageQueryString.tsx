@@ -72,14 +72,13 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
         }
         if (initQs) {
             dispatch(actQueryString(initQs));
+            dispatch(actLoad(client));
         }
         if (initPage) {
             /** Order of the above `if` is important */
             const page = _.toNumber(initPage);
             dispatch(actPage(page));
         }
-        // Always load some data on open
-        dispatch(actLoad(client));
         /**
          * Ensure the useEffect only runs once.
          * That will not invoke re-renders because dispatch value will not change
@@ -103,28 +102,31 @@ const SetQueryString: React.FC<SetQueryStringProps> = (_props: {}) => {
 
     const { artTypes, newerThen, queryString } = queryState;
     useEffect(() => {
-        if (_.isEqual(queryInitialState.artTypes, queryState.artTypes)) {
-            searchParams.delete('atypes');
-        } else {
-            if (artTypes) {
-                searchParams.set('atypes', artTypes.join(','));
+        const currentParams = Object.fromEntries(searchParams.entries());
+        if (artTypes) {
+            if (_.isEqual(queryInitialState.artTypes, queryState.artTypes)) {
+                _.unset(currentParams, 'atypes');
+            } else {
+                currentParams['atypes'] = artTypes.join(',');
             }
         }
-        if (_.isEqual(queryInitialState.newerThen, queryState.newerThen)) {
-            searchParams.delete('newer');
-        } else {
-            if (newerThen) {
-                searchParams.set('newer', newerThen.toString());
+        if (newerThen) {
+            if (_.isEqual(queryInitialState.newerThen, queryState.newerThen)) {
+                _.unset(currentParams, 'newer');
+            } else {
+                currentParams['newer'] = newerThen.toString();
             }
         }
-        if (_.isEqual(queryInitialState.queryString, queryState.queryString)) {
-            searchParams.delete('qs');
-        } else {
-            if (queryString) {
-                searchParams.set('qs', queryString);
+        if (queryString) {
+            if (
+                _.isEqual(queryInitialState.queryString, queryState.queryString)
+            ) {
+                _.unset(currentParams, 'qs');
+            } else {
+                currentParams['qs'] = queryString;
             }
         }
-        setSearchParams(searchParams.toString());
+        setSearchParams(currentParams);
     }, [artifacts, artTypes, newerThen, queryString]); // eslint-disable-line react-hooks/exhaustive-deps
     return null;
 };

@@ -19,7 +19,7 @@
  */
 
 import _ from 'lodash';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useApolloClient } from '@apollo/client';
 import {
     Text,
@@ -46,7 +46,6 @@ import { HelpIcon, SearchIcon } from '@patternfly/react-icons';
 import { actLoad, actPage } from './../actions';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { actArtTypes, actNewerThen, actQueryString } from './../actions';
-import { useSearchParams } from 'react-router-dom';
 
 /**
  * These are default search-field for each artifact type. List here all possible artifact-types:
@@ -261,20 +260,7 @@ interface SearchToolbarProps {}
 export const SearchToolbar: React.FC<SearchToolbarProps> = (_props: {}) => {
     const client = useApolloClient();
     const dispatch = useAppDispatch();
-    const [searchParams, _setSearchParams] = useSearchParams();
     const [qsValue, setQsValue] = useState<string>('');
-
-    const initQs = searchParams.get('qs');
-    useEffect(() => {
-        if (initQs) {
-            // Put into search field initial value from URL
-            setQsValue(initQs);
-        }
-        /**
-         * Ensure the useEffect only runs once.
-         * That will not invoke re-renders because dispatch value will not change
-         */
-    }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const onClickDoSearch = () => {
         dispatch(actPage(1));

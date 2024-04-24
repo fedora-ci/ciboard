@@ -75,7 +75,7 @@ export function PaginationToolbar(_props: PaginationToolbarProps) {
                                     'var(--pf-v5-global--FontWeight--bold)',
                             }}
                         >
-                            {queryState.queryString || 'all'}
+                            {queryState.queryString}
                         </FlexItem>
                     </Flex>
                 </Flex>
