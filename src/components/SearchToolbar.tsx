@@ -78,31 +78,28 @@ const HelpForSearchInput: React.FC<HelpForSearchInputProps> = (_props: {}) => {
                     <div>
                         <>
                             <HelperText>
-                                <HelperText>
-                                    <HelperTextItem variant="success">
-                                        Examples:
-                                    </HelperTextItem>
-                                </HelperText>
-                                <HelperTextItem
-                                    style={{ whiteSpace: 'nowrap' }}
-                                >
-                                    component: kernel AND scratch: true AND
-                                    issuer: sb* <br />
-                                    component: kernel AND gateTag: (rhel-8.8* OR
-                                    rhel-9.2*)
-                                </HelperTextItem>
-                            </HelperText>
-                            <HelperText>
-                                <HelperTextItem variant="success">
-                                    Known fields:
+                                <HelperTextItem>
+                                    This is default helper text
                                 </HelperTextItem>
                             </HelperText>
                             <HelperText>
                                 <HelperTextItem variant="indeterminate">
-                                    component
-                                    <br />
-                                    scratch
-                                    <br />
+                                    This is indeterminate helper text
+                                </HelperTextItem>
+                            </HelperText>
+                            <HelperText>
+                                <HelperTextItem variant="warning">
+                                    This is warning helper text
+                                </HelperTextItem>
+                            </HelperText>
+                            <HelperText>
+                                <HelperTextItem variant="success">
+                                    This is success helper text
+                                </HelperTextItem>
+                            </HelperText>
+                            <HelperText>
+                                <HelperTextItem variant="error">
+                                    This is error helper text
                                 </HelperTextItem>
                             </HelperText>
                         </>
