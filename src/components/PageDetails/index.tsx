@@ -2,7 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2022 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023, 2024 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,13 +21,11 @@
 
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
     Card,
     Flex,
-    Button,
     Spinner,
-    FlexItem,
     Bullseye,
     EmptyState,
     PageSection,
@@ -38,11 +36,7 @@ import {
     EmptyStateFooter,
 } from '@patternfly/react-core';
 import { useQuery, ApolloError, QueryHookOptions } from '@apollo/client';
-import {
-    SearchIcon,
-    AngleDoubleLeftIcon,
-    ExclamationCircleIcon,
-} from '@patternfly/react-icons';
+import { SearchIcon, ExclamationCircleIcon } from '@patternfly/react-icons';
 
 import './index.css';
 import { config } from '../../config';
@@ -55,7 +49,7 @@ import { ArtifactHeader } from './Header';
 import { TestResultsTable } from './TestResultsTable';
 import { SelectedTestContext } from './contexts';
 import { PageCommon, ToastAlertGroup } from '../PageCommon';
-import { Artifact, MetadataRaw, getArtifactName } from '../../types';
+import { Artifact, getArtifactName } from '../../types';
 import {
     ArtifactsCompleteQuery,
     ArtifactsCompleteQueryData,
@@ -82,45 +76,11 @@ const findTestByName = (tests: CiTest[], name?: string) => {
     return _.find(tests, (test) => test.name === name);
 };
 
-export interface BackButtonProps {}
-const BackButton: React.FC<BackButtonProps> = (props) => {
-    const navigate = useNavigate();
-    // -1 - means go back to prev history
-    // this button will only work if no additional history entry is created
-    if (!(window.history.state && window.history.state.idx > 0)) {
-        return null;
-    }
-    return (
-        <div
-            style={{
-                position: 'relative',
-            }}
-        >
-            <Button
-                variant="secondary"
-                ouiaId="Primary"
-                style={{
-                    position: 'absolute',
-                }}
-                onClick={() => navigate(-1)}
-            >
-                <Flex>
-                    <FlexItem>
-                        <AngleDoubleLeftIcon />
-                    </FlexItem>
-                    <FlexItem>back to results</FlexItem>
-                </Flex>
-            </Button>
-        </div>
-    );
-};
-
 interface SingleArtifactViewProps {
     artifact: Artifact;
-    metadata: MetadataRaw[];
 }
 function SingleArtifactView(props: SingleArtifactViewProps) {
-    const { artifact, metadata } = props;
+    const { artifact } = props;
     const [selectedTestName, setSelectedTestName] = useState<string>();
     // Docs: https://reactrouter.com/en/main/hooks/use-search-params
     const [searchParams, setSearchParams] = useSearchParams();
@@ -148,7 +108,7 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
             pageTitle = `✅ ${pageTitle}`;
         else pageTitle = `❌ ${pageTitle}`;
     }
-    tests = extractTests(artifact, metadata);
+    tests = extractTests(artifact);
     const selectedTest = findTestByName(tests, selectedTestName);
     const onTestSelect = (name: string | undefined) => {
         if (name && name !== selectedTestName) {
@@ -159,6 +119,21 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
             setSearchParams({}, { replace: true });
         }
     };
+    /*
+                            <FlexItem>
+                                <Button variant="secondary" ouiaId="Primary">
+                                    <Flex>
+                                        <FlexItem>
+                                            <AngleDoubleLeftIcon />
+                                        </FlexItem>
+                                        <FlexItem>
+                                            back <br />
+                                            to results
+                                        </FlexItem>
+                                    </Flex>
+                                </Button>
+                            </FlexItem>
+                            */
     return (
         <PageCommon title={pageTitle}>
             <SelectedTestContext.Provider value={selectedTest}>
@@ -170,7 +145,6 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
                         <ArtifactHeader artifact={artifact} />
                     </PageBreadcrumb>
                     <PageSection isFilled>
-                        <BackButton />
                         <Flex
                             className="resultsNarrower"
                             direction={{ default: 'column' }}
@@ -180,9 +154,9 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
                             </Card>
                             <Card>
                                 <TestResultsTable
-                                    tests={tests}
                                     artifact={artifact}
                                     onSelect={onTestSelect}
+                                    tests={tests}
                                 />
                             </Card>
                         </Flex>
@@ -245,11 +219,8 @@ export function PageDetails(_props: {}) {
         return <NoFound />;
     }
     const artList = dataToArtList(data);
-    const metadata = data?.metadataRaw || [];
 
-    return (
-        <SingleArtifactView artifact={artList.hits[0]} metadata={metadata} />
-    );
+    return <SingleArtifactView artifact={artList.hits[0]} />;
 }
 
 // Show information message if query succeeded but no artifacts were returned.

@@ -59,8 +59,8 @@ import { SelectedTestContext } from './contexts';
 import { TestSuitesAccordion } from './TestSuitesAccordion';
 import { TestResultQuickLinks } from './TestResultQuickLinks';
 import { LinkifyNewTab, timestampForUser } from '../../utils/utils';
-import { ContactWidget } from './ContactWidget';
-import { Artifact, GreenwaveWaiveType } from '../../types';
+import { ContactWidget, MissingTestContactWidget } from './ContactWidget';
+import { Artifact, GreenwaveWaiveType, getArtifactProduct } from '../../types';
 
 const DEFAULT_DRAWER_SIZE = '50rem';
 const DRAWER_SIZE_STORAGE_KEY = 'ciboard-drawer-size';
@@ -148,8 +148,7 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
     const selectedTest = useContext(SelectedTestContext);
     const isExpanded = !_.isNil(selectedTest);
 
-    const { artifact } = props;
-    if (!artifact) return null;
+    if (!props.artifact) return null;
 
     const onCloseClick = () => props.onClose && props.onClose();
     const onResize = (newWidth: number) => setDrawerSize(`${newWidth}px`);
@@ -197,13 +196,22 @@ export function DetailsDrawer(props: DetailsDrawerProps) {
         </Button>
     );
     const waiveButton = selectedTest?.waivable && (
-        <WaiveButton artifact={artifact} ciTest={selectedTest} />
+        <WaiveButton artifact={props.artifact} testcase={selectedTest.name} />
     );
 
     /*
      * Custom alerts and widgets for error states and additional info.
      */
-    const contactWidget = <ContactWidget contact={selectedTest?.contact} />;
+    const contactWidget =
+        selectedTest?.status === 'missing' ? (
+            // Pull contact info if test is missing, because we have no other data.
+            <MissingTestContactWidget
+                productVersion={getArtifactProduct(props.artifact)}
+                testcaseName={selectedTest?.name}
+            />
+        ) : (
+            <ContactWidget contact={selectedTest?.contact} />
+        );
     const descriptionWidget = !_.isEmpty(selectedTest?.description) && (
         <TextContent className="pf-v5-u-mb-md">
             <Text>

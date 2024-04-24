@@ -26,11 +26,10 @@ import { ThumbsUpIcon } from '@patternfly/react-icons';
 import { Artifact } from '../../types';
 import { createWaiver } from '../../actions';
 import { useAppDispatch } from '../../hooks';
-import { CiTest } from './types';
 
 export interface WaiveButtonProps {
     artifact: Artifact;
-    ciTest: CiTest;
+    testcase?: string;
 }
 
 /**
@@ -39,13 +38,13 @@ export interface WaiveButtonProps {
  * `ArtifactGreenwaveState.tsx` but with a different styling for the new page.
  */
 export const WaiveButton: React.FC<WaiveButtonProps> = (props) => {
-    const { artifact, ciTest } = props;
+    const { artifact, testcase } = props;
     const dispatch = useAppDispatch();
 
-    if (_.isEmpty(ciTest.name)) return null;
+    if (_.isEmpty(testcase)) return null;
     const onClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
         event.stopPropagation();
-        dispatch(createWaiver(artifact, ciTest));
+        dispatch(createWaiver(artifact, testcase));
     };
 
     return (

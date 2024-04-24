@@ -23,9 +23,9 @@ import _ from 'lodash';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import {
-    IStateWaiver,
     CreateWaiverPayload,
     SubmitWaiverPayload,
+    IStateWaiver,
 } from '../actions/types';
 
 /**
@@ -33,7 +33,7 @@ import {
  */
 const INITIAL_STATE: IStateWaiver = {
     /* {testcase: "N/A"} */
-    ciTest: undefined,
+    testcase: undefined,
     reason: '',
     waiveError: '',
     timestamp: undefined,
@@ -47,7 +47,7 @@ export const waiveSlice = createSlice({
         createWaiver: (state, action: PayloadAction<CreateWaiverPayload>) => {
             const { payload } = action;
             state.artifact = payload.artifact;
-            state.ciTest = payload.ciTest;
+            state.testcase = payload.testcase;
         },
         resetWaiver: (state) => {
             state.waiveError = '';

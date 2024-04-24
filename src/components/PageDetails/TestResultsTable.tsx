@@ -135,7 +135,7 @@ const SingleTestRow: React.FC<SingleTestRowProps> = (props) => {
                     }}
                 >
                     {test.waivable && (
-                        <WaiveButton artifact={artifact} ciTest={test} />
+                        <WaiveButton artifact={artifact} testcase={test.name} />
                     )}
                     {test.rerunUrl && (
                         <Button
@@ -201,9 +201,9 @@ const isRequiredPassed = ({ required, status, waiver }: CiTest) =>
     required && (['info', 'passed'].includes(status) || !_.isNil(waiver));
 
 export interface TestResultsTableProps {
-    tests: CiTest[];
     artifact: Artifact;
     onSelect?(key: string | undefined): void;
+    tests: CiTest[];
 }
 
 export const TestResultsTable: React.FC<TestResultsTableProps> = (props) => {

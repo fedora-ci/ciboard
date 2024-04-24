@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
 
- * Copyright (c) 2021, 2022, 2023, 2024 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,6 @@ import * as authSlice from '../slices/authSlice';
 import * as gatingTestsFormSlice from '../slices/gatingTestsFormSlice';
 import * as waiveSlice from '../slices/waiveSlice';
 import { AlertVariant } from '@patternfly/react-core';
-import { CiTest } from '../components/PageDetails/types';
 export * from '../slices/artifactsSlice';
 export * from '../slices/artifactsQuerySlice';
 
@@ -93,7 +92,7 @@ export const fetchUser = () => {
 
 export const createWaiver = (
     artifact: Artifact | undefined,
-    ciTest: CiTest | undefined,
+    testcase: string | undefined,
 ) => {
     return async (dispatch: AppDispatch, getState: GetState) => {
         const { displayName, nameID } = getState().auth;
@@ -109,7 +108,7 @@ export const createWaiver = (
             );
             return;
         }
-        dispatch(waiveSlice.createWaiver({ artifact, ciTest }));
+        dispatch(waiveSlice.createWaiver({ artifact, testcase }));
     };
 };
 
@@ -130,9 +129,8 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
          * get NVR, for modules we need to convert it to 'brew' like form
          */
         let waiveError: string;
-        const { artifact, ciTest } = getState().waive;
-        const testcaseName = ciTest?.name;
-        if (_.isNil(_.get(artifact, 'payload.nvr')) || _.isNil(testcaseName)) {
+        const { artifact, testcase } = getState().waive;
+        if (_.isNil(_.get(artifact, 'payload.nvr')) || _.isNil(testcase)) {
             return;
         }
         // NOTE: We know that artifact.payload is not null thanks to the check at the
@@ -163,7 +161,7 @@ export const submitWaiver = (reason: string, client: ApolloClient<object>) => {
                     // the top of the function.
                     waived: true,
                     comment: reason,
-                    testcase: testcaseName,
+                    testcase,
                     subject_type: aType,
                     product_version,
                     subject_identifier: nvr,

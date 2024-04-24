@@ -2,7 +2,7 @@
  * This file is part of ciboard
  *
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
- * Copyright (c) 2023, 2024 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2023 Andrei Stepanov <astepano@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,9 +22,9 @@
 import _ from 'lodash';
 import { List, ListItem } from '@patternfly/react-core';
 import {
-    InfoCircleIcon,
     ExclamationCircleIcon,
     ExclamationTriangleIcon,
+    InfoCircleIcon,
 } from '@patternfly/react-icons';
 
 import './index.css';
