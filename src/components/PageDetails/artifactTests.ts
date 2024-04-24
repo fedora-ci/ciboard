@@ -97,7 +97,6 @@ function transformGreenwaveOutcome(
     if (outcome === 'INFO' || (outcome === 'NOT_APPLICABLE' && !isRequired))
         return 'info';
     if (outcome === 'PASSED') return 'passed';
-    if (outcome === 'QUEUED') return 'queued';
     if (outcome === 'RUNNING') return 'running';
     return 'failed';
 }

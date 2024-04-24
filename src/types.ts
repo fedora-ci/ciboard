@@ -641,7 +641,6 @@ export type GreenwaveRequirement = {
 export type GreenwaveRequirementOutcome =
     | 'INFO'
     | 'ERROR'
-    | 'QUEUED'
     | 'PASSED'
     | 'FAILED'
     | 'RUNNING'
