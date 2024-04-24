@@ -67,11 +67,6 @@ import {
  */
 
 export type StageStateAChildren = [MsgStageName, StateName, AChild[]];
-type AChildrenByStageName = {
-    msgStageName: MsgStageName;
-    aChildrenByStateName: AChildrenByStateName;
-};
-
 
 /**
  * Entry point. This file is the most complicated part in this project.
@@ -79,8 +74,11 @@ type AChildrenByStageName = {
 export const mkStagesAndStates = (
     artifact: Artifact,
 ): StageStateAChildren[] => {
-    const stagesStates: Array<AChildrenByStageName> = [];
-    // Preprocess broker-messages into a list sorted by stage and state.
+    const stagesStates: Array<{
+        stage: MsgStageName;
+        aChildren: AChildrenByStateName;
+    }> = [];
+    // Preprocess Kai results into a list of results sorted by stage and state.
     const testMsgStagesStates = aChildrenByStageName(artifact);
     stagesStates.push(...testMsgStagesStates);
     /*
@@ -206,6 +204,11 @@ const getKaiState = (
  *     }
  */
 
+type AChildrenByStageName = {
+    msgStageName: MsgStageName;
+    aChildrenByStateName: AChildrenByStateName;
+};
+
 const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
     const aChildrenByStageName: AChildrenByStageName[] = [];
     const buildStage = _.omitBy(
@@ -236,8 +239,9 @@ const aChildrenByStageName = (artifact: Artifact): AChildrenByStageName[] => {
     );
     testStage = _.omitBy(testStage, (x) => _.isEmpty(x));
     if (_.some(_.values(testStage), 'length')) {
-        const msgStageName: MsgStageName = 'test';
-        aChildrenByStageName.push({ msgStageName, aChildrenByStateName: testStage });
+        const stage: MsgStageName = 'test';
+        // XXXXXXXXXXXXXx <-SSSSSS stage
+        aChildrenByStageName.push({ stage, states: testStage });
     }
     return aChildrenByStageName;
 };
@@ -261,13 +265,16 @@ const mkGreenwaveStateReq = (
 
 const mkGreenwaveStageStates = (
     decision: GreenwaveDecisionReply,
-): AChildrenByStageName => {
-    const aChildrenByStateName: AChildrenByStateName = {};
+): {
+    /* stage is always `greenwave` */
+    stage: MsgStageName;
+    children: AChildrenByStateName;
+} => {
+    const children: AChildrenByStateName = {};
     const reqStatesGreenwave = mkReqStatesGreenwave(decision);
     const resultStatesGreenwave = mkResultStatesGreenwave(decision);
-    _.assign(aChildrenByStateName, reqStatesGreenwave, resultStatesGreenwave);
-    /* stage is always `greenwave` */
-    return { msgStageName: 'greenwave', aChildrenByStateName};
+    _.assign(children, reqStatesGreenwave, resultStatesGreenwave);
+    return { stage: 'greenwave', children };
 };
 
 const mkReqStatesGreenwave = (
@@ -332,16 +339,19 @@ stage_states_array is the second form:
     ]
 */
 const mkStageStatesArray = (
-    stageStates: Array<AChildrenByStageName>,
+    stageStates: Array<{
+        stage: MsgStageName;
+        children: AChildrenByStateName;
+    }>,
 ): StageStateAChildren[] => {
     const stageStatesArray: StageStateAChildren[] = [];
-    for (const { msgStageName, aChildrenByStateName} of stageStates) {
-        for (const [stateName, aChildren] of _.toPairs(aChildrenByStateName)) {
+    for (const { stage, children } of stageStates) {
+        for (const [stateName, statesList] of _.toPairs(children)) {
             /** _.toPairs(obj) ===> [pair1, pair2, pair3] where pair == [key, value] */
             stageStatesArray.push([
-                msgStageName,
-                stateName as MsgStateName,
-                aChildren,
+                stage,
+                stateName as TestMsgStateName,
+                statesList,
             ]);
         }
     }

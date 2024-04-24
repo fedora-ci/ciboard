@@ -1,7 +1,7 @@
 /*
  * This file is part of ciboard
  *
- * Copyright (c) 2021, 2022, 2023 Andrei Stepanov <astepano@redhat.com>
+ * Copyright (c) 2021, 2022 Andrei Stepanov <astepano@redhat.com>
  * Copyright (c) 2023 Matěj Grabovský <mgrabovs@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@ import _ from 'lodash';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { GASetSearchOptionsPayload } from '../actions/types';
-import { ArtifactType } from '../types';
+import { ArtifactType } from '../artifact';
 
 export const BUILD_TYPE_MENU_ITEMS = {
     modularity: 'redhat-module',

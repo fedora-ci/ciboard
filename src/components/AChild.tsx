@@ -32,18 +32,18 @@ import {
 import { LinkIcon } from '@patternfly/react-icons';
 import { LinkifyNewTab } from '../utils/utils';
 import { AChildTestMsg, ArtifactKaiStateProps } from './AChildTestMsg';
-import { AChildGreenwaveComponent, AChildGreenwaveComponentProps } from './AChildGreenwaveComponent';
+import { AChildGreenwave, AChildGreenwaveProps } from './AChildGreenwave';
 import {
     ArtifactGreenwaveTestMsgState,
     ArtifactGreenwaveTestMsgStateProps,
 } from './AChildGreenwaveTestMsg';
 import {
-    AChild,
     Artifact,
     StateName,
     getThreadID,
-    getTestMsgBody,
+    ArtifactChild,
     isAChildTestMsg,
+    getTestMsgBody,
     getTestcaseName,
     isAChildGreenwave,
     isAChildGreenwaveAndTestMsg,
@@ -75,7 +75,7 @@ export const AChildDetailsEntry = (
 };
 
 interface AChildLinkProps {
-    aChild: AChild;
+    aChild: ArtifactChild;
     artifactDashboardUrl: string;
 }
 
@@ -148,7 +148,7 @@ export const mkPairs = (mapping: ResultMappingType, dict: Object) => {
 };
 
 export interface AChildProps {
-    aChild: AChild;
+    aChild: ArtifactChild;
     artifact: Artifact;
     stateName: StateName;
     forceExpand: boolean;
@@ -156,12 +156,14 @@ export interface AChildProps {
     setExpandedResult: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const AChildComponent: React.FC<AChildProps> = (props) => {
+export const AChild: React.FC<AChildProps> = (props) => {
     const { aChild } = props;
     if (isAChildGreenwaveAndTestMsg(aChild)) {
-        return <ArtifactGreenwaveTestMsgState {...props as ArtifactGreenwaveTestMsgStateProps}/>
+        return ArtifactGreenwaveTestMsgState(
+            props as ArtifactGreenwaveTestMsgStateProps,
+        );
     } else if (isAChildGreenwave(aChild)) {
-        return AChildGreenwaveComponent(props as AChildGreenwaveComponentProps);
+        return AChildGreenwave(props as AChildGreenwaveProps);
     } else if (isAChildTestMsg(aChild)) {
         return AChildTestMsg(props as ArtifactKaiStateProps);
     }

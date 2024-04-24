@@ -52,11 +52,11 @@ import {
 import { MicrochipIcon, OutlinedClockIcon } from '@patternfly/react-icons';
 
 import {
-    getMsgId,
     Artifact,
+    ChildTestMsg,
     getAType,
-    AChildTestMsg,
     getArtifactId,
+    getMsgId,
 } from '../types';
 import { xunitParser } from '../utils/xunitParser';
 import { mkSeparatedList } from '../utils/artifactsTable';
@@ -417,7 +417,7 @@ export const TestSuiteDisplay: React.FC<TestSuiteDisplayProps> = (props) => {
 };
 
 interface TestSuitesProps {
-    aChild: AChildTestMsg;
+    aChild: ChildTestMsg;
     artifact: Artifact;
 }
 

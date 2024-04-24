@@ -40,7 +40,7 @@ import {
 
 import styles from '../custom.module.css';
 import { LinkifyNewTab } from '../utils/utils';
-import { mkLabel, AChildDetailsEntry } from './AChildComponent';
+import { mkLabel, AChildDetailsEntry } from './AChild';
 import {
     Metadata,
     MetadataContact,

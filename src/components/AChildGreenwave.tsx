@@ -65,7 +65,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { ExternalLink } from './ExternalLink';
-import { TestMsgDocsButton, KaiRerunButton } from './AChildTestMsg';
+import { KaiDocsButton, KaiRerunButton } from './AChildTestMsg';
 import styles from '../custom.module.css';
 import { useAppDispatch } from '../hooks';
 import {
@@ -77,7 +77,7 @@ import {
 import {
     Artifact,
     getRerunUrl,
-    AChildGreenwave,
+    ChildGreenwave,
     getTestcaseName,
     GreenwaveWaiveType,
     getArtifactProduct,
@@ -91,7 +91,7 @@ import {
     AChildLink,
     AChildProps,
     AChildDetailsEntry,
-} from './AChildComponent';
+} from './AChild';
 import { createWaiver } from '../actions';
 import { docs } from '../config';
 import { MetadataQuery } from '../queries/Metadata';
@@ -104,7 +104,7 @@ import {
 } from './MetadataInfo';
 
 export interface PropsWithGreenwaveState {
-    aChild: AChildGreenwave;
+    aChild: ChildGreenwave;
 }
 
 export interface WaiveButtonProps {
@@ -161,7 +161,7 @@ export const AChildGreenwaveActions: React.FC<GreenwaveStateActionsProps> = (
                 <KaiRerunButton rerunUrl={rerunUrl} />
             </Flex>
             <Flex flex={{ default: 'flex_1' }}>
-                <TestMsgDocsButton docsUrl={docsUrl} />
+                <KaiDocsButton docsUrl={docsUrl} />
             </Flex>
         </Flex>
     );
@@ -395,7 +395,7 @@ export const FaceForGreenwaveState: React.FC<FaceForGreenwaveStateProps> = (
 };
 
 interface BodyForGreenwaveStateProps {
-    aChild: AChildGreenwave;
+    aChild: ChildGreenwave;
     artifact: Artifact;
     isVisible: boolean;
 }
@@ -637,9 +637,9 @@ export const GreenwaveMissingHints: React.FC<{}> = (props) => (
     </Alert>
 );
 
-export type AChildGreenwaveComponentProps = AChildProps & PropsWithGreenwaveState;
+export type AChildGreenwaveProps = AChildProps & PropsWithGreenwaveState;
 
-export const AChildGreenwaveComponent: React.FC<AChildGreenwaveComponentProps> = (props) => {
+export const AChildGreenwave: React.FC<AChildGreenwaveProps> = (props) => {
     const {
         aChild,
         artifact,

@@ -37,22 +37,22 @@ import {
 } from '@patternfly/react-core';
 
 import {
-    AChild,
-    getAType,
     Artifact,
     StateName,
     MsgStageName,
-    getArtifactId,
-    getMsgStageName,
-    isAChildTestMsg,
+    ArtifactChild,
+    isChildTestMsg,
     getTestcaseName,
-    isAChildGreenwave,
+    isGreenwaveChild,
+    getAType,
+    getArtifactId,
     getTestMsgExtendedStatus,
+    getMsgStageName,
 } from '../types';
-import { AChildComponent } from './AChildComponent';
+import { AChild } from './AChild';
 import {
     mkStagesAndStates,
-    StageStateAChildren,
+    StageNameStateNameStates,
 } from '../utils/stages_states';
 
 // XXX: adapt to Opensearch
@@ -110,28 +110,28 @@ const StageAndState: React.FC<StageAndStateProps> = (props) => {
 };
 
 const mustExpandState = (
-    aChild: AChild,
+    child: ArtifactChild,
     expandedResult: string,
 ): boolean => {
     /*
      * expandedResult - is set to testcase-name by state-widget, when it handles click for expanding
      * State-widget uses call-back to set this param.
      */
-    const testcase = getTestcaseName(aChild);
+    const testcase = getTestcaseName(child);
     if (testcase === expandedResult) {
         return true;
     }
     return false;
 };
 
-const mkStateKey = (aChild: AChild): string => {
+const mkStateKey = (aChild: ArtifactChild): string => {
     const testcase = getTestcaseName(aChild) || 'unknown';
-    if (isAChildTestMsg(aChild)) {
+    if (isChildTestMsg(aChild)) {
         const msgStage = getMsgStageName(aChild);
         const msgState = getTestMsgExtendedStatus(aChild);
         return `${testcase}-${msgStage}-${msgState}`;
     }
-    if (isAChildGreenwave(aChild)) {
+    if (isGreenwaveChild(aChild)) {
         return `greenwave-${testcase}`;
     }
     return testcase;
@@ -182,7 +182,7 @@ export function AChildrenList(props: AChildrenListProps) {
         setExpandedResult(testCaseName);
         setWasExpandedForURLParam(true);
     }
-    const stagesAndStates: StageStateAChildren[] =
+    const stagesAndStates: StageNameStateNameStates[] =
         mkStagesAndStates(artifact);
     if (!_.size(stagesAndStates)) {
         return <>No test results available for this artifact.</>;
@@ -208,7 +208,7 @@ export function AChildrenList(props: AChildrenListProps) {
             const ref = forceExpand ? focusedRef : undefined;
             resultRows.push(
                 <div key={key} ref={ref}>
-                    <AChildComponent
+                    <AChild
                         artifact={artifact}
                         artifactDashboardUrl={artifactDashboardUrl(artifact)}
                         forceExpand={forceExpand}
