@@ -977,7 +977,7 @@ export type ComponentMapping = {
 /**
  * GraphQL KojiInstanceInputType
  */
-export type KojiInstance = 'cs' | 'fp' | 'rh';
+export type KojiInstance = 'cs' | 'fp' | 'rh' | 'pn' ;
 /**
  * GraphQL DistGitInstanceInputType
  */
