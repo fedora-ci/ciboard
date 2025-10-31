@@ -387,6 +387,8 @@ export const mkLinkPkgsDevelFromSource = (
     switch (instance) {
         case 'cs':
             return `https://gitlab.com/redhat/centos-stream/${namespace}/${name}/-/commit/${commit}`;
+        case 'pn':
+            return `https://gitlab.com/redhat/rhel/${namespace}/${name}/-/commit/${commit}`;
         case 'fp':
             return `https://src.fedoraproject.org/${namespace}/${name}/c/${commit}`;
         case 'rh':
@@ -407,6 +409,8 @@ export const mkLinkFileInGit = (
     switch (instance) {
         case 'cs':
             return `https://gitlab.com/redhat/centos-stream/${namespace}/${repoName}/-/blob/${commit}/${fileName}`;
+        case 'pn':
+            return `https://gitlab.com/redhat/rhel/${namespace}/${repoName}/-/blob/${commit}/${fileName}`;
         case 'fp':
             return `https://src.fedoraproject.org/${namespace}/${repoName}/blob/${commit}/f/${fileName}`;
         case 'rh':

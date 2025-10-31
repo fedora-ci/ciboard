@@ -214,7 +214,7 @@ const Help = () => (
         <p className="padding-left-20">
             <CodeBlockCode id="code-content">
                 {`query brew {
-                    koji_build_tags_by_nvr(nvr: $NVR, instance: rh|fp|cs){
+                    koji_build_tags_by_nvr(nvr: $NVR, instance: rh|fp|cs|pn){
                         arches
                         id
                         locked

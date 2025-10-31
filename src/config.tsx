@@ -50,6 +50,9 @@ export const config = {
         rh: {
             webUrl: 'https://brewweb.engineering.redhat.com/brew',
         },
+        pn: {
+            webUrl: 'https://brewweb.engineering.redhat.com/brew',
+        },
     },
     mbs: {
         cs: {
@@ -60,6 +63,9 @@ export const config = {
             webUrl: 'https://release-engineering.github.io/mbs-ui/',
         },
         rh: {
+            webUrl: 'https://mbsweb.engineering.redhat.com/mbs-ui/',
+        },
+        pn: {
             webUrl: 'https://mbsweb.engineering.redhat.com/mbs-ui/',
         },
     },
