@@ -16,7 +16,7 @@ jobs:
         IMAGE_REGISTRY_QUAY: quay.io/fedoraci/ciboard
         USER_QUAY: fedoraci+ciboard_github_ci
     name: Build and push image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
 
     - name: Log in to the GitHub Container registry
