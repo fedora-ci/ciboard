@@ -25,6 +25,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
     Card,
     Flex,
+    Alert,
     Button,
     Spinner,
     FlexItem,
@@ -118,9 +119,11 @@ const BackButton: React.FC<BackButtonProps> = (props) => {
 interface SingleArtifactViewProps {
     artifact: Artifact;
     metadata: MetadataRaw[];
+    /** Set when some fields failed to load, but the artifact itself did. */
+    partialError?: ApolloError;
 }
 function SingleArtifactView(props: SingleArtifactViewProps) {
-    const { artifact, metadata } = props;
+    const { artifact, metadata, partialError } = props;
     const [selectedTestName, setSelectedTestName] = useState<string>();
     // Docs: https://reactrouter.com/en/main/hooks/use-search-params
     const [searchParams, setSearchParams] = useSearchParams();
@@ -174,6 +177,15 @@ function SingleArtifactView(props: SingleArtifactViewProps) {
                     </PageBreadcrumb>
                     <PageSection isFilled>
                         <BackButton />
+                        {partialError && (
+                            <Alert
+                                isInline
+                                variant="warning"
+                                title="Some data failed to load"
+                            >
+                                {partialError.message}
+                            </Alert>
+                        )}
                         <Flex
                             className="resultsNarrower"
                             direction={{ default: 'column' }}
@@ -236,7 +248,8 @@ export function PageDetails(_props: {}) {
     );
 
     const hits = data?.artifacts?.hits;
-    const haveData = !_.isNil(hits) && !error && !loading;
+    // With errorPolicy 'all' partial data is returned together with the error.
+    const haveData = !_.isNil(hits) && !loading;
 
     if (loading) {
         // Show spinner while the query is loading.
@@ -252,7 +265,11 @@ export function PageDetails(_props: {}) {
     const metadata = data?.metadataRaw || [];
 
     return (
-        <SingleArtifactView artifact={artList.hits[0]} metadata={metadata} />
+        <SingleArtifactView
+            artifact={artList.hits[0]}
+            metadata={metadata}
+            partialError={error}
+        />
     );
 }
 
